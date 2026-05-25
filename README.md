@@ -3,6 +3,11 @@
 Proyecto para gestionar incidencias georreferenciadas: registro, seguimiento,
 asignación y resolución con trazabilidad completa.
 
+## Integrantes
+
+
+- Angel Alejandro Villon Panimboza
+
 ## Descripción
 
 Sistema web para gestionar incidencias georreferenciadas con historial de
