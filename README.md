@@ -130,7 +130,7 @@ credenciales de acceso, modelo ER, diagrama de arquitectura).
 
 ## Contribuir
 
-- Crear una rama por feature: `git checkout -b feature/nombre`
+- Crear una rama por feature: `git checkout -b <nombre generado en linear>`
 - Commits pequeños y claros
 - Incluir pruebas y evidencias en `docs/`
 - Abrir Pull Request con descripción y pasos para reproducir
