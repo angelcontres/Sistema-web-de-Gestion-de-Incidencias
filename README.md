@@ -5,7 +5,7 @@ asignación y resolución con trazabilidad completa.
 
 ## Integrantes
 
-
+- Carlos Fernando Patiño García
 - Angel Alejandro Villon Panimboza
 
 ## Descripción
