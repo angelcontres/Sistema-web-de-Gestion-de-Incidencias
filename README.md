@@ -4,7 +4,7 @@ Proyecto para gestionar incidencias georreferenciadas: registro, seguimiento,
 asignación y resolución con trazabilidad completa.
 
 ## Integrantes
-
+- Paulo Orrala Arriaga
 - Carlos Fernando Patiño García
 - Angel Alejandro Villon Panimboza
 
