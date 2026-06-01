@@ -1,14 +1,11 @@
-# 1. EL DETONANTE: Se activa al subir cambios a develop
 on:
   push:
     branches: [ "develop" ]
 
-# 2. EL LUGAR: Tu Sony VAIO
 jobs:
   despliegue-docker:
     runs-on: self-hosted
 
-    # 3. LOS PASOS AUTOMÁTICOS
     steps:
     - name: Copiar el código a la VAIO
       uses: actions/checkout@v4
@@ -18,6 +15,9 @@ jobs:
 
     - name: Construir y levantar contenedores en segundo plano
       run: docker compose up -d --build
+
+    - name: Instalar dependencias de PHP (Composer) dentro del contenedor
+      run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
 
     - name: Esperar a que la base de datos esté lista
       run: sleep 5
