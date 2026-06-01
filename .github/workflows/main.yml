@@ -14,7 +14,7 @@ jobs:
       run: docker compose down
 
     - name: Construir y levantar contenedores en segundo plano
-      run: docker compose up -d --build --pull
+      run: docker compose up -d --build --pull always
 
     - name: Instalar dependencias de PHP (Composer) dentro del contenedor
       run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
