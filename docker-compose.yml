@@ -23,6 +23,7 @@ services:
       context: ./backend/api
       dockerfile: Dockerfile
     container_name: sistema_laravel
+    user: "1000:1000"
     volumes:
       - ./backend/api:/var/www/html
     networks:
