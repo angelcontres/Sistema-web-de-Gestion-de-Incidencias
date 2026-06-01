@@ -8,16 +8,11 @@ jobs:
   laravel-tests:
     runs-on: self-hosted
 
-    # 3. LOS PASOS: La lista de tareas que la VAIO hará sola
+    # 3. LOS PASOS: Usando el PHP nativo de tu servidor
     steps:
     - name: Copiar el código a la VAIO
       uses: actions/checkout@v4
-
-    - name: Configurar la versión de PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2' # O la versión que estés usando
-
+    
     - name: Instalar dependencias de Laravel (Composer)
       run: composer install --no-ansi --no-interaction --no-progress
 
