@@ -48,14 +48,15 @@ services:
 
   # El túnel gratuito de Cloudflare
   tunnel:
-      image: efrecon/localtunnel:latest
-      container_name: sistema_tunnel
-      restart: always
-      command: --port 80 --subdomain alertcity
-      depends_on:
-        - nginx
-      networks:
-        - sistema_net
+    image: cloudflare/cloudflared:latest
+    container_name: sistema_tunnel
+    restart: always
+    # El comando 'tunnel --url' crea un enlace público aleatorio directo a Nginx al instante
+    command: tunnel --url http://nginx:80
+    depends_on:
+      - nginx
+    networks:
+      - sistema_net
 networks:
   sistema_net:
     driver: bridge
