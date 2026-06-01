@@ -1,6 +1,7 @@
-FROM php:8.2-fpm-alpine
+# 🌟 Actualizamos la imagen base a PHP 8.3
+FROM php:8.3-fpm-alpine
 
-# 🌟 Instalar librerías para PostgreSQL usando el gestor 'apk' de Alpine
+# Instalar librerías para PostgreSQL usando el gestor 'apk' de Alpine
 RUN apk update && apk add --no-cache libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql
 
