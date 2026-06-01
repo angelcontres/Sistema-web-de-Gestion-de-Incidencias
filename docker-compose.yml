@@ -50,6 +50,7 @@ services:
   tunnel:
       image: cloudflare/cloudflared:latest
       container_name: sistema_tunnel_staging
+      user: "0:0"
       restart: always
       volumes:
         - ./cloudflare:/home/nonroot/.cloudflared
