@@ -51,8 +51,7 @@ services:
       image: efrecon/localtunnel:latest
       container_name: sistema_tunnel
       restart: always
-      # Pon aquí tu nombre insano en el espacio de '--subdomain'
-      command: --port 80 --subdomain syswatch-upse
+      command: --port 80 --subdomain alertcity
       depends_on:
         - nginx
       networks:
