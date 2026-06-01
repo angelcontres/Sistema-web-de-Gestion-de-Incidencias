@@ -48,15 +48,14 @@ services:
 
   # El túnel gratuito de Cloudflare
   tunnel:
-    image: cloudflare/cloudflared:latest
-    container_name: sistema_tunnel
-    restart: always
-    # El comando 'tunnel --url' crea un enlace público aleatorio directo a Nginx al instante
-    command: tunnel --url http://nginx:80
-    depends_on:
-      - nginx
-    networks:
-      - sistema_net
+      image: cloudflare/cloudflared:latest
+      container_name: sistema_tunnel
+      restart: always
+      command: tunnel --no-autoupdate run --token eyJhIjoiY2NmNGI3MzM0MGRhYWQ4NGMzZTU0ZjgyMjFhY2MxNDEiLCJ0IjoiMWViOTVlZmEtMzlkMy00NDA3LTljYjYtY2VlYTBlZmFjMzRkIiwicyI6Ik1HVmxPV0V3WkRjdE16bGtNUzAwWlRrMUxXRmpOakF0WkdRek16VmtZMlkwWW1FeSJ9
+      depends_on:
+        - nginx
+      networks:
+        - sistema_net
 networks:
   sistema_net:
     driver: bridge
