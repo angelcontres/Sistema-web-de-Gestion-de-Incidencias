@@ -48,16 +48,16 @@ services:
 
   # El túnel gratuito de Cloudflare
   tunnel:
-      image: cloudflare/cloudflared:latest[cite: 1]
+      image: cloudflare/cloudflared:latest
       container_name: sistema_tunnel_staging
-      restart: always[cite: 1]
+      restart: always
       volumes:
-        - ./cloudflare:/home/nonroot/.cloudflared # Mapea los archivos que acabamos de mover
-      command: tunnel run[cite: 1]
+        - ./cloudflare:/home/nonroot/.cloudflared
+      command: tunnel run
       depends_on:
-        - nginx[cite: 1]
+        - nginx
       networks:
-        - sistema_net[cite: 1]
+        - sistema_net
 networks:
   sistema_net:
     driver: bridge
