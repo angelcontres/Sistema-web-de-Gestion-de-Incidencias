@@ -1,26 +1,30 @@
-# 1. EL DETONANTE: Cuándo se debe activar
+# 1. EL DETONANTE: Se activa al subir cambios a develop
 on:
   push:
     branches: [ "develop" ]
 
-# 2. EL LUGAR: Dónde se va a ejecutar (¡Tu VAIO!)
+# 2. EL LUGAR: Tu Sony VAIO
 jobs:
   laravel-tests:
     runs-on: self-hosted
 
-    # 3. LOS PASOS: Usando el PHP nativo de tu servidor
+    # 3. LOS PASOS AUTOMÁTICOS
     steps:
     - name: Copiar el código a la VAIO
       uses: actions/checkout@v4
-    
+
     - name: Instalar dependencias de Laravel (Composer)
-      run: composer install --no-ansi --no-interaction --no-progress
+      working-directory: backend/api
+      run: /usr/local/bin/composer install --no-ansi --no-interaction --no-progress
 
     - name: Copiar archivo de entorno (.env)
+      working-directory: backend/api
       run: cp .env.example .env
 
     - name: Generar clave de seguridad de Laravel
+      working-directory: backend/api
       run: php artisan key:generate
 
     - name: Ejecutar pruebas automatizadas
+      working-directory: backend/api
       run: php artisan test
