@@ -5,7 +5,7 @@ on:
 
 # 2. EL LUGAR: Tu Sony VAIO
 jobs:
-  laravel-tests:
+  despliegue-docker:
     runs-on: self-hosted
 
     # 3. LOS PASOS AUTOMÁTICOS
@@ -13,18 +13,20 @@ jobs:
     - name: Copiar el código a la VAIO
       uses: actions/checkout@v4
 
-    - name: Instalar dependencias de Laravel (Composer)
-      working-directory: backend/api
-      run: /usr/local/bin/composer install --no-ansi --no-interaction --no-progress
+    - name: Apagar contenedores anteriores (Limpieza)
+      run: docker compose down
 
-    - name: Copiar archivo de entorno (.env)
-      working-directory: backend/api
-      run: cp .env.example .env
+    - name: Construir y levantar contenedores en segundo plano
+      run: docker compose up -d --build
 
-    - name: Generar clave de seguridad de Laravel
-      working-directory: backend/api
-      run: php artisan key:generate
+    - name: Esperar a que la base de datos esté lista
+      run: sleep 5
 
-    - name: Ejecutar pruebas automatizadas
-      working-directory: backend/api
-      run: php artisan test
+    - name: Ejecutar migraciones de Laravel dentro del contenedor
+      run: docker exec sistema_laravel php artisan migrate --force
+
+    - name: Generar clave de seguridad de Laravel (Si falta)
+      run: docker exec sistema_laravel php artisan key:generate
+
+    - name: Ejecutar pruebas automatizadas (Calidad de Software)
+      run: docker exec sistema_laravel php artisan test
