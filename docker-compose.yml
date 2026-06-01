@@ -48,20 +48,21 @@ services:
 
   # El túnel gratuito de Cloudflare
   tunnel:
-      image: cloudflare/cloudflared:latest
-      container_name: sistema_tunnel_staging
-      user: "0:0"
-      restart: always
-      volumes:
-        - ./cloudflare:/home/nonroot/.cloudflared
-      command: tunnel run
-      depends_on:
-        - nginx
-      dns:
-        - 1.1.1.1
-        - 8.8.8.8
-      networks:
-        - sistema_net
+    image: cloudflare/cloudflared:latest
+    container_name: sistema_tunnel_staging
+    user: "0:0"  # Corre como root para saltarse bloqueos de permisos
+    restart: always
+    volumes:
+      - ./cloudflare:/home/nonroot/.cloudflared
+    command: tunnel run
+    depends_on:
+      - nginx
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - sistema_net
+
 networks:
   sistema_net:
     driver: bridge
