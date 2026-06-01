@@ -1,0 +1,31 @@
+# 1. EL DETONANTE: Cuándo se debe activar
+on:
+  push:
+    branches: [ "develop" ]
+
+# 2. EL LUGAR: Dónde se va a ejecutar (¡Tu VAIO!)
+jobs:
+  laravel-tests:
+    runs-on: self-hosted
+
+    # 3. LOS PASOS: La lista de tareas que la VAIO hará sola
+    steps:
+    - name: Copiar el código a la VAIO
+      uses: actions/checkout@v4
+
+    - name: Configurar la versión de PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2' # O la versión que estés usando
+
+    - name: Instalar dependencias de Laravel (Composer)
+      run: composer install --no-ansi --no-interaction --no-progress
+
+    - name: Copiar archivo de entorno (.env)
+      run: cp .env.example .env
+
+    - name: Generar clave de seguridad de Laravel
+      run: php artisan key:generate
+
+    - name: Ejecutar pruebas automatizadas
+      run: php artisan test
