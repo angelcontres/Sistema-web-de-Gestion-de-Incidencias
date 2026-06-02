@@ -1,0 +1,35 @@
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  despliegue-docker:
+    runs-on: self-hosted
+
+    steps:
+    - name: Copiar el código a la VAIO
+      uses: actions/checkout@v4
+
+    - name: Apagar contenedores anteriores (Limpieza)
+      run: docker compose down
+
+    - name: Construir y levantar contenedores en segundo plano
+      run: docker compose up -d --build --pull always
+
+    - name: Instalar dependencias de PHP (Composer) dentro del contenedor
+      run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
+
+    - name: Clonar el archivo de entorno (.env) dentro del contenedor
+      run: docker exec sistema_laravel cp .env.example .env
+
+    - name: Generar clave de seguridad de Laravel
+      run: docker exec sistema_laravel php artisan key:generate
+
+    - name: Esperar a que la base de datos esté lista
+      run: sleep 5
+
+    - name: Ejecutar migraciones de Laravel dentro del contenedor
+      run: docker exec sistema_laravel php artisan migrate --force
+
+    - name: Ejecutar pruebas automatizadas (Calidad de Software)
+      run: docker exec sistema_laravel php artisan test
