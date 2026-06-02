@@ -1,5 +1,5 @@
 tunnel: 72de7bd0-601b-4354-9def-08a03b539bdb
-credentials-file: /home/nonroot/.cloudflared/72de7bd0-601b-4354-9def-08a03b539bdb.json
+credentials-file: /etc/cloudflared/72de7bd0-601b-4354-9def-08a03b539bdb.json
 
 ingress:
   - hostname: alertcity.dihm-muertos.site

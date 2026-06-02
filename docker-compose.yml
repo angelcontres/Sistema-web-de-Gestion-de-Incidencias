@@ -53,8 +53,8 @@ services:
     user: "0:0"  # Corre como root para saltarse bloqueos de permisos
     restart: always
     volumes:
-      - ./cloudflare:/root/.cloudflared
-    command: tunnel run
+      - ./cloudflare:/etc/cloudflared
+    command: tunnel run 72de7bd0-601b-4354-9def-08a03b539bdb
     depends_on:
       - nginx
     dns:
