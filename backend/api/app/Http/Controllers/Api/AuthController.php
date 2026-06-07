@@ -24,7 +24,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // 3. Crear el token de acceso (Asegúrate de que el modelo User tenga HasApiTokens)
+        // 3. Crear el token de acceso para el usuario autenticado
         $token = $user->createToken('auth_token')->plainTextToken;
 
         // 4. Retornar respuesta
@@ -37,4 +37,25 @@ class AuthController extends Controller
             ]
         ], 200);
     }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json([
+            'message' => 'Sesión cerrada exitosamente.'
+        ], 200);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        return response()->json([
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                // TODO - Agregar los campos de menu y permisos que correspondan al usuario autenticado
+            ]
+        ], 200);
+    }
+
 }

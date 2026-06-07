@@ -4,7 +4,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 
+// Rutas públicas
 Route::post('/v1/login', [AuthController::class, 'login']);
+
+// Rutas protegidas por autenticación
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/v1/logout', [AuthController::class, 'logout']);
+    
+    Route::get('/v1/me', [AuthController::class, 'me']);
+});
 
 // Endpoint de prueba sin base de datos
 Route::get('/productos', function () {
