@@ -1,0 +1,143 @@
+# Entregable 1: Plan de Gestión de Calidad del Proyecto
+
+## 🎯 Objetivo del Entregable
+
+Definir la estrategia de calidad que será aplicada durante el desarrollo del **Sistema Web de Gestión de Incidencias Georreferenciadas**, estableciendo los atributos de calidad prioritarios, estándares de referencia, actividades de aseguramiento y control de calidad, métricas, criterios de aceptación y mecanismos de evaluación que serán utilizados durante el proyecto.
+
+*El propósito es evidenciar la planificación formal de la calidad y demostrar que estas actividades forman parte integral del proceso de desarrollo, permitiendo gestionar de manera preventiva los riesgos asociados al producto y al proceso de software.*
+
+---
+
+## 💡 Nota de Coherencia Metodológica
+
+Este entregable se constituye como la **"Constitución de Calidad del Proyecto"**. Toda actividad posterior (diseño de pruebas, métricas, análisis con OWASP o SonarQube, gestión de defectos y pruebas de carga) debe emanar estrictamente de lo estructurado en este plan para asegurar la rigurosidad académica y profesional del proyecto.
+
+---
+
+## 1. Descripción del Proyecto
+
+Breve descripción técnica y conceptual del sistema desarrollado. Debe desglosarse de la siguiente manera:
+
+- **Objetivo general del sistema:** Propósito principal de la plataforma web de incidencias.
+- **Alcance funcional:** Delimitación de las fronteras operativas del software.
+- **Principales módulos:** Arquitectura modular inicial (ej. módulo de mapas, reportes, usuarios).
+- **Usuarios involucrados:** Roles y perfiles de usuario que interactuarán con el sistema.
+
+---
+
+## 2. Objetivos de Calidad
+
+Definición clara de las metas cuantificables y cualitativas de calidad del producto de software:
+
+- Garantizar la integridad de la información registrada y georreferenciada.
+- Minimizar la presencia de defectos funcionales en los módulos críticos del sistema.
+- Asegurar tiempos de respuesta adecuados bajo condiciones operativas normales.
+- Mitigar y reducir los riesgos básicos de seguridad en la aplicación web.
+- Mantener una arquitectura y estructura de código fuente altamente mantenible.
+
+---
+
+## 3. Atributos de Calidad Seleccionados (ISO/IEC 25010)
+
+Selección y justificación técnica de las características del producto de software basadas en el modelo de calidad **ISO/IEC 25010**:
+
+| Atributo de Calidad | Justificación Técnica en el Proyecto |
+|---------------------|--------------------------------------|
+| **Usabilidad** | El sistema posee un enfoque ciudadano y operativo; será utilizado por múltiples perfiles con distintos niveles de alfabetización digital. |
+| **Seguridad** | Se gestionan accesos restringidos, roles específicos y datos operativos críticos de incidencias urbanas o institucionales. |
+| **Fiabilidad** | La información capturada y las coordenadas geográficas no deben sufrir pérdidas ni corrupción durante los procesos de concurrencia. |
+| **Mantenibilidad** | Al ser un proyecto iterativo, la estructura de código debe permitir la evolución continua y la integración de nuevos módulos sin degradar el sistema. |
+| **Eficiencia de Desempeño** | El sistema debe responder de manera fluida y adecuada ante múltiples consultas simultáneas sobre la cartografía o mapas. |
+
+---
+
+## 4. Estándares, Modelos y Guías de Referencia
+
+Marcos normativos e ingenieriles seleccionados para fundamentar y evaluar la calidad:
+
+- **ISO/IEC 25010:** Utilizada como base taxonómica para definir y evaluar los atributos de calidad del producto de software.
+
+- **OWASP Top 10:** Marco de referencia fundamental para identificar y mitigar los riesgos críticos de seguridad web. Es de revisión obligatoria evaluar los siguientes vectores:
+
+  - `A01:2021-Broken Access Control` (Control de Acceso Quebrado)
+  - `A02:2021-Identification and Authentication Failures` (Fallas en Identificación y Autenticación)
+  - `A05:2021-Security Misconfiguration` (Configuración Incorrecta de Seguridad)
+  - `A06:2021-Vulnerable and Outdated Components` (Componentes Vulnerables y Desactualizados)
+  - `A03:2021-Injection` (Inyección de Datos/Código)
+
+- **IEEE 29119:** Estándar internacional adoptado como guía metodológica formal para el diseño, documentación y ejecución de los casos de prueba de software.
+
+---
+
+## 5. Roles y Responsabilidades de Calidad
+
+Matriz de asignación de funciones del equipo de desarrollo (los roles pueden ser compartidos o rotativos según la iteración):
+
+- **Revisión Técnica:** Responsable de la inspección de código y validación de arquitectura.
+- **Diseño de Pruebas:** Encargado de la creación de escenarios y especificación de casos de prueba bajo IEEE 29119.
+- **Ejecución de Pruebas:** Operador encargado de correr los scripts de pruebas funcionales y de rendimiento.
+- **Gestión de Defectos:** Responsable del ciclo de vida del defecto (registro, asignación, re-test y cierre).
+- **Elaboración de Métricas:** Analista encargado del cálculo, monitoreo y graficación de indicadores de calidad.
+
+---
+
+## 6. Riesgos Iniciales de Calidad
+
+Identificación prematura de eventos que amenazan la calidad del producto:
+
+| Riesgo Identificado | Probabilidad | Impacto |
+|--------------------|-------------|---------|
+| Accesos no autorizados a paneles administrativos | Media | Alta |
+| Inconsistencia en datos de georreferenciación (coordenadas nulas) | Media | Alta |
+| Errores funcionales en el flujo de cambio de estados de la incidencia | Alta | Media |
+| Consultas e hilos de renderizado lentos en el mapa dinámico | Baja | Media |
+
+---
+
+## 7. Actividades de Aseguramiento de Calidad
+
+Conjunto de tareas de control e ingeniería que se ejecutarán formalmente:
+
+- Revisiones técnicas formales y walkthroughs de arquitectura.
+- Inspecciones manuales de código base e infraestructura de base de datos.
+- Diseño analítico de casos de prueba basados en historias de usuario (IEEE 29119).
+- Ejecución estructurada de pruebas funcionales (Caja Negra).
+- Pruebas de carga y estrés para evaluar el comportamiento del mapa georreferenciado.
+- Análisis estático de código automático (ej. linters o SonarQube).
+- Auditorías y revisión de riesgos bajo el estándar OWASP.
+
+---
+
+## 8. Métricas e Indicadores de Calidad
+
+Fórmulas e indicadores cuantitativos que guiarán la evaluación objetiva del desarrollo:
+
+| Métrica | Fórmula de Cálculo | Propósito Operativo |
+|----------|--------------------|---------------------|
+| **Tasa de éxito de pruebas** | `Casos Aprobados / Casos Ejecutados` | Mide el nivel de estabilidad actual del software frente a las pruebas. |
+| **Cobertura funcional** | `Funcionalidades Validadas / Funcionalidades Totales` | Asegura el porcentaje de alcance verificado formalmente. |
+| **Densidad de defectos** | `Defectos Encontrados / Casos Ejecutados` | Determina el índice de fallas por bloque de prueba. |
+| **Vulnerabilidades encontradas** | `Total Hallazgos OWASP` | Mide las brechas de seguridad identificadas en el despliegue. |
+| **Tiempo promedio de respuesta** | `Promedio de Tiempos Medidos` | Evalúa el rendimiento y la eficiencia de la aplicación web. |
+
+---
+
+## 9. Criterios de Aceptación del Producto
+
+Umbrales mínimos requeridos para autorizar la liberación del producto o dar por concluido el proceso con éxito:
+
+- Al menos un **90% de casos de prueba aprobados**.
+- **Sin defectos críticos u operativos** abiertos en el backlog.
+- **Sin vulnerabilidades críticas OWASP** identificadas en el reporte final.
+- Tiempo promedio de respuesta del servidor **menor a 3 segundos**.
+- El 100% de las **funcionalidades obligatorias** implementadas y validadas mediante software.
+
+---
+
+## 📋 Formato de Entrega Esperado
+
+- **Documento Técnico Formal:** Extensión de entre **4 y 6 páginas**.
+
+---
+
+*Plan de Gestión de Calidad de Software • Ingeniería de Software*
