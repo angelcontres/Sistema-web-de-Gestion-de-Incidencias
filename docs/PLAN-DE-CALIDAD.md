@@ -249,12 +249,6 @@ El desarrollo y la integración del software se rige bajo la siguiente estructur
     2.  **Pruebas Automáticas Exitosas:** La suite de pruebas de backend en GitHub Actions (`php artisan test`) debe haber compilado y ejecutado todos los tests con 100% de éxito.
     3.  **Análisis Estático Limpio:** La inspección de los linters no debe arrojar advertencias críticas ni de formato.
 
-### 11.3. Versionado Semántico (SemVer)
-El etiquetado de versiones liberadas en la rama `main` utilizará el estándar `MAJOR.MINOR.PATCH`:
-*   `MAJOR` (Primer dígito): Cambios significativos e incompatibles con la API o base de datos previa (ej: cambio drástico en PostgreSQL, cambio del framework backend).
-*   `MINOR` (Segundo dígito): Incorporación de nuevas funcionalidades que respetan la compatibilidad hacia atrás (ej: entrega de nuevas Historias de Usuario aprobadas).
-*   `PATCH` (Tercer dígito): Resolución de defectos, bugs puntuales o de seguridad rápida (ej: mitigación de un vector OWASP detectado en producción).
-
 ---
 
 ## 12. Proceso Formal de Gestión de Defectos
