@@ -1,20 +1,4 @@
 {
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "vscode.typescript-language-features",
-  "[html]": {
-    "editor.defaultFormatter": "vscode.html-language-features"
-  },
-  "[css]": {
-    "editor.defaultFormatter": "vscode.css-language-features"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  },
-  "javascript.format.semicolons": "insert",
-  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
-  "javascript.preferences.quoteStyle": "single",
-  "javascript.validate.enable": true,
-  "css.validate": true,
-  "editor.tabSize": 2,
-  "editor.detectIndentation": true
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
 }
