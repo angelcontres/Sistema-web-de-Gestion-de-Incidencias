@@ -128,9 +128,36 @@ credenciales de acceso, modelo ER, diagrama de arquitectura).
 - Lógica del sistema y organización del código
 - Documentación técnica y demostración funcional
 
+## Estándares de Código y Formateo (Para el Equipo)
+
+Para mantener la base de código limpia y evitar conflictos de formato (espaciados, llaves, comillas) en las Pull Requests, el proyecto ya cuenta con **reglas de estilo globales preconfiguradas** en el repositorio (`pint.json` y `.prettierrc`). 
+
+Todos los integrantes del equipo deben utilizarlas siguiendo estos pasos:
+
+### Backend (Laravel) - Laravel Pint
+El backend está configurado bajo el estándar de Laravel definido en `backend/api/pint.json`. No debes crear ni modificar reglas, solo ejecutarlas:
+1.  **Ejecutar formateador**: Abre tu terminal y corre:
+    ```bash
+    # En Docker:
+    docker compose exec laravel ./vendor/bin/pint
+    
+    # En local:
+    cd backend/api
+    ./vendor/bin/pint
+    ```
+2.  Esto escaneará tu código PHP modificado y lo formateará automáticamente.
+
+### Frontend (HTML, CSS, JS) - Prettier
+El frontend utiliza las reglas compartidas definidas en `frontend/.prettierrc`.
+1.  Instala la extensión **Prettier - Code Formatter** en tu VS Code.
+2.  Como el repositorio ya incluye la configuración compartida en `.vscode/settings.json`, tu editor utilizará Prettier y formateará de forma automática cada vez que guardes un archivo (`Ctrl + S`).
+
+---
+
 ## Contribuir
 
 - Crear una rama por feature: `git checkout -b <nombre generado en linear>`
-- Commits pequeños y claros
-- Incluir pruebas y evidencias en `docs/`
-- Abrir Pull Request con descripción y pasos para reproducir
+- **Correr el formateador (`Pint` / `Prettier`) antes de hacer commit.**
+- Commits pequeños y claros.
+- Incluir pruebas y evidencias en `docs/`.
+- Abrir Pull Request con descripción y pasos para reproducir.

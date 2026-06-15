@@ -1,0 +1,52 @@
+/**
+ * Simple client-side Router for SPA
+ */
+
+const routes = {
+  '#/login': 'app-login',
+  '#/': 'app-dashboard'
+};
+
+/**
+ * Renders the page component matching the current window location hash.
+ */
+function navigate() {
+  const hash = window.location.hash || '#/';
+  const isAuthenticated = !!localStorage.getItem('access_token');
+  
+  // Auth Route Protection
+  if (!isAuthenticated) {
+    if (hash !== '#/login') {
+      window.location.hash = '#/login';
+      return;
+    }
+  } else {
+    if (hash === '#/login') {
+      window.location.hash = '#/';
+      return;
+    }
+  }
+  
+  // Find component or default to dashboard
+  const componentName = routes[hash] || 'app-dashboard';
+  
+  const appContainer = document.getElementById('app');
+  if (appContainer) {
+    // Clear and render the page component inside the main container
+    appContainer.innerHTML = `<${componentName}></${componentName}>`;
+  }
+}
+
+/**
+ * Initializes the routing listeners.
+ */
+export function initRouter() {
+  // Listen for hash changes
+  window.addEventListener('hashchange', navigate);
+  
+  // Handle initial page load
+  window.addEventListener('load', navigate);
+  
+  // Trigger initial navigation in case page was loaded with a hash
+  navigate();
+}
