@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="pageTitle">Registrar Opción de Menú</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <!-- Bootstrap Icons CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+  </head>
+
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/frontend/index.html">MiProyecto</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/frontend/index.html">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/frontend/features/vista.html">Datos</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/frontend/features/form.html">Registro</a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                href="/frontend/features/opciones-menu/opciones-menu-lista.html"
+                >Opciones menú</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-5 mb-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 d-flex align-items-center gap-2">
+              <a href="/frontend/features/opciones-menu/opciones-menu-lista.html" class="btn btn-sm btn-outline-secondary border-0 rounded-circle" title="Regresar">
+                <i class="bi bi-arrow-left fs-5"></i>
+              </a>
+              <h4 class="mb-0 text-dark fw-bold" id="formTitle">Crear Nueva Opción de Menú</h4>
+            </div>
+            <div class="card-body p-4">
+              <div id="alertMessage" class="alert d-none mb-4" role="alert"></div>
+
+              <form id="opcionMenuForm" novalidate>
+                <!-- Nombre -->
+                <div class="mb-3">
+                  <label for="nombre" class="form-label fw-semibold">Nombre</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nombre"
+                    name="nombre"
+                    required
+                    maxlength="50"
+                    placeholder="Ej. Gestión de Usuarios"
+                  />
+                  <div class="invalid-feedback">El nombre es requerido y no debe superar los 50 caracteres.</div>
+                </div>
+
+                <!-- Icono -->
+                <div class="mb-3">
+                  <label for="icono" class="form-label fw-semibold">Icono (Opcional)</label>
+                  <div class="input-group">
+                    <span class="input-group-text" id="icono-preview-container">
+                      <i class="bi bi-tag" id="icono-preview"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="icono"
+                      name="icono"
+                      maxlength="50"
+                      placeholder="Ej. bi-people-fill o bi-gear"
+                    />
+                  </div>
+                  <div class="form-text">
+                    Usa las clases de <a href="https://icons.getbootstrap.com/" target="_blank" class="text-decoration-none">Bootstrap Icons</a>. Ejemplo: <code>bi-house</code> o <code>bi-gear-fill</code>.
+                  </div>
+                </div>
+
+                <!-- Ruta -->
+                <div class="mb-3">
+                  <label for="ruta" class="form-label fw-semibold">Ruta / Enlace</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="ruta"
+                    name="ruta"
+                    required
+                    maxlength="255"
+                    placeholder="Ej. /frontend/features/usuarios/lista.html"
+                  />
+                  <div class="invalid-feedback">La ruta es requerida y no debe superar los 255 caracteres.</div>
+                </div>
+
+                <!-- Padre ID (Submenú de) -->
+                <div class="mb-4">
+                  <label for="padre_id" class="form-label fw-semibold">Opción Padre (Opcional)</label>
+                  <select class="form-select" id="padre_id" name="padre_id">
+                    <option value="">Ninguna (Opción Raíz / Nivel Superior)</option>
+                  </select>
+                  <div class="form-text">Indica si esta opción debe estar anidada dentro de otro menú.</div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                  <a href="/frontend/features/opciones-menu/opciones-menu-lista.html" class="btn btn-outline-secondary px-4">
+                    Cancelar
+                  </a>
+                  <button type="submit" class="btn btn-primary px-4" id="btnGuardar">
+                    <span class="spinner-border spinner-border-sm d-none me-1" id="loadingSpinner" role="status" aria-hidden="true"></span>
+                    Guardar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper JS -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- JavaScript interactivo y de consumo de API -->
+    <script>
+      const API_URL = 'http://127.0.0.1:8000/api/opciones-menu';
+      const urlParams = new URLSearchParams(window.location.search);
+      const optionId = urlParams.get('id');
+
+      const pageTitle = document.getElementById('pageTitle');
+      const formTitle = document.getElementById('formTitle');
+      const form = document.getElementById('opcionMenuForm');
+      const selectPadre = document.getElementById('padre_id');
+      const inputIcono = document.getElementById('icono');
+      const iconoPreview = document.getElementById('icono-preview');
+      const alertMessage = document.getElementById('alertMessage');
+      const btnGuardar = document.getElementById('btnGuardar');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+
+      // Actualizar vista previa del icono en tiempo real
+      inputIcono.addEventListener('input', (e) => {
+        const value = e.target.value.trim();
+        if (value) {
+          // Remover clases anteriores de bootstrap icons y agregar la nueva
+          iconoPreview.className = '';
+          // Si el usuario escribe ej: "bi-house" o "bi bi-house", normalizamos
+          if (value.startsWith('bi-') || value.startsWith('bi ')) {
+            iconoPreview.className = `bi ${value}`;
+          } else {
+            iconoPreview.className = `bi bi-${value}`;
+          }
+        } else {
+          iconoPreview.className = 'bi bi-tag';
+        }
+      });
+
+      // Mostrar alertas
+      function showAlert(message, type = 'success') {
+        alertMessage.textContent = message;
+        alertMessage.style.whiteSpace = 'pre-line';
+        alertMessage.className = `alert alert-${type} mt-3`;
+        alertMessage.classList.remove('d-none');
+        alertMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Cargar opciones padre
+      async function cargarOpcionesPadre() {
+        try {
+          const res = await fetch(API_URL);
+          if (!res.ok) throw new Error('Error al cargar opciones de menú');
+          
+          const json = await res.json();
+          const opciones = json.data || [];
+
+          opciones.forEach(opcion => {
+            // Evitar que una opción sea su propio padre
+            if (optionId && opcion.id == optionId) return;
+
+            const opt = document.createElement('option');
+            opt.value = opcion.id;
+            opt.textContent = `${opcion.nombre} (${opcion.ruta})`;
+            selectPadre.appendChild(opt);
+          });
+        } catch (error) {
+          console.error(error);
+          showAlert('Error al conectar con el servidor para cargar las opciones del menú.', 'danger');
+        }
+      }
+
+      // Cargar datos del registro si estamos editando
+      async function cargarDatosEdicion() {
+        if (!optionId) return;
+
+        pageTitle.textContent = 'Editar Opción de Menú';
+        formTitle.textContent = 'Editar Opción de Menú';
+
+        try {
+          const res = await fetch(`${API_URL}/${optionId}`);
+          if (!res.ok) {
+            if (res.status === 404) {
+              showAlert('El registro que intentas editar no existe.', 'danger');
+            } else {
+              throw new Error('Error al cargar los datos del registro');
+            }
+            btnGuardar.disabled = true;
+            return;
+          }
+
+          const json = await res.json();
+          const opcion = json.data;
+
+          if (opcion) {
+            document.getElementById('nombre').value = opcion.nombre || '';
+            document.getElementById('ruta').value = opcion.ruta || '';
+            inputIcono.value = opcion.icono || '';
+            
+            // Actualizar vista previa del icono
+            if (opcion.icono) {
+              const val = opcion.icono.trim();
+              if (val.startsWith('bi-') || val.startsWith('bi ')) {
+                iconoPreview.className = `bi ${val}`;
+              } else {
+                iconoPreview.className = `bi bi-${val}`;
+              }
+            }
+
+            // Seleccionar padre_id
+            if (opcion.padre_id) {
+              selectPadre.value = opcion.padre_id;
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showAlert('No se pudieron cargar los datos del registro a editar.', 'danger');
+        }
+      }
+
+      // Manejar el submit del formulario
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Validar con Bootstrap
+        if (!form.checkValidity()) {
+          e.stopPropagation();
+          form.classList.add('was-validated');
+          return;
+        }
+
+        // Mostrar spinner de carga
+        btnGuardar.disabled = true;
+        loadingSpinner.classList.remove('d-none');
+        alertMessage.classList.add('d-none');
+
+        const payload = {
+          nombre: document.getElementById('nombre').value.trim(),
+          icono: inputIcono.value.trim() || null,
+          ruta: document.getElementById('ruta').value.trim(),
+          padre_id: selectPadre.value ? parseInt(selectPadre.value) : null
+        };
+
+        const method = optionId ? 'PUT' : 'POST';
+        const url = optionId ? `${API_URL}/${optionId}` : API_URL;
+
+        try {
+          const res = await fetch(url, {
+            method: method,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const json = await res.json();
+
+          if (!res.ok) {
+            // Manejar errores de validación de Laravel
+            if (res.status === 422 && json.errors) {
+              let errorMsg = (json.message || 'Error de validación') + ':\n';
+              Object.keys(json.errors).forEach(key => {
+                errorMsg += `- ${json.errors[key].join(', ')}\n`;
+              });
+              throw new Error(errorMsg);
+            } else {
+              throw new Error(json.message || 'Error al guardar el registro');
+            }
+          }
+          
+          showAlert(json.message || (optionId ? 'Opción de menú actualizada con éxito.' : 'Opción de menú creada con éxito.'), 'success');
+          
+          // Redireccionar después de 1.5 segundos
+          setTimeout(() => {
+            window.location.href = '/frontend/features/opciones-menu/opciones-menu-lista.html';
+          }, 1500);
+
+        } catch (error) {
+          console.error(error);
+          showAlert(error.message || 'Hubo un error inesperado al procesar la solicitud.', 'danger');
+          btnGuardar.disabled = false;
+          loadingSpinner.classList.add('d-none');
+        }
+      });
+
+      // Inicializar
+      async function init() {
+        await cargarOpcionesPadre();
+        await cargarDatosEdicion();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
