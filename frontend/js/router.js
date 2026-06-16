@@ -4,7 +4,10 @@
 
 const routes = {
   '#/login': 'app-login',
-  '#/': 'app-dashboard'
+  '#/': 'app-dashboard',
+  '#/opciones-menu': 'app-opciones-menu-lista',
+  '#/opciones-menu/nuevo': 'app-opciones-menu-form',
+  '#/opciones-menu/editar': 'app-opciones-menu-form'
 };
 
 /**
@@ -12,23 +15,24 @@ const routes = {
  */
 function navigate() {
   const hash = window.location.hash || '#/';
+  const [baseHash, queryString] = hash.split('?');
   const isAuthenticated = !!localStorage.getItem('access_token');
   
   // Auth Route Protection
   if (!isAuthenticated) {
-    if (hash !== '#/login') {
+    if (baseHash !== '#/login') {
       window.location.hash = '#/login';
       return;
     }
   } else {
-    if (hash === '#/login') {
+    if (baseHash === '#/login') {
       window.location.hash = '#/';
       return;
     }
   }
   
   // Find component or default to dashboard
-  const componentName = routes[hash] || 'app-dashboard';
+  const componentName = routes[baseHash] || 'app-dashboard';
   
   const appContainer = document.getElementById('app');
   if (appContainer) {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\OpcionMenuController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
@@ -11,6 +12,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/logout', [AuthController::class, 'logout']);
 
     Route::get('/v1/me', [AuthController::class, 'me']);
+
+    Route::apiResource('opciones-menu', OpcionMenuController::class);
 });
 
 // Endpoint de prueba sin base de datos
