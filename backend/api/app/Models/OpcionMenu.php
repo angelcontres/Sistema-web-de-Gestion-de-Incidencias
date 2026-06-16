@@ -70,8 +70,10 @@ class OpcionMenu extends Model
             if (auth()->check()) {
                 $model->created_by = auth()->id();
             } else {
-                // Fallback para migraciones, seeders o comandos de consola
-                $model->created_by = $model->created_by ?? 1;
+                // Seeders/CLI deben setear created_by explícitamente (FK es NOT NULL)
+                if (!$model->created_by) {
+                    throw new \RuntimeException('created_by es requerido cuando no hay usuario autenticado.');
+                }
             }
         });
 
