@@ -3,7 +3,7 @@ import { apiRequest } from '../../../../core/api.js';
 
 export class MenuOptionsFormComponent extends BaseComponent {
   constructor() {
-    super('js/pages/opciones-menu/components/menu-options-form/menu-options-form.component.html');
+    super('js/pages/menu-options/components/menu-options-form/menu-options-form.component.html');
   }
 
   onInit() {
@@ -55,7 +55,7 @@ export class MenuOptionsFormComponent extends BaseComponent {
         const response = await apiRequest('/opciones-menu');
         const opciones = response.data || [];
 
-        opciones.forEach(opcion => {
+        opciones.forEach((opcion) => {
           // Evitar que una opción sea su propio padre
           if (optionId && opcion.id == optionId) return;
 
@@ -128,32 +128,47 @@ export class MenuOptionsFormComponent extends BaseComponent {
         if (loadingSpinner) loadingSpinner.classList.remove('d-none');
         if (alertMessage) alertMessage.classList.add('d-none');
 
-        const inputNombreVal = this.querySelector('#nombre') ? this.querySelector('#nombre').value.trim() : '';
-        const inputRutaVal = this.querySelector('#ruta') ? this.querySelector('#ruta').value.trim() : '';
+        const inputNombreVal = this.querySelector('#nombre')
+          ? this.querySelector('#nombre').value.trim()
+          : '';
+        const inputRutaVal = this.querySelector('#ruta')
+          ? this.querySelector('#ruta').value.trim()
+          : '';
 
         const payload = {
           nombre: inputNombreVal,
           icono: inputIcono ? inputIcono.value.trim() || null : null,
           ruta: inputRutaVal,
-          padre_id: selectPadre && selectPadre.value ? parseInt(selectPadre.value) : null
+          padre_id: selectPadre && selectPadre.value ? parseInt(selectPadre.value, 10) : null,
         };
 
         try {
-          const response = await apiRequest(optionId ? `/opciones-menu/${optionId}` : '/opciones-menu', {
-            method: optionId ? 'PUT' : 'POST',
-            body: JSON.stringify(payload)
-          });
+          const response = await apiRequest(
+            optionId ? `/opciones-menu/${optionId}` : '/opciones-menu',
+            {
+              method: optionId ? 'PUT' : 'POST',
+              body: JSON.stringify(payload),
+            }
+          );
 
-          showAlert(response.message || (optionId ? 'Opción de menú actualizada con éxito.' : 'Opción de menú creada con éxito.'), 'success');
+          showAlert(
+            response.message ||
+              (optionId
+                ? 'Opción de menú actualizada con éxito.'
+                : 'Opción de menú creada con éxito.'),
+            'success'
+          );
 
           // Redireccionar después de 1.5 segundos a la lista SPA
           setTimeout(() => {
             window.location.hash = '#/opciones-menu';
           }, 1500);
-
         } catch (error) {
           console.error(error);
-          showAlert(error.message || 'Hubo un error inesperado al procesar la solicitud.', 'danger');
+          showAlert(
+            error.message || 'Hubo un error inesperado al procesar la solicitud.',
+            'danger'
+          );
           if (btnGuardar) btnGuardar.disabled = false;
           if (loadingSpinner) loadingSpinner.classList.add('d-none');
         }

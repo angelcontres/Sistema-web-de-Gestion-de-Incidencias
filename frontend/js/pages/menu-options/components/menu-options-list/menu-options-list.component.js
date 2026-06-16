@@ -3,7 +3,7 @@ import { apiRequest } from '../../../../core/api.js';
 
 export class MenuOptionsListComponent extends BaseComponent {
   constructor() {
-    super('js/pages/opciones-menu/components/menu-options-list/menu-options-list.component.html');
+    super('js/pages/menu-options/components/menu-options-list/menu-options-list.component.html');
   }
 
   async onInit() {
@@ -52,7 +52,7 @@ export class MenuOptionsListComponent extends BaseComponent {
         // Format Date
         let fechaFormat = '-';
         if (opcion.created_at) {
-          fechaFormat = new Date(opcion.created_at).toLocaleDateString('es-ES', {
+          fechaFormat = new Date(opcion.created_at).toLocaleString('es-ES', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',

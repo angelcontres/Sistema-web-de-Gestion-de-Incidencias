@@ -11,8 +11,8 @@ import './components/stats-card.js'; // Reusable small card component
 import './pages/dashboard/dashboard.component.js';
 import './pages/login/login.component.js';
 
-import './pages/opciones-menu/components/menu-options-list/menu-options-list.component.js';
-import './pages/opciones-menu/components/menu-options-form/menu-options-form.component.js';
+import './pages/menu-options/components/menu-options-list/menu-options-list.component.js';
+import './pages/menu-options/components/menu-options-form/menu-options-form.component.js';
 
 // Import and Initialize Router
 import { initRouter } from './router.js';
