@@ -81,12 +81,27 @@ class OpcionMenuController extends Controller
             'padre_id' => 'nullable|exists:opciones_menu,id',
         ]);
 
-        // Prevent circular reference where an option is its own parent
-        if (isset($validated['padre_id']) && $validated['padre_id'] == $opcion->id) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Una opción de menú no puede ser su propio padre.'
-            ], 422);
+        // Prevent circular references (self-parent or making a descendant the parent)
+        if (array_key_exists('padre_id', $validated) && $validated['padre_id'] !== null) {
+            $padreId = (int) $validated['padre_id'];
+
+            if ($padreId === (int) $opcion->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Una opción de menú no puede ser su propio padre.'
+                ], 422);
+            }
+
+            $cursor = OpcionMenu::find($padreId);
+            while ($cursor) {
+                if ((int) $cursor->id === (int) $opcion->id) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'No se puede asignar una opción descendiente como padre (referencia circular).'
+                    ], 422);
+                }
+                $cursor = $cursor->padre_id ? OpcionMenu::find($cursor->padre_id) : null;
+            }
         }
 
         $opcion->update($validated);
