@@ -50,9 +50,9 @@ export class MenuOptionsListComponent extends BaseComponent {
         tr.className = 'border-bottom border-light';
 
         // Celda ID
-        const tdId = document.createElement('td');
-        tdId.className = 'ps-4 text-secondary fw-semibold';
-        tdId.textContent = `#${opcion.id}`;
+        // const tdId = document.createElement('td');
+        // tdId.className = 'ps-4 text-secondary fw-semibold';
+        // tdId.textContent = `#${opcion.id}`;
 
         // Celda Nombre
         const tdNombre = document.createElement('td');
@@ -106,7 +106,8 @@ export class MenuOptionsListComponent extends BaseComponent {
         const tdPadre = document.createElement('td');
         if (opcion.padre && opcion.padre.nombre) {
           const badgePadre = document.createElement('span');
-          badgePadre.className = 'badge bg-secondary-soft text-dark px-2.5 py-1 rounded small fw-medium';
+          badgePadre.className =
+            'badge bg-secondary-soft text-dark px-2.5 py-1 rounded small fw-medium';
 
           const iFolder = document.createElement('i');
           iFolder.className = 'bi bi-folder-fill me-1 small';
@@ -173,7 +174,8 @@ export class MenuOptionsListComponent extends BaseComponent {
         // Item de menú: Eliminar
         const liDelete = document.createElement('li');
         const btnDelete = document.createElement('button');
-        btnDelete.className = 'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-danger btn-eliminar border-0 bg-transparent w-100';
+        btnDelete.className =
+          'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-danger btn-eliminar border-0 bg-transparent w-100';
         btnDelete.setAttribute('data-id', opcion.id);
         btnDelete.setAttribute('data-name', opcion.nombre || '');
 
@@ -191,7 +193,7 @@ export class MenuOptionsListComponent extends BaseComponent {
         tdAcciones.appendChild(divDropdown);
 
         // Armar la fila completa
-        tr.appendChild(tdId);
+        // tr.appendChild(tdId);
         tr.appendChild(tdNombre);
         tr.appendChild(tdIcono);
         tr.appendChild(tdRuta);
