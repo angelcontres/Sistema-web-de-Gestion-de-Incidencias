@@ -26,11 +26,12 @@ export class MenuOptionsFormComponent extends BaseComponent {
       inputIcono.addEventListener('input', (e) => {
         const value = e.target.value.trim();
         if (value) {
+          const cleanValue = value.replace(/[^a-zA-Z0-9\s\-]/g, '');
           iconoPreview.className = '';
-          if (value.startsWith('bi-') || value.startsWith('bi ')) {
-            iconoPreview.className = `bi ${value}`;
+          if (cleanValue.startsWith('bi-') || cleanValue.startsWith('bi ')) {
+            iconoPreview.className = `bi ${cleanValue}`;
           } else {
-            iconoPreview.className = `bi bi-${value}`;
+            iconoPreview.className = `bi bi-${cleanValue}`;
           }
         } else {
           iconoPreview.className = 'bi bi-tag';
@@ -92,10 +93,13 @@ export class MenuOptionsFormComponent extends BaseComponent {
           // Actualizar vista previa del icono
           if (opcion.icono && iconoPreview) {
             const val = opcion.icono.trim();
-            if (val.startsWith('bi-') || val.startsWith('bi ')) {
-              iconoPreview.className = `bi ${val}`;
-            } else {
-              iconoPreview.className = `bi bi-${val}`;
+            const cleanVal = val.replace(/[^a-zA-Z0-9\s\-]/g, '');
+            if (cleanVal) {
+              if (cleanVal.startsWith('bi-') || cleanVal.startsWith('bi ')) {
+                iconoPreview.className = `bi ${cleanVal}`;
+              } else {
+                iconoPreview.className = `bi bi-${cleanVal}`;
+              }
             }
           }
 
