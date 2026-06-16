@@ -1,0 +1,114 @@
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex align-items-center gap-2">
+        <a
+          href="#/opciones-menu"
+          class="btn btn-sm btn-outline-secondary border-0 rounded-circle"
+          title="Regresar"
+        >
+          <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <h4 class="mb-0 text-dark fw-bold" id="formTitle">Crear Nueva Opción de Menú</h4>
+      </div>
+      <div class="card-body p-4">
+        <div id="alertMessage" class="alert d-none mb-4" role="alert"></div>
+
+        <form id="opcionMenuForm" novalidate>
+          <!-- Nombre -->
+          <div class="mb-3">
+            <label for="nombre" class="form-label fw-semibold text-secondary small">Nombre *</label>
+            <input
+              type="text"
+              class="form-control bg-light"
+              id="nombre"
+              name="nombre"
+              required
+              maxlength="50"
+              placeholder="Ej. Gestión de Usuarios"
+            />
+            <div class="invalid-feedback">
+              El nombre es requerido y no debe superar los 50 caracteres.
+            </div>
+          </div>
+
+          <!-- Icono -->
+          <div class="mb-3">
+            <label for="icono" class="form-label fw-semibold text-secondary small"
+              >Ícono (Bootstrap Icons)</label
+            >
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted" id="icono-preview-container">
+                <i class="bi bi-tag" id="icono-preview"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control bg-light"
+                id="icono"
+                name="icono"
+                maxlength="50"
+                placeholder="Ej. bi-people-fill o bi-gear"
+              />
+            </div>
+            <div class="form-text text-muted small">
+              Usa las clases de
+              <a href="https://icons.getbootstrap.com/" target="_blank" class="text-decoration-none"
+                >Bootstrap Icons</a
+              >. Ejemplo: <code>bi-house</code> o <code>bi-gear-fill</code>.
+            </div>
+          </div>
+
+          <!-- Ruta -->
+          <div class="mb-3">
+            <label for="ruta" class="form-label fw-semibold text-secondary small"
+              >Ruta / Enlace *</label
+            >
+            <input
+              type="text"
+              class="form-control bg-light"
+              id="ruta"
+              name="ruta"
+              required
+              maxlength="255"
+              placeholder="Ej. /config/usuarios"
+            />
+            <div class="invalid-feedback">
+              La ruta es requerida y no debe superar los 255 caracteres.
+            </div>
+          </div>
+
+          <!-- Padre ID (Submenú de) -->
+          <div class="mb-4">
+            <label for="padre_id" class="form-label fw-semibold text-secondary small"
+              >Opción Padre</label
+            >
+            <select class="form-select bg-light" id="padre_id" name="padre_id">
+              <option value="">Ninguna (Opción Raíz / Nivel Superior)</option>
+            </select>
+            <div class="form-text text-muted small">
+              Indica si esta opción debe estar anidada dentro de otro menú.
+            </div>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="d-flex justify-content-end gap-2 border-top pt-3">
+            <a href="#/opciones-menu" class="btn btn-outline-secondary px-4"> Cancelar </a>
+            <button
+              type="submit"
+              class="btn btn-primary px-4 d-flex align-items-center gap-2"
+              id="btnGuardar"
+            >
+              <span
+                class="spinner-border spinner-border-sm d-none"
+                id="loadingSpinner"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

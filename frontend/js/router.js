@@ -4,7 +4,9 @@
 
 const routes = {
   '#/login': 'app-login',
-  '#/': 'app-dashboard'
+  '#/': 'app-dashboard',
+  '#/opciones-menu': 'app-menu-options-list',
+  '#/opciones-menu/form': 'app-menu-options-form'
 };
 
 /**
@@ -13,7 +15,7 @@ const routes = {
 function navigate() {
   const hash = window.location.hash || '#/';
   const isAuthenticated = !!localStorage.getItem('access_token');
-  
+
   // Auth Route Protection
   if (!isAuthenticated) {
     if (hash !== '#/login') {
@@ -26,10 +28,17 @@ function navigate() {
       return;
     }
   }
-  
+
   // Find component or default to dashboard
-  const componentName = routes[hash] || 'app-dashboard';
-  
+  let componentName = routes[hash];
+  if (!componentName) {
+    const basePath = hash.split('?')[0];
+    componentName = routes[basePath];
+  }
+  if (!componentName) {
+    componentName = 'app-dashboard';
+  }
+
   const appContainer = document.getElementById('app');
   if (appContainer) {
     // Clear and render the page component inside the main container
@@ -43,10 +52,10 @@ function navigate() {
 export function initRouter() {
   // Listen for hash changes
   window.addEventListener('hashchange', navigate);
-  
+
   // Handle initial page load
   window.addEventListener('load', navigate);
-  
+
   // Trigger initial navigation in case page was loaded with a hash
   navigate();
 }
