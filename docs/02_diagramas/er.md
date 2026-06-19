@@ -228,7 +228,6 @@ erDiagram
 
     %% Relaciones de Clasificación de Incidencias
     tipo_incidencia ||--o{ sub_tipo_incidencia : "se divide en"
-    tipo_incidencia ||--o{ reporte_incidencias : "agrupa"
     sub_tipo_incidencia ||--o{ reporte_incidencias : "subclasifica"
 
     %% Relaciones del Reporte de Incidencias
