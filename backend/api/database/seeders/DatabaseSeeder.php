@@ -21,11 +21,13 @@ class DatabaseSeeder extends Seeder
 
         $user = User::factory()->create([
             'name' => 'Test User',
+            'username' => 'Admin Administrador',
             'email' => 'test@example.com',
             'password' => Hash::make('password123'),
+            'activo' => true,
         ]);
 
-         // Seed menu options
+        // Seed menu options
         OpcionMenu::create([
             'nombre' => 'Dashboard',
             'ruta' => '#/',
@@ -54,5 +56,7 @@ class DatabaseSeeder extends Seeder
             'padre_id' => $config->id,
             'created_by' => $user->id,
         ]);
+
+        $this->call(RoleSeeder::class);
     }
 }
