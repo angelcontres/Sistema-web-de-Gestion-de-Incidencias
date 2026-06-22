@@ -1,68 +1,123 @@
-<div class="page-fade-in">                                                                                                                     
-      <!-- Cabecera de Página -->                                                                                                                  
-      <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">                      
-        <div>                                                                                                                                      
-          <h1 class="h3 fw-bold text-dark mb-1">Roles de Usuario</h1>                                                                              
-          <p class="text-muted small mb-0">                                                                                                        
-            Gestiona los perfiles de acceso y la jerarquía de roles del sistema.                                                                   
-          </p>                                                                                                                                     
-        </div>                                                                                                                                     
-        <!-- Botón para ir al formulario de creación -->                                                                                           
-        <a href="#/roles/form" class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2">                            
-          <i class="bi bi-plus-lg"></i> Nuevo Registro                                                                                             
-        </a>                                                                                                                                       
-      </div>                                                                                                                                       
-                                                                                                                                                   
-      <!-- Tarjeta Principal -->                                                                                                                   
-      <div class="card custom-card border-0 shadow-sm overflow-hidden">                                                                            
-        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">                                         
-          <h5 class="card-title fw-bold mb-0 text-dark">Lista de Roles</h5>                                                                        
-          <span class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small" id="totalRolesBadge">Cargando...</span>                  
-        </div>                                                                                                                                     
-                                                                                                                                                   
-        <!-- Mensajes de Alerta -->                                                                                                                
-        <div id="errorAlert" class="alert alert-danger mx-4 my-2 d-none">                                                                          
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>                                                                                     
-          <span id="errorMessage">Error al cargar roles.</span>                                                                                    
-        </div>                                                                                                                                     
-        <div id="successAlert" class="alert alert-success mx-4 my-2 d-none">                                                                       
-          <i class="bi bi-check-circle-fill me-2"></i>                                                                                             
-          <span id="successMessage">Acción completada con éxito.</span>                                                                            
-        </div>                                                                                                                                     
-                                                                                                                                                   
-        <!-- Contenido de la Tabla -->                                                                                                             
-        <div class="card-body p-0">                                                                                                                
-          <!-- Spinner de Carga -->                                                                                                                
-          <div id="loadingSpinner" class="d-flex justify-content-center align-items-center py-5">                                                  
-            <div class="spinner-border text-primary" role="status">                                                                                
-              <span class="visually-hidden">Cargando...</span>                                                                                     
-            </div>                                                                                                                                 
-          </div>                                                                                                                                   
-                                                                                                                                                   
-          <!-- Estado Vacío -->                                                                                                                    
-          <div id="emptyState" class="text-center py-5 d-none">                                                                                    
-            <i class="bi bi-shield-slash text-muted display-4"></i>                                                                                
-            <p class="text-muted mt-2">No se encontraron roles registrados.</p>                                                                    
-          </div>                                                                                                                                   
-                                                                                                                                                   
-          <!-- Tabla Responsive -->                                                                                                                
-          <div class="table-responsive d-none" id="tableContainer">                                                                                
-            <table class="table table-hover align-middle mb-0">                                                                                    
-              <thead class="table-light text-muted uppercase small">                                                                               
-                <tr>                                                                                                                               
-                  <th scope="col" class="py-3 ps-4">ID</th>                                                                                        
-                  <th scope="col" class="py-3">Nombre</th>                                                                                         
-                  <th scope="col" class="py-3">Descripción</th>                                                                                    
-                  <th scope="col" class="py-3">Rol Padre</th>                                                                                      
-                  <th scope="col" class="py-3">Creado el</th>                                                                                      
-                  <th scope="col" class="text-center py-3">Acciones</th>                                                                           
-                </tr>                                                                                                                              
-              </thead>                                                                                                                             
-              <tbody id="tbl-datos-roles" class="border-top-0">                                                                                    
-                <!-- Las filas dinámicas se insertarán aquí por JavaScript -->                                                                     
-              </tbody>                                                                                                                             
-            </table>                                                                                                                               
-          </div>                                                                                                                                   
-        </div>                                                                                                                                     
-      </div>                                                                                                                                       
-    </div>                                  
+<div class="page-fade-in">
+  <!-- Cabecera de Página -->
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Roles de Usuario</h1>
+      <p class="text-muted small mb-0">
+        Gestiona los perfiles de acceso y la jerarquía de roles del sistema.
+      </p>
+    </div>
+    <!-- Botón para abrir el modal en modo creación -->
+    <button id="btnNuevoRol" class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2">
+      <i class="bi bi-plus-lg"></i> Nuevo Registro
+    </button>
+  </div>
+
+  <!-- Tarjeta Principal -->
+  <div class="card custom-card border-0 shadow-sm overflow-hidden">
+    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+      <h5 class="card-title fw-bold mb-0 text-dark">Lista de Roles</h5>
+      <span class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small" id="totalRolesBadge">Cargando...</span>
+    </div>
+
+    <!-- Mensajes de Alerta -->
+    <div id="errorAlert" class="alert alert-danger mx-4 my-2 d-none">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <span id="errorMessage">Error al cargar roles.</span>
+    </div>
+    <div id="successAlert" class="alert alert-success mx-4 my-2 d-none">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <span id="successMessage">Acción completada con éxito.</span>
+    </div>
+
+    <!-- Contenido de la Tabla -->
+    <div class="card-body p-0">
+      <!-- Spinner de Carga -->
+      <div id="loadingSpinner" class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+
+      <!-- Estado Vacío -->
+      <div id="emptyState" class="text-center py-5 d-none">
+        <i class="bi bi-shield-slash text-muted display-4"></i>
+        <p class="text-muted mt-2">No se encontraron roles registrados.</p>
+      </div>
+
+      <!-- Tabla Responsive -->
+      <div class="table-responsive d-none" id="tableContainer">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-muted uppercase small">
+            <tr>
+              <th scope="col" class="py-3 ps-4">ID</th>
+              <th scope="col" class="py-3">Nombre</th>
+              <th scope="col" class="py-3">Descripción</th>
+              <th scope="col" class="py-3">Rol Padre</th>
+              <th scope="col" class="py-3">Creado el</th>
+              <th scope="col" class="text-center py-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-datos-roles" class="border-top-0">
+            <!-- Las filas dinámicas se insertarán aquí por JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Bootstrap 5 para Crear/Editar Rol -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="roleModalLabel">Nuevo Rol</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <!-- Alerta de Error interna del modal -->
+        <div id="modalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="modalErrorMessage">Hubo un error al guardar el rol.</span>
+        </div>
+
+        <form id="roleForm" novalidate>
+          <!-- Campo oculto para guardar el ID cuando se edita -->
+          <input type="hidden" id="roleId">
+          
+          <!-- Nombre -->
+          <div class="mb-3">
+            <label for="nombre" class="form-label fw-semibold text-dark">Nombre del Rol</label>
+            <input type="text" class="form-control" id="nombre" required placeholder="Ej: Administrador, Soporte">
+            <div class="invalid-feedback">El nombre es obligatorio.</div>
+          </div>
+
+          <!-- Descripción -->
+          <div class="mb-3">
+            <label for="descripcion" class="form-label fw-semibold text-dark">Descripción</label>
+            <textarea class="form-control" id="descripcion" rows="3" placeholder="Describe las responsabilidades de este rol..."></textarea>
+          </div>
+
+          <!-- Rol Padre -->
+          <div class="mb-4">
+            <label for="padre_id" class="form-label fw-semibold text-dark">Rol Padre (Jerarquía)</label>
+            <select class="form-select" id="padre_id">
+              <option value="" selected>Ninguno (Rol Principal)</option>
+              <!-- Las opciones se cargarán dinámicamente -->
+            </select>
+            <div class="form-text text-muted">Permite asignar este rol bajo la supervisión de otro.</div>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnSubmit">
+              <span id="btnText">Guardar Rol</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
