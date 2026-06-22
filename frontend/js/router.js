@@ -6,7 +6,8 @@ const routes = {
   '#/login': 'app-login',
   '#/': 'app-dashboard',
   '#/opciones-menu': 'app-menu-options-list',
-  '#/opciones-menu/form': 'app-menu-options-form'
+  '#/opciones-menu/form': 'app-menu-options-form',
+  '#/roles':'app-role-index'
 };
 
 /**
