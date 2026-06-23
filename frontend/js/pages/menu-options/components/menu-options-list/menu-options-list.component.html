@@ -17,62 +17,6 @@
     </a>
   </div>
 
-  <!-- Main Card -->
-  <div class="card custom-card border-0 shadow-sm overflow-hidden">
-    <div
-      class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center"
-    >
-      <h5 class="card-title fw-bold mb-0 text-dark">Lista de Registros</h5>
-      <span
-        class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small"
-        id="totalOpcionesBadge"
-        >Cargando...</span
-      >
-    </div>
-
-    <!-- Alert Message Container -->
-    <div id="errorAlert" class="alert alert-danger mx-4 my-2 d-none">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <span id="errorMessage">Error al cargar registros.</span>
-    </div>
-    <div id="successAlert" class="alert alert-success mx-4 my-2 d-none">
-      <i class="bi bi-check-circle-fill me-2"></i>
-      <span id="successMessage">Acción completada con éxito.</span>
-    </div>
-
-    <!-- Table Container -->
-    <div class="card-body p-0">
-      <!-- Loading State -->
-      <div id="loadingSpinner" class="d-flex justify-content-center align-items-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div id="emptyState" class="text-center py-5 d-none">
-        <i class="bi bi-folder-x text-muted display-4"></i>
-        <p class="text-muted mt-2">No se encontraron opciones de menú registradas.</p>
-      </div>
-
-      <!-- Responsive Table -->
-      <div class="table-responsive d-none" id="tableContainer">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light text-muted uppercase small">
-            <tr>
-              <th scope="col" class="py-3">Nombre</th>
-              <th scope="col" class="py-3">Icono</th>
-              <th scope="col" class="py-3">Ruta</th>
-              <th scope="col" class="py-3">Padre</th>
-              <th scope="col" class="py-3">Creado el</th>
-              <th scope="col" class="text-center py-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-datos-opciones-menu" class="border-top-0">
-            <!-- Dynamic rows will be inserted here -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <!-- Tabla Auto-Contenida (Maneja tarjeta, loading, vacío y errores internamente) -->
+  <app-data-table id="tbl-datos-opciones-menu" title="Lista de Opciones de Menú" empty-text="No se encontraron opciones de menú registradas."></app-data-table>
 </div>

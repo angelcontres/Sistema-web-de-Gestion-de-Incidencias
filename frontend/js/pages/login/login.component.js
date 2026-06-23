@@ -1,5 +1,5 @@
 import { BaseComponent } from '../../core/base-component.js';
-import { apiRequest } from '../../core/api.js';
+import { AuthService } from '../../core/auth.service.js';
 
 /**
  * LoginComponent class to manage user authentication view and logic.
@@ -11,7 +11,7 @@ export class LoginComponent extends BaseComponent {
 
   onInit() {
     // If the user already has a token, redirect to dashboard immediately
-    if (localStorage.getItem('access_token')) {
+    if (AuthService.isAuthenticated()) {
       window.location.hash = '#/';
       return;
     }
@@ -46,14 +46,7 @@ export class LoginComponent extends BaseComponent {
           const password = passwordInput.value;
 
           // Call real Sanctum API login endpoint
-          const response = await apiRequest('/v1/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password })
-          });
-
-          // Save login token and user info
-          localStorage.setItem('access_token', response.access_token);
-          localStorage.setItem('user', JSON.stringify(response.user));
+          await AuthService.login(email, password);
 
           // Trigger custom event to notify other UI components (like the Navbar)
           window.dispatchEvent(new CustomEvent('auth-change'));

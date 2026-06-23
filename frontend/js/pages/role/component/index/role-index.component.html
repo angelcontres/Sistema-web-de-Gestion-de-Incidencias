@@ -13,58 +13,8 @@
     </button>
   </div>
 
-  <!-- Tarjeta Principal -->
-  <div class="card custom-card border-0 shadow-sm overflow-hidden">
-    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-      <h5 class="card-title fw-bold mb-0 text-dark">Lista de Roles</h5>
-      <span class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small" id="totalRolesBadge">Cargando...</span>
-    </div>
-
-    <!-- Mensajes de Alerta -->
-    <div id="errorAlert" class="alert alert-danger mx-4 my-2 d-none">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <span id="errorMessage">Error al cargar roles.</span>
-    </div>
-    <div id="successAlert" class="alert alert-success mx-4 my-2 d-none">
-      <i class="bi bi-check-circle-fill me-2"></i>
-      <span id="successMessage">Acción completada con éxito.</span>
-    </div>
-
-    <!-- Contenido de la Tabla -->
-    <div class="card-body p-0">
-      <!-- Spinner de Carga -->
-      <div id="loadingSpinner" class="d-flex justify-content-center align-items-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-      </div>
-
-      <!-- Estado Vacío -->
-      <div id="emptyState" class="text-center py-5 d-none">
-        <i class="bi bi-shield-slash text-muted display-4"></i>
-        <p class="text-muted mt-2">No se encontraron roles registrados.</p>
-      </div>
-
-      <!-- Tabla Responsive -->
-      <div class="table-responsive d-none" id="tableContainer">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light text-muted uppercase small">
-            <tr>
-              <th scope="col" class="py-3 ps-4">ID</th>
-              <th scope="col" class="py-3">Nombre</th>
-              <th scope="col" class="py-3">Descripción</th>
-              <th scope="col" class="py-3">Rol Padre</th>
-              <th scope="col" class="py-3">Creado el</th>
-              <th scope="col" class="text-center py-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-datos-roles" class="border-top-0">
-            <!-- Las filas dinámicas se insertarán aquí por JavaScript -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <!-- Tabla Auto-Contenida (Maneja tarjeta, loading, vacío y errores internamente) -->
+  <app-data-table id="tbl-datos-roles" title="Lista de Roles" empty-text="No se encontraron roles registrados."></app-data-table>
 </div>
 
 <!-- Modal de Bootstrap 5 para Crear/Editar Rol -->

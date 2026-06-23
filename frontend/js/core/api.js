@@ -2,10 +2,9 @@
  * API Helper for fetch requests
  */
 
-// Dynamically determine API base URL (uses Laravel port 8000 if running on a custom dev port like 5500 or 3000)
-export const API_BASE_URL = window.location.port && window.location.port !== '80'
-  ? `${window.location.protocol}//${window.location.hostname}:8000/api`
-  : '/api';
+import { environment } from '../../environment/environment.js';
+
+export const API_BASE_URL = environment.apiBaseUrl;
 
 /**
  * Perform an authenticated HTTP request to the backend API.
