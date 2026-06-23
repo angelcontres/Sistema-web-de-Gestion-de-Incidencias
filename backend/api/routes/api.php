@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 
 use App\Http\Controllers\OpcionMenuController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermisoController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
@@ -17,4 +18,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('opciones-menu', OpcionMenuController::class);
     Route::apiResource('v1/roles', RoleController::class);
+    Route::post('v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
+    Route::apiResource('v1/permisos', PermisoController::class);
 });

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Override;
 
 #[Fillable(['nombre', 'descripcion', 'padre_id', 'created_by', 'update_by', 'deleted_by'])]
@@ -51,5 +52,13 @@ class Role extends Model
     public function RoleDeleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    /**
+     * Relación: Permisos asignados a este rol.
+     */
+    public function permisos(): BelongsToMany
+    {
+        return $this->belongsToMany(Permiso::class, 'roles_permisos', 'rol_id', 'permiso_id');
     }
 }
