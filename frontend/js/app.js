@@ -13,6 +13,7 @@ import './pages/login/login.component.js';
 
 import './pages/menu-options/components/menu-options-list/menu-options-list.component.js';
 import './pages/menu-options/components/menu-options-form/menu-options-form.component.js';
+import './pages/user/component/index/user-index.component.js';
 
 import './pages/role/component/index/role-index.component.js';
 // Import and Initialize Router

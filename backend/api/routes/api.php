@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-
 use App\Http\Controllers\OpcionMenuController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
@@ -17,4 +17,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('opciones-menu', OpcionMenuController::class);
     Route::apiResource('v1/roles', RoleController::class);
+    Route::apiResource('v1/usuarios', UserController::class);
 });

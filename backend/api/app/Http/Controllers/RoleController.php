@@ -30,7 +30,7 @@ class RoleController extends Controller
 
         return response()->json([
             'message' => 'Rol creado con éxito',
-            'data' => $role
+            'data' => $role,
         ], 201);
     }
 
@@ -59,7 +59,7 @@ class RoleController extends Controller
 
         return response()->json([
             'message' => 'Rol actualizado con éxito',
-            'data' => $role
+            'data' => $role,
         ], 200);
     }
 
@@ -72,7 +72,7 @@ class RoleController extends Controller
         $role->delete();
 
         return response()->json([
-            'message' => 'Rol eliminado con éxito'
+            'message' => 'Rol eliminado con éxito',
         ], 200);
     }
 }

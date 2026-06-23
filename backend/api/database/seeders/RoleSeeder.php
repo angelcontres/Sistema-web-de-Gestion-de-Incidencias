@@ -14,16 +14,16 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         $user = User::factory()->create([
-            'name'     => 'Admin',
-            'email'    => 'admin@admin.com',
+            'name' => 'Admin',
+            'email' => 'admin@admin.com',
             'password' => 'holamundo',
         ]);
 
         Role::create([
-            'nombre'      => 'Admin',
+            'nombre' => 'Admin',
             'descripcion' => 'Acceso total a todos los módulos del sistema.',
-            'padre_id'    => null,
-            'created_by'  => $user->id,
+            'padre_id' => null,
+            'created_by' => $user->id,
         ]);
         Role::create([
             'nombre' => 'Operador',
