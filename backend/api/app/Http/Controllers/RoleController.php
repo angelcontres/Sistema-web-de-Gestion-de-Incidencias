@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RoleRequest;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,7 @@ class RoleController extends Controller
 
         return response()->json([
             'message' => 'Rol creado con éxito',
-            'data' => $role
+            'data' => $role,
         ], 201);
     }
 
@@ -39,7 +40,7 @@ class RoleController extends Controller
      */
     public function show($id)
     {
-        $role = Role::findOrFail($id);
+        $role = Role::with('permisos')->findOrFail($id);
 
         return response()->json($role, 200);
     }
@@ -59,7 +60,7 @@ class RoleController extends Controller
 
         return response()->json([
             'message' => 'Rol actualizado con éxito',
-            'data' => $role
+            'data' => $role,
         ], 200);
     }
 
@@ -72,7 +73,22 @@ class RoleController extends Controller
         $role->delete();
 
         return response()->json([
-            'message' => 'Rol eliminado con éxito'
+            'message' => 'Rol eliminado con éxito',
+        ], 200);
+    }
+
+    /**
+     * Assign permissions to the role.
+     */
+    public function assignPermissions(RoleRequest $request, $id)
+    {
+        $role = Role::findOrFail($id);
+
+        $role->permisos()->sync($request->permisos ?? []);
+
+        return response()->json([
+            'message' => 'Permisos asignados con éxito al rol.',
+            'data' => $role->load('permisos'),
         ], 200);
     }
 }
