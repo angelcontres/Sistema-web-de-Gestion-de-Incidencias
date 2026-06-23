@@ -1,10 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-
 use App\Http\Controllers\OpcionMenuController;
-use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermisoController;
+use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas

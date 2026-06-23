@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RoleRequest;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\RoleRequest;
 
 class RoleController extends Controller
 {
@@ -31,7 +31,7 @@ class RoleController extends Controller
 
         return response()->json([
             'message' => 'Rol creado con éxito',
-            'data' => $role
+            'data' => $role,
         ], 201);
     }
 
@@ -60,7 +60,7 @@ class RoleController extends Controller
 
         return response()->json([
             'message' => 'Rol actualizado con éxito',
-            'data' => $role
+            'data' => $role,
         ], 200);
     }
 
@@ -73,7 +73,7 @@ class RoleController extends Controller
         $role->delete();
 
         return response()->json([
-            'message' => 'Rol eliminado con éxito'
+            'message' => 'Rol eliminado con éxito',
         ], 200);
     }
 
@@ -88,7 +88,7 @@ class RoleController extends Controller
 
         return response()->json([
             'message' => 'Permisos asignados con éxito al rol.',
-            'data' => $role->load('permisos')
+            'data' => $role->load('permisos'),
         ], 200);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\OpcionMenuFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['nombre', 'icono', 'ruta', 'padre_id', 'created_by', 'updated_by', 'deleted_by'])]
 class OpcionMenu extends Model
 {
-    /** @use HasFactory<\Database\Factories\OpcionMenuFactory> */
+    /** @use HasFactory<OpcionMenuFactory> */
     use HasFactory, SoftDeletes;
 
     /**
@@ -71,7 +72,7 @@ class OpcionMenu extends Model
                 $model->created_by = auth()->id();
             } else {
                 // Seeders/CLI deben setear created_by explícitamente (FK es NOT NULL)
-                if (!$model->created_by) {
+                if (! $model->created_by) {
                     throw new \RuntimeException('created_by es requerido cuando no hay usuario autenticado.');
                 }
             }

@@ -30,7 +30,7 @@ class PermisoController extends Controller
 
         return response()->json([
             'message' => 'Permiso creado con éxito',
-            'data' => $permiso
+            'data' => $permiso,
         ], 201);
     }
 
@@ -40,6 +40,7 @@ class PermisoController extends Controller
     public function show(string $id)
     {
         $permiso = Permiso::findOrFail($id);
+
         return response()->json($permiso, 200);
     }
 
@@ -59,7 +60,7 @@ class PermisoController extends Controller
 
         return response()->json([
             'message' => 'Permiso actualizado con éxito',
-            'data' => $permiso
+            'data' => $permiso,
         ], 200);
     }
 
@@ -69,14 +70,14 @@ class PermisoController extends Controller
     public function destroy(string $id)
     {
         $permiso = Permiso::findOrFail($id);
-        
+
         $permiso->update([
             'deleted_by' => Auth::id() ?? 1,
         ]);
         $permiso->delete();
 
         return response()->json([
-            'message' => 'Permiso eliminado con éxito'
+            'message' => 'Permiso eliminado con éxito',
         ], 200);
     }
 }

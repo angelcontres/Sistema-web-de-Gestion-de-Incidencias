@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
 
 #[Fillable(['nombre', 'descripcion', 'padre_id', 'created_by', 'update_by', 'deleted_by'])]
@@ -22,9 +22,9 @@ class Role extends Model
     protected function casts(): array
     {
         return [
-            'padre_id'   => 'integer',
+            'padre_id' => 'integer',
             'created_by' => 'integer',
-            'update_by'  => 'integer',
+            'update_by' => 'integer',
             'deleted_by' => 'integer',
         ];
     }

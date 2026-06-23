@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permiso;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -14,18 +15,18 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         $user = User::factory()->create([
-            'name'     => 'Admin',
-            'email'    => 'admin@admin.com',
+            'name' => 'Admin',
+            'email' => 'admin@admin.com',
             'password' => 'holamundo',
         ]);
 
         $adminRole = Role::create([
-            'nombre'      => 'Admin',
+            'nombre' => 'Admin',
             'descripcion' => 'Acceso total a todos los módulos del sistema.',
-            'padre_id'    => null,
-            'created_by'  => $user->id,
+            'padre_id' => null,
+            'created_by' => $user->id,
         ]);
-        
+
         $operadorRole = Role::create([
             'nombre' => 'Operador',
             'descripcion' => 'EL que opera XDDD',
@@ -42,14 +43,14 @@ class RoleSeeder extends Seeder
 
         // TEST DE ASIGNACIÓN DE PERMISOS
         // Creamos permisos de prueba
-        $permiso1 = \App\Models\Permiso::create([
+        $permiso1 = Permiso::create([
             'nombre' => 'Crear Usuario',
             'descripcion' => 'Permiso de prueba para crear usuario',
             'opcion_menu_id' => 1, // Dashboard u otro existente
             'created_by' => $user->id,
         ]);
 
-        $permiso2 = \App\Models\Permiso::create([
+        $permiso2 = Permiso::create([
             'nombre' => 'Ver Reportes',
             'descripcion' => 'Permiso de prueba para ver reportes',
             'opcion_menu_id' => 1,
@@ -64,8 +65,8 @@ class RoleSeeder extends Seeder
         $operadorPermisosCount = $operadorRole->permisos()->count();
 
         echo "--- RESULTADO DEL TEST DE PERMISOS ---\n";
-        echo "Permisos de Admin (Deberían ser 2): " . $adminPermisosCount . "\n";
-        echo "Permisos de Operador (Deberían ser 0): " . $operadorPermisosCount . "\n";
+        echo 'Permisos de Admin (Deberían ser 2): '.$adminPermisosCount."\n";
+        echo 'Permisos de Operador (Deberían ser 0): '.$operadorPermisosCount."\n";
         echo "--------------------------------------\n";
     }
 }
