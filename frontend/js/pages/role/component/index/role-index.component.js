@@ -1,5 +1,5 @@
-import { BaseComponent } from '../../../../core/base-component.js';
-import { apiRequest } from '../../../../core/api.js';
+import { BaseComponent } from "../../../../core/base-component.js";
+import { apiRequest } from "../../../../core/api.js";
 
 export class RoleIndexComponent extends BaseComponent {
   constructor() {
@@ -7,9 +7,9 @@ export class RoleIndexComponent extends BaseComponent {
   }
 
   async onInit() {
-    console.log('Página de roles inicializada.');
-
-    // 1. Cargar los roles inicialmente
+    console.log('Página de roles con modal inicializada.');
+    
+    // 1. Cargar los roles inicialmente en la tabla
     await this.cargarRoles();
 
     // 2. Escuchar clic del botón "Nuevo Registro"
@@ -23,36 +23,22 @@ export class RoleIndexComponent extends BaseComponent {
     if (form) {
       form.addEventListener('submit', (e) => this.guardarRol(e));
     }
-
-    // 4. Escuchar el submit del formulario de asignación de permisos
-    const assignForm = this.querySelector('#assignPermissionsForm');
-    if (assignForm) {
-      assignForm.addEventListener('submit', (e) => this.guardarPermisosAsignados(e));
-    }
-
-    // 5. Botón cerrar panel de permisos
-    const btnClosePermissions = this.querySelector('#btnClosePermissions');
-    if (btnClosePermissions) {
-      btnClosePermissions.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.querySelector('#permissionsAccordionContainer').classList.add('d-none');
-      });
-    }
   }
 
   /**
-   * Carga los roles del backend y llena el grid de tarjetas
+   * Carga los roles del backend y llena la tabla
    */
   async cargarRoles() {
-    const rolesGrid = this.querySelector('#rolesGrid');
+    const tblDatos = this.querySelector('#tbl-datos-roles');
     const loadingSpinner = this.querySelector('#loadingSpinner');
+    const tableContainer = this.querySelector('#tableContainer');
     const emptyState = this.querySelector('#emptyState');
     const totalRolesBadge = this.querySelector('#totalRolesBadge');
 
-    if (!rolesGrid) return;
+    if (!tblDatos) return;
 
     loadingSpinner.classList.remove('d-none');
-    rolesGrid.classList.add('d-none');
+    tableContainer.classList.add('d-none');
     if (emptyState) emptyState.classList.add('d-none');
 
     try {
@@ -63,7 +49,7 @@ export class RoleIndexComponent extends BaseComponent {
         totalRolesBadge.textContent = `${roles.length} Registros`;
       }
 
-      rolesGrid.innerHTML = '';
+      tblDatos.innerHTML = '';
 
       if (roles.length === 0) {
         if (emptyState) emptyState.classList.remove('d-none');
@@ -71,101 +57,109 @@ export class RoleIndexComponent extends BaseComponent {
         return;
       }
 
-      roles.forEach((rol) => {
-        const col = document.createElement('div');
-        col.className = 'col-md-4 col-sm-6';
+      roles.forEach(rol => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-bottom border-light';
 
-        const card = document.createElement('div');
-        card.className = 'card h-100 border shadow-sm role-card';
-        card.style.cursor = 'pointer';
-        card.style.transition = 'all 0.2s ease';
-        card.onmouseover = () => card.classList.add('shadow');
-        card.onmouseout = () => card.classList.remove('shadow');
+        // Celda ID
+        const tdId = document.createElement('td');
+        tdId.className = 'ps-4 text-secondary fw-semibold';
+        tdId.textContent = `#${rol.id}`;
 
-        const cardBody = document.createElement('div');
-        cardBody.className = 'card-body d-flex align-items-center gap-3 p-3';
+        // Celda Nombre
+        const tdNombre = document.createElement('td');
+        const divNombre = document.createElement('div');
+        divNombre.className = 'fw-bold text-dark';
+        divNombre.textContent = rol.nombre;
+        tdNombre.appendChild(divNombre);
 
-        // Icon
-        const iconDiv = document.createElement('div');
-        iconDiv.className =
-          'bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center';
-        iconDiv.style.width = '48px';
-        iconDiv.style.height = '48px';
-        iconDiv.style.flexShrink = '0';
-        iconDiv.innerHTML = '<i class="bi bi-key fs-5"></i>';
+        // Celda Descripción
+        const tdDescripcion = document.createElement('td');
+        tdDescripcion.textContent = rol.descripcion || '-';
 
-        // Text info
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'flex-grow-1 text-truncate';
-        infoDiv.innerHTML = `
-          <h6 class="fw-bold mb-0 text-dark text-truncate">${rol.nombre}</h6>
-          <span class="text-muted small">${rol.descripcion}</span>
-        `;
+        // Celda Rol Padre (Si no hay relación cargada, usamos padre_id)
+        const tdPadre = document.createElement('td');
+        if (rol.parent && rol.parent.nombre) {
+          tdPadre.textContent = rol.parent.nombre;
+        } else if (rol.padre_id) {
+          // Buscamos el nombre localmente en la respuesta
+          const padre = roles.find(r => r.id === rol.padre_id);
+          tdPadre.textContent = padre ? padre.nombre : `Rol #${rol.padre_id}`;
+        } else {
+          tdPadre.textContent = '-';
+        }
 
-        // Chevron
-        const chevronDiv = document.createElement('div');
-        chevronDiv.innerHTML = '<i class="bi bi-chevron-right text-muted"></i>';
+        // Celda Fecha de Creación
+        const tdFecha = document.createElement('td');
+        tdFecha.className = 'text-muted small';
+        tdFecha.textContent = rol.created_at
+          ? new Date(rol.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '-';
 
-        // Context menu (3 dots)
-        const dropdownDiv = document.createElement('div');
-        dropdownDiv.className = 'dropdown ms-2';
+        // Celda Acciones (Dropdown de los tres puntos)
+        const tdAcciones = document.createElement('td');
+        tdAcciones.className = 'text-center';
+
+        const divDropdown = document.createElement('div');
+        divDropdown.className = 'dropdown';
 
         const btnDropdown = document.createElement('button');
-        btnDropdown.className =
-          'btn btn-sm btn-light border-0 p-1 rounded-circle d-flex align-items-center justify-content-center';
+        btnDropdown.className = 'btn btn-light text-secondary p-1.5 rounded-2 border-0';
         btnDropdown.type = 'button';
-        btnDropdown.style.width = '32px';
-        btnDropdown.style.height = '32px';
         btnDropdown.setAttribute('data-bs-toggle', 'dropdown');
-        btnDropdown.onclick = (e) => e.stopPropagation();
-        btnDropdown.innerHTML = '<i class="bi bi-three-dots-vertical"></i>';
+        btnDropdown.setAttribute('aria-expanded', 'false');
+
+        const iDots = document.createElement('i');
+        iDots.className = 'bi bi-three-dots-vertical fs-6';
+        btnDropdown.appendChild(iDots);
 
         const ulMenu = document.createElement('ul');
         ulMenu.className = 'dropdown-menu dropdown-menu-end shadow-sm border-0';
 
+        // Opción: Editar (Abre el modal en vez de cambiar de página)
         const liEdit = document.createElement('li');
         const btnEdit = document.createElement('button');
-        btnEdit.className =
-          'dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium';
-        btnEdit.innerHTML = '<i class="bi bi-pencil-square"></i> Editar';
-        btnEdit.onclick = (e) => {
-          e.stopPropagation();
-          this.abrirModalEditar(rol, roles);
-        };
+        btnEdit.className = 'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-primary small fw-medium border-0 bg-transparent w-100 text-start';
+        btnEdit.type = 'button';
+        btnEdit.addEventListener('click', () => this.abrirModalEditar(rol, roles));
+
+        const iEdit = document.createElement('i');
+        iEdit.className = 'bi bi-pencil-square';
+        btnEdit.appendChild(iEdit);
+        btnEdit.appendChild(document.createTextNode(' Editar'));
         liEdit.appendChild(btnEdit);
 
+        // Opción: Eliminar
         const liDelete = document.createElement('li');
         const btnDelete = document.createElement('button');
-        btnDelete.className =
-          'dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium';
-        btnDelete.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
-        btnDelete.onclick = (e) => {
-          e.stopPropagation();
-          this.eliminarRol(rol.id, rol.nombre);
-        };
+        btnDelete.className = 'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-danger btn-eliminar border-0 bg-transparent w-100 small fw-medium text-start';
+        btnDelete.addEventListener('click', () => this.eliminarRol(rol.id, rol.nombre));
+
+        const iDelete = document.createElement('i');
+        iDelete.className = 'bi bi-trash';
+        btnDelete.appendChild(iDelete);
+        btnDelete.appendChild(document.createTextNode(' Eliminar'));
         liDelete.appendChild(btnDelete);
 
         ulMenu.appendChild(liEdit);
         ulMenu.appendChild(liDelete);
-        dropdownDiv.appendChild(btnDropdown);
-        dropdownDiv.appendChild(ulMenu);
+        divDropdown.appendChild(btnDropdown);
+        divDropdown.appendChild(ulMenu);
+        tdAcciones.appendChild(divDropdown);
 
-        // Append everything
-        cardBody.appendChild(iconDiv);
-        cardBody.appendChild(infoDiv);
-        cardBody.appendChild(chevronDiv);
-        cardBody.appendChild(dropdownDiv);
-        card.appendChild(cardBody);
+        tr.appendChild(tdId);
+        tr.appendChild(tdNombre);
+        tr.appendChild(tdDescripcion);
+        tr.appendChild(tdPadre);
+        tr.appendChild(tdFecha);
+        tr.appendChild(tdAcciones);
 
-        // Open permissions when clicking the card
-        card.onclick = () => this.abrirPanelPermisos(rol);
-
-        col.appendChild(card);
-        rolesGrid.appendChild(col);
+        tblDatos.appendChild(tr);
       });
 
       loadingSpinner.classList.add('d-none');
-      rolesGrid.classList.remove('d-none');
+      tableContainer.classList.remove('d-none');
+
     } catch (error) {
       console.error('Error cargando roles:', error);
       loadingSpinner.classList.add('d-none');
@@ -180,9 +174,11 @@ export class RoleIndexComponent extends BaseComponent {
     const selectPadre = this.querySelector('#padre_id');
     if (!selectPadre) return;
 
+    // Reiniciamos las opciones dejando solo la de "Ninguno"
     selectPadre.innerHTML = '<option value="" selected>Ninguno (Rol Principal)</option>';
 
-    roles.forEach((rol) => {
+    roles.forEach(rol => {
+      // Al editar, no permitimos que se asigne como su propio padre
       if (excluirId && rol.id == excluirId) return;
 
       const option = document.createElement('option');
@@ -197,21 +193,22 @@ export class RoleIndexComponent extends BaseComponent {
   }
 
   /**
-   * Abre el modal en modo Creación
+   * Abre el modal en modo Creación (Limpio)
    */
   async abrirModalCrear() {
     this.limpiarErroresModal();
     this.querySelector('#roleForm').classList.remove('was-validated');
-
+    
     this.querySelector('#roleId').value = '';
     this.querySelector('#nombre').value = '';
     this.querySelector('#descripcion').value = '';
     this.querySelector('#padre_id').value = '';
-
+    
     this.querySelector('#roleModalLabel').textContent = 'Nuevo Rol';
     this.querySelector('#btnText').textContent = 'Guardar Rol';
 
     try {
+      // Cargar roles padres disponibles
       const response = await apiRequest('/v1/roles');
       this.llenarSelectPadre(response || []);
     } catch (error) {
@@ -224,7 +221,7 @@ export class RoleIndexComponent extends BaseComponent {
   }
 
   /**
-   * Abre el modal en modo Edición
+   * Abre el modal en modo Edición (Carga datos)
    */
   async abrirModalEditar(rol, todosLosRoles) {
     this.limpiarErroresModal();
@@ -237,6 +234,7 @@ export class RoleIndexComponent extends BaseComponent {
     this.querySelector('#roleModalLabel').textContent = 'Editar Rol';
     this.querySelector('#btnText').textContent = 'Actualizar Rol';
 
+    // Rellenamos el select excluyendo el ID actual para evitar bucles circulares
     this.llenarSelectPadre(todosLosRoles, rol.id, rol.padre_id);
 
     const modalEl = this.querySelector('#roleModal');
@@ -270,17 +268,20 @@ export class RoleIndexComponent extends BaseComponent {
 
       await apiRequest(endpoint, {
         method,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
+      // 1. Ocultar el modal
       const modalEl = this.querySelector('#roleModal');
       const modal = bootstrap.Modal.getInstance(modalEl);
       if (modal) modal.hide();
 
-      this.mostrarAlertaExito(
-        roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.'
-      );
+      // 2. Mostrar alerta de éxito
+      this.mostrarAlertaExito(roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.');
+
+      // 3. Recargar listado en la tabla
       await this.cargarRoles();
+
     } catch (error) {
       console.error('Error al guardar rol:', error);
       this.mostrarErrorModal(error.message || 'Error al procesar el formulario.');
@@ -291,11 +292,7 @@ export class RoleIndexComponent extends BaseComponent {
    * Elimina un rol
    */
   async eliminarRol(id, nombre) {
-    if (
-      confirm(
-        `¿Estás seguro de que deseas eliminar el rol "${nombre}"?\nEsta acción es irreversible.`
-      )
-    ) {
+    if (confirm(`¿Estás seguro de que deseas eliminar el rol "${nombre}"?\nEsta acción es irreversible.`)) {
       try {
         await apiRequest(`/v1/roles/${id}`, { method: 'DELETE' });
         this.mostrarAlertaExito(`Rol "${nombre}" eliminado con éxito.`);
@@ -304,178 +301,6 @@ export class RoleIndexComponent extends BaseComponent {
         console.error('Error al eliminar rol:', error);
         alert(`Error al eliminar: ${error.message}`);
       }
-    }
-  }
-
-  /**
-   * Abre el panel Acordeón de Permisos y carga los checkboxes
-   */
-  async abrirPanelPermisos(rol) {
-    const accordionContainer = this.querySelector('#permissionsAccordionContainer');
-    this.querySelector('#assignRoleId').value = rol.id;
-    this.querySelector('#activeRoleName').textContent = rol.nombre;
-    const accordionMenus = this.querySelector('#accordionMenus');
-
-    accordionMenus.innerHTML =
-      '<div class="text-center text-muted small py-4">Cargando permisos...</div>';
-    accordionContainer.classList.remove('d-none');
-
-    // Scroll al contenedor de permisos
-    accordionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    try {
-      const [todosPermisosResponse, rolDetalle] = await Promise.all([
-        apiRequest('/v1/permisos'),
-        apiRequest(`/v1/roles/${rol.id}`),
-      ]);
-
-      const todosPermisos = todosPermisosResponse || [];
-      const permisosAsignados = rolDetalle.permisos ? rolDetalle.permisos.map((p) => p.id) : [];
-
-      accordionMenus.innerHTML = '';
-
-      if (!todosPermisos || todosPermisos.length === 0) {
-        accordionMenus.innerHTML =
-          '<div class="text-center text-muted small py-4">No hay permisos registrados en el sistema.</div>';
-        return;
-      }
-
-      // Agrupar permisos por menú
-      const permisosAgrupados = {};
-      todosPermisos.forEach((permiso) => {
-        const menuNombre = permiso.opcion_menu
-          ? permiso.opcion_menu.nombre
-          : permiso.opcionMenu
-            ? permiso.opcionMenu.nombre
-            : 'Menú General';
-        if (!permisosAgrupados[menuNombre]) {
-          permisosAgrupados[menuNombre] = [];
-        }
-        permisosAgrupados[menuNombre].push(permiso);
-      });
-
-      let accordionIndex = 0;
-      for (const [menuNombre, permisos] of Object.entries(permisosAgrupados)) {
-        const accordionItem = document.createElement('div');
-        accordionItem.className = 'accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden';
-
-        const headingId = `headingMenu${accordionIndex}`;
-        const collapseId = `collapseMenu${accordionIndex}`;
-
-        // Header
-        const h2 = document.createElement('h2');
-        h2.className = 'accordion-header';
-        h2.id = headingId;
-
-        const button = document.createElement('button');
-        button.className = `accordion-button bg-white text-dark fw-bold border-bottom ${accordionIndex === 0 ? '' : 'collapsed'}`;
-        button.type = 'button';
-        button.setAttribute('data-bs-toggle', 'collapse');
-        button.setAttribute('data-bs-target', `#${collapseId}`);
-        button.setAttribute('aria-expanded', accordionIndex === 0 ? 'true' : 'false');
-        button.setAttribute('aria-controls', collapseId);
-        button.textContent = menuNombre;
-
-        h2.appendChild(button);
-        accordionItem.appendChild(h2);
-
-        // Body
-        const collapseDiv = document.createElement('div');
-        collapseDiv.id = collapseId;
-        collapseDiv.className = `accordion-collapse collapse ${accordionIndex === 0 ? 'show' : ''}`;
-        collapseDiv.setAttribute('aria-labelledby', headingId);
-        // Si queremos que solo haya uno abierto a la vez, descomentar la siguiente línea:
-        // collapseDiv.setAttribute('data-bs-parent', '#accordionMenus');
-
-        const accordionBody = document.createElement('div');
-        accordionBody.className = 'accordion-body bg-light';
-
-        const row = document.createElement('div');
-        row.className = 'row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3';
-
-        permisos.forEach((permiso) => {
-          const col = document.createElement('div');
-          col.className = 'col';
-
-          const formCheck = document.createElement('div');
-          formCheck.className =
-            'form-check bg-white p-3 rounded shadow-sm border h-100 d-flex align-items-center';
-
-          const checkbox = document.createElement('input');
-          checkbox.className = 'form-check-input permission-checkbox flex-shrink-0 mt-0 me-3';
-          checkbox.type = 'checkbox';
-          checkbox.value = permiso.id;
-          checkbox.id = `permiso_${permiso.id}`;
-          checkbox.style.width = '1.2rem';
-          checkbox.style.height = '1.2rem';
-          checkbox.style.cursor = 'pointer';
-
-          if (permisosAsignados.includes(permiso.id)) {
-            checkbox.checked = true;
-          }
-
-          const label = document.createElement('label');
-          label.className = 'form-check-label user-select-none w-100';
-          label.htmlFor = `permiso_${permiso.id}`;
-          label.style.cursor = 'pointer';
-          label.innerHTML = `
-            <div class="fw-semibold text-dark">${permiso.nombre}</div>
-            <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">${permiso.descripcion || 'Sin descripción'}</div>
-          `;
-
-          formCheck.appendChild(checkbox);
-          formCheck.appendChild(label);
-          col.appendChild(formCheck);
-          row.appendChild(col);
-        });
-
-        accordionBody.appendChild(row);
-        collapseDiv.appendChild(accordionBody);
-        accordionItem.appendChild(collapseDiv);
-
-        accordionMenus.appendChild(accordionItem);
-        accordionIndex++;
-      }
-    } catch (error) {
-      console.error('Error cargando permisos para asignar:', error);
-      accordionMenus.innerHTML =
-        '<div class="text-center text-danger small py-4">Error al cargar la lista de permisos.</div>';
-    }
-  }
-
-  /**
-   * Guarda los permisos seleccionados para el rol
-   */
-  async guardarPermisosAsignados(e) {
-    e.preventDefault();
-    const roleId = this.querySelector('#assignRoleId').value;
-
-    // Recolectar IDs seleccionados
-    const checkboxes = this.querySelectorAll('.permission-checkbox:checked');
-    const permisosIds = Array.from(checkboxes).map((cb) => parseInt(cb.value));
-
-    const btnAssignSubmit = this.querySelector('#btnAssignSubmit');
-    const btnText = btnAssignSubmit.innerHTML;
-    btnAssignSubmit.innerHTML =
-      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-    btnAssignSubmit.disabled = true;
-
-    try {
-      await apiRequest(`/v1/roles/${roleId}/permisos`, {
-        method: 'POST',
-        body: JSON.stringify({ permisos: permisosIds }),
-      });
-
-      this.mostrarAlertaExito('Permisos asignados correctamente.');
-
-      // Opcionalmente, subir el scroll arriba
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      console.error('Error asignando permisos:', error);
-      alert(`Error al asignar permisos: ${error.message}`);
-    } finally {
-      btnAssignSubmit.innerHTML = btnText;
-      btnAssignSubmit.disabled = false;
     }
   }
 

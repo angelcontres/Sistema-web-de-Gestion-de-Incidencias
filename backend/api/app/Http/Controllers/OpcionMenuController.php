@@ -10,6 +10,7 @@ class OpcionMenuController extends Controller
     /**
      * GET
      * Muestra la lista de registros de OpcionMenu
+     
      */
     public function index(Request $request)
     {
@@ -25,7 +26,7 @@ class OpcionMenuController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $opciones,
+            'data' => $opciones
         ]);
     }
 
@@ -47,7 +48,7 @@ class OpcionMenuController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Opción de menú creada correctamente',
-            'data' => $opcion,
+            'data' => $opcion
         ], 201);
     }
 
@@ -61,7 +62,7 @@ class OpcionMenuController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $opcion,
+            'data' => $opcion
         ]);
     }
 
@@ -87,7 +88,7 @@ class OpcionMenuController extends Controller
             if ($padreId === (int) $opcion->id) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Una opción de menú no puede ser su propio padre.',
+                    'message' => 'Una opción de menú no puede ser su propio padre.'
                 ], 422);
             }
 
@@ -96,7 +97,7 @@ class OpcionMenuController extends Controller
                 if ((int) $cursor->id === (int) $opcion->id) {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'No se puede asignar una opción descendiente como padre (referencia circular).',
+                        'message' => 'No se puede asignar una opción descendiente como padre (referencia circular).'
                     ], 422);
                 }
                 $cursor = $cursor->padre_id ? OpcionMenu::find($cursor->padre_id) : null;
@@ -108,7 +109,7 @@ class OpcionMenuController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Opción de menú actualizada correctamente',
-            'data' => $opcion,
+            'data' => $opcion
         ]);
     }
 
@@ -127,7 +128,7 @@ class OpcionMenuController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Opción de menú eliminada correctamente',
+            'message' => 'Opción de menú eliminada correctamente'
         ]);
     }
 }

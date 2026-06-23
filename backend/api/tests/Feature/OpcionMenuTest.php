@@ -41,8 +41,8 @@ class OpcionMenuTest extends TestCase
             ->assertJsonStructure([
                 'status',
                 'data' => [
-                    '*' => ['id', 'nombre', 'icono', 'ruta', 'padre_id', 'created_by'],
-                ],
+                    '*' => ['id', 'nombre', 'icono', 'ruta', 'padre_id', 'created_by']
+                ]
             ])
             ->assertJsonCount(2, 'data');
     }
