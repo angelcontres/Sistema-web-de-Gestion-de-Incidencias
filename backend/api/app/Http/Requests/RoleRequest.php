@@ -22,6 +22,13 @@ class RoleRequest extends FormRequest
      */
     public function rules(): array
     {
+        if (str_contains($this->path(), 'permisos')) {
+            return [
+                'permisos' => 'array',
+                'permisos.*' => 'integer|exists:permisos,id'
+            ];
+        }
+
         return [
             //
             'nombre' => 'required|string|max:255',

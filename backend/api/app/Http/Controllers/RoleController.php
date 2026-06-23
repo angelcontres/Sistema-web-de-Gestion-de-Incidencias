@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\RoleRequest;
 
 class RoleController extends Controller
 {
@@ -79,14 +80,9 @@ class RoleController extends Controller
     /**
      * Assign permissions to the role.
      */
-    public function assignPermissions(Request $request, $id)
+    public function assignPermissions(RoleRequest $request, $id)
     {
         $role = Role::findOrFail($id);
-        
-        $request->validate([
-            'permisos' => 'array',
-            'permisos.*' => 'integer|exists:permisos,id'
-        ]);
 
         $role->permisos()->sync($request->permisos ?? []);
 
