@@ -16,6 +16,7 @@ import './pages/menu-options/components/menu-options-list/menu-options-list.comp
 import './pages/menu-options/components/menu-options-form/menu-options-form.component.js';
 
 import './pages/role/component/index/role-index.component.js';
+import './pages/permissions/components/index/permission-index.component.js';
 // Import and Initialize Router
 import { initRouter } from './router.js';
 
