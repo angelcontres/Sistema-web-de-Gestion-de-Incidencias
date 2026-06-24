@@ -73,7 +73,7 @@ export class NavbarComponent extends BaseComponent {
           logoutBtn.disabled = true;
 
           // Call backend logout API
-          await apiRequest('/v1/logout', { method: 'POST' });
+          await apiRequest('/logout', { method: 'POST' });
         } catch (error) {
           console.error('Error during logout API call:', error);
         } finally {
@@ -100,8 +100,8 @@ export class NavbarComponent extends BaseComponent {
   updateActiveLink() {
     const currentHash = window.location.hash || '#/';
     const links = this.querySelectorAll('.nav-link');
-    
-    links.forEach(link => {
+
+    links.forEach((link) => {
       const href = link.getAttribute('href');
       if (href === currentHash) {
         link.classList.add('active');

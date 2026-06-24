@@ -31,7 +31,6 @@ export class MenuOptionsListComponent extends BaseComponent {
     errorAlert.classList.add('d-none');
 
     try {
-      // Call GET /api/opciones-menu using apiRequest helper
       const response = await apiRequest('/opciones-menu');
 
       const opciones = response.data || [];

@@ -1,0 +1,40 @@
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-graph-up-arrow me-2"></i> TRP Promedio a lo largo del tiempo (24h)</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="trpChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Top 5 Endpoints más lentos</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Endpoint</th>
+                <th>Método</th>
+                <th>Promedio (ms)</th>
+                <th>Máximo (ms)</th>
+                <th>Total Peticiones</th>
+              </tr>
+            </thead>
+            <tbody id="slowestEndpointsTable">
+              <tr><td colspan="5" class="text-center py-4 text-muted">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

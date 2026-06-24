@@ -46,9 +46,9 @@ export class LoginComponent extends BaseComponent {
           const password = passwordInput.value;
 
           // Call real Sanctum API login endpoint
-          const response = await apiRequest('/v1/login', {
+          const response = await apiRequest('/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ email, password }),
           });
 
           // Save login token and user info

@@ -36,7 +36,7 @@ export class PermissionIndexComponent extends BaseComponent {
     if (emptyState) emptyState.classList.add('d-none');
 
     try {
-      const response = await apiRequest('/v1/permisos');
+      const response = await apiRequest('/permisos');
       const permisos = response || [];
 
       if (totalPermisosBadge) {
@@ -227,7 +227,7 @@ export class PermissionIndexComponent extends BaseComponent {
     const payload = { nombre, descripcion, opcion_menu_id };
 
     try {
-      const endpoint = permisoId ? `/v1/permisos/${permisoId}` : '/v1/permisos';
+      const endpoint = permisoId ? `/permisos/${permisoId}` : '/permisos';
       const method = permisoId ? 'PUT' : 'POST';
 
       await apiRequest(endpoint, {
@@ -252,7 +252,7 @@ export class PermissionIndexComponent extends BaseComponent {
   async eliminarPermiso(id, nombre) {
     if (confirm(`¿Estás seguro de que deseas eliminar el permiso "${nombre}"?`)) {
       try {
-        await apiRequest(`/v1/permisos/${id}`, { method: 'DELETE' });
+        await apiRequest(`/permisos/${id}`, { method: 'DELETE' });
         this.mostrarAlertaExito(`Permiso "${nombre}" eliminado con éxito.`);
         await this.cargarPermisos();
       } catch (error) {

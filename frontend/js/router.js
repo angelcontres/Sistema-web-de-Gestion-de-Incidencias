@@ -8,7 +8,8 @@ const routes = {
   '#/opciones-menu': 'app-menu-options-list',
   '#/opciones-menu/form': 'app-menu-options-form',
   '#/roles':'app-role-index',
-  '#/permisos': 'app-permission-index'
+  '#/permisos': 'app-permission-index',
+  '#/sqa-dashboard': 'app-sqa-dashboard'
 };
 
 /**
