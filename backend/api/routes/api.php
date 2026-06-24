@@ -15,6 +15,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/v1/me', [AuthController::class, 'me']);
 
-    Route::apiResource('opciones-menu', OpcionMenuController::class);
+    Route::apiResource('v1/opciones-menu', OpcionMenuController::class);
     Route::apiResource('v1/roles', RoleController::class);
 });

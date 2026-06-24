@@ -6,6 +6,7 @@
 // Import Global Components
 import './components/navbar/navbar.component.js';
 import './components/stats-card.js'; // Reusable small card component
+import './components/sidebar/sidebar.component.js';
 
 // Import Pages (Features)
 import './pages/dashboard/dashboard.component.js';
