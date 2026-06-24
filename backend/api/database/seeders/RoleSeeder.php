@@ -65,7 +65,7 @@ class RoleSeeder extends Seeder
         $operadorPermisosCount = $operadorRole->permisos()->count();
 
         echo "--- RESULTADO DEL TEST DE PERMISOS ---\n";
-        echo 'Permisos de Admin (Deberían ser 2): '.$adminPermisosCount."\n";
+        echo 'Permisos de Admin: '.$adminPermisosCount."\n";
         echo 'Permisos de Operador (Deberían ser 0): '.$operadorPermisosCount."\n";
         echo "--------------------------------------\n";
     }

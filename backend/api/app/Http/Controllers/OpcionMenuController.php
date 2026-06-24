@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\OpcionMenuRequest;
 use App\Models\OpcionMenu;
 use Illuminate\Http\Request;
 
@@ -33,21 +34,19 @@ class OpcionMenuController extends Controller
      * POST
      * Permite insertar un registro en OpcionMenu
      */
-    public function store(Request $request)
+    public function store(OpcionMenuRequest $opcionMenuRequest)
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:50',
-            'icono' => 'nullable|string|max:50',
-            'ruta' => 'required|string|max:255',
-            'padre_id' => 'nullable|exists:opciones_menu,id',
+        $opcionMenu = OpcionMenu::create([
+            'nombre' => $opcionMenuRequest->nombre,
+            'icono' => $opcionMenuRequest->icono,
+            'ruta' => $opcionMenuRequest->ruta,
+            'padre_id' => $opcionMenuRequest->padre_id,
         ]);
-
-        $opcion = OpcionMenu::create($validated);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Opción de menú creada correctamente',
-            'data' => $opcion,
+            'data' => $opcionMenu,
         ], 201);
     }
 
@@ -69,16 +68,11 @@ class OpcionMenuController extends Controller
      * PUT
      * Permite actualizar un registro de OpcionMenu
      */
-    public function update(Request $request, string $id)
+    public function update(OpcionMenuRequest $request, string $id)
     {
         $opcion = OpcionMenu::findOrFail($id);
 
-        $validated = $request->validate([
-            'nombre' => 'sometimes|required|string|max:50',
-            'icono' => 'nullable|string|max:50',
-            'ruta' => 'sometimes|required|string|max:255',
-            'padre_id' => 'nullable|exists:opciones_menu,id',
-        ]);
+        $validated = $request->validated();
 
         // Prevent circular references (self-parent or making a descendant the parent)
         if (array_key_exists('padre_id', $validated) && $validated['padre_id'] !== null) {
