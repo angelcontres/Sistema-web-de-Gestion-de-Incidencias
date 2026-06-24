@@ -7,7 +7,7 @@ export class SideBarComponent extends BaseComponent {
     this.menuLoaded = false;
   }
 
-   onInit() {
+  onInit() {
     this.renderSidebar();
 
     this._onHashChange = () => {
@@ -17,16 +17,19 @@ export class SideBarComponent extends BaseComponent {
     window.addEventListener('hashchange', this._onHashChange);
 
     this._onAuthChange = () => {
-      this.menuLoaded = false; 
+      this.menuLoaded = false;
       this.renderSidebar();
     };
     window.addEventListener('auth-change', this._onAuthChange);
 
     this._onToggleSidebar = () => {
       const sidebarContainer = this.firstElementChild;
-      if (sidebarContainer) {
-        sidebarContainer.classList.toggle('d-none');
-      }
+
+      if (!sidebarContainer) return;
+
+      const willHide = !sidebarContainer.classList.contains('d-none');
+      sidebarContainer.dataset.userHidden = willHide ? 'true' : 'false';
+      sidebarContainer.classList.toggle('d-none');
     };
     window.addEventListener('toggle-sidebar', this._onToggleSidebar);
   }
@@ -34,7 +37,7 @@ export class SideBarComponent extends BaseComponent {
   disconnectedCallback() {
     if (this._onHashChange) window.removeEventListener('hashchange', this._onHashChange);
     if (this._onAuthChange) window.removeEventListener('auth-change', this._onAuthChange);
-    
+
     if (this._onToggleSidebar) window.removeEventListener('toggle-sidebar', this._onToggleSidebar);
   }
 
@@ -44,8 +47,12 @@ export class SideBarComponent extends BaseComponent {
 
     const token = localStorage.getItem('access_token');
     const hash = window.location.hash || '#/';
+    const userHidden = sidebarContainer.dataset.userHidden === 'true';
 
     if (!token || hash === '#/login') {
+      sidebarContainer.dataset.userHidden = 'false';
+      sidebarContainer.classList.add('d-none');
+    } else if (userHidden) {
       sidebarContainer.classList.add('d-none');
     } else {
       sidebarContainer.classList.remove('d-none');
@@ -61,20 +68,25 @@ export class SideBarComponent extends BaseComponent {
       if (container) {
         container.innerHTML = `
           <div class="d-flex justify-content-center py-3" id="menuLoader">
-            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+              <span class="visually-hidden">
+                Cargando...
+              </span>
+            </div>
           </div>
         `;
       }
 
       const response = await apiRequest('/v1/opciones-menu', { method: 'GET' });
-      const menuTree = this.buildMenuTree(response.data || response); 
-      
+      const menuTree = this.buildMenuTree(response.data || response);
+
       this.renderMenuItems(menuTree);
       this.menuLoaded = true;
       this.updateActiveLink();
     } catch (error) {
       console.error('Error cargando el menú:', error);
-      if (container) container.innerHTML = '<p class="text-danger small px-3">Error al cargar menú.</p>';
+      if (container)
+        container.innerHTML = '<p class="text-danger small px-3">Error al cargar menú.</p>';
     }
   }
 
@@ -82,16 +94,33 @@ export class SideBarComponent extends BaseComponent {
     const tree = [];
     const lookup = {};
 
-    menuList.forEach(item => {
-      lookup[item.id] = { ...item, children: [] };
+    const esc = (v) =>
+      String(v ?? '').replace(
+        /[&<>"']/g,
+        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+      );
+    const safeHref = (v) => {
+      const s = String(v ?? '');
+      return s.startsWith('#') ? s : '#/';
+    };
+    const safeClass = (v) => {
+      const s = String(v ?? '').trim();
+      return /^[a-z0-9\s-]+$/i.test(s) ? s : '';
+    };
+    menuList.forEach((item) => {
+      lookup[item.id] = {
+        ...item,
+        nombre: esc(item.nombre),
+        ruta: safeHref(item.ruta),
+        icono: safeClass(item.icono),
+        children: [],
+      };
     });
 
-    menuList.forEach(item => {
-      if (item.padre_id) {
-        if (lookup[item.padre_id]) {
-          lookup[item.padre_id].children.push(lookup[item.id]);
-        }
-      } else {
+    menuList.forEach((item) => {
+      if (item.padre_id && lookup[item.padre_id]) {
+        lookup[item.padre_id].children.push(lookup[item.id]);
+      } else if (!item.padre_id) {
         tree.push(lookup[item.id]);
       }
     });
@@ -105,7 +134,7 @@ export class SideBarComponent extends BaseComponent {
 
     let html = '';
 
-    menuTree.forEach(menu => {
+    menuTree.forEach((menu) => {
       if (menu.children && menu.children.length > 0) {
         const collapseId = `collapse-menu-${menu.id}`;
         html += `
@@ -117,12 +146,16 @@ export class SideBarComponent extends BaseComponent {
             </a>
             <div class="collapse ms-3" id="${collapseId}">
               <div class="nav flex-column gap-1 mt-1">
-                ${menu.children.map(child => `
+                ${menu.children
+                  .map(
+                    (child) => `
                   <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-secondary" href="${child.ruta}">
                     <i class="${child.icono || 'bi bi-dot'} text-secondary"></i>
                     <span>${child.nombre}</span>
                   </a>
-                `).join('')}
+                `
+                  )
+                  .join('')}
               </div>
             </div>
           </div>
@@ -146,45 +179,45 @@ export class SideBarComponent extends BaseComponent {
 
     links.forEach((link) => {
       const href = link.getAttribute('href');
-      
+
       if (href === currentHash && !link.hasAttribute('data-bs-toggle')) {
         link.classList.remove('text-dark', 'text-secondary');
-        link.classList.add('active', 'bg-primary', 'text-white'); 
-        
+        link.classList.add('active', 'bg-primary', 'text-white');
+
         const icon = link.querySelector('i:first-child');
         if (icon) {
-            icon.classList.remove('text-secondary');
-            icon.classList.add('text-white');
+          icon.classList.remove('text-secondary');
+          icon.classList.add('text-white');
         }
-        
+
         const parentCollapse = link.closest('.collapse');
         if (parentCollapse) {
           parentCollapse.classList.add('show');
-          
+
           const parentLink = document.querySelector(`[href="#${parentCollapse.id}"]`);
-          if(parentLink) {
-              parentLink.classList.remove('text-dark');
-              parentLink.classList.add('text-primary');
+          if (parentLink) {
+            parentLink.classList.remove('text-dark');
+            parentLink.classList.add('text-primary');
           }
         }
       } else {
         link.classList.remove('active', 'bg-primary', 'text-white');
-        
+
         const icon = link.querySelector('i:first-child');
         if (icon) {
-            icon.classList.remove('text-white');
-            icon.classList.add('text-secondary'); 
+          icon.classList.remove('text-white');
+          icon.classList.add('text-secondary');
         }
 
         if (link.hasAttribute('data-bs-toggle')) {
-            link.classList.remove('text-primary');
-            link.classList.add('text-dark');
+          link.classList.remove('text-primary');
+          link.classList.add('text-dark');
         } else {
-            if (link.closest('.collapse')) {
-                link.classList.add('text-secondary');
-            } else {
-                link.classList.add('text-dark');
-            }
+          if (link.closest('.collapse')) {
+            link.classList.add('text-secondary');
+          } else {
+            link.classList.add('text-dark');
+          }
         }
       }
     });
