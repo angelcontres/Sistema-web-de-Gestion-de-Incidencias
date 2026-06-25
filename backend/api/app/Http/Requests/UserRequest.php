@@ -9,11 +9,7 @@ class UserRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Require 'Crear Usuario' permission for POST (create)
-        if ($this->isMethod('post')) {
-            return $this->user() && $this->user()->hasPermission('Crear Usuario');
-        }
-
+        // Authorization is now globally handled by CheckResourcePermission middleware
         return true;
     }
 

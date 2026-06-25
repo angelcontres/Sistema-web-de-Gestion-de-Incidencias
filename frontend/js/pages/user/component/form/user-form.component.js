@@ -31,12 +31,8 @@ export class UserFormComponent extends BaseComponent {
     const urlParams = new URLSearchParams(queryString);
     const userId = urlParams.get('id');
 
-    // Block access if creating new user and lacks permission
-    if (!userId && !AuthService.hasPermission('Crear Usuario')) {
-      alert('No tienes permiso para crear usuarios.');
-      window.location.hash = '#/usuarios';
-      return;
-    }
+    // Permissions are now fully checked by the backend on save, and the "Nuevo Registro" 
+    // button is hidden on the index page via AuthService.hasPermission().
 
     if (this.form) {
       this.form.addEventListener('submit', (e) => this.guardarUsuario(e));
@@ -108,7 +104,8 @@ export class UserFormComponent extends BaseComponent {
       });
     } catch (error) {
       console.error('Error al cargar catálogo de roles:', error);
-      this.rolesContainer.innerHTML = '<span class="text-danger small">Error al cargar roles.</span>';
+      this.rolesContainer.innerHTML =
+        '<span class="text-danger small">Error al cargar roles.</span>';
     }
   }
 
@@ -177,11 +174,10 @@ export class UserFormComponent extends BaseComponent {
 
       // Redirect back to users listing
       window.location.hash = '#/usuarios';
-
     } catch (error) {
       console.error('Error al guardar usuario:', error);
       this.mostrarError(error.message || 'Error al procesar el formulario.');
-      
+
       // Reset loading indicators
       if (this.btnSubmit) this.btnSubmit.disabled = false;
       if (this.loadingSpinner) this.loadingSpinner.classList.add('d-none');

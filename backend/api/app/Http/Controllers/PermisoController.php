@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permiso;
+use App\Models\OpcionMenu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,9 +22,12 @@ class PermisoController extends Controller
      */
     public function store(Request $request)
     {
+        $opcionMenu = OpcionMenu::findOrFail($request->opcion_menu_id);
+
         $permiso = Permiso::create([
             'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
+            'accion' => $request->accion,
+            'recurso' => $opcionMenu->nombre,
             'opcion_menu_id' => $request->opcion_menu_id,
             'created_by' => Auth::id() ?? 1,
         ]);
@@ -50,10 +54,17 @@ class PermisoController extends Controller
     public function update(Request $request, string $id)
     {
         $permiso = Permiso::findOrFail($id);
+        
+        $recurso = $permiso->recurso;
+        if ($request->has('opcion_menu_id') && $request->opcion_menu_id != $permiso->opcion_menu_id) {
+            $opcionMenu = OpcionMenu::findOrFail($request->opcion_menu_id);
+            $recurso = $opcionMenu->nombre;
+        }
 
         $permiso->update([
             'nombre' => $request->nombre ?? $permiso->nombre,
-            'descripcion' => $request->descripcion ?? $permiso->descripcion,
+            'accion' => $request->accion ?? $permiso->accion,
+            'recurso' => $recurso,
             'opcion_menu_id' => $request->opcion_menu_id ?? $permiso->opcion_menu_id,
             'updated_by' => Auth::id() ?? 1,
         ]);

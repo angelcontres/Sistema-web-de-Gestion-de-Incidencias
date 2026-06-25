@@ -15,57 +15,11 @@ class OpcionMenuController extends Controller
     {
         $query = OpcionMenu::query();
 
-        if ($request->boolean('for_sidebar')) {
-            $user = $request->user();
-            $isAdmin = $user && $user->roles()->where('nombre', 'Admin')->exists();
 
-            if (!$isAdmin && $user) {
-                // Get all menu IDs from user's permissions
-                $user->load('roles.permisos');
-                $menuIds = collect();
-                foreach ($user->roles as $role) {
-                    foreach ($role->permisos as $permiso) {
-                        if ($permiso->opcion_menu_id) {
-                            $menuIds->push($permiso->opcion_menu_id);
-                        }
-                    }
-                }
-                $menuIds = $menuIds->unique();
-
-                // Recursively get all parent menu IDs
-                $allowedIds = collect($menuIds);
-                $currentIdsToSearch = $menuIds;
-                
-                while ($currentIdsToSearch->isNotEmpty()) {
-                    $parentIds = OpcionMenu::whereIn('id', $currentIdsToSearch)
-                        ->whereNotNull('padre_id')
-                        ->pluck('padre_id')
-                        ->unique();
-                        
-                    // Filter out parents we already have to avoid infinite loops
-                    $newParents = $parentIds->diff($allowedIds);
-                    
-                    if ($newParents->isEmpty()) {
-                        break;
-                    }
-                    
-                    $allowedIds = $allowedIds->merge($newParents);
-                    $currentIdsToSearch = $newParents;
-                }
-
-                $query->whereIn('id', $allowedIds->values());
-                $request->merge(['allowed_menu_ids' => $allowedIds->values()->toArray()]);
-            }
-        }
 
         // If tree=true is passed, retrieve hierarchical structure (root-level options only, with children loaded)
         if ($request->boolean('tree')) {
-            $opciones = $query->with(['hijos' => function ($q) use ($request) {
-                // If filtering by sidebar, we also need to filter the children
-                if ($request->boolean('for_sidebar') && $request->has('allowed_menu_ids')) {
-                    $q->whereIn('id', $request->input('allowed_menu_ids'));
-                }
-            }])->whereNull('padre_id')->get();
+            $opciones = $query->with('hijos')->whereNull('padre_id')->get();
         } else {
             // Flat list, loaded with parent info
             $opciones = $query->with('padre')->get();

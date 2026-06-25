@@ -32,10 +32,15 @@ class AuthController extends Controller
         $permisosList = collect();
         foreach ($user->roles as $role) {
             foreach ($role->permisos as $permiso) {
-                $permisosList->push($permiso->nombre);
+                $permisosList->push([
+                    'accion' => $permiso->accion,
+                    'recurso' => $permiso->recurso
+                ]);
             }
         }
-        $permisosList = $permisosList->unique()->values();
+        $permisosList = $permisosList->unique(function ($item) {
+            return $item['accion'].'-'.$item['recurso'];
+        })->values();
 
         $isAdmin = clone $user;
         $isAdminFlag = $isAdmin->roles()->where('nombre', 'Admin')->exists();
@@ -71,10 +76,15 @@ class AuthController extends Controller
         $permisosList = collect();
         foreach ($user->roles as $role) {
             foreach ($role->permisos as $permiso) {
-                $permisosList->push($permiso->nombre);
+                $permisosList->push([
+                    'accion' => $permiso->accion,
+                    'recurso' => $permiso->recurso
+                ]);
             }
         }
-        $permisosList = $permisosList->unique()->values();
+        $permisosList = $permisosList->unique(function ($item) {
+            return $item['accion'].'-'.$item['recurso'];
+        })->values();
 
         $isAdminFlag = clone $user;
         $isAdmin = $isAdminFlag->roles()->where('nombre', 'Admin')->exists();

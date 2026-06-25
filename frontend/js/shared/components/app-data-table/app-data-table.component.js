@@ -258,8 +258,12 @@ export class AppDataTableComponent extends BaseComponent {
           
           if (col.format) {
             try {
-              const formatFn = new Function('value', `return \`${col.format}\`;`);
-              val = formatFn(val);
+              if (typeof col.format === 'function') {
+                val = col.format(val);
+              } else {
+                const formatFn = new Function('value', `return \`${col.format}\`;`);
+                val = formatFn(val);
+              }
             } catch (err) {
               console.error('Error formatting value:', val, err);
             }

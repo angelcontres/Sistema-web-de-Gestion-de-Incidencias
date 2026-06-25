@@ -420,7 +420,6 @@ export class RoleIndexComponent extends BaseComponent {
           label.style.cursor = 'pointer';
           label.innerHTML = `
             <div class="fw-semibold text-dark">${permiso.nombre}</div>
-            <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">${permiso.descripcion || 'Sin descripción'}</div>
           `;
 
           formCheck.appendChild(checkbox);
