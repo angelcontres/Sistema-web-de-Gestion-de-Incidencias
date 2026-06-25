@@ -1,5 +1,5 @@
 import { BaseComponent } from '../../core/base-component.js';
-import { apiRequest } from '../../core/api.js';
+import { apiRequest, API_BASE_URL } from '../../core/api.js';
 
 export class SqaDashboardComponent extends BaseComponent {
   constructor() {
@@ -13,11 +13,63 @@ export class SqaDashboardComponent extends BaseComponent {
 
       this.renderChart(dataLogs.timeline);
       this.renderTable(dataLogs.top_slowest);
+      this.setupExportButtons();
     } catch (error) {
       console.error(error);
       const tbody = this.querySelector('#slowestEndpointsTable');
       if (tbody)
         tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Error al cargar datos.</td></tr>`;
+    }
+  }
+
+  setupExportButtons() {
+    const btnCsv = this.querySelector('#btnExportCsv');
+    const btnTxt = this.querySelector('#btnExportTxt');
+
+    if (btnCsv) {
+      btnCsv.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.downloadLogs('csv');
+      });
+    }
+
+    if (btnTxt) {
+      btnTxt.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.downloadLogs('txt');
+      });
+    }
+  }
+
+  async downloadLogs(format) {
+    try {
+      const token = localStorage.getItem('access_token');
+      const url = `${API_BASE_URL}/sqa/performance-logs/export?format=${format}`;
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      // El backend ya debería mandar el header Content-Disposition con el filename
+      // pero por si acaso, forzamos la descarga desde JS
+      a.download = `performance_logs.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error al exportar logs:', error);
+      alert('Ocurrió un error al intentar exportar los registros.');
     }
   }
 

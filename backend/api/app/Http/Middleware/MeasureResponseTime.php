@@ -1,8 +1,7 @@
 <?php
 
 namespace App\Http\Middleware;
-
-use App\Jobs\LogPerformanceJob;
+use App\Models\PerformanceLog;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,12 +39,13 @@ class MeasureResponseTime
         $durationMs = round(($endTime - $startTime) * 1000);
 
         if ($durationMs > 100) {
-            LogPerformanceJob::dispatch([
+            PerformanceLog::create([
                 'trp' => $durationMs,
                 'endpoint' => $request->path(),
                 'metodo' => $request->method(),
                 'logged_at' => now(),
             ]);
         }
+
     }
 }

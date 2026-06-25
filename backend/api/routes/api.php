@@ -21,4 +21,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
     Route::apiResource('v1/permisos', PermisoController::class);
     Route::get('v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
+    Route::get('v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
 });
