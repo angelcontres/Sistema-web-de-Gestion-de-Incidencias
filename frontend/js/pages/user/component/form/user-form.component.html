@@ -70,19 +70,35 @@
             </div>
           </div>
 
-          <!-- Asignación de Roles -->
+          <!-- Asignación de Roles (Drag and Drop) -->
           <div class="mb-3">
-            <label class="form-label fw-semibold text-secondary small d-block">Roles Asignados</label>
-            <div
-              id="rolesCheckboxContainer"
-              class="border rounded p-3 bg-light"
-              style="max-height: 150px; overflow-y: auto"
-            >
-              <!-- Se cargará dinámicamente con checkboxes de roles -->
-              <span class="text-muted small">Cargando roles...</span>
+            <label class="form-label fw-semibold text-secondary small d-block">Asignación de Roles</label>
+            <div class="row g-2">
+              <!-- Columna Roles Disponibles -->
+              <div class="col-6">
+                <span class="fw-bold text-muted small mb-1 d-block">Roles Disponibles</span>
+                <div
+                  id="rolesDisponiblesList"
+                  class="border rounded p-2 bg-light d-flex flex-column gap-2"
+                  style="min-height: 160px; max-height: 200px; overflow-y: auto"
+                >
+                  <span class="text-muted small text-center my-3">Cargando roles...</span>
+                </div>
+              </div>
+              <!-- Columna Roles Asignados -->
+              <div class="col-6">
+                <span class="fw-bold text-primary small mb-1 d-block">Roles Asignados</span>
+                <div
+                  id="rolesAsignadosList"
+                  class="border border-primary border-dashed rounded p-2 bg-white d-flex flex-column gap-2"
+                  style="min-height: 160px; max-height: 200px; overflow-y: auto"
+                >
+                  <span class="text-muted small text-center my-3">Arrastre aquí...</span>
+                </div>
+              </div>
             </div>
             <div class="form-text text-muted small">
-              Selecciona los roles de acceso que tendrá este usuario.
+              Arrastra los bloques de roles entre las columnas para asignarlos o quitarlos.
             </div>
           </div>
 

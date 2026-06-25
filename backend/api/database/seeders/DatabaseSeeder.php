@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\OpcionMenu;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -32,5 +32,11 @@ class DatabaseSeeder extends Seeder
         $this->call(PermissionsSeeder::class);
 
         $this->call(RoleSeeder::class);
+
+        // Assign the Admin role to the test user
+        $adminRole = Role::where('nombre', 'Admin')->first();
+        if ($adminRole) {
+            $user->roles()->sync([$adminRole->id]);
+        }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use \App\Models\User;
-use \App\Models\OpcionMenu;
-use \App\Models\Permiso;
+use App\Models\OpcionMenu;
+use App\Models\Permiso;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class PermissionsSeeder extends Seeder
@@ -20,14 +20,14 @@ class PermissionsSeeder extends Seeder
             'Usuarios' => 'Usuario',
             'Roles' => 'Rol',
             'Permisos' => 'Permiso',
-            'Opciones de Menú' => 'Opción de Menú'
+            'Opciones de Menú' => 'Opción de Menú',
         ];
 
         $acciones = [
             'Ver' => 'READ',
             'Crear' => 'CREATE',
             'Actualizar' => 'UPDATE',
-            'Eliminar' => 'DELETE'
+            'Eliminar' => 'DELETE',
         ];
 
         foreach ($opciones as $opcionPlural => $opcionSingular) {

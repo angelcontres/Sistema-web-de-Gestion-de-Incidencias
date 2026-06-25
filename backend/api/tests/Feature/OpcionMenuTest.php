@@ -16,8 +16,8 @@ class OpcionMenuTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Create an auditor user
-        $this->user = User::factory()->create();
+        // Create an admin user to bypass permission checks in tests
+        $this->user = $this->createAdminUser();
     }
 
     public function test_can_list_menu_options_flat()

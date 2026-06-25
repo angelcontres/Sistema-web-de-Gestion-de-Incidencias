@@ -67,6 +67,13 @@ export function initRouter() {
   // Handle initial page load
   window.addEventListener('load', navigate);
 
+  // Refresh user profile details if authenticated on load
+  if (AuthService.isAuthenticated()) {
+    AuthService.refreshUser().catch((err) => {
+      console.error('Error refreshing session from /v1/me:', err);
+    });
+  }
+
   // Trigger initial navigation in case page was loaded with a hash
   navigate();
 }

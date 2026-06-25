@@ -4,9 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\OpcionMenu;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class OpcionMenuController extends Controller
+class OpcionMenuController extends Controller implements HasMiddleware
 {
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:Ver Opción de Menú', only: ['index', 'show']),
+            new Middleware('permission:Crear Opción de Menú', only: ['store']),
+            new Middleware('permission:Actualizar Opción de Menú', only: ['update']),
+            new Middleware('permission:Eliminar Opción de Menú', only: ['destroy']),
+        ];
+    }
+
     /**
      * GET
      * Muestra la lista de registros de OpcionMenu
@@ -19,7 +34,7 @@ class OpcionMenuController extends Controller
             $user = $request->user();
             $isAdmin = $user && $user->roles()->where('nombre', 'Admin')->exists();
 
-            if (!$isAdmin && $user) {
+            if (! $isAdmin && $user) {
                 // Get all menu IDs from user's permissions
                 $user->load('roles.permisos');
                 $menuIds = collect();
@@ -35,20 +50,20 @@ class OpcionMenuController extends Controller
                 // Recursively get all parent menu IDs
                 $allowedIds = collect($menuIds);
                 $currentIdsToSearch = $menuIds;
-                
+
                 while ($currentIdsToSearch->isNotEmpty()) {
                     $parentIds = OpcionMenu::whereIn('id', $currentIdsToSearch)
                         ->whereNotNull('padre_id')
                         ->pluck('padre_id')
                         ->unique();
-                        
+
                     // Filter out parents we already have to avoid infinite loops
                     $newParents = $parentIds->diff($allowedIds);
-                    
+
                     if ($newParents->isEmpty()) {
                         break;
                     }
-                    
+
                     $allowedIds = $allowedIds->merge($newParents);
                     $currentIdsToSearch = $newParents;
                 }

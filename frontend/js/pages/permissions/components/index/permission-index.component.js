@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { apiRequest } from '../../../../core/api.js';
+import { AuthService } from '../../../../core/auth.service.js';
 
 export class PermissionIndexComponent extends BaseComponent {
   constructor() {
@@ -13,7 +14,11 @@ export class PermissionIndexComponent extends BaseComponent {
 
     const btnNuevoPermiso = this.querySelector('#btnNuevoPermiso');
     if (btnNuevoPermiso) {
-      btnNuevoPermiso.addEventListener('click', () => this.abrirModalCrear());
+      if (!AuthService.hasPermission('Crear Permiso')) {
+        btnNuevoPermiso.classList.add('d-none');
+      } else {
+        btnNuevoPermiso.addEventListener('click', () => this.abrirModalCrear());
+      }
     }
 
     const form = this.querySelector('#permisoForm');
@@ -99,33 +104,44 @@ export class PermissionIndexComponent extends BaseComponent {
         const ulMenu = document.createElement('ul');
         ulMenu.className = 'dropdown-menu dropdown-menu-end shadow-sm border-0';
 
-        const liEdit = document.createElement('li');
-        const btnEdit = document.createElement('button');
-        btnEdit.className =
-          'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-primary small fw-medium border-0 bg-transparent w-100 text-start';
-        btnEdit.type = 'button';
-        btnEdit.addEventListener('click', () => this.abrirModalEditar(permiso));
+        const canEdit = AuthService.hasPermission('Actualizar Permiso');
+        const canDelete = AuthService.hasPermission('Eliminar Permiso');
 
-        const iEdit = document.createElement('i');
-        iEdit.className = 'bi bi-pencil-square';
-        btnEdit.appendChild(iEdit);
-        btnEdit.appendChild(document.createTextNode(' Editar'));
-        liEdit.appendChild(btnEdit);
+        if (canEdit) {
+          const liEdit = document.createElement('li');
+          const btnEdit = document.createElement('button');
+          btnEdit.className =
+            'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-primary small fw-medium border-0 bg-transparent w-100 text-start';
+          btnEdit.type = 'button';
+          btnEdit.addEventListener('click', () => this.abrirModalEditar(permiso));
 
-        const liDelete = document.createElement('li');
-        const btnDelete = document.createElement('button');
-        btnDelete.className =
-          'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-danger border-0 bg-transparent w-100 small fw-medium text-start';
-        btnDelete.addEventListener('click', () => this.eliminarPermiso(permiso.id, permiso.nombre));
+          const iEdit = document.createElement('i');
+          iEdit.className = 'bi bi-pencil-square';
+          btnEdit.appendChild(iEdit);
+          btnEdit.appendChild(document.createTextNode(' Editar'));
+          liEdit.appendChild(btnEdit);
+          ulMenu.appendChild(liEdit);
+        }
 
-        const iDelete = document.createElement('i');
-        iDelete.className = 'bi bi-trash';
-        btnDelete.appendChild(iDelete);
-        btnDelete.appendChild(document.createTextNode(' Eliminar'));
-        liDelete.appendChild(btnDelete);
+        if (canDelete) {
+          const liDelete = document.createElement('li');
+          const btnDelete = document.createElement('button');
+          btnDelete.className =
+            'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-danger border-0 bg-transparent w-100 small fw-medium text-start';
+          btnDelete.type = 'button';
+          btnDelete.addEventListener('click', () => this.eliminarPermiso(permiso.id, permiso.nombre));
 
-        ulMenu.appendChild(liEdit);
-        ulMenu.appendChild(liDelete);
+          const iDelete = document.createElement('i');
+          iDelete.className = 'bi bi-trash';
+          btnDelete.appendChild(iDelete);
+          btnDelete.appendChild(document.createTextNode(' Eliminar'));
+          liDelete.appendChild(btnDelete);
+          ulMenu.appendChild(liDelete);
+        }
+
+        if (!canEdit && !canDelete) {
+          btnDropdown.classList.add('d-none');
+        }
         divDropdown.appendChild(btnDropdown);
         divDropdown.appendChild(ulMenu);
         tdAcciones.appendChild(divDropdown);

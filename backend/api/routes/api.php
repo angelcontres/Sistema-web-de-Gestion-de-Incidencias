@@ -15,6 +15,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/logout', [AuthController::class, 'logout']);
 
     Route::get('/v1/me', [AuthController::class, 'me']);
+    Route::post('/v1/refresh', [AuthController::class, 'refresh']);
 
     Route::apiResource('v1/opciones-menu', OpcionMenuController::class);
     Route::apiResource('v1/roles', RoleController::class);

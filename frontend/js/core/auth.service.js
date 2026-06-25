@@ -8,7 +8,8 @@ export const AuthService = {
     });
     if (response && response.access_token) {
       localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // Fetch user profile and permissions from /v1/me
+      await this.refreshUser();
     }
     return response;
   },
@@ -23,6 +24,34 @@ export const AuthService = {
       localStorage.removeItem('user');
       window.dispatchEvent(new CustomEvent('auth-change'));
       window.location.hash = '#/login';
+    }
+  },
+
+  async refreshUser() {
+    try {
+      const response = await apiRequest('/v1/me');
+      if (response && response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+        window.dispatchEvent(new CustomEvent('auth-change'));
+      }
+      return response.user;
+    } catch (error) {
+      console.error('Error refreshing user profile:', error);
+      throw error;
+    }
+  },
+
+  async refreshToken() {
+    try {
+      const response = await apiRequest('/v1/refresh', { method: 'POST' });
+      if (response && response.access_token) {
+        localStorage.setItem('access_token', response.access_token);
+      }
+      return response.access_token;
+    } catch (error) {
+      console.error('Error rotating token:', error);
+      this.logout();
+      throw error;
     }
   },
 

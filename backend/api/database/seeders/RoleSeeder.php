@@ -44,7 +44,7 @@ class RoleSeeder extends Seeder
         ]);
 
         // Assign all existing permissions to the Admin role
-        $allPermissionsIds = \App\Models\Permiso::pluck('id')->toArray();
+        $allPermissionsIds = Permiso::pluck('id')->toArray();
         $adminRole->permisos()->sync($allPermissionsIds);
 
         // Verificamos en consola
@@ -52,7 +52,7 @@ class RoleSeeder extends Seeder
         $operadorPermisosCount = $operadorRole->permisos()->count();
 
         echo "--- RESULTADO DEL TEST DE PERMISOS ---\n";
-        echo 'Permisos de Admin (Deberían ser ' . count($allPermissionsIds) . '): '.$adminPermisosCount."\n";
+        echo 'Permisos de Admin (Deberían ser '.count($allPermissionsIds).'): '.$adminPermisosCount."\n";
         echo 'Permisos de Operador (Deberían ser 0): '.$operadorPermisosCount."\n";
         echo "--------------------------------------\n";
     }

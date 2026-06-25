@@ -5,10 +5,25 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RoleRequest;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 
-class RoleController extends Controller
+class RoleController extends Controller implements HasMiddleware
 {
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:Ver Rol', only: ['index', 'show']),
+            new Middleware('permission:Crear Rol', only: ['store']),
+            new Middleware('permission:Actualizar Rol', only: ['update', 'assignPermissions']),
+            new Middleware('permission:Eliminar Rol', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
