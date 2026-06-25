@@ -4,10 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Permiso;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 
-class PermisoController extends Controller
+class PermisoController extends Controller implements HasMiddleware
 {
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:Ver Permiso', only: ['index', 'show']),
+            new Middleware('permission:Crear Permiso', only: ['store']),
+            new Middleware('permission:Actualizar Permiso', only: ['update']),
+            new Middleware('permission:Eliminar Permiso', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

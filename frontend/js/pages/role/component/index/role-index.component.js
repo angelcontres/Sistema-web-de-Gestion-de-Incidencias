@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { apiRequest } from '../../../../core/api.js';
+import { AuthService } from '../../../../core/auth.service.js';
 
 export class RoleIndexComponent extends BaseComponent {
   constructor() {
@@ -12,10 +13,14 @@ export class RoleIndexComponent extends BaseComponent {
     // 1. Cargar los roles inicialmente
     await this.cargarRoles();
 
-    // 2. Escuchar clic del botón "Nuevo Registro"
+    // Hide create button if user lacks permission
     const btnNuevoRol = this.querySelector('#btnNuevoRol');
     if (btnNuevoRol) {
-      btnNuevoRol.addEventListener('click', () => this.abrirModalCrear());
+      if (!AuthService.hasPermission('Crear Rol')) {
+        btnNuevoRol.classList.add('d-none');
+      } else {
+        btnNuevoRol.addEventListener('click', () => this.abrirModalCrear());
+      }
     }
 
     // 3. Escuchar el submit del formulario del modal
@@ -123,30 +128,41 @@ export class RoleIndexComponent extends BaseComponent {
         const ulMenu = document.createElement('ul');
         ulMenu.className = 'dropdown-menu dropdown-menu-end shadow-sm border-0';
 
-        const liEdit = document.createElement('li');
-        const btnEdit = document.createElement('button');
-        btnEdit.className =
-          'dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium';
-        btnEdit.innerHTML = '<i class="bi bi-pencil-square"></i> Editar';
-        btnEdit.onclick = (e) => {
-          e.stopPropagation();
-          this.abrirModalEditar(rol, roles);
-        };
-        liEdit.appendChild(btnEdit);
+        const canEdit = AuthService.hasPermission('Actualizar Rol');
+        const canDelete = AuthService.hasPermission('Eliminar Rol');
 
-        const liDelete = document.createElement('li');
-        const btnDelete = document.createElement('button');
-        btnDelete.className =
-          'dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium';
-        btnDelete.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
-        btnDelete.onclick = (e) => {
-          e.stopPropagation();
-          this.eliminarRol(rol.id, rol.nombre);
-        };
-        liDelete.appendChild(btnDelete);
+        if (canEdit) {
+          const liEdit = document.createElement('li');
+          const btnEdit = document.createElement('button');
+          btnEdit.className =
+            'dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium';
+          btnEdit.innerHTML = '<i class="bi bi-pencil-square"></i> Editar';
+          btnEdit.onclick = (e) => {
+            e.stopPropagation();
+            this.abrirModalEditar(rol, roles);
+          };
+          liEdit.appendChild(btnEdit);
+          ulMenu.appendChild(liEdit);
+        }
 
-        ulMenu.appendChild(liEdit);
-        ulMenu.appendChild(liDelete);
+        if (canDelete) {
+          const liDelete = document.createElement('li');
+          const btnDelete = document.createElement('button');
+          btnDelete.className =
+            'dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium';
+          btnDelete.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
+          btnDelete.onclick = (e) => {
+            e.stopPropagation();
+            this.eliminarRol(rol.id, rol.nombre);
+          };
+          liDelete.appendChild(btnDelete);
+          ulMenu.appendChild(liDelete);
+        }
+
+        if (!canEdit && !canDelete) {
+          btnDropdown.classList.add('d-none');
+        }
+
         dropdownDiv.appendChild(btnDropdown);
         dropdownDiv.appendChild(ulMenu);
 
@@ -323,6 +339,16 @@ export class RoleIndexComponent extends BaseComponent {
     // Scroll al contenedor de permisos
     accordionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    const canAssign = AuthService.hasPermission('Actualizar Rol');
+    const btnAssignSubmit = this.querySelector('#btnAssignSubmit');
+    if (btnAssignSubmit) {
+      if (canAssign) {
+        btnAssignSubmit.classList.remove('d-none');
+      } else {
+        btnAssignSubmit.classList.add('d-none');
+      }
+    }
+
     try {
       const [todosPermisosResponse, rolDetalle] = await Promise.all([
         apiRequest('/v1/permisos'),
@@ -412,6 +438,10 @@ export class RoleIndexComponent extends BaseComponent {
 
           if (permisosAsignados.includes(permiso.id)) {
             checkbox.checked = true;
+          }
+
+          if (!canAssign) {
+            checkbox.disabled = true;
           }
 
           const label = document.createElement('label');

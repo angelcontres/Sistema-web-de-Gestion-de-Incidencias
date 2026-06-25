@@ -16,8 +16,8 @@ class OpcionMenuTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Create an auditor user
-        $this->user = User::factory()->create();
+        // Create an admin user to bypass permission checks in tests
+        $this->user = $this->createAdminUser();
     }
 
     public function test_can_list_menu_options_flat()
@@ -35,7 +35,7 @@ class OpcionMenuTest extends TestCase
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/opciones-menu');
+        $response = $this->actingAs($this->user)->getJson('/api/v1/opciones-menu');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -62,7 +62,7 @@ class OpcionMenuTest extends TestCase
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/opciones-menu?tree=true');
+        $response = $this->actingAs($this->user)->getJson('/api/v1/opciones-menu?tree=true');
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data') // only root option
@@ -78,7 +78,7 @@ class OpcionMenuTest extends TestCase
             'ruta' => '/reportes',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/opciones-menu', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/v1/opciones-menu', $payload);
 
         $response->assertStatus(201)
             ->assertJsonPath('data.nombre', 'Reportes')
@@ -98,7 +98,7 @@ class OpcionMenuTest extends TestCase
             'padre_id' => 999, // non-existent
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/opciones-menu', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/v1/opciones-menu', $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['padre_id']);
@@ -112,7 +112,7 @@ class OpcionMenuTest extends TestCase
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson("/api/opciones-menu/{$opcion->id}");
+        $response = $this->actingAs($this->user)->getJson("/api/v1/opciones-menu/{$opcion->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.nombre', 'Dashboard');
@@ -130,7 +130,7 @@ class OpcionMenuTest extends TestCase
             'nombre' => 'Panel Principal',
         ];
 
-        $response = $this->actingAs($this->user)->putJson("/api/opciones-menu/{$opcion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson("/api/v1/opciones-menu/{$opcion->id}", $payload);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.nombre', 'Panel Principal')
@@ -155,7 +155,7 @@ class OpcionMenuTest extends TestCase
             'padre_id' => $opcion->id,
         ];
 
-        $response = $this->actingAs($this->user)->putJson("/api/opciones-menu/{$opcion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson("/api/v1/opciones-menu/{$opcion->id}", $payload);
 
         $response->assertStatus(422)
             ->assertJsonPath('status', 'error')
@@ -177,7 +177,7 @@ class OpcionMenuTest extends TestCase
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson("/api/opciones-menu/{$padre->id}");
+        $response = $this->actingAs($this->user)->deleteJson("/api/v1/opciones-menu/{$padre->id}");
 
         $response->assertStatus(200);
 

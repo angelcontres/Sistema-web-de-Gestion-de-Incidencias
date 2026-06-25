@@ -1,5 +1,5 @@
 import { BaseComponent } from '../../core/base-component.js';
-import { apiRequest } from '../../core/api.js';
+import { AuthService } from '../../core/auth.service.js';
 
 /**
  * Navbar Component class to manage layout navigation, active pages, and session state.
@@ -40,11 +40,10 @@ export class NavbarComponent extends BaseComponent {
     const navbarContainer = this.querySelector('#navbarContainer');
     if (!navbarContainer) return;
 
-    const token = localStorage.getItem('access_token');
     const hash = window.location.hash || '#/';
 
     // Hide navbar completely if not logged in or on the login page
-    if (!token || hash === '#/login') {
+    if (!AuthService.isAuthenticated() || hash === '#/login') {
       navbarContainer.classList.add('d-none');
       return;
     }
@@ -63,12 +62,8 @@ export class NavbarComponent extends BaseComponent {
     // Display user profile name
     const userNameDisplay = this.querySelector('#navUserName');
     if (userNameDisplay) {
-      try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        userNameDisplay.textContent = user.name || user.email || 'Usuario';
-      } catch (e) {
-        userNameDisplay.textContent = 'Usuario';
-      }
+      const user = AuthService.getCurrentUser() || {};
+      userNameDisplay.textContent = user.name || user.email || 'Usuario';
     }
 
     // Set up logout button listener
@@ -79,21 +74,9 @@ export class NavbarComponent extends BaseComponent {
         try {
           // Disable button during requests
           logoutBtn.disabled = true;
-
-          // Call backend logout API
-          await apiRequest('/v1/logout', { method: 'POST' });
-        } catch (error) {
-          console.error('Error during logout API call:', error);
+          await AuthService.logout();
         } finally {
-          // Always clear local session and redirect
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user');
-
-          // Notify application components
-          window.dispatchEvent(new CustomEvent('auth-change'));
-
-          // Redirect to login
-          window.location.hash = '#/login';
+          logoutBtn.disabled = false;
         }
       });
     }

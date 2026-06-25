@@ -1,5 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
-import { apiRequest } from '../../../../core/api.js';
+import { MenuOptionService } from '../../services/menu-option.service.js';
 
 export class MenuOptionsFormComponent extends BaseComponent {
   constructor() {
@@ -53,7 +53,7 @@ export class MenuOptionsFormComponent extends BaseComponent {
     const cargarOpcionesPadre = async () => {
       if (!selectPadre) return;
       try {
-        const response = await apiRequest('/opciones-menu');
+        const response = await MenuOptionService.getAll();
         const opciones = response.data || [];
 
         opciones.forEach((opcion) => {
@@ -79,7 +79,7 @@ export class MenuOptionsFormComponent extends BaseComponent {
       if (formTitle) formTitle.textContent = 'Editar Opción de Menú';
 
       try {
-        const response = await apiRequest(`/opciones-menu/${optionId}`);
+        const response = await MenuOptionService.getById(optionId);
         const opcion = response.data;
 
         if (opcion) {
@@ -147,13 +147,9 @@ export class MenuOptionsFormComponent extends BaseComponent {
         };
 
         try {
-          const response = await apiRequest(
-            optionId ? `/opciones-menu/${optionId}` : '/opciones-menu',
-            {
-              method: optionId ? 'PUT' : 'POST',
-              body: JSON.stringify(payload),
-            }
-          );
+          const response = optionId
+            ? await MenuOptionService.update(optionId, payload)
+            : await MenuOptionService.create(payload);
 
           showAlert(
             response.message ||

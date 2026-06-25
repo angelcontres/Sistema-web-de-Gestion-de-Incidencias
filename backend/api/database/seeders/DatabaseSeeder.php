@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\OpcionMenu;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -28,35 +28,15 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Seed menu options
-        OpcionMenu::create([
-            'nombre' => 'Dashboard',
-            'ruta' => '#/',
-            'icono' => 'bi bi-grid-fill',
-            'created_by' => $user->id,
-        ]);
-
-        OpcionMenu::create([
-            'nombre' => 'Opciones de Menú',
-            'ruta' => '#/opciones-menu',
-            'icono' => 'bi bi-menu-button-wide-fill',
-            'created_by' => $user->id,
-        ]);
-
-        $config = OpcionMenu::create([
-            'nombre' => 'Configuración',
-            'ruta' => '#/config',
-            'icono' => 'bi bi-gear-fill',
-            'created_by' => $user->id,
-        ]);
-
-        OpcionMenu::create([
-            'nombre' => 'Usuarios',
-            'ruta' => '#/config/usuarios',
-            'icono' => 'bi bi-people-fill',
-            'padre_id' => $config->id,
-            'created_by' => $user->id,
-        ]);
+        $this->call(MenuOptionSeeder::class);
+        $this->call(PermissionsSeeder::class);
 
         $this->call(RoleSeeder::class);
+
+        // Assign the Admin role to the test user
+        $adminRole = Role::where('nombre', 'Admin')->first();
+        if ($adminRole) {
+            $user->roles()->sync([$adminRole->id]);
+        }
     }
 }

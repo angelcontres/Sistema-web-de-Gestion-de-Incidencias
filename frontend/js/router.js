@@ -1,14 +1,14 @@
-/**
- * Simple client-side Router for SPA
- */
+import { AuthService } from './core/auth.service.js';
 
 const routes = {
   '#/login': 'app-login',
   '#/': 'app-dashboard',
   '#/opciones-menu': 'app-menu-options-list',
   '#/opciones-menu/form': 'app-menu-options-form',
-  '#/roles':'app-role-index',
-  '#/permisos': 'app-permission-index'
+  '#/roles': 'app-role-index',
+  '#/permisos': 'app-permission-index',
+  '#/usuarios': 'app-user-index',
+  '#/usuarios/form': 'app-user-form',
 };
 
 /**
@@ -16,7 +16,7 @@ const routes = {
  */
 function navigate() {
   const hash = window.location.hash || '#/';
-  const isAuthenticated = !!localStorage.getItem('access_token');
+  const isAuthenticated = AuthService.isAuthenticated();
 
   // Auth Route Protection
   if (!isAuthenticated) {
@@ -26,6 +26,15 @@ function navigate() {
     }
   } else {
     if (hash === '#/login') {
+      window.location.hash = '#/';
+      return;
+    }
+    
+    // RBAC: Block non-admins from accessing configuration routes
+    const adminRoutes = ['#/opciones-menu', '#/roles', '#/permisos'];
+    const basePath = hash.split('?')[0].replace(/\/form$/, '');
+    
+    if (adminRoutes.includes(basePath) && !AuthService.isAdmin()) {
       window.location.hash = '#/';
       return;
     }
@@ -57,6 +66,13 @@ export function initRouter() {
 
   // Handle initial page load
   window.addEventListener('load', navigate);
+
+  // Refresh user profile details if authenticated on load
+  if (AuthService.isAuthenticated()) {
+    AuthService.refreshUser().catch((err) => {
+      console.error('Error refreshing session from /v1/me:', err);
+    });
+  }
 
   // Trigger initial navigation in case page was loaded with a hash
   navigate();
