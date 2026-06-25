@@ -16,8 +16,7 @@ export class UserFormComponent extends BaseComponent {
     this.emailInput = this.querySelector('#email');
     this.passwordInput = this.querySelector('#password');
     this.activoInput = this.querySelector('#activo');
-    this.rolesDisponiblesList = this.querySelector('#rolesDisponiblesList');
-    this.rolesAsignadosList = this.querySelector('#rolesAsignadosList');
+    this.rolesContainer = this.querySelector('#rolesCheckboxContainer');
     this.formTitle = this.querySelector('#userModalLabel');
     this.btnText = this.querySelector('#btnText');
     this.txtPasswordHelp = this.querySelector('#txtPasswordHelp');
@@ -32,20 +31,12 @@ export class UserFormComponent extends BaseComponent {
     const urlParams = new URLSearchParams(queryString);
     const userId = urlParams.get('id');
 
-    // Block access if creating new user and lacks permission
-    if (!userId && !AuthService.hasPermission('Crear Usuario')) {
-      alert('No tienes permiso para crear usuarios.');
-      window.location.hash = '#/usuarios';
-      return;
-    }
+    // Permissions are now fully checked by the backend on save, and the "Nuevo Registro"
+    // button is hidden on the index page via AuthService.hasPermission().
 
     if (this.form) {
       this.form.addEventListener('submit', (e) => this.guardarUsuario(e));
     }
-
-    // Configure Drag and Drop events
-    this.setupDragAndDrop(this.rolesDisponiblesList);
-    this.setupDragAndDrop(this.rolesAsignadosList);
 
     // Initialize data
     const init = async () => {
@@ -65,7 +56,7 @@ export class UserFormComponent extends BaseComponent {
         if (this.txtPasswordHelp) this.txtPasswordHelp.classList.add('d-none');
         if (this.passwordInput) this.passwordInput.required = true;
 
-        // Load empty roles Drag & Drop
+        // Load empty roles checkboxes
         await this.cargarRolesCheckboxes();
       }
     };
@@ -73,110 +64,48 @@ export class UserFormComponent extends BaseComponent {
     init();
   }
 
-  setupDragAndDrop(listEl) {
-    if (!listEl) return;
-
-    listEl.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      listEl.classList.add('bg-opacity-75');
-      listEl.style.borderColor = '#4f46e5';
-    });
-
-    listEl.addEventListener('dragleave', () => {
-      listEl.classList.remove('bg-opacity-75');
-      listEl.style.borderColor = '';
-    });
-
-    listEl.addEventListener('drop', (e) => {
-      e.preventDefault();
-      listEl.classList.remove('bg-opacity-75');
-      listEl.style.borderColor = '';
-      
-      const roleId = e.dataTransfer.getData('text/plain');
-      const element = this.querySelector(`[data-role-id="${roleId}"]`);
-      if (element) {
-        listEl.appendChild(element);
-        this.updateEmptyStates();
-      }
-    });
-  }
-
-  updateEmptyStates() {
-    if (!this.rolesDisponiblesList || !this.rolesAsignadosList) return;
-
-    // Available List Empty State
-    const hasDisponibles = this.rolesDisponiblesList.querySelectorAll('[data-role-id]').length > 0;
-    const dispEmptyIndicator = this.rolesDisponiblesList.querySelector('.empty-indicator');
-    if (!hasDisponibles) {
-      if (!dispEmptyIndicator) {
-        this.rolesDisponiblesList.innerHTML = '<span class="empty-indicator text-muted small text-center my-3 w-100">Sin roles disponibles</span>';
-      }
-    } else if (dispEmptyIndicator) {
-      dispEmptyIndicator.remove();
-    }
-
-    // Assigned List Empty State
-    const hasAsignados = this.rolesAsignadosList.querySelectorAll('[data-role-id]').length > 0;
-    const asigEmptyIndicator = this.rolesAsignadosList.querySelector('.empty-indicator');
-    if (!hasAsignados) {
-      if (!asigEmptyIndicator) {
-        this.rolesAsignadosList.innerHTML = '<span class="empty-indicator text-muted small text-center my-3 w-100">Arrastre aquí...</span>';
-      }
-    } else if (asigEmptyIndicator) {
-      asigEmptyIndicator.remove();
-    }
-  }
-
   async cargarRolesCheckboxes(rolesSeleccionadosIds = []) {
-    if (!this.rolesDisponiblesList || !this.rolesAsignadosList) return;
+    if (!this.rolesContainer) return;
 
     try {
       const roles = await RoleService.getAll();
       const listRoles = roles || [];
 
-      this.rolesDisponiblesList.innerHTML = '';
-      this.rolesAsignadosList.innerHTML = '';
+      this.rolesContainer.innerHTML = '';
 
       if (listRoles.length === 0) {
-        this.rolesDisponiblesList.innerHTML =
-          '<span class="text-muted small text-center my-3 w-100">No hay roles registrados.</span>';
-        this.updateEmptyStates();
+        this.rolesContainer.innerHTML =
+          '<span class="text-muted small">No hay roles registrados en el sistema.</span>';
         return;
       }
 
       listRoles.forEach((role) => {
-        const item = document.createElement('div');
-        item.className = 'p-2 border rounded bg-white shadow-sm d-flex align-items-center gap-2 role-draggable-item';
-        item.style.cursor = 'grab';
-        item.style.userSelect = 'none';
-        item.setAttribute('draggable', 'true');
-        item.setAttribute('data-role-id', role.id);
-        
-        item.innerHTML = `
-          <i class="bi bi-grip-vertical text-muted"></i>
-          <span class="fw-semibold small text-dark">${role.nombre}</span>
-        `;
+        const div = document.createElement('div');
+        div.className = 'form-check mb-1';
 
-        item.addEventListener('dragstart', (e) => {
-          e.dataTransfer.setData('text/plain', role.id);
-          item.style.opacity = '0.5';
-        });
-
-        item.addEventListener('dragend', () => {
-          item.style.opacity = '1';
-        });
+        const input = document.createElement('input');
+        input.className = 'form-check-input role-checkbox';
+        input.type = 'checkbox';
+        input.value = role.id;
+        input.id = `role-chk-${role.id}`;
 
         if (rolesSeleccionadosIds.includes(role.id)) {
-          this.rolesAsignadosList.appendChild(item);
-        } else {
-          this.rolesDisponiblesList.appendChild(item);
+          input.checked = true;
         }
-      });
 
-      this.updateEmptyStates();
+        const label = document.createElement('label');
+        label.className = 'form-check-label text-dark small';
+        label.htmlFor = `role-chk-${role.id}`;
+        label.textContent = role.nombre;
+
+        div.appendChild(input);
+        div.appendChild(label);
+        this.rolesContainer.appendChild(div);
+      });
     } catch (error) {
       console.error('Error al cargar catálogo de roles:', error);
-      this.rolesDisponiblesList.innerHTML = '<span class="text-danger small">Error al cargar roles.</span>';
+      this.rolesContainer.innerHTML =
+        '<span class="text-danger small">Error al cargar roles.</span>';
     }
   }
 
@@ -221,8 +150,8 @@ export class UserFormComponent extends BaseComponent {
     const password = this.passwordInput.value;
     const activo = this.activoInput.checked;
 
-    const assignedItems = this.rolesAsignadosList.querySelectorAll('[data-role-id]');
-    const roles = Array.from(assignedItems).map((item) => parseInt(item.getAttribute('data-role-id')));
+    const checkboxes = this.querySelectorAll('.role-checkbox:checked');
+    const roles = Array.from(checkboxes).map((chk) => parseInt(chk.value));
 
     const payload = {
       username,
@@ -245,11 +174,10 @@ export class UserFormComponent extends BaseComponent {
 
       // Redirect back to users listing
       window.location.hash = '#/usuarios';
-
     } catch (error) {
       console.error('Error al guardar usuario:', error);
       this.mostrarError(error.message || 'Error al procesar el formulario.');
-      
+
       // Reset loading indicators
       if (this.btnSubmit) this.btnSubmit.disabled = false;
       if (this.loadingSpinner) this.loadingSpinner.classList.add('d-none');

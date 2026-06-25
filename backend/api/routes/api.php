@@ -5,17 +5,20 @@ use App\Http\Controllers\OpcionMenuController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\Route;
+
+use \App\Http\Middleware\CheckResourcePermission;
+
+use \Illuminate\Support\Facades\Route;
 
 // Rutas públicas
 Route::post('/v1/login', [AuthController::class, 'login']);
 
 // Rutas protegidas por autenticación
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(function () {
     Route::post('/v1/logout', [AuthController::class, 'logout']);
 
     Route::get('/v1/me', [AuthController::class, 'me']);
-    Route::post('/v1/refresh', [AuthController::class, 'refresh']);
+    Route::get('/v1/me/menu', [\App\Http\Controllers\UserMenuController::class, 'index']);
 
     Route::apiResource('v1/opciones-menu', OpcionMenuController::class);
     Route::apiResource('v1/roles', RoleController::class);

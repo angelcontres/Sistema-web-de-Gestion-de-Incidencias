@@ -11,7 +11,7 @@ export class UserIndexComponent extends BaseComponent {
     console.log('Página de mantenimiento de usuarios inicializada.');
 
     const btnNuevoRegistro = this.querySelector('#btn-nuevo-registro');
-    if (btnNuevoRegistro && !AuthService.hasPermission('Crear Usuario')) {
+    if (btnNuevoRegistro && !AuthService.hasPermission('CREATE', 'usuarios')) {
       btnNuevoRegistro.classList.add('d-none');
     }
 
@@ -21,39 +21,55 @@ export class UserIndexComponent extends BaseComponent {
       // 1. Configurar las columnas de forma parametrizable
       tblDatos.configure({
         columns: [
-          { header: 'ID', key: 'id', class: 'ps-4 text-secondary fw-semibold', format: (id) => `#${id}` },
+          {
+            header: 'ID',
+            key: 'id',
+            class: 'ps-4 text-secondary fw-semibold',
+            format: (id) => `#${id}`,
+          },
           { header: 'Usuario', key: 'username', class: 'fw-semibold text-dark' },
           { header: 'Nombre', key: 'name' },
           { header: 'Email', key: 'email', class: 'text-muted' },
-          { 
+          {
             header: 'Roles',
-            render: (user) => user.roles && user.roles.length > 0 
-              ? user.roles.map(r => `<span class="badge bg-primary-soft text-primary me-1 small fw-semibold">${r.nombre}</span>`).join('') 
-              : '-'
+            render: (user) =>
+              user.roles && user.roles.length > 0
+                ? user.roles
+                    .map(
+                      (r) =>
+                        `<span class="badge bg-primary-soft text-primary me-1 small fw-semibold">${r.nombre}</span>`
+                    )
+                    .join('')
+                : '-',
           },
-          { 
+          {
             header: 'Estado',
             render: (user) => `
               <span class="badge bg-${user.activo ? 'success' : 'danger'}-soft text-${user.activo ? 'success' : 'danger'} small fw-semibold">
                 ${user.activo ? 'Activo' : 'Inactivo'}
               </span>
-            `
+            `,
           },
-          { 
+          {
             header: 'Creado el',
-            render: (user) => user.created_at 
-              ? new Date(user.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' }) 
-              : '-'
+            render: (user) =>
+              user.created_at
+                ? new Date(user.created_at).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                : '-',
           },
           {
             header: 'Acciones',
             class: 'text-center',
             actions: [
               { name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' },
-              { name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }
-            ]
-          }
-        ]
+              { name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' },
+            ],
+          },
+        ],
       });
 
       // 2. Escuchar acciones de la tabla (editar / eliminar)

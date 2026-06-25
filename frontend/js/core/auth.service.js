@@ -4,16 +4,15 @@ export const AuthService = {
   async login(email, password) {
     const response = await apiRequest('/v1/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
     if (response && response.access_token) {
       localStorage.setItem('access_token', response.access_token);
-      // Fetch user profile and permissions from /v1/me
-      await this.refreshUser();
+      localStorage.setItem('user', JSON.stringify(response.user));
     }
     return response;
   },
-  
+
   async logout() {
     try {
       await apiRequest('/v1/logout', { method: 'POST' });
@@ -68,14 +67,24 @@ export const AuthService = {
     }
   },
 
-  hasPermission(permissionName) {
+  hasPermission(accion, recurso) {
+    if (this.isAdmin()) return true;
+
     const user = this.getCurrentUser();
     if (!user || !Array.isArray(user.permisos)) return false;
-    return user.permisos.some(p => p.toLowerCase() === permissionName.toLowerCase());
+
+    return user.permisos.some(
+      (p) =>
+        p &&
+        p.accion &&
+        p.recurso &&
+        p.accion.toUpperCase() === accion.toUpperCase() &&
+        p.recurso.toLowerCase() === recurso.toLowerCase()
+    );
   },
 
   isAdmin() {
     const user = this.getCurrentUser();
     return user ? !!user.is_admin : false;
-  }
+  },
 };

@@ -4,24 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Models\User;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
-class UserController extends Controller implements HasMiddleware
+class UserController extends Controller
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
-    public static function middleware(): array
-    {
-        return [
-            new Middleware('permission:Ver Usuario', only: ['index', 'show']),
-            new Middleware('permission:Crear Usuario', only: ['store']),
-            new Middleware('permission:Actualizar Usuario', only: ['update']),
-            new Middleware('permission:Eliminar Usuario', only: ['destroy']),
-        ];
-    }
-
     /**
      * Display a listing of the resource.
      */

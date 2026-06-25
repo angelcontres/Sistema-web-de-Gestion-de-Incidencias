@@ -9,6 +9,7 @@ class UserRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        // Authorization is now globally handled by CheckResourcePermission middleware
         return true;
     }
 
@@ -23,8 +24,8 @@ class UserRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username'.($userId ? ','.$userId : ''),
-            'email' => 'required|email|max:255|unique:users,email'.($userId ? ','.$userId : ''),
+            'username' => 'required|string|max:255|unique:users,username' . ($userId ? ',' . $userId : ''),
+            'email' => 'required|email|max:255|unique:users,email' . ($userId ? ',' . $userId : ''),
             'password' => $userId ? 'nullable|string|min:8' : 'required|string|min:8', // password optional on update
             'activo' => 'nullable|boolean',
             'roles' => 'nullable|array',

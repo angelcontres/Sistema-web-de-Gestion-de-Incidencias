@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\OpcionMenu;
-use App\Models\User;
+use \App\Models\User;
 use Illuminate\Database\Seeder;
 
 class MenuOptionSeeder extends Seeder
