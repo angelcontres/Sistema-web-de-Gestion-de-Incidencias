@@ -9,6 +9,11 @@ class UserRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        // Require 'Crear Usuario' permission for POST (create)
+        if ($this->isMethod('post')) {
+            return $this->user() && $this->user()->hasPermission('Crear Usuario');
+        }
+
         return true;
     }
 
@@ -23,8 +28,8 @@ class UserRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,'.$userId,
-            'email' => 'required|email|max:255|unique:users,email,'.$userId,
+            'username' => 'required|string|max:255|unique:users,username' . ($userId ? ',' . $userId : ''),
+            'email' => 'required|email|max:255|unique:users,email' . ($userId ? ',' . $userId : ''),
             'password' => $userId ? 'nullable|string|min:8' : 'required|string|min:8', // password optional on update
             'activo' => 'nullable|boolean',
             'roles' => 'nullable|array',

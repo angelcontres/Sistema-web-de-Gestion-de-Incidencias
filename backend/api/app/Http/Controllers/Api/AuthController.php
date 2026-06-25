@@ -27,13 +27,29 @@ class AuthController extends Controller
         // 3. Crear el token de acceso para el usuario autenticado
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // 4. Retornar respuesta
+        // 4. Obtener permisos del usuario
+        $user->load('roles.permisos');
+        $permisosList = collect();
+        foreach ($user->roles as $role) {
+            foreach ($role->permisos as $permiso) {
+                $permisosList->push($permiso->nombre);
+            }
+        }
+        $permisosList = $permisosList->unique()->values();
+
+        $isAdmin = clone $user;
+        $isAdminFlag = $isAdmin->roles()->where('nombre', 'Admin')->exists();
+
+        // 5. Retornar respuesta
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => [
+                'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'is_admin' => $isAdminFlag,
+                'permisos' => $permisosList,
             ],
         ], 200);
     }
@@ -49,13 +65,27 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = clone $request->user();
+        $user->load('roles.permisos');
+
+        $permisosList = collect();
+        foreach ($user->roles as $role) {
+            foreach ($role->permisos as $permiso) {
+                $permisosList->push($permiso->nombre);
+            }
+        }
+        $permisosList = $permisosList->unique()->values();
+
+        $isAdminFlag = clone $user;
+        $isAdmin = $isAdminFlag->roles()->where('nombre', 'Admin')->exists();
 
         return response()->json([
             'user' => [
+                'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                // TODO - Agregar los campos de menu y permisos que correspondan al usuario autenticado
+                'is_admin' => $isAdmin,
+                'permisos' => $permisosList,
             ],
         ], 200);
     }

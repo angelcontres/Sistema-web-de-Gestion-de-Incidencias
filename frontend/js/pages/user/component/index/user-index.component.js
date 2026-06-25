@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UserService } from '../../services/user.service.js';
+import { AuthService } from '../../../../core/auth.service.js';
 
 export class UserIndexComponent extends BaseComponent {
   constructor() {
@@ -8,6 +9,11 @@ export class UserIndexComponent extends BaseComponent {
 
   async onInit() {
     console.log('Página de mantenimiento de usuarios inicializada.');
+
+    const btnNuevoRegistro = this.querySelector('#btn-nuevo-registro');
+    if (btnNuevoRegistro && !AuthService.hasPermission('Crear Usuario')) {
+      btnNuevoRegistro.classList.add('d-none');
+    }
 
     const tblDatos = this.querySelector('#tbl-datos-usuarios');
 

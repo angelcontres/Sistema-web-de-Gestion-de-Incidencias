@@ -29,6 +29,15 @@ function navigate() {
       window.location.hash = '#/';
       return;
     }
+    
+    // RBAC: Block non-admins from accessing configuration routes
+    const adminRoutes = ['#/opciones-menu', '#/roles', '#/permisos'];
+    const basePath = hash.split('?')[0].replace(/\/form$/, '');
+    
+    if (adminRoutes.includes(basePath) && !AuthService.isAdmin()) {
+      window.location.hash = '#/';
+      return;
+    }
   }
 
   // Find component or default to dashboard

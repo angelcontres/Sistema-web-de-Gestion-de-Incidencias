@@ -37,5 +37,16 @@ export const AuthService = {
     } catch {
       return null;
     }
+  },
+
+  hasPermission(permissionName) {
+    const user = this.getCurrentUser();
+    if (!user || !Array.isArray(user.permisos)) return false;
+    return user.permisos.some(p => p.toLowerCase() === permissionName.toLowerCase());
+  },
+
+  isAdmin() {
+    const user = this.getCurrentUser();
+    return user ? !!user.is_admin : false;
   }
 };

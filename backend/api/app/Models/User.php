@@ -39,4 +39,19 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Role::class, 'roles_users', 'user_id', 'rol_id')->withTimestamps();
     }
+
+    /**
+     * Check if the user has a specific permission.
+     */
+    public function hasPermission(string $permissionName): bool
+    {
+        foreach ($this->roles()->with('permisos')->get() as $role) {
+            foreach ($role->permisos as $permiso) {
+                if (strtolower($permiso->nombre) === strtolower($permissionName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

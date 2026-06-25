@@ -1,6 +1,7 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UserService } from '../../services/user.service.js';
 import { RoleService } from '../../../role/services/role.service.js';
+import { AuthService } from '../../../../core/auth.service.js';
 
 export class UserFormComponent extends BaseComponent {
   constructor() {
@@ -29,6 +30,13 @@ export class UserFormComponent extends BaseComponent {
     const queryString = hashParts.length > 1 ? hashParts[1] : '';
     const urlParams = new URLSearchParams(queryString);
     const userId = urlParams.get('id');
+
+    // Block access if creating new user and lacks permission
+    if (!userId && !AuthService.hasPermission('Crear Usuario')) {
+      alert('No tienes permiso para crear usuarios.');
+      window.location.hash = '#/usuarios';
+      return;
+    }
 
     if (this.form) {
       this.form.addEventListener('submit', (e) => this.guardarUsuario(e));

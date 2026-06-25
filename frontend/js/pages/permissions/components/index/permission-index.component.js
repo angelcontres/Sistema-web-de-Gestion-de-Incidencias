@@ -69,7 +69,7 @@ export class PermissionIndexComponent extends BaseComponent {
         tdDescripcion.textContent = permiso.descripcion || '-';
 
         const tdOpcionMenu = document.createElement('td');
-        tdOpcionMenu.textContent = `Opción #${permiso.opcion_menu_id}`;
+        tdOpcionMenu.textContent = `${permiso.opcion_menu.nombre}`;
 
         const tdFecha = document.createElement('td');
         tdFecha.className = 'text-muted small';
