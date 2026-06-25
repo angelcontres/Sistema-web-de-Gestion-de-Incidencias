@@ -1,14 +1,14 @@
-/**
- * Simple client-side Router for SPA
- */
+import { AuthService } from './core/auth.service.js';
 
 const routes = {
   '#/login': 'app-login',
   '#/': 'app-dashboard',
   '#/opciones-menu': 'app-menu-options-list',
   '#/opciones-menu/form': 'app-menu-options-form',
-  '#/roles':'app-role-index',
-  '#/permisos': 'app-permission-index'
+  '#/roles': 'app-role-index',
+  '#/permisos': 'app-permission-index',
+  '#/usuarios': 'app-user-index',
+  '#/usuarios/form': 'app-user-form',
 };
 
 /**
@@ -16,7 +16,7 @@ const routes = {
  */
 function navigate() {
   const hash = window.location.hash || '#/';
-  const isAuthenticated = !!localStorage.getItem('access_token');
+  const isAuthenticated = AuthService.isAuthenticated();
 
   // Auth Route Protection
   if (!isAuthenticated) {

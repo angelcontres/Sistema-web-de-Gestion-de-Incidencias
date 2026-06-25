@@ -156,7 +156,7 @@ export class PermissionIndexComponent extends BaseComponent {
     selectOpcion.innerHTML = '<option value="" disabled selected>Seleccione una opción...</option>';
 
     try {
-      const response = await apiRequest('/opciones-menu');
+      const response = await apiRequest('/v1/opciones-menu');
       const opciones = response.data || [];
 
       opciones.forEach((opcion) => {
