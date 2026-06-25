@@ -55,10 +55,10 @@ class Role extends Model
     }
 
     /**
-     * Relación: Los usuarios que poseen este rol.
+     * Relación: Permisos asignados a este rol.
      */
-    public function users(): BelongsToMany
+    public function permisos(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'roles_users', 'rol_id', 'user_id')->withTimestamps();
+        return $this->belongsToMany(Permiso::class, 'roles_permisos', 'rol_id', 'permiso_id');
     }
 }

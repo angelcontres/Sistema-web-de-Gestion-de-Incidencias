@@ -1,6 +1,8 @@
 <div class="page-fade-in">
   <!-- Cabecera de Página -->
-  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+  <div
+    class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4"
+  >
     <div>
       <h1 class="h3 fw-bold text-dark mb-1">Roles de Usuario</h1>
       <p class="text-muted small mb-0">
@@ -8,17 +10,92 @@
       </p>
     </div>
     <!-- Botón para abrir el modal en modo creación -->
-    <button id="btnNuevoRol" class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2">
+    <button
+      id="btnNuevoRol"
+      class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2"
+    >
       <i class="bi bi-plus-lg"></i> Nuevo Registro
     </button>
   </div>
 
-  <!-- Tabla Auto-Contenida (Maneja tarjeta, loading, vacío y errores internamente) -->
-  <app-data-table id="tbl-datos-roles" title="Lista de Roles" empty-text="No se encontraron roles registrados."></app-data-table>
+  <!-- Tarjeta Principal -->
+  <div class="card custom-card border-0 shadow-sm overflow-hidden">
+    <div
+      class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center"
+    >
+      <h5 class="card-title fw-bold mb-0 text-dark">Lista de Roles</h5>
+      <span
+        class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small"
+        id="totalRolesBadge"
+        >Cargando...</span
+      >
+    </div>
+
+    <!-- Mensajes de Alerta -->
+    <div id="errorAlert" class="alert alert-danger mx-4 my-2 d-none">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <span id="errorMessage">Error al cargar roles.</span>
+    </div>
+    <div id="successAlert" class="alert alert-success mx-4 my-2 d-none">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <span id="successMessage">Acción completada con éxito.</span>
+    </div>
+
+    <!-- Contenido de la Tabla -->
+    <div class="card-body p-0">
+      <!-- Spinner de Carga -->
+      <div id="loadingSpinner" class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+
+      <!-- Estado Vacío -->
+      <div id="emptyState" class="text-center py-5 d-none">
+        <i class="bi bi-key-slash text-muted display-4"></i>
+        <p class="text-muted mt-2">No se encontraron roles registrados.</p>
+      </div>
+
+      <!-- Grid de Roles (Tarjetas) -->
+      <div class="row g-3 d-none px-4 pb-4" id="rolesGrid">
+        <!-- Las tarjetas se inyectarán por JS -->
+      </div>
+
+      <!-- Sección de Permisos Estilo Acordeón -->
+      <div id="permissionsAccordionContainer" class="d-none bg-light border-top p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark mb-0">
+            Permisos del Rol: <span id="activeRoleName" class="text-primary"></span>
+          </h6>
+          <button class="btn btn-sm btn-outline-secondary" id="btnClosePermissions">Cerrar</button>
+        </div>
+
+        <form id="assignPermissionsForm" novalidate>
+          <input type="hidden" id="assignRoleId" />
+
+          <div class="accordion shadow-sm" id="accordionMenus">
+            <!-- Los items del acordeón (menús y permisos) irán aquí -->
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnAssignSubmit">
+              <span>Guardar Permisos</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Modal de Bootstrap 5 para Crear/Editar Rol -->
-<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="roleModal"
+  tabindex="-1"
+  aria-labelledby="roleModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
@@ -34,34 +111,51 @@
 
         <form id="roleForm" novalidate>
           <!-- Campo oculto para guardar el ID cuando se edita -->
-          <input type="hidden" id="roleId">
-          
+          <input type="hidden" id="roleId" />
+
           <!-- Nombre -->
           <div class="mb-3">
             <label for="nombre" class="form-label fw-semibold text-dark">Nombre del Rol</label>
-            <input type="text" class="form-control" id="nombre" required placeholder="Ej: Administrador, Soporte">
+            <input
+              type="text"
+              class="form-control"
+              id="nombre"
+              required
+              placeholder="Ej: Administrador, Soporte"
+            />
             <div class="invalid-feedback">El nombre es obligatorio.</div>
           </div>
 
           <!-- Descripción -->
           <div class="mb-3">
             <label for="descripcion" class="form-label fw-semibold text-dark">Descripción</label>
-            <textarea class="form-control" id="descripcion" rows="3" placeholder="Describe las responsabilidades de este rol..."></textarea>
+            <textarea
+              class="form-control"
+              id="descripcion"
+              rows="3"
+              placeholder="Describe las responsabilidades de este rol..."
+            ></textarea>
           </div>
 
           <!-- Rol Padre -->
           <div class="mb-4">
-            <label for="padre_id" class="form-label fw-semibold text-dark">Rol Padre (Jerarquía)</label>
+            <label for="padre_id" class="form-label fw-semibold text-dark"
+              >Rol Padre (Jerarquía)</label
+            >
             <select class="form-select" id="padre_id">
               <option value="" selected>Ninguno (Rol Principal)</option>
               <!-- Las opciones se cargarán dinámicamente -->
             </select>
-            <div class="form-text text-muted">Permite asignar este rol bajo la supervisión de otro.</div>
+            <div class="form-text text-muted">
+              Permite asignar este rol bajo la supervisión de otro.
+            </div>
           </div>
 
           <!-- Botones de Acción -->
           <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">
+              Cancelar
+            </button>
             <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnSubmit">
               <span id="btnText">Guardar Rol</span>
             </button>

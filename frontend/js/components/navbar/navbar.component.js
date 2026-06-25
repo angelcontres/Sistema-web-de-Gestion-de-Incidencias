@@ -47,6 +47,14 @@ export class NavbarComponent extends BaseComponent {
       navbarContainer.classList.add('d-none');
       return;
     }
+    const toggleBtn = this.querySelector('#sidebarToggleBtn');
+      if (toggleBtn && !toggleBtn.dataset.hasListener) {
+        toggleBtn.dataset.hasListener = 'true';
+        toggleBtn.addEventListener('click', () => {
+        // Disparamos un evento global que el Sidebar va a escuchar
+        window.dispatchEvent(new CustomEvent('toggle-sidebar'));
+        });
+      }
 
     // Show navbar
     navbarContainer.classList.remove('d-none');
