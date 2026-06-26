@@ -24,15 +24,7 @@ export class PermissionIndexComponent extends BaseComponent {
       formComponent.addEventListener('permiso-guardado', (e) => {
         this.mostrarAlertaExito(e.detail.mensaje);
         if (tblDatos && tblDatos.load) {
-          tblDatos.load(async () => {
-            const response = await apiRequest('/v1/permisos');
-            const totalPermisosBadge = this.querySelector('#totalPermisosBadge');
-            const permisos = Array.isArray(response) ? response : response.data || [];
-            if (totalPermisosBadge) {
-              totalPermisosBadge.textContent = `${permisos.length} Registros`;
-            }
-            return response;
-          });
+          tblDatos.load('/v1/permisos');
         }
       });
     }
@@ -71,8 +63,19 @@ export class PermissionIndexComponent extends BaseComponent {
             header: 'Acciones',
             class: 'text-center',
             actions: [
-              ...(AuthService.hasPermission('UPDATE', 'permisos') ? [{ name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' }] : []),
-              ...(AuthService.hasPermission('DELETE', 'permisos') ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }] : []),
+              ...(AuthService.hasPermission('UPDATE', 'permisos')
+                ? [
+                    {
+                      name: 'editar',
+                      label: 'Editar',
+                      icon: 'bi-pencil-square',
+                      class: 'text-primary',
+                    },
+                  ]
+                : []),
+              ...(AuthService.hasPermission('DELETE', 'permisos')
+                ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }]
+                : []),
             ],
           },
         ],
@@ -87,19 +90,7 @@ export class PermissionIndexComponent extends BaseComponent {
         }
       });
 
-      // Pass a fetcher function directly since there is no PermissionService
-      tblDatos.load(async () => {
-        const response = await apiRequest('/v1/permisos');
-
-        // Actualizar el badge de total de registros si existe
-        const totalPermisosBadge = this.querySelector('#totalPermisosBadge');
-        const permisos = Array.isArray(response) ? response : response.data || [];
-        if (totalPermisosBadge) {
-          totalPermisosBadge.textContent = `${permisos.length} Registros`;
-        }
-
-        return response;
-      });
+      tblDatos.load('/v1/permisos');
     }
   }
 
@@ -112,15 +103,7 @@ export class PermissionIndexComponent extends BaseComponent {
 
         const tblDatos = this.querySelector('#tbl-datos-permisos');
         if (tblDatos && tblDatos.load) {
-          tblDatos.load(async () => {
-            const response = await apiRequest('/v1/permisos');
-            const totalPermisosBadge = this.querySelector('#totalPermisosBadge');
-            const permisos = Array.isArray(response) ? response : response.data || [];
-            if (totalPermisosBadge) {
-              totalPermisosBadge.textContent = `${permisos.length} Registros`;
-            }
-            return response;
-          });
+          tblDatos.load('/v1/permisos');
         }
       })
       .catch((err) => {

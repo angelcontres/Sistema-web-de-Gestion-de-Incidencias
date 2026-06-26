@@ -15,32 +15,18 @@
     </button>
   </div>
 
-  <!-- Tarjeta Principal -->
-  <div class="card custom-card border-0 shadow-sm overflow-hidden">
-    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-      <span class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small" id="totalPermisosBadge">
-        Cargando...
-      </span>
-    </div>
-
-    <!-- Mensajes de Alerta -->
-    <div id="errorAlert" class="alert alert-danger mx-4 my-2 d-none">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <span id="errorMessage">Error al cargar permisos.</span>
-    </div>
-
-    <div id="successAlert" class="alert alert-success mx-4 my-2 d-none">
-      <i class="bi bi-check-circle-fill me-2"></i>
-      <span id="successMessage">Acción completada con éxito.</span>
-    </div>
-
-    <!-- Tabla Auto-Contenida (Maneja tarjeta, loading, vacío y errores internamente) -->
-    <app-data-table
-      id="tbl-datos-permisos"
-      title="Lista de Permisos"
-      empty-text="No se encontraron permisos registrados."
-    ></app-data-table>
+  <!-- Mensajes de Alerta -->
+  <div id="successAlert" class="alert alert-success my-2 d-none">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    <span id="successMessage">Acción completada con éxito.</span>
   </div>
+
+  <!-- Tabla Auto-Contenida (Maneja tarjeta, loading, vacío y errores internamente) -->
+  <app-data-table
+    id="tbl-datos-permisos"
+    title="Lista de Permisos"
+    empty-text="No se encontraron permisos registrados."
+  ></app-data-table>
 
   <!-- Modal component -->
   <app-permission-form id="app-permission-form"></app-permission-form>

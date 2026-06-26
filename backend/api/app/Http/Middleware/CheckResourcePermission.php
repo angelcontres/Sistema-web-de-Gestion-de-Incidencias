@@ -59,10 +59,6 @@ class CheckResourcePermission
             return $next($request);
         }
 
-        // Permitir a cualquier usuario ver las opciones del sidebar (el controlador ya se encarga de filtrar)
-        if ($recurso === 'opciones-menu' && $accion === 'READ' && $request->boolean('for_sidebar')) {
-            return $next($request);
-        }
 
         // Replace hyphens with underscores to match db convention
         $recurso = str_replace('-', '_', $recurso);
