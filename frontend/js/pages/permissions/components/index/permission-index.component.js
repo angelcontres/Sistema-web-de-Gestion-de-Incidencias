@@ -12,8 +12,12 @@ export class PermissionIndexComponent extends BaseComponent {
     const formComponent = this.querySelector('#app-permission-form');
 
     const btnNuevoRegistro = this.querySelector('#btn-nuevo-registro');
-    if (btnNuevoRegistro && formComponent) {
-      btnNuevoRegistro.addEventListener('click', () => formComponent.abrirModalCrear());
+    if (btnNuevoRegistro) {
+      if (!AuthService.hasPermission('CREATE', 'permisos')) {
+        btnNuevoRegistro.classList.add('d-none');
+      } else if (formComponent) {
+        btnNuevoRegistro.addEventListener('click', () => formComponent.abrirModalCrear());
+      }
     }
 
     if (formComponent) {
@@ -67,8 +71,8 @@ export class PermissionIndexComponent extends BaseComponent {
             header: 'Acciones',
             class: 'text-center',
             actions: [
-              { name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' },
-              { name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' },
+              ...(AuthService.hasPermission('UPDATE', 'permisos') ? [{ name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' }] : []),
+              ...(AuthService.hasPermission('DELETE', 'permisos') ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }] : []),
             ],
           },
         ],

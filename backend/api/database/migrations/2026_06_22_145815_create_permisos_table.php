@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('permisos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 50);
+            $table->string('nombre');
             $table->string('accion', 20);
-            $table->string('recurso', 20);
+            $table->string('recurso', 100);
             $table->foreignId('opcion_menu_id')->constrained('opciones_menu')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();

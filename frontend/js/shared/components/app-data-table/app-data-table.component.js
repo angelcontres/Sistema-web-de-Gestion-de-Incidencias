@@ -1,5 +1,5 @@
-import { BaseComponent } from '../../../core/base-component.js';
-import { apiRequest } from '../../../core/api.js';
+import { BaseComponent } from "../../../core/base-component.js";
+import { apiRequest } from "../../../core/api.js";
 
 // Helper to resolve nested object keys (e.g. 'parent.nombre')
 function getNestedValue(obj, path) {
@@ -15,7 +15,7 @@ export class AppDataTableComponent extends BaseComponent {
 
     // Promise to handle the async template loading race condition
     this.isReady = false;
-    this.readyPromise = new Promise((resolve) => {
+    this.readyPromise = new Promise(resolve => {
       this.resolveReady = resolve;
     });
   }
@@ -23,9 +23,9 @@ export class AppDataTableComponent extends BaseComponent {
   async connectedCallback() {
     // 1. Extract column definitions from light DOM child nodes (if any)
     const colDefs = Array.from(this.querySelectorAll('column-def'));
-
+    
     if (colDefs.length > 0) {
-      this.columns = colDefs.map((col) => {
+      this.columns = colDefs.map(col => {
         const templateEl = col.querySelector('template');
         let renderFn = null;
 
@@ -44,7 +44,7 @@ export class AppDataTableComponent extends BaseComponent {
           key: col.getAttribute('key') || null,
           class: col.getAttribute('class') || '',
           format: col.getAttribute('format') || null,
-          render: renderFn,
+          render: renderFn
         };
       });
     }
@@ -87,15 +87,13 @@ export class AppDataTableComponent extends BaseComponent {
           const action = actionBtn.getAttribute('data-action');
           const rowIndex = actionBtn.closest('tr').getAttribute('data-row-index');
           const item = this.data[rowIndex];
-
+          
           if (item) {
-            this.dispatchEvent(
-              new CustomEvent('row-action', {
-                detail: { action, item, index: parseInt(rowIndex), element: actionBtn },
-                bubbles: true,
-                composed: true,
-              })
-            );
+            this.dispatchEvent(new CustomEvent('row-action', {
+              detail: { action, item, index: parseInt(rowIndex), element: actionBtn },
+              bubbles: true,
+              composed: true
+            }));
           }
         }
       });
@@ -128,13 +126,9 @@ export class AppDataTableComponent extends BaseComponent {
    */
   renderHeaders() {
     if (this.headerRow && this.columns.length > 0) {
-      this.headerRow.innerHTML = this.columns
-        .map(
-          (col) => `
+      this.headerRow.innerHTML = this.columns.map(col => `
         <th class="${col.class || ''}">${col.header}</th>
-      `
-        )
-        .join('');
+      `).join('');
     }
   }
 
@@ -172,8 +166,8 @@ export class AppDataTableComponent extends BaseComponent {
       } else {
         response = await apiRequest(endpointOrService);
       }
-      const list = Array.isArray(response) ? response : response.data || [];
-
+      const list = Array.isArray(response) ? response : (response.data || []);
+      
       this.data = list;
       this.loadingSpinner.classList.add('d-none');
 
@@ -209,7 +203,7 @@ export class AppDataTableComponent extends BaseComponent {
       tr.className = 'border-bottom border-light';
       tr.setAttribute('data-row-index', index);
 
-      this.columns.forEach((col) => {
+      this.columns.forEach(col => {
         const td = document.createElement('td');
         if (col.class) {
           td.className = col.class;
@@ -224,21 +218,17 @@ export class AppDataTableComponent extends BaseComponent {
                 <i class="bi bi-three-dots-vertical fs-6"></i>
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                ${col.actions
-                  .map(
-                    (act) => `
+                ${col.actions.map(act => `
                   <li>
                     <button class="dropdown-item d-flex align-items-center gap-2 px-3 py-2 ${act.class || ''} small fw-medium border-0 bg-transparent w-100 text-start" type="button" data-action="${act.name}">
                       ${act.icon ? `<i class="bi ${act.icon}"></i>` : ''} ${act.label}
                     </button>
                   </li>
-                `
-                  )
-                  .join('')}
+                `).join('')}
               </ul>
             </div>
           `;
-        }
+        } 
         // Render custom JS callback
         else if (col.render && typeof col.render === 'function') {
           try {
@@ -252,7 +242,7 @@ export class AppDataTableComponent extends BaseComponent {
             console.error('Error rendering template callback for row:', item, err);
             td.textContent = 'Error';
           }
-        }
+        } 
         // Render compiled ES6 dynamic template function (from connected HTML slots)
         else if (col.render) {
           try {
@@ -261,11 +251,11 @@ export class AppDataTableComponent extends BaseComponent {
             console.error('Error rendering template for row:', item, err);
             td.textContent = 'Error';
           }
-        }
+        } 
         // Render standard key text
         else if (col.key) {
           let val = getNestedValue(item, col.key);
-
+          
           if (col.format) {
             try {
               if (typeof col.format === 'function') {
@@ -278,7 +268,7 @@ export class AppDataTableComponent extends BaseComponent {
               console.error('Error formatting value:', val, err);
             }
           }
-
+          
           td.textContent = val !== undefined && val !== null ? val : '-';
         } else {
           td.textContent = '-';

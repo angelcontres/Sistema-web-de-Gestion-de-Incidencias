@@ -5,24 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Permiso;
 use App\Models\OpcionMenu;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 
-class PermisoController extends Controller implements HasMiddleware
+class PermisoController extends Controller
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
-    public static function middleware(): array
-    {
-        return [
-            new Middleware('permission:Ver Permiso', only: ['index', 'show']),
-            new Middleware('permission:Crear Permiso', only: ['store']),
-            new Middleware('permission:Actualizar Permiso', only: ['update']),
-            new Middleware('permission:Eliminar Permiso', only: ['destroy']),
-        ];
-    }
 
     /**
      * Display a listing of the resource.
@@ -39,13 +25,22 @@ class PermisoController extends Controller implements HasMiddleware
     {
         $opcionMenu = OpcionMenu::findOrFail($request->opcion_menu_id);
 
+        // Derivar recurso a partir de la ruta (ej. "#/opciones-menu" -> "opciones_menu")
+        $recursoStr = str_replace(['#/', '/'], '', $opcionMenu->ruta);
+        $recursoStr = str_replace('-', '_', $recursoStr);
+
         $permiso = Permiso::create([
             'nombre' => $request->nombre,
             'accion' => $request->accion,
-            'recurso' => $opcionMenu->nombre,
+            'recurso' => $recursoStr,
             'opcion_menu_id' => $request->opcion_menu_id,
             'created_by' => Auth::id() ?? 1,
         ]);
+
+        $adminRole = \App\Models\Role::where('nombre', 'Admin')->first();
+        if ($adminRole) {
+            $adminRole->permisos()->attach($permiso->id);
+        }
 
         return response()->json([
             'message' => 'Permiso creado con éxito',

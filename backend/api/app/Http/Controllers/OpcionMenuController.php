@@ -4,23 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\OpcionMenu;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
-
-class OpcionMenuController extends Controller implements HasMiddleware
+class OpcionMenuController extends Controller
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
-    public static function middleware(): array
-    {
-        return [
-            new Middleware('permission:Ver Opción de Menú', only: ['index', 'show']),
-            new Middleware('permission:Crear Opción de Menú', only: ['store']),
-            new Middleware('permission:Actualizar Opción de Menú', only: ['update']),
-            new Middleware('permission:Eliminar Opción de Menú', only: ['destroy']),
-        ];
-    }
 
     /**
      * GET
@@ -30,6 +15,54 @@ class OpcionMenuController extends Controller implements HasMiddleware
     {
         $query = OpcionMenu::query();
 
+        if ($request->boolean('for_sidebar')) {
+            $user = $request->user();
+            $isAdmin = $user && $user->roles()->where('nombre', 'Admin')->exists();
+
+            if (! $isAdmin && $user) {
+                // Get all menu IDs from user's permissions
+                $user->load('roles.permisos');
+                $menuIds = collect();
+                foreach ($user->roles as $role) {
+                    foreach ($role->permisos as $permiso) {
+                        if ($permiso->opcion_menu_id) {
+                            $menuIds->push($permiso->opcion_menu_id);
+                        }
+                    }
+                }
+                $menuIds = $menuIds->unique();
+
+                // Recursively get all parent menu IDs
+                $allowedIds = collect($menuIds);
+                $currentIdsToSearch = $menuIds;
+
+                while ($currentIdsToSearch->isNotEmpty()) {
+                    $parentIds = OpcionMenu::whereIn('id', $currentIdsToSearch)
+                        ->whereNotNull('padre_id')
+                        ->pluck('padre_id')
+                        ->unique();
+
+                    // Filter out parents we already have to avoid infinite loops
+                    $newParents = $parentIds->diff($allowedIds);
+
+                    if ($newParents->isEmpty()) {
+                        break;
+                    }
+
+                    $allowedIds = $allowedIds->merge($newParents);
+                    $currentIdsToSearch = $newParents;
+                }
+
+                // Asegurar que el Dashboard siempre esté visible para todos los roles
+                $dashboardId = OpcionMenu::where('nombre', 'Dashboard')->value('id');
+                if ($dashboardId) {
+                    $allowedIds->push($dashboardId);
+                }
+
+                $query->whereIn('id', $allowedIds->values());
+                $request->merge(['allowed_menu_ids' => $allowedIds->values()->toArray()]);
+            }
+        }
 
         // If tree=true is passed, retrieve hierarchical structure (root-level options only, with children loaded)
         if ($request->boolean('tree')) {

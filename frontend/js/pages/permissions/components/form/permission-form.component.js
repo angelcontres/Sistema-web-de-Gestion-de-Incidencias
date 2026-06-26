@@ -166,7 +166,7 @@ export class PermissionFormComponent extends BaseComponent {
     } else {
       this.btnSubmit.disabled = false;
       this.btnSubmit.innerHTML = `<span id="btnText">${this.btnSubmit.dataset.originalText}</span>`;
-      this.btnText = this.querySelector('#btnText');
+      this.btnText = this.modalEl.querySelector('#btnText');
     }
   }
 

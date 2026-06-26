@@ -8,7 +8,8 @@ export const AuthService = {
     });
     if (response && response.access_token) {
       localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // Fetch user profile and permissions from /v1/me
+      await this.refreshUser();
     }
     return response;
   },
