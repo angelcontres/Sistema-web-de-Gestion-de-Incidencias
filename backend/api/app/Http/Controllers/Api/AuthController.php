@@ -31,10 +31,6 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => [
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
         ], 200);
     }
 
@@ -49,14 +45,47 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = clone $request->user();
+        $user->load('roles.permisos');
+
+        $permisosList = collect();
+        foreach ($user->roles as $role) {
+            foreach ($role->permisos as $permiso) {
+                $permisosList->push($permiso->nombre);
+            }
+        }
+        $permisosList = $permisosList->unique()->values();
+
+        $isAdminFlag = clone $user;
+        $isAdmin = $isAdminFlag->roles()->where('nombre', 'Admin')->exists();
 
         return response()->json([
             'user' => [
+                'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                // TODO - Agregar los campos de menu y permisos que correspondan al usuario autenticado
+                'is_admin' => $isAdmin,
+                'permisos' => $permisosList,
             ],
+        ], 200);
+    }
+
+    /**
+     * Refresh the user's Sanctum API token.
+     */
+    public function refresh(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Revoke the token that was used to authenticate the current request
+        $user->currentAccessToken()->delete();
+
+        // Generate a new token
+        $newToken = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $newToken,
+            'token_type' => 'Bearer',
         ], 200);
     }
 }

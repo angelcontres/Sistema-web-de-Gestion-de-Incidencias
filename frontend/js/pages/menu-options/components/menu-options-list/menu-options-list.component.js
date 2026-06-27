@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
-import { apiRequest } from '../../../../core/api.js';
+import { MenuOptionService } from '../../services/menu-option.service.js';
+import { AuthService } from '../../../../core/auth.service.js';
 
 export class MenuOptionsListComponent extends BaseComponent {
   constructor() {
@@ -7,249 +8,122 @@ export class MenuOptionsListComponent extends BaseComponent {
   }
 
   async onInit() {
-    await this.cargarOpciones();
-  }
+    const btnNuevo = this.querySelector('#btnNuevoRegistro');
+    if (btnNuevo && !AuthService.hasPermission('CREATE', 'opciones_menu')) {
+      btnNuevo.classList.add('d-none');
+    }
 
-  /**
-   * Fetches all menu options from the backend and renders them.
-   */
-  async cargarOpciones() {
-    const loadingSpinner = this.querySelector('#loadingSpinner');
-    const tableContainer = this.querySelector('#tableContainer');
-    const emptyState = this.querySelector('#emptyState');
     const tblDatos = this.querySelector('#tbl-datos-opciones-menu');
-    const totalBadge = this.querySelector('#totalOpcionesBadge');
-    const errorAlert = this.querySelector('#errorAlert');
-    const errorMessage = this.querySelector('#errorMessage');
+    if (tblDatos) {
+      // 1. Configurar las columnas de forma parametrizable de acuerdo a los permisos
+      const columns = [
+        {
+          header: 'Nombre',
+          render: (opcion) => `<div class="fw-bold text-dark">${opcion.nombre || ''}</div>`,
+        },
+        {
+          header: 'Icono',
+          render: (opcion) => {
+            if (!opcion.icono) return '<span class="text-muted small">-</span>';
+            const cleanIcono = opcion.icono.trim().replace(/[^a-zA-Z0-9\s\-]/g, '');
+            if (!cleanIcono) return '<span class="text-muted small">-</span>';
+            const isBi = cleanIcono.startsWith('bi-') || cleanIcono.startsWith('bi ');
+            const iconClass = isBi ? `bi ${cleanIcono}` : `bi bi-${cleanIcono}`;
+            return `
+              <span class="d-flex align-items-center gap-2 text-dark small">
+                <i class="${iconClass} text-primary fs-5"></i>
+                <code>${cleanIcono}</code>
+              </span>
+            `;
+          },
+        },
+        {
+          header: 'Ruta',
+          render: (opcion) =>
+            `<code class="text-indigo small font-monospace">${opcion.ruta || ''}</code>`,
+        },
+        {
+          header: 'Padre',
+          render: (opcion) =>
+            opcion.padre && opcion.padre.nombre
+              ? `
+              <span class="badge bg-secondary-soft text-dark px-2.5 py-1 rounded small fw-medium">
+                <i class="bi bi-folder-fill me-1 small"></i>${opcion.padre.nombre}
+              </span>
+            `
+              : '<span class="text-muted small">-</span>',
+        },
+        {
+          header: 'Creado el',
+          render: (opcion) =>
+            opcion.created_at
+              ? new Date(opcion.created_at).toLocaleString('es-ES', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : '-',
+        },
+      ];
 
-    if (!tblDatos) return;
-
-    // Show loading spinner and hide others
-    loadingSpinner.classList.remove('d-none');
-    tableContainer.classList.add('d-none');
-    emptyState.classList.add('d-none');
-    errorAlert.classList.add('d-none');
-
-    try {
-      const response = await apiRequest('/opciones-menu');
-
-      const opciones = response.data || [];
-      totalBadge.textContent = `${opciones.length} Registros`;
-
-      if (opciones.length === 0) {
-        emptyState.classList.remove('d-none');
-        loadingSpinner.classList.add('d-none');
-        return;
+      const actions = [];
+      if (AuthService.hasPermission('UPDATE', 'opciones_menu')) {
+        actions.push({
+          name: 'editar',
+          label: 'Editar',
+          icon: 'bi-pencil-square',
+          class: 'text-primary',
+        });
+      }
+      if (AuthService.hasPermission('DELETE', 'opciones_menu')) {
+        actions.push({
+          name: 'eliminar',
+          label: 'Eliminar',
+          icon: 'bi-trash',
+          class: 'text-danger',
+        });
       }
 
-      tblDatos.innerHTML = '';
+      if (actions.length > 0) {
+        columns.push({
+          header: 'Acciones',
+          class: 'text-center',
+          actions: actions,
+        });
+      }
 
-      opciones.forEach((opcion) => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-bottom border-light';
-
-        // Celda ID
-        // const tdId = document.createElement('td');
-        // tdId.className = 'ps-4 text-secondary fw-semibold';
-        // tdId.textContent = `#${opcion.id}`;
-
-        // Celda Nombre
-        const tdNombre = document.createElement('td');
-        const divNombre = document.createElement('div');
-        divNombre.className = 'fw-bold text-dark';
-        divNombre.textContent = opcion.nombre || '';
-        tdNombre.appendChild(divNombre);
-
-        // Celda Icono (validada contra XSS)
-        const tdIcono = document.createElement('td');
-        if (opcion.icono) {
-          const cleanIcono = opcion.icono.trim().replace(/[^a-zA-Z0-9\s\-]/g, '');
-          if (cleanIcono) {
-            const spanIcono = document.createElement('span');
-            spanIcono.className = 'd-flex align-items-center gap-2 text-dark small';
-
-            const iIcono = document.createElement('i');
-            if (cleanIcono.startsWith('bi-') || cleanIcono.startsWith('bi ')) {
-              iIcono.className = `bi ${cleanIcono} text-primary fs-5`;
-            } else {
-              iIcono.className = `bi bi-${cleanIcono} text-primary fs-5`;
-            }
-
-            const codeIcono = document.createElement('code');
-            codeIcono.textContent = cleanIcono;
-
-            spanIcono.appendChild(iIcono);
-            spanIcono.appendChild(codeIcono);
-            tdIcono.appendChild(spanIcono);
-          } else {
-            const spanEmpty = document.createElement('span');
-            spanEmpty.className = 'text-muted small';
-            spanEmpty.textContent = '-';
-            tdIcono.appendChild(spanEmpty);
-          }
-        } else {
-          const spanEmpty = document.createElement('span');
-          spanEmpty.className = 'text-muted small';
-          spanEmpty.textContent = '-';
-          tdIcono.appendChild(spanEmpty);
-        }
-
-        // Celda Ruta
-        const tdRuta = document.createElement('td');
-        const codeRuta = document.createElement('code');
-        codeRuta.className = 'text-indigo small font-monospace';
-        codeRuta.textContent = opcion.ruta || '';
-        tdRuta.appendChild(codeRuta);
-
-        // Celda Padre
-        const tdPadre = document.createElement('td');
-        if (opcion.padre && opcion.padre.nombre) {
-          const badgePadre = document.createElement('span');
-          badgePadre.className =
-            'badge bg-secondary-soft text-dark px-2.5 py-1 rounded small fw-medium';
-
-          const iFolder = document.createElement('i');
-          iFolder.className = 'bi bi-folder-fill me-1 small';
-
-          const textPadre = document.createTextNode(opcion.padre.nombre);
-
-          badgePadre.appendChild(iFolder);
-          badgePadre.appendChild(textPadre);
-          tdPadre.appendChild(badgePadre);
-        } else {
-          const spanEmpty = document.createElement('span');
-          spanEmpty.className = 'text-muted small';
-          spanEmpty.textContent = '-';
-          tdPadre.appendChild(spanEmpty);
-        }
-
-        // Celda Fecha de Creación
-        const tdFecha = document.createElement('td');
-        tdFecha.className = 'text-muted small';
-        let fechaFormat = '-';
-        if (opcion.created_at) {
-          fechaFormat = new Date(opcion.created_at).toLocaleString('es-ES', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          });
-        }
-        tdFecha.textContent = fechaFormat;
-
-        // Celda Acciones (Dropdown seguro construído programáticamente)
-        const tdAcciones = document.createElement('td');
-        tdAcciones.className = 'text-center';
-
-        const divDropdown = document.createElement('div');
-        divDropdown.className = 'dropdown';
-
-        const btnDropdown = document.createElement('button');
-        btnDropdown.className = 'btn btn-light text-secondary p-1 rounded-2';
-        btnDropdown.type = 'button';
-        btnDropdown.setAttribute('data-bs-toggle', 'dropdown');
-        btnDropdown.setAttribute('aria-expanded', 'false');
-
-        const iDots = document.createElement('i');
-        iDots.className = 'bi bi-three-dots-vertical';
-        btnDropdown.appendChild(iDots);
-
-        const ulMenu = document.createElement('ul');
-        ulMenu.className = 'dropdown-menu dropdown-menu-end shadow-sm border-0';
-
-        // Item de menú: Editar
-        const liEdit = document.createElement('li');
-        const aEdit = document.createElement('a');
-        aEdit.className = 'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-primary';
-        aEdit.setAttribute('href', `#/opciones-menu/form?id=${opcion.id}`);
-
-        const iEdit = document.createElement('i');
-        iEdit.className = 'bi bi-pencil-square';
-        aEdit.appendChild(iEdit);
-        aEdit.appendChild(document.createTextNode(' Editar'));
-        liEdit.appendChild(aEdit);
-
-        // Item de menú: Eliminar
-        const liDelete = document.createElement('li');
-        const btnDelete = document.createElement('button');
-        btnDelete.className =
-          'dropdown-item d-flex align-items-center gap-2 px-3 py-2 text-danger btn-eliminar border-0 bg-transparent w-100';
-        btnDelete.setAttribute('data-id', opcion.id);
-        btnDelete.setAttribute('data-name', opcion.nombre || '');
-
-        const iDelete = document.createElement('i');
-        iDelete.className = 'bi bi-trash';
-        btnDelete.appendChild(iDelete);
-        btnDelete.appendChild(document.createTextNode(' Eliminar'));
-        liDelete.appendChild(btnDelete);
-
-        ulMenu.appendChild(liEdit);
-        ulMenu.appendChild(liDelete);
-
-        divDropdown.appendChild(btnDropdown);
-        divDropdown.appendChild(ulMenu);
-        tdAcciones.appendChild(divDropdown);
-
-        // Armar la fila completa
-        // tr.appendChild(tdId);
-        tr.appendChild(tdNombre);
-        tr.appendChild(tdIcono);
-        tr.appendChild(tdRuta);
-        tr.appendChild(tdPadre);
-        tr.appendChild(tdFecha);
-        tr.appendChild(tdAcciones);
-
-        tblDatos.appendChild(tr);
+      tblDatos.configure({
+        columns: columns,
       });
 
-      // Add event listeners to the action buttons
-      this.setupActionListeners();
-
-      loadingSpinner.classList.add('d-none');
-      tableContainer.classList.remove('d-none');
-    } catch (error) {
-      console.error('Error loading options:', error);
-      errorMessage.textContent = error.message || 'Error de conexión con el servidor.';
-      errorAlert.classList.remove('d-none');
-      loadingSpinner.classList.add('d-none');
-    }
-  }
-
-  /**
-   * Sets up event listeners for dynamically rendered buttons.
-   */
-  setupActionListeners() {
-    const tblDatos = this.querySelector('#tbl-datos-opciones-menu');
-    if (tblDatos && !tblDatos.dataset.hasDeleteListener) {
-      tblDatos.dataset.hasDeleteListener = 'true';
-      tblDatos.addEventListener('click', async (e) => {
-        const deleteBtn = e.target.closest('.btn-eliminar');
-        if (deleteBtn) {
-          e.preventDefault();
-          const id = deleteBtn.getAttribute('data-id');
-          const name = deleteBtn.getAttribute('data-name');
-
+      // 2. Escuchar acciones de la tabla (editar / eliminar)
+      tblDatos.addEventListener('row-action', async (e) => {
+        const { action, item } = e.detail;
+        if (action === 'editar') {
+          window.location.hash = `#/opciones-menu/form?id=${item.id}`;
+        } else if (action === 'eliminar') {
           if (
             confirm(
-              `¿Está seguro de que desea eliminar la opción de menú "${name}"?\nEsta acción es irreversible y sus submenús perderán su padre.`
+              `¿Estás seguro de que deseas eliminar la opción de menú "${item.nombre}"?\nEsta acción es irreversible.`
             )
           ) {
             try {
-              await apiRequest(`/opciones-menu/${id}`, {
-                method: 'DELETE',
-              });
-
-              this.showSuccessMessage(`La opción "${name}" se eliminó correctamente.`);
+              await MenuOptionService.delete(item.id);
+              this.showSuccessMessage(`La opción "${item.nombre}" se eliminó correctamente.`);
               window.dispatchEvent(new CustomEvent('menu-change'));
-              await this.cargarOpciones();
+              await tblDatos.load(MenuOptionService.getAll);
             } catch (error) {
-              console.error('Error deleting option:', error);
-              alert(`Error al eliminar registro: ${error.message}`);
+              console.error('Error al eliminar opción de menú:', error);
+              alert(`Error al eliminar: ${error.message}`);
             }
           }
         }
       });
+
+      // 3. Cargar las opciones inicialmente
+      tblDatos.load(MenuOptionService.getAll);
     }
   }
 

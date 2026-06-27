@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permiso;
+use App\Models\OpcionMenu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PermisoController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      */
@@ -21,12 +23,24 @@ class PermisoController extends Controller
      */
     public function store(Request $request)
     {
+        $opcionMenu = OpcionMenu::findOrFail($request->opcion_menu_id);
+
+        // Derivar recurso a partir de la ruta (ej. "#/opciones-menu" -> "opciones_menu")
+        $recursoStr = str_replace(['#/', '/'], '', $opcionMenu->ruta);
+        $recursoStr = str_replace('-', '_', $recursoStr);
+
         $permiso = Permiso::create([
             'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
+            'accion' => $request->accion,
+            'recurso' => $recursoStr,
             'opcion_menu_id' => $request->opcion_menu_id,
             'created_by' => Auth::id() ?? 1,
         ]);
+
+        $adminRole = \App\Models\Role::where('nombre', 'Admin')->first();
+        if ($adminRole) {
+            $adminRole->permisos()->attach($permiso->id);
+        }
 
         return response()->json([
             'message' => 'Permiso creado con éxito',
@@ -50,10 +64,17 @@ class PermisoController extends Controller
     public function update(Request $request, string $id)
     {
         $permiso = Permiso::findOrFail($id);
+        
+        $recurso = $permiso->recurso;
+        if ($request->has('opcion_menu_id') && $request->opcion_menu_id != $permiso->opcion_menu_id) {
+            $opcionMenu = OpcionMenu::findOrFail($request->opcion_menu_id);
+            $recurso = $opcionMenu->nombre;
+        }
 
         $permiso->update([
             'nombre' => $request->nombre ?? $permiso->nombre,
-            'descripcion' => $request->descripcion ?? $permiso->descripcion,
+            'accion' => $request->accion ?? $permiso->accion,
+            'recurso' => $recurso,
             'opcion_menu_id' => $request->opcion_menu_id ?? $permiso->opcion_menu_id,
             'updated_by' => Auth::id() ?? 1,
         ]);

@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { apiRequest } from '../../../../core/api.js';
+import { AuthService } from '../../../../core/auth.service.js';
 
 export class RoleIndexComponent extends BaseComponent {
   constructor() {
@@ -12,10 +13,14 @@ export class RoleIndexComponent extends BaseComponent {
     // 1. Cargar los roles inicialmente
     await this.cargarRoles();
 
-    // 2. Escuchar clic del botón "Nuevo Registro"
+    // Hide create button if user lacks permission
     const btnNuevoRol = this.querySelector('#btnNuevoRol');
     if (btnNuevoRol) {
-      btnNuevoRol.addEventListener('click', () => this.abrirModalCrear());
+      if (!AuthService.hasPermission('CREATE', 'roles')) {
+        btnNuevoRol.classList.add('d-none');
+      } else {
+        btnNuevoRol.addEventListener('click', () => this.abrirModalCrear());
+      }
     }
 
     // 3. Escuchar el submit del formulario del modal
@@ -123,30 +128,41 @@ export class RoleIndexComponent extends BaseComponent {
         const ulMenu = document.createElement('ul');
         ulMenu.className = 'dropdown-menu dropdown-menu-end shadow-sm border-0';
 
-        const liEdit = document.createElement('li');
-        const btnEdit = document.createElement('button');
-        btnEdit.className =
-          'dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium';
-        btnEdit.innerHTML = '<i class="bi bi-pencil-square"></i> Editar';
-        btnEdit.onclick = (e) => {
-          e.stopPropagation();
-          this.abrirModalEditar(rol, roles);
-        };
-        liEdit.appendChild(btnEdit);
+        const canEdit = AuthService.hasPermission('UPDATE', 'roles');
+        const canDelete = AuthService.hasPermission('DELETE', 'roles');
 
-        const liDelete = document.createElement('li');
-        const btnDelete = document.createElement('button');
-        btnDelete.className =
-          'dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium';
-        btnDelete.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
-        btnDelete.onclick = (e) => {
-          e.stopPropagation();
-          this.eliminarRol(rol.id, rol.nombre);
-        };
-        liDelete.appendChild(btnDelete);
+        if (canEdit) {
+          const liEdit = document.createElement('li');
+          const btnEdit = document.createElement('button');
+          btnEdit.className =
+            'dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium';
+          btnEdit.innerHTML = '<i class="bi bi-pencil-square"></i> Editar';
+          btnEdit.onclick = (e) => {
+            e.stopPropagation();
+            this.abrirModalEditar(rol, roles);
+          };
+          liEdit.appendChild(btnEdit);
+          ulMenu.appendChild(liEdit);
+        }
 
-        ulMenu.appendChild(liEdit);
-        ulMenu.appendChild(liDelete);
+        if (canDelete) {
+          const liDelete = document.createElement('li');
+          const btnDelete = document.createElement('button');
+          btnDelete.className =
+            'dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium';
+          btnDelete.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
+          btnDelete.onclick = (e) => {
+            e.stopPropagation();
+            this.eliminarRol(rol.id, rol.nombre);
+          };
+          liDelete.appendChild(btnDelete);
+          ulMenu.appendChild(liDelete);
+        }
+
+        if (!canEdit && !canDelete) {
+          btnDropdown.classList.add('d-none');
+        }
+
         dropdownDiv.appendChild(btnDropdown);
         dropdownDiv.appendChild(ulMenu);
 
@@ -323,6 +339,16 @@ export class RoleIndexComponent extends BaseComponent {
     // Scroll al contenedor de permisos
     accordionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    const canAssign = AuthService.hasPermission('UPDATE', 'roles');
+    const btnAssignSubmit = this.querySelector('#btnAssignSubmit');
+    if (btnAssignSubmit) {
+      if (canAssign) {
+        btnAssignSubmit.classList.remove('d-none');
+      } else {
+        btnAssignSubmit.classList.add('d-none');
+      }
+    }
+
     try {
       const [todosPermisosResponse, rolDetalle] = await Promise.all([
         apiRequest('/permisos'),
@@ -374,7 +400,30 @@ export class RoleIndexComponent extends BaseComponent {
         button.setAttribute('data-bs-target', `#${collapseId}`);
         button.setAttribute('aria-expanded', accordionIndex === 0 ? 'true' : 'false');
         button.setAttribute('aria-controls', collapseId);
-        button.textContent = menuNombre;
+        const allChecked = permisos.length > 0 && permisos.every(p => permisosAsignados.includes(p.id));
+        const someChecked = permisos.some(p => permisosAsignados.includes(p.id));
+
+        button.innerHTML = `
+          <div class="d-flex align-items-center gap-2 w-100 me-3">
+            <input type="checkbox" class="form-check-input mt-0 select-all-menu" ${allChecked ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+            <span>${menuNombre}</span>
+          </div>
+        `;
+
+        const selectAllCheckbox = button.querySelector('.select-all-menu');
+        selectAllCheckbox.indeterminate = someChecked && !allChecked;
+
+        selectAllCheckbox.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+
+        selectAllCheckbox.addEventListener('change', (e) => {
+          const isChecked = e.target.checked;
+          const checkboxes = row.querySelectorAll('.permission-checkbox');
+          checkboxes.forEach(cb => {
+            if (!cb.disabled) cb.checked = isChecked;
+          });
+        });
 
         h2.appendChild(button);
         accordionItem.appendChild(h2);
@@ -414,13 +463,27 @@ export class RoleIndexComponent extends BaseComponent {
             checkbox.checked = true;
           }
 
+          if (!canAssign) {
+            checkbox.disabled = true;
+          }
+
+          checkbox.addEventListener('change', () => {
+             const allCbs = Array.from(row.querySelectorAll('.permission-checkbox'));
+             const checkedCbs = allCbs.filter(cb => cb.checked);
+             selectAllCheckbox.checked = checkedCbs.length === allCbs.length;
+             selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+          });
+
           const label = document.createElement('label');
           label.className = 'form-check-label user-select-none w-100';
           label.htmlFor = `permiso_${permiso.id}`;
           label.style.cursor = 'pointer';
           label.innerHTML = `
             <div class="fw-semibold text-dark">${permiso.nombre}</div>
-            <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">${permiso.descripcion || 'Sin descripción'}</div>
+            <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">
+              <span class="badge bg-secondary-soft text-dark px-2 py-1">${permiso.accion || '-'}</span> 
+              ${permiso.recurso || ''}
+            </div>
           `;
 
           formCheck.appendChild(checkbox);

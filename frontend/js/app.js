@@ -14,10 +14,14 @@ import './pages/login/login.component.js';
 
 import './pages/menu-options/components/menu-options-list/menu-options-list.component.js';
 import './pages/menu-options/components/menu-options-form/menu-options-form.component.js';
+import './pages/user/component/index/user-index.component.js';
+import './pages/user/component/form/user-form.component.js';
 
 import './pages/role/component/index/role-index.component.js';
 import './pages/permissions/components/index/permission-index.component.js';
 import './pages/sqa-dashboard/sqa-dashboard.component.js';
+import './pages/permissions/components/form/permission-form.component.js';
+import './shared/components/app-data-table/app-data-table.component.js';
 // Import and Initialize Router
 import { initRouter } from './router.js';
 

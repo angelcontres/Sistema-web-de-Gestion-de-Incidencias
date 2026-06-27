@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\OpcionMenuRequest;
 use App\Models\OpcionMenu;
 use Illuminate\Http\Request;
-
 class OpcionMenuController extends Controller
 {
+
     /**
      * GET
      * Muestra la lista de registros de OpcionMenu

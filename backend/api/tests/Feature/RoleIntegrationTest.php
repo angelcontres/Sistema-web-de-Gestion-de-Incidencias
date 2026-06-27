@@ -18,7 +18,7 @@ class RoleIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create([
+        $this->user = $this->createAdminUser([
             'name' => 'Test',
             'username' => 'Test@test.com',
             'email' => 'test@test.com',

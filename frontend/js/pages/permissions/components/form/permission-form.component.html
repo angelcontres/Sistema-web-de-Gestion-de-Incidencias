@@ -1,0 +1,86 @@
+<!-- Modal de Bootstrap 5 para Crear/Editar Permiso -->
+<div
+  class="modal fade"
+  id="permisoModal"
+  tabindex="-1"
+  aria-labelledby="permisoModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="permisoModalLabel">Nuevo Permiso</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <!-- Alerta de Error interna del modal -->
+        <div id="modalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="modalErrorMessage">Hubo un error al guardar el permiso.</span>
+        </div>
+
+        <!-- Spinner de carga -->
+        <div id="loadingSpinner" class="d-none text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+
+        <form id="permisoForm" novalidate>
+          <input type="hidden" id="permisoId" />
+
+          <div class="mb-3">
+            <label for="nombre" class="form-label fw-semibold text-dark"
+              >Nombre del Permiso</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="nombre"
+              required
+              placeholder="Ej: crear usuario"
+            />
+            <div class="invalid-feedback">El nombre es obligatorio.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="accion" class="form-label fw-semibold text-dark">Acción</label>
+            <select class="form-select" id="accion" required>
+              <option value="" disabled selected>Seleccione una acción...</option>
+              <option value="READ">READ (Lectura)</option>
+              <option value="CREATE">CREATE (Creación)</option>
+              <option value="UPDATE">UPDATE (Actualización)</option>
+              <option value="DELETE">DELETE (Eliminación)</option>
+            </select>
+            <div class="invalid-feedback">Debe seleccionar una acción.</div>
+          </div>
+
+          <div class="mb-4">
+            <label for="opcion_menu_id" class="form-label fw-semibold text-dark"
+              >Opción de Menú Asociada</label
+            >
+            <select class="form-select" id="opcion_menu_id" required>
+              <option value="" disabled selected>Seleccione una opción...</option>
+              <!-- Opciones dinámicas -->
+            </select>
+            <div class="invalid-feedback">Debe seleccionar una opción de menú.</div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnSubmit">
+              <span id="btnText">Guardar Permiso</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
