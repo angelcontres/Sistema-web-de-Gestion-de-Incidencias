@@ -62,5 +62,13 @@ class MenuOptionSeeder extends Seeder
             'padre_id' => $config->id,
             'created_by' => $user->id,
         ]);
+
+        OpcionMenu::create([
+            'nombre' => 'SQA',
+            'ruta' => '#/sqa-dashboard',
+            'icono' => 'bi bi-graph-up',
+            'padre_id' => null,
+            'created_by' => $user->id,
+        ]);
     }
 }

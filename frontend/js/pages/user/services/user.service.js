@@ -2,26 +2,26 @@ import { apiRequest } from '../../../core/api.js';
 
 export const UserService = {
   getAll() {
-    return apiRequest('/v1/usuarios');
+    return apiRequest('/usuarios');
   },
   getById(id) {
-    return apiRequest(`/v1/usuarios/${id}`);
+    return apiRequest(`/usuarios/${id}`);
   },
   create(payload) {
-    return apiRequest('/v1/usuarios', {
+    return apiRequest('/usuarios', {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
   },
   update(id, payload) {
-    return apiRequest(`/v1/usuarios/${id}`, {
+    return apiRequest(`/usuarios/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
   },
   delete(id) {
-    return apiRequest(`/v1/usuarios/${id}`, {
-      method: 'DELETE'
+    return apiRequest(`/usuarios/${id}`, {
+      method: 'DELETE',
     });
-  }
+  },
 };

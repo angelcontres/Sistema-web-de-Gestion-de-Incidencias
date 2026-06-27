@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SqaController;
 use App\Http\Controllers\OpcionMenuController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
@@ -21,11 +22,11 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
 
     Route::get('/v1/me/menu', [UserMenuController::class, 'index']);
 
-    Route::apiResource('v1/opciones-menu', OpcionMenuController::class);
-    Route::apiResource('v1/roles', RoleController::class);
-    Route::post('v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
-    Route::apiResource('v1/permisos', PermisoController::class);
-    Route::get('v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
-    Route::get('v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
-    Route::apiResource('v1/usuarios', UserController::class);
+    Route::apiResource('/v1/opciones-menu', OpcionMenuController::class);
+    Route::apiResource('/v1/roles', RoleController::class);
+    Route::post('/v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
+    Route::apiResource('/v1/permisos', PermisoController::class);
+    Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
+    Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
+    Route::apiResource('/v1/usuarios', UserController::class);
 });

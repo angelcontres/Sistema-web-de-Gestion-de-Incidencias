@@ -21,6 +21,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'Rol',
             'Permisos' => 'Permiso',
             'Opciones de Menú' => 'Opción de Menú',
+            'SQA' => 'SQA',
         ];
 
         $acciones = [
@@ -35,6 +36,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'roles',
             'Permisos' => 'permisos',
             'Opciones de Menú' => 'opciones_menu',
+            'SQA' => 'sqa',
         ];
 
         foreach ($opciones as $opcionPlural => $opcionSingular) {

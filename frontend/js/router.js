@@ -72,7 +72,7 @@ export function initRouter() {
   // Refresh user profile details if authenticated on load
   if (AuthService.isAuthenticated()) {
     AuthService.refreshUser().catch((err) => {
-      console.error('Error refreshing session from /v1/me:', err);
+      console.error('Error refreshing session from endpoint /me:', err);
     });
   }
 
