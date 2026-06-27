@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+#[Fillable(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'activo'])]
+class Direccion extends Model
+{
+    use HasFactory;
+
+    protected $table = 'direcciones';
+
+    protected function casts(): array
+    {
+        return [
+            'territorio_id' => 'integer',
+            'activo' => 'boolean',
+        ];
+    }
+
+    /**
+     * Relación: El territorio al que pertenece esta dirección.
+     */
+    public function territorio(): BelongsTo
+    {
+        return $this->belongsTo(Territorio::class, 'territorio_id');
+    }
+}

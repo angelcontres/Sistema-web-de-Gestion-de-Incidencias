@@ -33,6 +33,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call(RoleSeeder::class);
 
+        // Seed catalogs
+        $this->call(UbicacionesSeeder::class);
+        $this->call(ClasificacionesSeeder::class);
+
         // Assign the Admin role to the test user
         $adminRole = Role::where('nombre', 'Admin')->first();
         if ($adminRole) {

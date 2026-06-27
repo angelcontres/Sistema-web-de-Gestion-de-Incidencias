@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\OpcionMenuController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
@@ -12,7 +13,15 @@ use App\Http\Middleware\CheckResourcePermission;
 // Rutas públicas
 Route::post('/v1/login', [AuthController::class, 'login']);
 
-// Rutas protegidas por autenticación
+// Rutas de catálogos (protegidas por autenticación, accesibles para todos los usuarios logueados)
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/v1/catalogos/paises', [CatalogoController::class, 'paises']);
+    Route::get('/v1/catalogos/territorios', [CatalogoController::class, 'territorios']);
+    Route::get('/v1/catalogos/direcciones', [CatalogoController::class, 'direcciones']);
+    Route::get('/v1/catalogos/categorias-incidencia', [CatalogoController::class, 'categoriasIncidencia']);
+});
+
+// Rutas protegidas por autenticación y permisos de recursos
 Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(function () {
     Route::post('/v1/logout', [AuthController::class, 'logout']);
 
