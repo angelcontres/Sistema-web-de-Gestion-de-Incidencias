@@ -7,111 +7,27 @@
         Gestiona los permisos y accesos de las opciones del sistema.
       </p>
     </div>
-    <button id="btnNuevoPermiso" class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2">
+    <button
+      id="btn-nuevo-registro"
+      class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2"
+    >
       <i class="bi bi-plus-lg"></i> Nuevo Registro
     </button>
   </div>
 
-  <!-- Tarjeta Principal -->
-  <div class="card custom-card border-0 shadow-sm overflow-hidden">
-    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-      <h5 class="card-title fw-bold mb-0 text-dark">Lista de Permisos</h5>
-      <span class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small" id="totalPermisosBadge">Cargando...</span>
-    </div>
-
-    <!-- Mensajes de Alerta -->
-    <div id="errorAlert" class="alert alert-danger mx-4 my-2 d-none">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <span id="errorMessage">Error al cargar permisos.</span>
-    </div>
-    <div id="successAlert" class="alert alert-success mx-4 my-2 d-none">
-      <i class="bi bi-check-circle-fill me-2"></i>
-      <span id="successMessage">Acción completada con éxito.</span>
-    </div>
-
-    <!-- Contenido de la Tabla -->
-    <div class="card-body p-0">
-      <!-- Spinner de Carga -->
-      <div id="loadingSpinner" class="d-flex justify-content-center align-items-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-      </div>
-
-      <!-- Estado Vacío -->
-      <div id="emptyState" class="text-center py-5 d-none">
-        <i class="bi bi-key text-muted display-4"></i>
-        <p class="text-muted mt-2">No se encontraron permisos registrados.</p>
-      </div>
-
-      <!-- Tabla Responsive -->
-      <div class="table-responsive d-none" id="tableContainer">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light text-muted uppercase small">
-            <tr>
-              <th scope="col" class="py-3 ps-4">ID</th>
-              <th scope="col" class="py-3">Nombre</th>
-              <th scope="col" class="py-3">Descripción</th>
-              <th scope="col" class="py-3">Opción de Menú</th>
-              <th scope="col" class="py-3">Creado el</th>
-              <th scope="col" class="text-center py-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-datos-permisos" class="border-top-0">
-            <!-- Las filas dinámicas se insertarán aquí por JavaScript -->
-          </tbody>
-        </table>
-      </div>
-    </div>
+  <!-- Mensajes de Alerta -->
+  <div id="successAlert" class="alert alert-success my-2 d-none">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    <span id="successMessage">Acción completada con éxito.</span>
   </div>
-</div>
 
-<!-- Modal de Bootstrap 5 para Crear/Editar Permiso -->
-<div class="modal fade" id="permisoModal" tabindex="-1" aria-labelledby="permisoModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
-        <h5 class="modal-title fw-bold text-dark" id="permisoModalLabel">Nuevo Permiso</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body px-4 pb-4">
-        <!-- Alerta de Error interna del modal -->
-        <div id="modalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          <span id="modalErrorMessage">Hubo un error al guardar el permiso.</span>
-        </div>
+  <!-- Tabla Auto-Contenida (Maneja tarjeta, loading, vacío y errores internamente) -->
+  <app-data-table
+    id="tbl-datos-permisos"
+    title="Lista de Permisos"
+    empty-text="No se encontraron permisos registrados."
+  ></app-data-table>
 
-        <form id="permisoForm" novalidate>
-          <input type="hidden" id="permisoId">
-          
-          <div class="mb-3">
-            <label for="nombre" class="form-label fw-semibold text-dark">Nombre del Permiso</label>
-            <input type="text" class="form-control" id="nombre" required placeholder="Ej: CREAR_USUARIO">
-            <div class="invalid-feedback">El nombre es obligatorio.</div>
-          </div>
-
-          <div class="mb-3">
-            <label for="descripcion" class="form-label fw-semibold text-dark">Descripción</label>
-            <textarea class="form-control" id="descripcion" rows="3" placeholder="Describe para qué sirve este permiso..."></textarea>
-          </div>
-
-          <div class="mb-4">
-            <label for="opcion_menu_id" class="form-label fw-semibold text-dark">Opción de Menú Asociada</label>
-            <select class="form-select" id="opcion_menu_id" required>
-              <option value="" disabled selected>Seleccione una opción...</option>
-              <!-- Opciones dinámicas -->
-            </select>
-            <div class="invalid-feedback">Debe seleccionar una opción de menú.</div>
-          </div>
-
-          <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnSubmit">
-              <span id="btnText">Guardar Permiso</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  <!-- Modal component -->
+  <app-permission-form id="app-permission-form"></app-permission-form>
 </div>

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
 
-#[Fillable(['nombre', 'descripcion', 'opcion_menu_id', 'created_by', 'updated_by', 'deleted_by'])]
+#[Fillable(['nombre', 'accion', 'recurso', 'opcion_menu_id', 'created_by', 'updated_by', 'deleted_by'])]
 class Permiso extends Model
 {
     use HasFactory, SoftDeletes;

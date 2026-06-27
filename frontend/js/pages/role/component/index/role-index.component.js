@@ -16,7 +16,7 @@ export class RoleIndexComponent extends BaseComponent {
     // Hide create button if user lacks permission
     const btnNuevoRol = this.querySelector('#btnNuevoRol');
     if (btnNuevoRol) {
-      if (!AuthService.hasPermission('Crear Rol')) {
+      if (!AuthService.hasPermission('CREATE', 'roles')) {
         btnNuevoRol.classList.add('d-none');
       } else {
         btnNuevoRol.addEventListener('click', () => this.abrirModalCrear());
@@ -128,8 +128,8 @@ export class RoleIndexComponent extends BaseComponent {
         const ulMenu = document.createElement('ul');
         ulMenu.className = 'dropdown-menu dropdown-menu-end shadow-sm border-0';
 
-        const canEdit = AuthService.hasPermission('Actualizar Rol');
-        const canDelete = AuthService.hasPermission('Eliminar Rol');
+        const canEdit = AuthService.hasPermission('UPDATE', 'roles');
+        const canDelete = AuthService.hasPermission('DELETE', 'roles');
 
         if (canEdit) {
           const liEdit = document.createElement('li');
@@ -339,7 +339,7 @@ export class RoleIndexComponent extends BaseComponent {
     // Scroll al contenedor de permisos
     accordionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    const canAssign = AuthService.hasPermission('Actualizar Rol');
+    const canAssign = AuthService.hasPermission('UPDATE', 'roles');
     const btnAssignSubmit = this.querySelector('#btnAssignSubmit');
     if (btnAssignSubmit) {
       if (canAssign) {
@@ -400,7 +400,30 @@ export class RoleIndexComponent extends BaseComponent {
         button.setAttribute('data-bs-target', `#${collapseId}`);
         button.setAttribute('aria-expanded', accordionIndex === 0 ? 'true' : 'false');
         button.setAttribute('aria-controls', collapseId);
-        button.textContent = menuNombre;
+        const allChecked = permisos.length > 0 && permisos.every(p => permisosAsignados.includes(p.id));
+        const someChecked = permisos.some(p => permisosAsignados.includes(p.id));
+
+        button.innerHTML = `
+          <div class="d-flex align-items-center gap-2 w-100 me-3">
+            <input type="checkbox" class="form-check-input mt-0 select-all-menu" ${allChecked ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+            <span>${menuNombre}</span>
+          </div>
+        `;
+
+        const selectAllCheckbox = button.querySelector('.select-all-menu');
+        selectAllCheckbox.indeterminate = someChecked && !allChecked;
+
+        selectAllCheckbox.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+
+        selectAllCheckbox.addEventListener('change', (e) => {
+          const isChecked = e.target.checked;
+          const checkboxes = row.querySelectorAll('.permission-checkbox');
+          checkboxes.forEach(cb => {
+            if (!cb.disabled) cb.checked = isChecked;
+          });
+        });
 
         h2.appendChild(button);
         accordionItem.appendChild(h2);
@@ -444,13 +467,23 @@ export class RoleIndexComponent extends BaseComponent {
             checkbox.disabled = true;
           }
 
+          checkbox.addEventListener('change', () => {
+             const allCbs = Array.from(row.querySelectorAll('.permission-checkbox'));
+             const checkedCbs = allCbs.filter(cb => cb.checked);
+             selectAllCheckbox.checked = checkedCbs.length === allCbs.length;
+             selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+          });
+
           const label = document.createElement('label');
           label.className = 'form-check-label user-select-none w-100';
           label.htmlFor = `permiso_${permiso.id}`;
           label.style.cursor = 'pointer';
           label.innerHTML = `
             <div class="fw-semibold text-dark">${permiso.nombre}</div>
-            <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">${permiso.descripcion || 'Sin descripción'}</div>
+            <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">
+              <span class="badge bg-secondary-soft text-dark px-2 py-1">${permiso.accion || '-'}</span> 
+              ${permiso.recurso || ''}
+            </div>
           `;
 
           formCheck.appendChild(checkbox);

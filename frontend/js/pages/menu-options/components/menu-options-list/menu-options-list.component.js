@@ -9,7 +9,7 @@ export class MenuOptionsListComponent extends BaseComponent {
 
   async onInit() {
     const btnNuevo = this.querySelector('#btnNuevoRegistro');
-    if (btnNuevo && !AuthService.hasPermission('Crear Opción de Menú')) {
+    if (btnNuevo && !AuthService.hasPermission('CREATE', 'opciones_menu')) {
       btnNuevo.classList.add('d-none');
     }
 
@@ -60,10 +60,10 @@ export class MenuOptionsListComponent extends BaseComponent {
       ];
 
       const actions = [];
-      if (AuthService.hasPermission('Actualizar Opción de Menú')) {
+      if (AuthService.hasPermission('UPDATE', 'opciones_menu')) {
         actions.push({ name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' });
       }
-      if (AuthService.hasPermission('Eliminar Opción de Menú')) {
+      if (AuthService.hasPermission('DELETE', 'opciones_menu')) {
         actions.push({ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' });
       }
 

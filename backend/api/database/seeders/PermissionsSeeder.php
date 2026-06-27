@@ -30,14 +30,24 @@ class PermissionsSeeder extends Seeder
             'Eliminar' => 'DELETE',
         ];
 
+        $recursoMapping = [
+            'Usuarios' => 'usuarios',
+            'Roles' => 'roles',
+            'Permisos' => 'permisos',
+            'Opciones de Menú' => 'opciones_menu',
+        ];
+
         foreach ($opciones as $opcionPlural => $opcionSingular) {
             $opcionMenu = OpcionMenu::where('nombre', $opcionPlural)->first();
+
+            $recursoStr = $recursoMapping[$opcionPlural] ?? strtolower(str_replace(' ', '_', $opcionPlural));
 
             if ($opcionMenu) {
                 foreach ($acciones as $verbo => $metodo) {
                     Permiso::create([
                         'nombre' => "{$verbo} {$opcionSingular}",
-                        'descripcion' => "Permite la acción {$metodo} en el módulo de {$opcionPlural}",
+                        'accion' => $metodo,
+                        'recurso' => $recursoStr,
                         'opcion_menu_id' => $opcionMenu->id,
                         'created_by' => $user->id,
                     ]);

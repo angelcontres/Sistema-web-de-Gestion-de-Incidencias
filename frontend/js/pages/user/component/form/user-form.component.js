@@ -33,7 +33,7 @@ export class UserFormComponent extends BaseComponent {
     const userId = urlParams.get('id');
 
     // Block access if creating new user and lacks permission
-    if (!userId && !AuthService.hasPermission('Crear Usuario')) {
+    if (!userId && !AuthService.hasPermission('CREATE', 'usuarios')) {
       alert('No tienes permiso para crear usuarios.');
       window.location.hash = '#/usuarios';
       return;
