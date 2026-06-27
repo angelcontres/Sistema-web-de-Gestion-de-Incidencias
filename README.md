@@ -152,13 +152,7 @@ El backend está configurado bajo el estándar de Laravel definido en `backend/a
 
 2.  Esto escaneará tu código PHP modificado y lo formateará automáticamente.
 
-3.  **Ejecutar worker para rastrear duracion de peticiones REST**
-
-    ```bash
-    # En local:
-    cd backend/api
-    php artisan queue:work
-    ```
+3.  **El worker que se utiliza para rastrear la duracion de las peticiones REST se ejecuta automaticamente y los datos graficos se pueden ver en el menú SQA del sidebar**
 
 ### Frontend (HTML, CSS, JS) - Prettier
 
