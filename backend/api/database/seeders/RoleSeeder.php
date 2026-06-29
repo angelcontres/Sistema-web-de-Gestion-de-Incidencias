@@ -48,11 +48,11 @@ class RoleSeeder extends Seeder
         $adminRole->permisos()->sync($allPermissionsIds);
 
         // Assign specific permissions to the Operador role
-        $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones'])
+        $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones', 'categorias_incidencia'])
             ->where(function ($query) {
-                // Operators can only view countries (READ), not modify them
+                // Operators can only view countries and categories (READ), not modify them
                 $query->where(function ($q) {
-                    $q->where('recurso', 'paises')->where('accion', 'READ');
+                    $q->whereIn('recurso', ['paises', 'categorias_incidencia'])->where('accion', 'READ');
                 })
                 // Operators have full CRUD for the main menu, territories, and addresses
                 ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones']);
