@@ -41,23 +41,18 @@ export class CategoriasIndexComponent extends BaseComponent {
   }
 
   async cargarCategorias() {
-    const grid = this.querySelector('#categoriasGrid');
-    const spinner = this.querySelector('#loadingSpinner');
-    const emptyState = this.querySelector('#emptyState');
+    const container = this.querySelector('#categoriasTableContainer');
+    const tbody = this.querySelector('#tbody-categorias');
 
-    if (!grid) return;
-
-    spinner.classList.remove('d-none');
-    grid.classList.add('d-none');
-    if (emptyState) emptyState.classList.add('d-none');
+    if (!container || !tbody) return;
 
     try {
       const response = await CategoriaIncidenciaService.getAll();
       this.categoriasList = response || [];
 
       if (this.categoriasList.length === 0) {
-        if (emptyState) emptyState.classList.remove('d-none');
-        spinner.classList.add('d-none');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">No se encontraron categorías de incidencias registradas.</td></tr>';
+        container.classList.remove('d-none');
         return;
       }
 
@@ -69,118 +64,160 @@ export class CategoriasIndexComponent extends BaseComponent {
       const canDelete = AuthService.hasPermission('Eliminar Categoría de Incidencia');
       const canCreate = AuthService.hasPermission('Crear Categoría de Incidencia');
 
-      grid.innerHTML = mainCategories.map(main => {
+      let rowsHtml = '';
+
+      mainCategories.forEach(main => {
         const subs = subCategories.filter(sub => sub.parent_id === main.id);
-        
-        return `
-          <div class="col-xl-6 col-lg-12">
-            <div class="card border-0 shadow-sm h-100 custom-card">
-              <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-start">
-                <div class="flex-grow-1 pe-3 text-truncate">
-                  <h5 class="fw-bold text-primary mb-1 text-truncate">${main.nombre}</h5>
-                  <p class="text-muted small mb-0 text-truncate">${main.descripcion || 'Sin descripción.'}</p>
-                </div>
-                
-                ${(canEdit || canDelete) ? `
-                  <div class="dropdown">
-                    <button class="btn btn-light btn-sm text-secondary p-1.5 rounded-2 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                      ${canEdit ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium" type="button" data-action="editar-principal" data-id="${main.id}"><i class="bi bi-pencil-square"></i> Editar</button></li>` : ''}
-                      ${canDelete ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium" type="button" data-action="eliminar-principal" data-id="${main.id}"><i class="bi bi-trash"></i> Eliminar</button></li>` : ''}
-                    </ul>
-                  </div>
+        const hasChildren = subs.length > 0;
+
+        // Render Parent Row
+        rowsHtml += `
+          <tr class="parent-row table-group-divider" data-id="${main.id}" style="cursor: pointer;">
+            <td class="ps-4 fw-bold text-dark">
+              <div class="d-flex align-items-center">
+                ${hasChildren 
+                  ? `<i class="bi bi-chevron-right me-2 text-primary toggle-chevron fs-6" style="transition: transform 0.2s ease;" data-id="${main.id}"></i>` 
+                  : `<i class="bi bi-dot me-2 text-muted fs-5"></i>`
+                }
+                <span>${main.nombre}</span>
+              </div>
+            </td>
+            <td class="text-muted small">${main.descripcion || 'Sin descripción.'}</td>
+            <td>
+              <span class="badge bg-${main.activo ? 'success' : 'danger'}-soft text-${main.activo ? 'success' : 'danger'} rounded-pill px-2.5 py-1 small fw-semibold">
+                ${main.activo ? 'Activa' : 'Inactiva'}
+              </span>
+            </td>
+            <td class="text-end pe-4">
+              <div class="d-flex justify-content-end gap-1" onclick="event.stopPropagation()">
+                ${canCreate ? `
+                  <button class="btn btn-sm btn-link text-success p-1 border-0 bg-transparent" type="button" data-action="agregar-sub" data-parent-id="${main.id}" title="Agregar Subcategoría">
+                    <i class="bi bi-plus-circle fs-5"></i>
+                  </button>
+                ` : ''}
+                ${canEdit ? `
+                  <button class="btn btn-sm btn-link text-primary p-1 border-0 bg-transparent" type="button" data-action="editar" data-id="${main.id}" title="Editar">
+                    <i class="bi bi-pencil-square fs-5"></i>
+                  </button>
+                ` : ''}
+                ${canDelete ? `
+                  <button class="btn btn-sm btn-link text-danger p-1 border-0 bg-transparent" type="button" data-action="eliminar" data-id="${main.id}" title="Eliminar">
+                    <i class="bi bi-trash fs-5"></i>
+                  </button>
                 ` : ''}
               </div>
-
-              <div class="card-body px-4 py-2">
-                <div class="list-group list-group-flush border-top border-light">
-                  ${subs.length === 0 ? `
-                    <div class="text-center py-4 text-muted small">
-                      <i class="bi bi-tag me-1"></i> No hay subcategorías registradas.
-                    </div>
-                  ` : subs.map(sub => `
-                    <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center border-light">
-                      <div class="flex-grow-1 pe-3">
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                          <span class="fw-semibold text-dark small">${sub.nombre}</span>
-                          <span class="badge bg-${sub.activo ? 'success' : 'danger'}-soft text-${sub.activo ? 'success' : 'danger'} rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">
-                            ${sub.activo ? 'Activa' : 'Inactiva'}
-                          </span>
-                        </div>
-                        <p class="text-muted small mb-0 mt-1" style="line-height: 1.3;">${sub.descripcion || 'Sin descripción.'}</p>
-                      </div>
-                      
-                      ${(canEdit || canDelete) ? `
-                        <div class="d-flex align-items-center gap-1">
-                          ${canEdit ? `
-                            <button class="btn btn-sm btn-link text-primary p-1 border-0 bg-transparent" type="button" data-action="editar-sub" data-id="${sub.id}" title="Editar">
-                              <i class="bi bi-pencil-square fs-6"></i>
-                            </button>
-                          ` : ''}
-                          ${canDelete ? `
-                            <button class="btn btn-sm btn-link text-danger p-1 border-0 bg-transparent" type="button" data-action="eliminar-sub" data-id="${sub.id}" title="Eliminar">
-                              <i class="bi bi-trash fs-6"></i>
-                            </button>
-                          ` : ''}
-                        </div>
-                      ` : ''}
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-
-              ${canCreate ? `
-                <div class="card-footer bg-white border-top-0 px-4 pb-4 pt-2">
-                  <button class="btn btn-sm btn-light text-primary fw-semibold w-100 py-2 border-0 d-flex align-items-center justify-content-center gap-1" type="button" data-action="agregar-sub" data-parent-id="${main.id}">
-                    <i class="bi bi-plus-lg"></i> Agregar Subcategoría
-                  </button>
-                </div>
-              ` : ''}
-            </div>
-          </div>
+            </td>
+          </tr>
         `;
-      }).join('');
 
-      // Bind actions
+        // Render Children Rows (initially collapsed)
+        subs.forEach(sub => {
+          rowsHtml += `
+            <tr class="child-row d-none bg-light-soft" data-parent-id="${main.id}" data-id="${sub.id}" style="--bs-bg-opacity: 0.2; background-color: var(--bs-light);">
+              <td class="ps-5 text-dark">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-arrow-return-right text-muted me-2 small"></i>
+                  <span class="fw-medium small">${sub.nombre}</span>
+                </div>
+              </td>
+              <td class="text-muted small">${sub.descripcion || 'Sin descripción.'}</td>
+              <td>
+                <span class="badge bg-${sub.activo ? 'success' : 'danger'}-soft text-${sub.activo ? 'success' : 'danger'} rounded-pill px-2 py-0.5" style="font-size: 0.75rem;">
+                  ${sub.activo ? 'Activa' : 'Inactiva'}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="d-flex justify-content-end gap-1" onclick="event.stopPropagation()">
+                  ${canEdit ? `
+                    <button class="btn btn-sm btn-link text-primary p-1 border-0 bg-transparent" type="button" data-action="editar" data-id="${sub.id}" title="Editar">
+                      <i class="bi bi-pencil-square fs-5"></i>
+                    </button>
+                  ` : ''}
+                  ${canDelete ? `
+                    <button class="btn btn-sm btn-link text-danger p-1 border-0 bg-transparent" type="button" data-action="eliminar" data-id="${sub.id}" title="Eliminar">
+                      <i class="bi bi-trash fs-5"></i>
+                    </button>
+                  ` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+      });
+
+      tbody.innerHTML = rowsHtml;
+
+      // Bind Toggle Collapse and Action events
       mainCategories.forEach(main => {
-        const cardEl = grid.querySelector(`[data-action="editar-principal"][data-id="${main.id}"]`);
-        if (cardEl) {
-          cardEl.addEventListener('click', () => this.abrirModalCategoria(main));
+        const parentRow = tbody.querySelector(`tr.parent-row[data-id="${main.id}"]`);
+        const chevron = parentRow.querySelector('.toggle-chevron');
+        const childRows = tbody.querySelectorAll(`tr.child-row[data-parent-id="${main.id}"]`);
+
+        // Toggle children visibility
+        if (parentRow && childRows.length > 0) {
+          const toggleCollapse = () => {
+            const isCollapsed = childRows[0].classList.contains('d-none');
+            childRows.forEach(row => {
+              if (isCollapsed) {
+                row.classList.remove('d-none');
+              } else {
+                row.classList.add('d-none');
+              }
+            });
+
+            if (isCollapsed) {
+              chevron.classList.replace('bi-chevron-right', 'bi-chevron-down');
+              parentRow.classList.add('table-active');
+            } else {
+              chevron.classList.replace('bi-chevron-down', 'bi-chevron-right');
+              parentRow.classList.remove('table-active');
+            }
+          };
+
+          parentRow.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            toggleCollapse();
+          });
         }
 
-        const delEl = grid.querySelector(`[data-action="eliminar-principal"][data-id="${main.id}"]`);
-        if (delEl) {
-          delEl.addEventListener('click', () => this.eliminarCategoria(main.id, main.nombre));
+        // Action buttons on main category
+        const btnAddSub = parentRow.querySelector('[data-action="agregar-sub"]');
+        if (btnAddSub) {
+          btnAddSub.addEventListener('click', () => this.abrirModalCategoria(null, main.id));
         }
 
-        const addSubEl = grid.querySelector(`[data-action="agregar-sub"][data-parent-id="${main.id}"]`);
-        if (addSubEl) {
-          addSubEl.addEventListener('click', () => this.abrirModalCategoria(null, main.id));
+        const btnEditMain = parentRow.querySelector('[data-action="editar"]');
+        if (btnEditMain) {
+          btnEditMain.addEventListener('click', () => this.abrirModalCategoria(main));
         }
 
-        // Bind subcategories events
+        const btnDelMain = parentRow.querySelector('[data-action="eliminar"]');
+        if (btnDelMain) {
+          btnDelMain.addEventListener('click', () => this.eliminarCategoria(main.id, main.nombre));
+        }
+
+        // Action buttons on subcategories
         const subs = subCategories.filter(sub => sub.parent_id === main.id);
         subs.forEach(sub => {
-          const editSubEl = grid.querySelector(`[data-action="editar-sub"][data-id="${sub.id}"]`);
-          if (editSubEl) {
-            editSubEl.addEventListener('click', () => this.abrirModalCategoria(sub));
-          }
+          const childRow = tbody.querySelector(`tr.child-row[data-id="${sub.id}"]`);
+          if (childRow) {
+            const btnEditSub = childRow.querySelector('[data-action="editar"]');
+            if (btnEditSub) {
+              btnEditSub.addEventListener('click', () => this.abrirModalCategoria(sub));
+            }
 
-          const delSubEl = grid.querySelector(`[data-action="eliminar-sub"][data-id="${sub.id}"]`);
-          if (delSubEl) {
-            delSubEl.addEventListener('click', () => this.eliminarCategoria(sub.id, sub.nombre));
+            const btnDelSub = childRow.querySelector('[data-action="eliminar"]');
+            if (btnDelSub) {
+              btnDelSub.addEventListener('click', () => this.eliminarCategoria(sub.id, sub.nombre));
+            }
           }
         });
       });
 
       this.llenarParentSelect();
-      spinner.classList.add('d-none');
-      grid.classList.remove('d-none');
+      container.classList.remove('d-none');
     } catch (error) {
       console.error('Error cargando categorías:', error);
-      spinner.classList.add('d-none');
       this.mostrarAlertaLocal('error', 'Error al cargar el listado de categorías.');
     }
   }

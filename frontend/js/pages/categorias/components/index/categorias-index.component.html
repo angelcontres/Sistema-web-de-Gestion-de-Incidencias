@@ -22,22 +22,28 @@
     <span id="categoriasSuccessMessage">Operación realizada con éxito.</span>
   </div>
 
-  <!-- Spinner de Carga -->
-  <div id="loadingSpinner" class="d-flex justify-content-center align-items-center py-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Cargando...</span>
+  <!-- Tabla de Categorías Colapsable (Tree Table) -->
+  <div class="card custom-card border-0 shadow-sm overflow-hidden d-none" id="categoriasTableContainer">
+    <div class="card-header bg-white border-0 py-3">
+      <h5 class="card-title fw-bold mb-0 text-dark">Listado de Categorías</h5>
     </div>
-  </div>
-
-  <!-- Estado Vacío -->
-  <div id="emptyState" class="text-center py-5 d-none">
-    <i class="bi bi-tags text-muted display-4"></i>
-    <p class="text-muted mt-2">No se encontraron categorías de incidencias registradas.</p>
-  </div>
-
-  <!-- Grid de Categorías Encapsuladas -->
-  <div class="row g-4 d-none" id="categoriasGrid">
-    <!-- Se inyectan dinámicamente por JS -->
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="tbl-categorias">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4" style="width: 35%;">Nombre</th>
+              <th style="width: 45%;">Descripción / Ejemplos</th>
+              <th style="width: 10%;">Estado</th>
+              <th class="text-end pe-4" style="width: 10%;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-categorias">
+            <!-- Se inyectan las filas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
