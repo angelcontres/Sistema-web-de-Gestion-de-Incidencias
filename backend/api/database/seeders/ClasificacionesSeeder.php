@@ -12,75 +12,130 @@ class ClasificacionesSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Soporte Técnico (Raíz)
-        $soporte = CategoriaIncidencia::create([
+        // 1. Seguridad Ciudadana y Delitos (Raíz)
+        $seguridad = CategoriaIncidencia::create([
             'parent_id' => null,
-            'nombre' => 'Soporte Técnico',
-            'descripcion' => 'Incidencias relacionadas con equipos informáticos, software y conectividad.',
+            'nombre' => 'Seguridad Ciudadana y Delitos',
+            'descripcion' => 'Reportes de seguridad de prioridad alta y emergencias ciudadanas.',
+            'activo' => true,
         ]);
 
-        // 1.1 Hardware (Nivel Medio)
-        $hardware = CategoriaIncidencia::create([
-            'parent_id' => $soporte->id,
-            'nombre' => 'Hardware',
-            'descripcion' => 'Problemas físicos con dispositivos y periféricos.',
-        ]);
-
-        // 1.1.1 PC / Laptop (Hojas)
         CategoriaIncidencia::create([
-            'parent_id' => $hardware->id,
-            'nombre' => 'PC / Laptop',
-            'descripcion' => 'Fallas en computadoras de escritorio y laptops.',
+            'parent_id' => $seguridad->id,
+            'nombre' => 'Delitos contra las personas',
+            'descripcion' => 'Homicidios, agresiones físicas, peleas callejeras y violencia doméstica.',
+            'activo' => true,
         ]);
 
-        // 1.1.2 Impresoras (Hojas)
         CategoriaIncidencia::create([
-            'parent_id' => $hardware->id,
-            'nombre' => 'Impresoras y Escáneres',
-            'descripcion' => 'Problemas de impresión o digitalización.',
+            'parent_id' => $seguridad->id,
+            'nombre' => 'Delitos contra la propiedad',
+            'descripcion' => 'Robos a viviendas, asaltos en la vía pública, robo de vehículos y hurtos.',
+            'activo' => true,
         ]);
 
-        // 1.2 Software (Nivel Medio)
-        $software = CategoriaIncidencia::create([
-            'parent_id' => $soporte->id,
-            'nombre' => 'Software',
-            'descripcion' => 'Problemas con sistemas operativos y aplicaciones.',
-        ]);
-
-        // 1.2.1 Correo Corporativo (Hojas)
         CategoriaIncidencia::create([
-            'parent_id' => $software->id,
-            'nombre' => 'Correo Corporativo',
-            'descripcion' => 'Problemas de acceso o configuración de correo electrónico.',
+            'parent_id' => $seguridad->id,
+            'nombre' => 'Alteración del orden público',
+            'descripcion' => 'Consumo de drogas/alcohol en calles, vandalismo, grafitis y riñas vecinales.',
+            'activo' => true,
         ]);
 
-        // 1.2.2 ERP Interno (Hojas)
         CategoriaIncidencia::create([
-            'parent_id' => $software->id,
-            'nombre' => 'Sistema ERP',
-            'descripcion' => 'Fallas en el sistema de planificación de recursos empresariales.',
+            'parent_id' => $seguridad->id,
+            'nombre' => 'Actividad sospechosa',
+            'descripcion' => 'Vehículos abandonados o personas merodeando de forma inusual.',
+            'activo' => true,
         ]);
 
 
-        // 2. Mantenimiento de Infraestructura (Raíz)
-        $mantenimiento = CategoriaIncidencia::create([
+        // 2. Infraestructura y Vía Pública (Raíz)
+        $infraestructura = CategoriaIncidencia::create([
             'parent_id' => null,
-            'nombre' => 'Mantenimiento de Infraestructura',
-            'descripcion' => 'Problemas físicos en las instalaciones y servicios básicos.',
+            'nombre' => 'Infraestructura y Vía Pública',
+            'descripcion' => 'Reportes relacionados con el mantenimiento de la vía pública y equipamiento urbano.',
+            'activo' => true,
         ]);
 
-        // 2.1 Electricidad (Hojas bajo Mantenimiento)
         CategoriaIncidencia::create([
-            'parent_id' => $mantenimiento->id,
-            'nombre' => 'Electricidad',
-            'descripcion' => 'Cortes de luz, tomacorrientes dañados o luminarias.',
+            'parent_id' => $infraestructura->id,
+            'nombre' => 'Pavimento y aceras',
+            'descripcion' => 'Baches, grietas en el asfalto, baldosas rotas y falta de rampas de accesibilidad.',
+            'activo' => true,
         ]);
 
-        // 2.2 Plomería / Gasfitería (Hojas bajo Mantenimiento)
         CategoriaIncidencia::create([
-            'parent_id' => $mantenimiento->id,
-            'nombre' => 'Plomería / Gasfitería',
-            'descripcion' => 'Filtraciones de agua, inodoros o cañerías obstruidas.',
+            'parent_id' => $infraestructura->id,
+            'nombre' => 'Mobiliario urbano',
+            'descripcion' => 'Bancos rotos, papeleras dañadas, bolardos caídos y vallas rotas.',
+            'activo' => true,
+        ]);
+
+        CategoriaIncidencia::create([
+            'parent_id' => $infraestructura->id,
+            'nombre' => 'Obras y señalización',
+            'descripcion' => 'Escombros abandonados, zanjas sin tapar y falta de señalización de peligro.',
+            'activo' => true,
+        ]);
+
+
+        // 3. Servicios Urbanos y Suministros (Raíz)
+        $servicios = CategoriaIncidencia::create([
+            'parent_id' => null,
+            'nombre' => 'Servicios Urbanos y Suministros',
+            'descripcion' => 'Reportes e incidencias sobre servicios públicos básicos y suministros.',
+            'activo' => true,
+        ]);
+
+        CategoriaIncidencia::create([
+            'parent_id' => $servicios->id,
+            'nombre' => 'Alumbrado público',
+            'descripcion' => 'Farolas apagadas, luces intermitentes, sectores oscuros o cables eléctricos expuestos.',
+            'activo' => true,
+        ]);
+
+        CategoriaIncidencia::create([
+            'parent_id' => $servicios->id,
+            'nombre' => 'Agua y alcantarillado',
+            'descripcion' => 'Fugas de agua potable, tuberías rotas, alcantarillas tapadas o inundaciones.',
+            'activo' => true,
+        ]);
+
+        CategoriaIncidencia::create([
+            'parent_id' => $servicios->id,
+            'nombre' => 'Gestión de residuos',
+            'descripcion' => 'Contenedores de basura desbordados, rotos o acumulación de desechos en la calle.',
+            'activo' => true,
+        ]);
+
+
+        // 4. Medio Ambiente y Movilidad (Raíz)
+        $medioAmbiente = CategoriaIncidencia::create([
+            'parent_id' => null,
+            'nombre' => 'Medio Ambiente y Movilidad',
+            'descripcion' => 'Reportes de tránsito, control de plagas y mantenimiento ambiental.',
+            'activo' => true,
+        ]);
+
+        CategoriaIncidencia::create([
+            'parent_id' => $medioAmbiente->id,
+            'nombre' => 'Parques y áreas verdes',
+            'descripcion' => 'Árboles caídos, ramas con riesgo de desprendimiento y falta de mantenimiento en jardines.',
+            'activo' => true,
+        ]);
+
+        CategoriaIncidencia::create([
+            'parent_id' => $medioAmbiente->id,
+            'nombre' => 'Plagas y salud ambiental',
+            'descripcion' => 'Presencia de roedores, insectos, acumulación de animales callejeros o malos olores.',
+            'activo' => true,
+        ]);
+
+        CategoriaIncidencia::create([
+            'parent_id' => $medioAmbiente->id,
+            'nombre' => 'Tránsito y movilidad',
+            'descripcion' => 'Semáforos averiados, señales de tráfico destruidas y coches mal estacionados que bloquean accesos.',
+            'activo' => true,
         ]);
     }
 }
