@@ -9,9 +9,13 @@ export class UbicacionesPaisesComponent extends BaseComponent {
   }
 
   async onInit() {
-    // Initialize Bootstrap Modal
+    // Initialize Bootstrap Modal and move it to document.body to avoid backdrop issues
     try {
-      this.paisModalObj = new bootstrap.Modal(this.querySelector('#paisModal'));
+      const modalEl = this.querySelector('#paisModal');
+      if (modalEl) {
+        document.body.appendChild(modalEl);
+        this.paisModalObj = new bootstrap.Modal(modalEl);
+      }
     } catch (e) {
       console.warn('Error inicializando el modal de países.', e);
     }
@@ -95,13 +99,13 @@ export class UbicacionesPaisesComponent extends BaseComponent {
   }
 
   abrirModalPais(pais = null) {
-    const modalTitle = this.querySelector('#paisModalLabel');
-    const form = this.querySelector('#paisForm');
-    const inputId = this.querySelector('#paisId');
-    const inputNombre = this.querySelector('#paisNombre');
-    const inputCodigo = this.querySelector('#paisCodigo');
-    const inputActivo = this.querySelector('#paisActivo');
-    const errorAlert = this.querySelector('#paisModalErrorAlert');
+    const modalTitle = document.querySelector('#paisModalLabel');
+    const form = document.querySelector('#paisForm');
+    const inputId = document.querySelector('#paisId');
+    const inputNombre = document.querySelector('#paisNombre');
+    const inputCodigo = document.querySelector('#paisCodigo');
+    const inputActivo = document.querySelector('#paisActivo');
+    const errorAlert = document.querySelector('#paisModalErrorAlert');
 
     errorAlert.classList.add('d-none');
     form.classList.remove('was-validated');
@@ -125,20 +129,20 @@ export class UbicacionesPaisesComponent extends BaseComponent {
 
   async guardarPais(e) {
     e.preventDefault();
-    const form = this.querySelector('#paisForm');
-    const errorAlert = this.querySelector('#paisModalErrorAlert');
-    const errorMessage = this.querySelector('#paisModalErrorMessage');
+    const form = document.querySelector('#paisForm');
+    const errorAlert = document.querySelector('#paisModalErrorAlert');
+    const errorMessage = document.querySelector('#paisModalErrorMessage');
 
     if (!form.checkValidity()) {
       form.classList.add('was-validated');
       return;
     }
 
-    const id = this.querySelector('#paisId').value;
+    const id = document.querySelector('#paisId').value;
     const payload = {
-      nombre: this.querySelector('#paisNombre').value,
-      codigo_iso: this.querySelector('#paisCodigo').value.toUpperCase(),
-      activo: this.querySelector('#paisActivo').checked,
+      nombre: document.querySelector('#paisNombre').value,
+      codigo_iso: document.querySelector('#paisCodigo').value.toUpperCase(),
+      activo: document.querySelector('#paisActivo').checked,
     };
 
     try {

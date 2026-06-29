@@ -20,9 +20,13 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
   }
 
   async onInit() {
-    // Initialize Modal
+    // Initialize Modal and move it to document.body to avoid backdrop issues
     try {
-      this.territorioModalObj = new bootstrap.Modal(this.querySelector('#territorioModal'));
+      const modalEl = this.querySelector('#territorioModal');
+      if (modalEl) {
+        document.body.appendChild(modalEl);
+        this.territorioModalObj = new bootstrap.Modal(modalEl);
+      }
     } catch (e) {
       console.warn('Error inicializando el modal de territorios.', e);
     }
@@ -335,16 +339,16 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
   }
 
   abrirModalTerritorio(columnaNivel, territorio = null) {
-    const modalTitle = this.querySelector('#territorioModalLabel');
-    const form = this.querySelector('#territorioForm');
-    const inputId = this.querySelector('#territorioId');
-    const inputParentId = this.querySelector('#territorioParentId');
-    const inputPaisId = this.querySelector('#territorioPaisId');
-    const inputNombre = this.querySelector('#territorioNombre');
-    const inputTipo = this.querySelector('#territorioTipo');
-    const inputActivo = this.querySelector('#territorioActivo');
-    const contextLabel = this.querySelector('#territorioContextLabel');
-    const errorAlert = this.querySelector('#territorioModalErrorAlert');
+    const modalTitle = document.querySelector('#territorioModalLabel');
+    const form = document.querySelector('#territorioForm');
+    const inputId = document.querySelector('#territorioId');
+    const inputParentId = document.querySelector('#territorioParentId');
+    const inputPaisId = document.querySelector('#territorioPaisId');
+    const inputNombre = document.querySelector('#territorioNombre');
+    const inputTipo = document.querySelector('#territorioTipo');
+    const inputActivo = document.querySelector('#territorioActivo');
+    const contextLabel = document.querySelector('#territorioContextLabel');
+    const errorAlert = document.querySelector('#territorioModalErrorAlert');
 
     errorAlert.classList.add('d-none');
     form.classList.remove('was-validated');
@@ -392,24 +396,24 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
   async guardarTerritorio(e) {
     e.preventDefault();
-    const form = this.querySelector('#territorioForm');
-    const errorAlert = this.querySelector('#territorioModalErrorAlert');
-    const errorMessage = this.querySelector('#territorioModalErrorMessage');
+    const form = document.querySelector('#territorioForm');
+    const errorAlert = document.querySelector('#territorioModalErrorAlert');
+    const errorMessage = document.querySelector('#territorioModalErrorMessage');
 
     if (!form.checkValidity()) {
       form.classList.add('was-validated');
       return;
     }
 
-    const id = this.querySelector('#territorioId').value;
-    const parentId = this.querySelector('#territorioParentId').value;
+    const id = document.querySelector('#territorioId').value;
+    const parentId = document.querySelector('#territorioParentId').value;
     
     const payload = {
-      pais_id: parseInt(this.querySelector('#territorioPaisId').value),
+      pais_id: parseInt(document.querySelector('#territorioPaisId').value),
       parent_id: parentId ? parseInt(parentId) : null,
-      nombre: this.querySelector('#territorioNombre').value,
-      tipo: this.querySelector('#territorioTipo').value,
-      activo: this.querySelector('#territorioActivo').checked,
+      nombre: document.querySelector('#territorioNombre').value,
+      tipo: document.querySelector('#territorioTipo').value,
+      activo: document.querySelector('#territorioActivo').checked,
     };
 
     try {
