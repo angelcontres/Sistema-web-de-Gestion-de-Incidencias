@@ -17,25 +17,8 @@
       <span id="paisesSuccessMessage">Operación realizada con éxito.</span>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light text-muted small uppercase">
-          <tr>
-            <th class="ps-4">Nombre</th>
-            <th>Código ISO</th>
-            <th>Estado</th>
-            <th class="text-end pe-4">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="paisesTableBody">
-          <!-- Se inyecta dinámicamente -->
-        </tbody>
-      </table>
-    </div>
-    <div id="paisesEmptyState" class="text-center py-5 d-none">
-      <i class="bi bi-globe2 text-muted display-4"></i>
-      <p class="text-muted mt-2">No hay países registrados.</p>
-    </div>
+    <!-- Reemplazado por el componente reutilizable de tablas del sistema -->
+    <app-data-table id="tbl-datos-paises" title="Lista de Países" empty-text="No hay países registrados."></app-data-table>
   </div>
 </div>
 

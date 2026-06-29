@@ -1,9 +1,9 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 
 // Import sub-components to register them
-import '../../components/paises/ubicaciones-paises.component.js';
-import '../../components/territorios/ubicaciones-territorios.component.js';
-import '../../components/direcciones/ubicaciones-direcciones.component.js';
+import '../paises/ubicaciones-paises.component.js';
+import '../territorios/ubicaciones-territorios.component.js';
+import '../direcciones/ubicaciones-direcciones.component.js';
 
 export class UbicacionesIndexComponent extends BaseComponent {
   constructor() {

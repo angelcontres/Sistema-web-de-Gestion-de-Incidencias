@@ -5,7 +5,6 @@ import { AuthService } from '../../../../core/auth.service.js';
 export class UbicacionesPaisesComponent extends BaseComponent {
   constructor() {
     super('js/pages/ubicaciones/components/paises/ubicaciones-paises.component.html');
-    this.paisesList = [];
     this.paisModalObj = null;
   }
 
@@ -17,13 +16,11 @@ export class UbicacionesPaisesComponent extends BaseComponent {
       console.warn('Error inicializando el modal de países.', e);
     }
 
-    // Load Data
-    await this.cargarPaises();
-
-    // Setup Event Listeners
     const btnNuevoPais = this.querySelector('#btnNuevoPais');
+    const isAdmin = AuthService.isAdmin();
+
     if (btnNuevoPais) {
-      if (!AuthService.isAdmin()) {
+      if (!isAdmin) {
         btnNuevoPais.classList.add('d-none');
       } else {
         btnNuevoPais.addEventListener('click', () => this.abrirModalPais());
@@ -34,71 +31,64 @@ export class UbicacionesPaisesComponent extends BaseComponent {
     if (paisForm) {
       paisForm.addEventListener('submit', (e) => this.guardarPais(e));
     }
+
+    // Configure the shared data table
+    const tblDatos = this.querySelector('#tbl-datos-paises');
+    if (tblDatos) {
+      tblDatos.configure({
+        columns: [
+          { header: 'Nombre del País', key: 'nombre', class: 'ps-4 fw-bold text-dark' },
+          { header: 'Código ISO', key: 'codigo_iso', class: 'text-secondary fw-semibold' },
+          {
+            header: 'Estado',
+            render: (pais) => `
+              <span class="badge bg-${pais.activo ? 'success' : 'danger'}-soft text-${pais.activo ? 'success' : 'danger'} rounded-pill px-2.5 py-1 small">
+                ${pais.activo ? 'Activo' : 'Inactivo'}
+              </span>
+            `
+          },
+          {
+            header: 'Acciones',
+            class: 'text-end pe-4',
+            actions: isAdmin ? [
+              { name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' },
+              { name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }
+            ] : []
+          }
+        ]
+      });
+
+      // Listen to row actions
+      tblDatos.addEventListener('row-action', (e) => {
+        const { action, item } = e.detail;
+        if (action === 'editar') {
+          this.abrirModalPais(item);
+        } else if (action === 'eliminar') {
+          this.eliminarPais(item.id, item.nombre);
+        }
+      });
+
+      // Load data and trigger event when loaded to sync other components
+      this.cargarPaises();
+    }
   }
 
   async cargarPaises() {
+    const tblDatos = this.querySelector('#tbl-datos-paises');
+    if (!tblDatos) return;
+
     try {
-      const paises = await UbicacionesService.getPaises();
-      this.paisesList = paises || [];
-      this.renderPaisesTable();
+      await tblDatos.load(UbicacionesService.getPaises);
       
-      // Dispatch event to notify other components that countries have changed
+      // Dispatch event to sync with other components
       this.dispatchEvent(new CustomEvent('paises-updated', {
-        detail: { paises: this.paisesList },
+        detail: { paises: tblDatos.items },
         bubbles: true,
         composed: true
       }));
     } catch (error) {
-      console.error('Error cargando países:', error);
-      this.mostrarAlertaLocal('error', `Error al cargar países: ${error.message}`);
+      console.error('Error al cargar países:', error);
     }
-  }
-
-  renderPaisesTable() {
-    const tbody = this.querySelector('#paisesTableBody');
-    const emptyState = this.querySelector('#paisesEmptyState');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
-    if (this.paisesList.length === 0) {
-      emptyState.classList.remove('d-none');
-      return;
-    }
-
-    emptyState.classList.add('d-none');
-
-    const isAdmin = AuthService.isAdmin();
-
-    this.paisesList.forEach((pais) => {
-      const tr = document.createElement('tr');
-      
-      const badgeClass = pais.activo ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger';
-      const badgeText = pais.activo ? 'Activo' : 'Inactivo';
-
-      tr.innerHTML = `
-        <td class="ps-4 fw-bold text-dark">${pais.nombre}</td>
-        <td><code class="text-secondary fw-semibold">${pais.codigo_iso}</code></td>
-        <td><span class="badge ${badgeClass} rounded-pill px-2.5 py-1 small">${badgeText}</span></td>
-        <td class="text-end pe-4">
-          <div class="btn-group ${isAdmin ? '' : 'd-none'}">
-            <button class="btn btn-sm btn-light border-0 btn-editar-pais" data-id="${pais.id}" title="Editar País">
-              <i class="bi bi-pencil-square text-primary"></i>
-            </button>
-            <button class="btn btn-sm btn-light border-0 btn-eliminar-pais" data-id="${pais.id}" title="Eliminar País">
-              <i class="bi bi-trash text-danger"></i>
-            </button>
-          </div>
-        </td>
-      `;
-
-      if (isAdmin) {
-        tr.querySelector('.btn-editar-pais').addEventListener('click', () => this.abrirModalPais(pais));
-        tr.querySelector('.btn-eliminar-pais').addEventListener('click', () => this.eliminarPais(pais.id, pais.nombre));
-      }
-
-      tbody.appendChild(tr);
-    });
   }
 
   abrirModalPais(pais = null) {
