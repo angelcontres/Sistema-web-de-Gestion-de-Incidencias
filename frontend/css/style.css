@@ -180,3 +180,9 @@ body {
   border-radius: var(--radius-sm);
 }
 
+/* Fix Bootstrap modal backdrop z-index bug inside page-fade-in stacking context */
+body.modal-open .page-fade-in {
+  transform: none !important;
+  filter: none !important;
+}
+
