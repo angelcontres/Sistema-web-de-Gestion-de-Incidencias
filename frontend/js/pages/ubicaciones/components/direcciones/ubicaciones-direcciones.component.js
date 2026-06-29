@@ -532,9 +532,9 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
   // Cascading Dropdowns loading
   async cargarDireccionDropdownNivel1(paisId) {
-    const s1 = this.querySelector('#dirNivel1Select');
-    const s2 = this.querySelector('#dirNivel2Select');
-    const s3 = this.querySelector('#dirNivel3Select');
+    const s1 = document.querySelector('#dirNivel1Select');
+    const s2 = document.querySelector('#dirNivel2Select');
+    const s3 = document.querySelector('#dirNivel3Select');
 
     s1.innerHTML = '<option value="">-- Cargando --</option>';
     s1.disabled = true;
@@ -561,8 +561,8 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   async cargarDireccionDropdownNivel2(paisId, parentId) {
-    const s2 = this.querySelector('#dirNivel2Select');
-    const s3 = this.querySelector('#dirNivel3Select');
+    const s2 = document.querySelector('#dirNivel2Select');
+    const s3 = document.querySelector('#dirNivel3Select');
 
     s2.innerHTML = '<option value="">-- Cargando --</option>';
     s2.disabled = true;
@@ -585,7 +585,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   async cargarDireccionDropdownNivel3(paisId, parentId) {
-    const s3 = this.querySelector('#dirNivel3Select');
+    const s3 = document.querySelector('#dirNivel3Select');
     s3.innerHTML = '<option value="">-- Cargando --</option>';
     s3.disabled = true;
 
