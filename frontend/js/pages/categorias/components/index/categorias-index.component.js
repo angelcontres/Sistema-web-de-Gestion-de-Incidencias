@@ -72,7 +72,7 @@ export class CategoriasIndexComponent extends BaseComponent {
 
         // Render Parent Row
         rowsHtml += `
-          <tr class="parent-row table-group-divider" data-id="${main.id}" style="cursor: pointer;">
+          <tr class="parent-row" data-id="${main.id}" style="cursor: pointer;">
             <td class="ps-4 fw-bold text-dark">
               <div class="d-flex align-items-center">
                 ${hasChildren 
