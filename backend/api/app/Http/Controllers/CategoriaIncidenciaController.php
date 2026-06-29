@@ -78,7 +78,7 @@ class CategoriaIncidenciaController extends Controller
         // Prevent circular dependency (cannot set a child as parent)
         if ($request->filled('parent_id')) {
             $parentId = $request->input('parent_id');
-            if ($this->isDescendant($categoria, $parentId)) {
+            if ($this->isDescendant($categoria->id, $parentId)) {
                 return response()->json([
                     'message' => 'No se puede asignar una subcategoría como categoría padre.',
                 ], 422);
@@ -116,14 +116,18 @@ class CategoriaIncidenciaController extends Controller
     /**
      * Helper to check if a category is a descendant of another.
      */
-    private function isDescendant($parent, $childId): bool
+    private function isDescendant($parentId, $childId, $allCategories = null): bool
     {
-        $hijos = $parent->hijos;
+        if (is_null($allCategories)) {
+            $allCategories = CategoriaIncidencia::all();
+        }
+
+        $hijos = $allCategories->where('parent_id', $parentId);
         foreach ($hijos as $hijo) {
             if ($hijo->id == $childId) {
                 return true;
             }
-            if ($this->isDescendant($hijo, $childId)) {
+            if ($this->isDescendant($hijo->id, $childId, $allCategories)) {
                 return true;
             }
         }

@@ -186,3 +186,14 @@ body.modal-open .page-fade-in {
   filter: none !important;
 }
 
+/* Decoupled styles for Tree Table and general UI */
+.table-row-child {
+  background-color: rgba(248, 250, 252, 0.05) !important;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.rotate-transition {
+  transition: transform 0.2s ease;
+}
+

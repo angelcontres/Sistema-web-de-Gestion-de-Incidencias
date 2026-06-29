@@ -72,11 +72,11 @@ export class CategoriasIndexComponent extends BaseComponent {
 
         // Render Parent Row
         rowsHtml += `
-          <tr class="parent-row" data-id="${main.id}" style="cursor: pointer;">
+          <tr class="parent-row cursor-pointer" data-id="${main.id}">
             <td class="ps-4 fw-bold text-dark">
               <div class="d-flex align-items-center">
                 ${hasChildren 
-                  ? `<i class="bi bi-chevron-right me-2 text-primary toggle-chevron fs-6" style="transition: transform 0.2s ease;" data-id="${main.id}"></i>` 
+                  ? `<i class="bi bi-chevron-right me-2 text-primary toggle-chevron fs-6 rotate-transition" data-id="${main.id}"></i>` 
                   : `<i class="bi bi-dot me-2 text-muted fs-5"></i>`
                 }
                 <span>${main.nombre}</span>
@@ -106,7 +106,7 @@ export class CategoriasIndexComponent extends BaseComponent {
         // Render Children Rows (initially collapsed)
         subs.forEach(sub => {
           rowsHtml += `
-            <tr class="child-row d-none bg-light-soft" data-parent-id="${main.id}" data-id="${sub.id}" style="--bs-bg-opacity: 0.2; background-color: var(--bs-light);">
+            <tr class="child-row d-none table-row-child" data-parent-id="${main.id}" data-id="${sub.id}">
               <td class="ps-5 text-dark">
                 <div class="d-flex align-items-center">
                   <i class="bi bi-arrow-return-right text-muted me-2 small"></i>

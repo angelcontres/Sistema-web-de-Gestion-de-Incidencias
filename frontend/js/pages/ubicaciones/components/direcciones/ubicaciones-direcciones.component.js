@@ -407,7 +407,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
     lista.forEach((dir) => {
       const tr = document.createElement('tr');
-      tr.style.cursor = 'pointer';
+      tr.classList.add('cursor-pointer');
       
       const badgeClass = dir.activo ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger';
       const badgeText = dir.activo ? 'Activa' : 'Inactiva';
