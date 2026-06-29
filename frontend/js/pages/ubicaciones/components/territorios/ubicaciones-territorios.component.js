@@ -1,6 +1,7 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 
 export class UbicacionesTerritoriosComponent extends BaseComponent {
   constructor() {
@@ -419,10 +420,10 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     try {
       if (id) {
         await UbicacionesService.updateTerritorio(id, payload);
-        this.mostrarAlertaLocal('success', 'Territorio actualizado con éxito.');
+        UIHelper.mostrarAlerta(this, 'success', 'Territorio actualizado con éxito.');
       } else {
         await UbicacionesService.createTerritorio(payload);
-        this.mostrarAlertaLocal('success', 'Territorio creado con éxito.');
+        UIHelper.mostrarAlerta(this, 'success', 'Territorio creado con éxito.');
       }
 
       this.territorioModalObj.hide();
@@ -452,7 +453,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
     try {
       await UbicacionesService.deleteTerritorio(id);
-      this.mostrarAlertaLocal('success', `Territorio "${nombre}" eliminado con éxito.`);
+      UIHelper.mostrarAlerta(this, 'success', `Territorio "${nombre}" eliminado con éxito.`);
       
       if (columnaNivel === 1) {
         this.selectedNivel1Id = null;
@@ -471,26 +472,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       }));
     } catch (error) {
       console.error('Error al eliminar territorio:', error);
-      this.mostrarAlertaLocal('error', `No se pudo eliminar: ${error.message}`);
-    }
-  }
-
-  mostrarAlertaLocal(tipo, mensaje) {
-    const successAlert = this.querySelector('#territoriosSuccessAlert');
-    const successMsg = this.querySelector('#territoriosSuccessMessage');
-    const errorAlert = this.querySelector('#territoriosErrorAlert');
-    const errorMsg = this.querySelector('#territoriosErrorMessage');
-
-    if (tipo === 'success') {
-      errorAlert.classList.add('d-none');
-      successMsg.textContent = mensaje;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 5000);
-    } else {
-      successAlert.classList.add('d-none');
-      errorMsg.textContent = mensaje;
-      errorAlert.classList.remove('d-none');
-      setTimeout(() => errorAlert.classList.add('d-none'), 6000);
+      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
     }
   }
 }

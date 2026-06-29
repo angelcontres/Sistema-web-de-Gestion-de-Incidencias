@@ -1,6 +1,7 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 
 export class UbicacionesPaisesComponent extends BaseComponent {
   constructor() {
@@ -148,10 +149,10 @@ export class UbicacionesPaisesComponent extends BaseComponent {
     try {
       if (id) {
         await UbicacionesService.updatePais(id, payload);
-        this.mostrarAlertaLocal('success', 'País actualizado con éxito.');
+        UIHelper.mostrarAlerta(this, 'success', 'País actualizado con éxito.');
       } else {
         await UbicacionesService.createPais(payload);
-        this.mostrarAlertaLocal('success', 'País creado con éxito.');
+        UIHelper.mostrarAlerta(this, 'success', 'País creado con éxito.');
       }
 
       this.paisModalObj.hide();
@@ -168,30 +169,11 @@ export class UbicacionesPaisesComponent extends BaseComponent {
 
     try {
       await UbicacionesService.deletePais(id);
-      this.mostrarAlertaLocal('success', `País "${nombre}" eliminado con éxito.`);
+      UIHelper.mostrarAlerta(this, 'success', `País "${nombre}" eliminado con éxito.`);
       await this.cargarPaises();
     } catch (error) {
       console.error('Error al eliminar país:', error);
-      this.mostrarAlertaLocal('error', `No se pudo eliminar: ${error.message}`);
-    }
-  }
-
-  mostrarAlertaLocal(tipo, mensaje) {
-    const successAlert = this.querySelector('#paisesSuccessAlert');
-    const successMsg = this.querySelector('#paisesSuccessMessage');
-    const errorAlert = this.querySelector('#paisesErrorAlert');
-    const errorMsg = this.querySelector('#paisesErrorMessage');
-
-    if (tipo === 'success') {
-      errorAlert.classList.add('d-none');
-      successMsg.textContent = mensaje;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 5000);
-    } else {
-      successAlert.classList.add('d-none');
-      errorMsg.textContent = mensaje;
-      errorAlert.classList.remove('d-none');
-      setTimeout(() => errorAlert.classList.add('d-none'), 6000);
+      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
     }
   }
 }

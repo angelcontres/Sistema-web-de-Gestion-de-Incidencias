@@ -1,6 +1,8 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { UIHelper } from '../../../../shared/utils/ui-helper.js';
+import { MAP_CONFIG } from '../../../../shared/constants.js';
 
 export class UbicacionesDireccionesComponent extends BaseComponent {
   constructor() {
@@ -220,23 +222,21 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
     // Default center depending on user's assigned country
     const user = AuthService.getCurrentUser();
-    let centro = [-1.8312, -78.1834]; // Ecuador by default
-    let zoom = 5;
+    let centro = MAP_CONFIG.DEFAULT_CENTER;
+    let zoom = MAP_CONFIG.DEFAULT_ZOOM;
 
     if (user && user.pais) {
-      const centrosPaises = {
-        'PE': [-9.1900, -75.0152],
-        'MX': [23.6345, -102.5528],
-        'EC': [-1.8312, -78.1834],
-      };
-      centro = centrosPaises[user.pais.codigo_iso] || [-1.8312, -78.1834];
-      zoom = 6;
+      const config = MAP_CONFIG.COUNTRY_CENTERS[user.pais.codigo_iso];
+      if (config) {
+        centro = config.center;
+        zoom = config.zoom;
+      }
     }
 
     this.map = L.map(mapDiv).setView(centro, zoom);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>',
+    L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
+      attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
       subdomains: 'abcd',
       maxZoom: 20
     }).addTo(this.map);
@@ -251,16 +251,14 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
     // Recenter to default country view
     const user = AuthService.getCurrentUser();
-    let centro = [-1.8312, -78.1834];
-    let zoom = 5;
+    let centro = MAP_CONFIG.DEFAULT_CENTER;
+    let zoom = MAP_CONFIG.DEFAULT_ZOOM;
     if (user && user.pais) {
-      const centrosPaises = {
-        'PE': [-9.1900, -75.0152],
-        'MX': [23.6345, -102.5528],
-        'EC': [-1.8312, -78.1834],
-      };
-      centro = centrosPaises[user.pais.codigo_iso] || [-1.8312, -78.1834];
-      zoom = 6;
+      const config = MAP_CONFIG.COUNTRY_CENTERS[user.pais.codigo_iso];
+      if (config) {
+        centro = config.center;
+        zoom = config.zoom;
+      }
     }
     this.map.setView(centro, zoom);
   }
@@ -305,20 +303,21 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
     if (this.modalMap) {
       this.modalMap.invalidateSize();
-    } else {
-      this.modalMap = L.map(modalMapDiv).setView([-1.8312, -78.1834], 5);
-
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
-      }).addTo(this.modalMap);
-
-      this.modalMap.on('click', (e) => {
-        const { lat, lng } = e.latlng;
-        this.establecerMarcadorModal(lat, lng);
-      });
+      return;
     }
+
+    this.modalMap = L.map(modalMapDiv).setView(MAP_CONFIG.DEFAULT_CENTER, MAP_CONFIG.DEFAULT_ZOOM);
+
+    L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
+      attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
+      subdomains: 'abcd',
+      maxZoom: 20
+    }).addTo(this.modalMap);
+
+    this.modalMap.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      this.establecerMarcadorModal(lat, lng);
+    });
 
     if (this.tempCoords) {
       this.establecerMarcadorModal(this.tempCoords.lat, this.tempCoords.lng);
@@ -362,13 +361,8 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     const pais = this.paisesList.find(p => p.id == paisId);
     if (!pais) return;
 
-    const centrosPaises = {
-      'PE': [-9.1900, -75.0152],
-      'MX': [23.6345, -102.5528],
-      'EC': [-1.8312, -78.1834],
-    };
-
-    const centro = centrosPaises[pais.codigo_iso] || [-1.8312, -78.1834];
+    const config = MAP_CONFIG.COUNTRY_CENTERS[pais.codigo_iso];
+    const centro = config ? config.center : MAP_CONFIG.DEFAULT_CENTER;
     this.modalMap.setView(centro, 6);
   }
 
@@ -719,10 +713,10 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     try {
       if (id) {
         await UbicacionesService.updateDireccion(id, payload);
-        this.mostrarAlertaLocal('success', 'Dirección actualizada con éxito.');
+        UIHelper.mostrarAlerta(this, 'success', 'Dirección actualizada con éxito.');
       } else {
         await UbicacionesService.createDireccion(payload);
-        this.mostrarAlertaLocal('success', 'Dirección creada con éxito.');
+        UIHelper.mostrarAlerta(this, 'success', 'Dirección creada con éxito.');
       }
 
       this.direccionModalObj.hide();
@@ -744,30 +738,11 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
     try {
       await UbicacionesService.deleteDireccion(id);
-      this.mostrarAlertaLocal('success', 'Dirección eliminada con éxito.');
+      UIHelper.mostrarAlerta(this, 'success', 'Dirección eliminada con éxito.');
       await this.cargarDirecciones();
     } catch (error) {
       console.error('Error al eliminar dirección:', error);
-      this.mostrarAlertaLocal('error', `No se pudo eliminar: ${error.message}`);
-    }
-  }
-
-  mostrarAlertaLocal(tipo, mensaje) {
-    const successAlert = this.querySelector('#direccionesSuccessAlert');
-    const successMsg = this.querySelector('#direccionesSuccessMessage');
-    const errorAlert = this.querySelector('#direccionesErrorAlert');
-    const errorMsg = this.querySelector('#direccionesErrorMessage');
-
-    if (tipo === 'success') {
-      errorAlert.classList.add('d-none');
-      successMsg.textContent = mensaje;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 5000);
-    } else {
-      successAlert.classList.add('d-none');
-      errorMsg.textContent = mensaje;
-      errorAlert.classList.remove('d-none');
-      setTimeout(() => errorAlert.classList.add('d-none'), 6000);
+      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
     }
   }
 }

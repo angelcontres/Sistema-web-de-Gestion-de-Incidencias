@@ -1,6 +1,7 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { CategoriaIncidenciaService } from '../../services/categoria-incidencia.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 
 export class CategoriasIndexComponent extends BaseComponent {
   constructor() {
@@ -208,7 +209,7 @@ export class CategoriasIndexComponent extends BaseComponent {
       container.classList.remove('d-none');
     } catch (error) {
       console.error('Error cargando categorías:', error);
-      this.mostrarAlertaLocal('error', 'Error al cargar el listado de categorías.');
+      UIHelper.mostrarAlerta(this, 'error', 'Error al cargar el listado de categorías.');
     }
   }
 
@@ -285,10 +286,10 @@ export class CategoriasIndexComponent extends BaseComponent {
     try {
       if (id) {
         await CategoriaIncidenciaService.update(id, payload);
-        this.mostrarAlertaLocal('success', 'Categoría de incidencia actualizada con éxito.');
+        UIHelper.mostrarAlerta(this, 'success', 'Categoría de incidencia actualizada con éxito.');
       } else {
         await CategoriaIncidenciaService.create(payload);
-        this.mostrarAlertaLocal('success', 'Categoría de incidencia creada con éxito.');
+        UIHelper.mostrarAlerta(this, 'success', 'Categoría de incidencia creada con éxito.');
       }
 
       this.categoriaModalObj.hide();
@@ -305,30 +306,11 @@ export class CategoriasIndexComponent extends BaseComponent {
 
     try {
       await CategoriaIncidenciaService.delete(id);
-      this.mostrarAlertaLocal('success', `Categoría "${nombre}" eliminada con éxito.`);
+      UIHelper.mostrarAlerta(this, 'success', `Categoría "${nombre}" eliminada con éxito.`);
       await this.cargarCategorias();
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
-      this.mostrarAlertaLocal('error', `No se pudo eliminar: ${error.message}`);
-    }
-  }
-
-  mostrarAlertaLocal(tipo, mensaje) {
-    const successAlert = this.querySelector('#categoriasSuccessAlert');
-    const successMsg = this.querySelector('#categoriasSuccessMessage');
-    const errorAlert = this.querySelector('#categoriasErrorAlert');
-    const errorMsg = this.querySelector('#categoriasErrorMessage');
-
-    if (tipo === 'success') {
-      errorAlert.classList.add('d-none');
-      successMsg.textContent = mensaje;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 5000);
-    } else {
-      successAlert.classList.add('d-none');
-      errorMsg.textContent = mensaje;
-      errorAlert.classList.remove('d-none');
-      setTimeout(() => errorAlert.classList.add('d-none'), 6000);
+      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
     }
   }
 }
