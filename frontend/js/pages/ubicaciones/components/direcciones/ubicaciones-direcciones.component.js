@@ -37,11 +37,6 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       this.llenarPaisSelect();
     });
 
-    document.addEventListener('territorios-updated', () => {
-      // If the address modal is open, we might want to refresh dropdowns, 
-      // but it's simpler to let the cascading selects fetch fresh data when triggered.
-    });
-
     // Setup Event Listeners
     const btnNuevaDireccion = this.querySelector('#btnNuevaDireccion');
     const isAdmin = AuthService.isAdmin();
@@ -59,15 +54,24 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
     }
 
+    // Combined Filters (Search + Country + Status)
     const direccionSearch = this.querySelector('#direccionSearch');
+    const filterPaisSelect = this.querySelector('#filterPaisSelect');
+    const filterEstadoSelect = this.querySelector('#filterEstadoSelect');
+
+    const triggerFilter = () => this.filtrarDirecciones();
+
     if (direccionSearch) {
-      direccionSearch.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        this.filtrarDirecciones(query);
-      });
+      direccionSearch.addEventListener('input', triggerFilter);
+    }
+    if (filterPaisSelect) {
+      filterPaisSelect.addEventListener('change', triggerFilter);
+    }
+    if (filterEstadoSelect) {
+      filterEstadoSelect.addEventListener('change', triggerFilter);
     }
 
-    // Cascading dropdowns
+    // Cascading dropdowns (Modal Form)
     const dirPaisSelect = this.querySelector('#dirPaisSelect');
     if (dirPaisSelect) {
       dirPaisSelect.addEventListener('change', (e) => this.cargarDireccionDropdownNivel1(e.target.value));
@@ -103,9 +107,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
     }
 
-    // Lazy load the main map immediately since we are on the tab if rendered, 
-    // but the parent component will trigger this when the tab is shown.
-    // For safety, we also initialize it if the map container is visible.
+    // Lazy load the main map when visible
     setTimeout(() => {
       if (this.offsetParent !== null) {
         this.initMainMap();
@@ -125,20 +127,31 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
   llenarPaisSelect() {
     const select = this.querySelector('#dirPaisSelect');
-    if (!select) return;
+    const filterSelect = this.querySelector('#filterPaisSelect');
+    
     const optionsHtml = this.paisesList
       .filter(p => p.activo)
       .map(p => `<option value="${p.id}">${p.nombre}</option>`)
       .join('');
-    select.innerHTML = `<option value="">-- Seleccione --</option>${optionsHtml}`;
+
+    if (select) {
+      select.innerHTML = `<option value="">-- Seleccione --</option>${optionsHtml}`;
+    }
+    
+    if (filterSelect) {
+      const currentVal = filterSelect.value;
+      filterSelect.innerHTML = `<option value="">Todos los Países</option>${optionsHtml}`;
+      filterSelect.value = currentVal;
+    }
   }
 
   async cargarDirecciones() {
     try {
       const direcciones = await UbicacionesService.getDirecciones();
       this.direccionesList = direcciones || [];
-      this.renderDireccionesTable(this.direccionesList);
-      this.actualizarMarcadoresMapaPrincipal();
+      
+      // Apply filters on initial load
+      this.filtrarDirecciones();
     } catch (error) {
       console.error('Error cargando direcciones:', error);
       this.mostrarAlertaLocal('error', `Error al cargar direcciones: ${error.message}`);
@@ -166,13 +179,14 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     this.actualizarMarcadoresMapaPrincipal();
   }
 
-  actualizarMarcadoresMapaPrincipal() {
+  actualizarMarcadoresMapaPrincipal(lista = this.direccionesList) {
     if (!this.map) return;
 
+    // Clear previous markers
     this.mapMarkers.forEach(m => this.map.removeLayer(m));
     this.mapMarkers = [];
 
-    this.direccionesList.forEach((dir) => {
+    lista.forEach((dir) => {
       if (dir.latitud && dir.longitud) {
         const marker = L.marker([dir.latitud, dir.longitud]).addTo(this.map);
         const pais = dir.territorio?.pais?.nombre || '';
@@ -357,20 +371,45 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     });
   }
 
-  filtrarDirecciones(query) {
-    if (!query) {
-      this.renderDireccionesTable(this.direccionesList);
-      return;
-    }
+  filtrarDirecciones() {
+    const searchInput = this.querySelector('#direccionSearch');
+    const filterPaisSelect = this.querySelector('#filterPaisSelect');
+    const filterEstadoSelect = this.querySelector('#filterEstadoSelect');
+
+    const query = searchInput ? searchInput.value.toLowerCase() : '';
+    const paisId = filterPaisSelect ? filterPaisSelect.value : '';
+    const estado = filterEstadoSelect ? filterEstadoSelect.value : '';
+
     const filtered = this.direccionesList.filter((dir) => {
-      const detalle = (dir.detalle || '').toLowerCase();
-      const ref = (dir.referencia || '').toLowerCase();
-      const cp = (dir.codigo_postal || '').toLowerCase();
-      const pais = (dir.territorio?.pais?.nombre || '').toLowerCase();
-      const terr = (dir.territorio?.nombre || '').toLowerCase();
-      return detalle.includes(query) || ref.includes(query) || cp.includes(query) || pais.includes(query) || terr.includes(query);
+      // 1. Text Query Filter
+      let matchesText = true;
+      if (query) {
+        const detalle = (dir.detalle || '').toLowerCase();
+        const ref = (dir.referencia || '').toLowerCase();
+        const cp = (dir.codigo_postal || '').toLowerCase();
+        const pais = (dir.territorio?.pais?.nombre || '').toLowerCase();
+        const terr = (dir.territorio?.nombre || '').toLowerCase();
+        
+        matchesText = detalle.includes(query) || ref.includes(query) || cp.includes(query) || pais.includes(query) || terr.includes(query);
+      }
+
+      // 2. Country Filter
+      let matchesCountry = true;
+      if (paisId) {
+        matchesCountry = dir.territorio?.pais_id == paisId;
+      }
+
+      // 3. Status Filter
+      let matchesStatus = true;
+      if (estado) {
+        matchesStatus = estado === 'activo' ? dir.activo : !dir.activo;
+      }
+
+      return matchesText && matchesCountry && matchesStatus;
     });
+
     this.renderDireccionesTable(filtered);
+    this.actualizarMarcadoresMapaPrincipal(filtered);
   }
 
   async abrirModalDireccion(direccion = null) {
