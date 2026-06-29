@@ -35,28 +35,31 @@ export class UbicacionesPaisesComponent extends BaseComponent {
     // Configure the shared data table
     const tblDatos = this.querySelector('#tbl-datos-paises');
     if (tblDatos) {
-      tblDatos.configure({
-        columns: [
-          { header: 'Nombre del País', key: 'nombre', class: 'ps-4 fw-bold text-dark' },
-          { header: 'Código ISO', key: 'codigo_iso', class: 'text-secondary fw-semibold' },
-          {
-            header: 'Estado',
-            render: (pais) => `
-              <span class="badge bg-${pais.activo ? 'success' : 'danger'}-soft text-${pais.activo ? 'success' : 'danger'} rounded-pill px-2.5 py-1 small">
-                ${pais.activo ? 'Activo' : 'Inactivo'}
-              </span>
-            `
-          },
-          {
-            header: 'Acciones',
-            class: 'text-end pe-4',
-            actions: isAdmin ? [
-              { name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' },
-              { name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }
-            ] : []
-          }
-        ]
-      });
+      const columns = [
+        { header: 'Nombre del País', key: 'nombre', class: 'ps-4 fw-bold text-dark' },
+        { header: 'Código ISO', key: 'codigo_iso', class: 'text-secondary fw-semibold' },
+        {
+          header: 'Estado',
+          render: (pais) => `
+            <span class="badge bg-${pais.activo ? 'success' : 'danger'}-soft text-${pais.activo ? 'success' : 'danger'} rounded-pill px-2.5 py-1 small">
+              ${pais.activo ? 'Activo' : 'Inactivo'}
+            </span>
+          `
+        }
+      ];
+
+      if (isAdmin) {
+        columns.push({
+          header: 'Acciones',
+          class: 'text-end pe-4',
+          actions: [
+            { name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' },
+            { name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }
+          ]
+        });
+      }
+
+      tblDatos.configure({ columns });
 
       // Listen to row actions
       tblDatos.addEventListener('row-action', (e) => {
