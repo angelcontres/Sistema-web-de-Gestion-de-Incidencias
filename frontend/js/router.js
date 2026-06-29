@@ -33,10 +33,16 @@ function navigate() {
     }
 
     // RBAC: Block non-admins from accessing configuration routes
-    const adminRoutes = ['#/opciones-menu', '#/roles', '#/permisos', '#/ubicaciones'];
+    const adminRoutes = ['#/opciones-menu', '#/roles', '#/permisos'];
     const basePath = hash.split('?')[0].replace(/\/form$/, '');
 
     if (adminRoutes.includes(basePath) && !AuthService.isAdmin()) {
+      window.location.hash = '#/';
+      return;
+    }
+
+    // Protect #/ubicaciones based on 'Ver Ubicación' permission
+    if (basePath === '#/ubicaciones' && !AuthService.hasPermission('Ver Ubicación')) {
       window.location.hash = '#/';
       return;
     }
