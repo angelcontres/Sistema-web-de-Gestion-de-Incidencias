@@ -1,0 +1,633 @@
+import { BaseComponent } from '../../../../core/base-component.js';
+import { UbicacionesService } from '../../services/ubicaciones.service.js';
+import { AuthService } from '../../../../core/auth.service.js';
+
+export class UbicacionesDireccionesComponent extends BaseComponent {
+  constructor() {
+    super('js/pages/ubicaciones/components/direcciones/ubicaciones-direcciones.component.html');
+    
+    this.direccionesList = [];
+    this.paisesList = [];
+    
+    // Maps
+    this.map = null;
+    this.modalMap = null;
+    this.mapMarkers = [];
+    this.modalMarker = null;
+    this.tempCoords = null;
+    
+    this.direccionModalObj = null;
+  }
+
+  async onInit() {
+    // Initialize Modal
+    try {
+      this.direccionModalObj = new bootstrap.Modal(this.querySelector('#direccionModal'));
+    } catch (e) {
+      console.warn('Error inicializando el modal de direcciones.', e);
+    }
+
+    // Load initial data
+    await this.cargarPaises();
+    await this.cargarDirecciones();
+
+    // Listen to global country/territory updates
+    document.addEventListener('paises-updated', (e) => {
+      this.paisesList = e.detail.paises || [];
+      this.llenarPaisSelect();
+    });
+
+    document.addEventListener('territorios-updated', () => {
+      // If the address modal is open, we might want to refresh dropdowns, 
+      // but it's simpler to let the cascading selects fetch fresh data when triggered.
+    });
+
+    // Setup Event Listeners
+    const btnNuevaDireccion = this.querySelector('#btnNuevaDireccion');
+    const isAdmin = AuthService.isAdmin();
+
+    if (btnNuevaDireccion) {
+      if (!isAdmin) {
+        btnNuevaDireccion.classList.add('d-none');
+      } else {
+        btnNuevaDireccion.addEventListener('click', () => this.abrirModalDireccion());
+      }
+    }
+
+    const direccionForm = this.querySelector('#direccionForm');
+    if (direccionForm) {
+      direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
+    }
+
+    const direccionSearch = this.querySelector('#direccionSearch');
+    if (direccionSearch) {
+      direccionSearch.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        this.filtrarDirecciones(query);
+      });
+    }
+
+    // Cascading dropdowns
+    const dirPaisSelect = this.querySelector('#dirPaisSelect');
+    if (dirPaisSelect) {
+      dirPaisSelect.addEventListener('change', (e) => this.cargarDireccionDropdownNivel1(e.target.value));
+    }
+
+    const dirNivel1Select = this.querySelector('#dirNivel1Select');
+    if (dirNivel1Select) {
+      dirNivel1Select.addEventListener('change', (e) => {
+        const parentId = e.target.value;
+        const paisId = this.querySelector('#dirPaisSelect').value;
+        this.cargarDireccionDropdownNivel2(paisId, parentId);
+      });
+    }
+
+    const dirNivel2Select = this.querySelector('#dirNivel2Select');
+    if (dirNivel2Select) {
+      dirNivel2Select.addEventListener('change', (e) => {
+        const parentId = e.target.value;
+        const paisId = this.querySelector('#dirPaisSelect').value;
+        this.cargarDireccionDropdownNivel3(paisId, parentId);
+      });
+    }
+
+    // Map listeners
+    const btnCentrarMapa = this.querySelector('#btnCentrarMapa');
+    if (btnCentrarMapa) {
+      btnCentrarMapa.addEventListener('click', () => this.centrarMapaEnTodo());
+    }
+
+    // Modal shown map load
+    const modalEl = this.querySelector('#direccionModal');
+    if (modalEl) {
+      modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
+    }
+
+    // Lazy load the main map immediately since we are on the tab if rendered, 
+    // but the parent component will trigger this when the tab is shown.
+    // For safety, we also initialize it if the map container is visible.
+    setTimeout(() => {
+      if (this.offsetParent !== null) {
+        this.initMainMap();
+      }
+    }, 100);
+  }
+
+  async cargarPaises() {
+    try {
+      const paises = await UbicacionesService.getPaises();
+      this.paisesList = paises || [];
+      this.llenarPaisSelect();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  llenarPaisSelect() {
+    const select = this.querySelector('#dirPaisSelect');
+    if (!select) return;
+    const optionsHtml = this.paisesList
+      .filter(p => p.activo)
+      .map(p => `<option value="${p.id}">${p.nombre}</option>`)
+      .join('');
+    select.innerHTML = `<option value="">-- Seleccione --</option>${optionsHtml}`;
+  }
+
+  async cargarDirecciones() {
+    try {
+      const direcciones = await UbicacionesService.getDirecciones();
+      this.direccionesList = direcciones || [];
+      this.renderDireccionesTable(this.direccionesList);
+      this.actualizarMarcadoresMapaPrincipal();
+    } catch (error) {
+      console.error('Error cargando direcciones:', error);
+      this.mostrarAlertaLocal('error', `Error al cargar direcciones: ${error.message}`);
+    }
+  }
+
+  // Map Logic
+  initMainMap() {
+    const mapDiv = this.querySelector('#map');
+    if (!mapDiv) return;
+
+    if (this.map) {
+      this.map.invalidateSize();
+      return;
+    }
+
+    this.map = L.map(mapDiv).setView([-1.8312, -78.1834], 5);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }).addTo(this.map);
+
+    this.actualizarMarcadoresMapaPrincipal();
+  }
+
+  actualizarMarcadoresMapaPrincipal() {
+    if (!this.map) return;
+
+    this.mapMarkers.forEach(m => this.map.removeLayer(m));
+    this.mapMarkers = [];
+
+    this.direccionesList.forEach((dir) => {
+      if (dir.latitud && dir.longitud) {
+        const marker = L.marker([dir.latitud, dir.longitud]).addTo(this.map);
+        const pais = dir.territorio?.pais?.nombre || '';
+        const path = this.obtenerPathTerritorio(dir.territorio);
+        
+        const popupHtml = `
+          <div class="p-1">
+            <h6 class="fw-bold text-dark mb-1">${dir.detalle}</h6>
+            <p class="text-muted small mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> ${pais} &raquo; ${path}</p>
+            ${dir.referencia ? `<small class="text-secondary d-block mb-1">Ref: ${dir.referencia}</small>` : ''}
+            ${dir.codigo_postal ? `<span class="badge bg-secondary-soft text-secondary small">CP: ${dir.codigo_postal}</span>` : ''}
+          </div>
+        `;
+        marker.bindPopup(popupHtml);
+        this.mapMarkers.push(marker);
+      }
+    });
+
+    this.centrarMapaEnTodo();
+  }
+
+  centrarMapaEnTodo() {
+    if (!this.map || this.mapMarkers.length === 0) return;
+    const group = new L.featureGroup(this.mapMarkers);
+    this.map.fitBounds(group.getBounds().pad(0.15));
+  }
+
+  initModalMap() {
+    const modalMapDiv = this.querySelector('#modalMap');
+    if (!modalMapDiv) return;
+
+    if (this.modalMap) {
+      this.modalMap.invalidateSize();
+    } else {
+      this.modalMap = L.map(modalMapDiv).setView([-1.8312, -78.1834], 5);
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+      }).addTo(this.modalMap);
+
+      this.modalMap.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        this.establecerMarcadorModal(lat, lng);
+      });
+    }
+
+    if (this.tempCoords) {
+      this.establecerMarcadorModal(this.tempCoords.lat, this.tempCoords.lng);
+      this.modalMap.setView([this.tempCoords.lat, this.tempCoords.lng], 14);
+      this.tempCoords = null;
+    } else {
+      this.centrarModalMapaSegunPais();
+    }
+  }
+
+  establecerMarcadorModal(lat, lng) {
+    if (!this.modalMap) return;
+
+    if (this.modalMarker) {
+      this.modalMarker.setLatLng([lat, lng]);
+    } else {
+      this.modalMarker = L.marker([lat, lng], { draggable: true }).addTo(this.modalMap);
+      this.modalMarker.on('dragend', (e) => {
+        const pos = e.target.getLatLng();
+        this.actualizarInputsCoordenadas(pos.lat, pos.lng);
+      });
+    }
+
+    this.actualizarInputsCoordenadas(lat, lng);
+  }
+
+  actualizarInputsCoordenadas(lat, lng) {
+    const inputLat = this.querySelector('#direccionLatitud');
+    const inputLng = this.querySelector('#direccionLongitud');
+    if (inputLat && inputLng) {
+      inputLat.value = lat.toFixed(6);
+      inputLng.value = lng.toFixed(6);
+    }
+  }
+
+  centrarModalMapaSegunPais() {
+    const paisId = this.querySelector('#dirPaisSelect').value;
+    if (!paisId || !this.modalMap) return;
+
+    const pais = this.paisesList.find(p => p.id == paisId);
+    if (!pais) return;
+
+    const centrosPaises = {
+      'PE': [-9.1900, -75.0152],
+      'MX': [23.6345, -102.5528],
+      'EC': [-1.8312, -78.1834],
+    };
+
+    const centro = centrosPaises[pais.codigo_iso] || [-1.8312, -78.1834];
+    this.modalMap.setView(centro, 6);
+  }
+
+  obtenerPathTerritorio(territorio) {
+    if (!territorio) return '';
+    const parts = [];
+    let current = territorio;
+    
+    if (current.nombre) {
+      parts.unshift(current.nombre);
+    }
+    if (current.parent) {
+      parts.unshift(current.parent.nombre);
+      if (current.parent.parent) {
+        parts.unshift(current.parent.parent.nombre);
+      }
+    }
+    return parts.join(' &raquo; ');
+  }
+
+  renderDireccionesTable(lista) {
+    const tbody = this.querySelector('#direccionesTableBody');
+    const emptyState = this.querySelector('#direccionesEmptyState');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (lista.length === 0) {
+      emptyState.classList.remove('d-none');
+      return;
+    }
+
+    emptyState.classList.add('d-none');
+
+    const isAdmin = AuthService.isAdmin();
+
+    lista.forEach((dir) => {
+      const tr = document.createElement('tr');
+      tr.style.cursor = 'pointer';
+      
+      const badgeClass = dir.activo ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger';
+      const badgeText = dir.activo ? 'Activa' : 'Inactiva';
+      
+      const paisNombre = dir.territorio?.pais?.nombre || 'N/A';
+      const pathTerritorios = this.obtenerPathTerritorio(dir.territorio);
+
+      tr.innerHTML = `
+        <td class="ps-3 fw-semibold text-dark">${paisNombre}</td>
+        <td class="small text-muted text-truncate" style="max-width: 150px;" title="${pathTerritorios.replace(/&raquo;/g, '>')}" >${pathTerritorios}</td>
+        <td class="fw-medium text-dark text-truncate" style="max-width: 180px;" title="${dir.detalle}">${dir.detalle}</td>
+        <td><code class="text-secondary small fw-semibold">${dir.codigo_postal || 'N/A'}</code></td>
+        <td><span class="badge ${badgeClass} rounded-pill px-2 py-0.5 small">${badgeText}</span></td>
+        <td class="text-end pe-3">
+          <div class="btn-group ${isAdmin ? '' : 'd-none'}">
+            <button class="btn btn-sm btn-light border-0 btn-editar-dir" data-id="${dir.id}" title="Editar Dirección">
+              <i class="bi bi-pencil-square text-primary"></i>
+            </button>
+            <button class="btn btn-sm btn-light border-0 btn-eliminar-dir" data-id="${dir.id}" title="Eliminar Dirección">
+              <i class="bi bi-trash text-danger"></i>
+            </button>
+          </div>
+        </td>
+      `;
+
+      tr.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-group') || e.target.closest('button')) return;
+        
+        if (dir.latitud && dir.longitud && this.map) {
+          this.map.setView([dir.latitud, dir.longitud], 15);
+          const matched = this.mapMarkers.find(m => {
+            const pos = m.getLatLng();
+            return Math.abs(pos.lat - dir.latitud) < 0.0001 && Math.abs(pos.lng - dir.longitud) < 0.0001;
+          });
+          if (matched) matched.openPopup();
+        } else {
+          this.mostrarAlertaLocal('error', 'Esta dirección no cuenta con coordenadas.');
+        }
+      });
+
+      if (isAdmin) {
+        tr.querySelector('.btn-editar-dir').addEventListener('click', () => this.abrirModalDireccion(dir));
+        tr.querySelector('.btn-eliminar-dir').addEventListener('click', () => this.eliminarDireccion(dir.id));
+      }
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  filtrarDirecciones(query) {
+    if (!query) {
+      this.renderDireccionesTable(this.direccionesList);
+      return;
+    }
+    const filtered = this.direccionesList.filter((dir) => {
+      const detalle = (dir.detalle || '').toLowerCase();
+      const ref = (dir.referencia || '').toLowerCase();
+      const cp = (dir.codigo_postal || '').toLowerCase();
+      const pais = (dir.territorio?.pais?.nombre || '').toLowerCase();
+      const terr = (dir.territorio?.nombre || '').toLowerCase();
+      return detalle.includes(query) || ref.includes(query) || cp.includes(query) || pais.includes(query) || terr.includes(query);
+    });
+    this.renderDireccionesTable(filtered);
+  }
+
+  async abrirModalDireccion(direccion = null) {
+    const modalTitle = this.querySelector('#direccionModalLabel');
+    const form = this.querySelector('#direccionForm');
+    const inputId = this.querySelector('#direccionId');
+    const inputDetalle = this.querySelector('#direccionDetalle');
+    const inputReferencia = this.querySelector('#direccionReferencia');
+    const inputCodigoPostal = this.querySelector('#direccionCodigoPostal');
+    const inputActivo = this.querySelector('#direccionActivo');
+    const inputLat = this.querySelector('#direccionLatitud');
+    const inputLng = this.querySelector('#direccionLongitud');
+    
+    const selectPais = this.querySelector('#dirPaisSelect');
+    const selectNivel1 = this.querySelector('#dirNivel1Select');
+    const selectNivel2 = this.querySelector('#dirNivel2Select');
+    const selectNivel3 = this.querySelector('#dirNivel3Select');
+    
+    const errorAlert = this.querySelector('#direccionModalErrorAlert');
+
+    errorAlert.classList.add('d-none');
+    form.classList.remove('was-validated');
+
+    // Reset dropdowns
+    selectPais.value = '';
+    selectNivel1.value = '';
+    selectNivel1.disabled = true;
+    selectNivel1.innerHTML = '<option value="">-- Seleccione País primero --</option>';
+    selectNivel2.value = '';
+    selectNivel2.disabled = true;
+    selectNivel2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
+    selectNivel3.value = '';
+    selectNivel3.disabled = true;
+    selectNivel3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
+
+    if (this.modalMarker) {
+      if (this.modalMap) this.modalMap.removeLayer(this.modalMarker);
+      this.modalMarker = null;
+    }
+    this.tempCoords = null;
+    inputLat.value = '';
+    inputLng.value = '';
+
+    if (direccion) {
+      modalTitle.textContent = 'Editar Dirección';
+      inputId.value = direccion.id;
+      inputDetalle.value = direccion.detalle;
+      inputReferencia.value = direccion.referencia || '';
+      inputCodigoPostal.value = direccion.codigo_postal || '';
+      inputActivo.checked = direccion.activo;
+
+      if (direccion.latitud && direccion.longitud) {
+        inputLat.value = direccion.latitud.toFixed(6);
+        inputLng.value = direccion.longitud.toFixed(6);
+        this.tempCoords = { lat: direccion.latitud, lng: direccion.longitud };
+      }
+
+      if (direccion.territorio) {
+        const terr = direccion.territorio;
+        const paisId = terr.pais_id;
+        selectPais.value = paisId;
+        
+        await this.cargarDireccionDropdownNivel1(paisId);
+        
+        if (terr.parent_id === null) {
+          selectNivel1.value = terr.id;
+        } else {
+          try {
+            const parentTerr = await UbicacionesService.getTerritorioById(terr.parent_id);
+            if (parentTerr.parent_id === null) {
+              selectNivel1.value = parentTerr.id;
+              await this.cargarDireccionDropdownNivel2(paisId, parentTerr.id);
+              selectNivel2.value = terr.id;
+            } else {
+              const grandParentId = parentTerr.parent_id;
+              selectNivel1.value = grandParentId;
+              await this.cargarDireccionDropdownNivel2(paisId, grandParentId);
+              selectNivel2.value = parentTerr.id;
+              await this.cargarDireccionDropdownNivel3(paisId, parentTerr.id);
+              selectNivel3.value = terr.id;
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      }
+    } else {
+      modalTitle.textContent = 'Nueva Dirección';
+      inputId.value = '';
+      inputDetalle.value = '';
+      inputReferencia.value = '';
+      inputCodigoPostal.value = '';
+      inputActivo.checked = true;
+    }
+
+    this.direccionModalObj.show();
+  }
+
+  // Cascading Dropdowns loading
+  async cargarDireccionDropdownNivel1(paisId) {
+    const s1 = this.querySelector('#dirNivel1Select');
+    const s2 = this.querySelector('#dirNivel2Select');
+    const s3 = this.querySelector('#dirNivel3Select');
+
+    s1.innerHTML = '<option value="">-- Cargando --</option>';
+    s1.disabled = true;
+    s2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
+    s2.disabled = true;
+    s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
+    s3.disabled = true;
+
+    if (!paisId) {
+      s1.innerHTML = '<option value="">-- Seleccione País primero --</option>';
+      return;
+    }
+
+    try {
+      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: null });
+      s1.innerHTML = '<option value="">-- Selecciona Nivel 1 --</option>' + 
+        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+      s1.disabled = false;
+    } catch (e) {
+      s1.innerHTML = '<option value="">-- Error al cargar --</option>';
+    }
+
+    this.centrarModalMapaSegunPais();
+  }
+
+  async cargarDireccionDropdownNivel2(paisId, parentId) {
+    const s2 = this.querySelector('#dirNivel2Select');
+    const s3 = this.querySelector('#dirNivel3Select');
+
+    s2.innerHTML = '<option value="">-- Cargando --</option>';
+    s2.disabled = true;
+    s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
+    s3.disabled = true;
+
+    if (!parentId) {
+      s2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
+      return;
+    }
+
+    try {
+      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
+      s2.innerHTML = '<option value="">-- Selecciona Nivel 2 --</option>' + 
+        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+      s2.disabled = false;
+    } catch (e) {
+      s2.innerHTML = '<option value="">-- Error al cargar --</option>';
+    }
+  }
+
+  async cargarDireccionDropdownNivel3(paisId, parentId) {
+    const s3 = this.querySelector('#dirNivel3Select');
+    s3.innerHTML = '<option value="">-- Cargando --</option>';
+    s3.disabled = true;
+
+    if (!parentId) {
+      s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
+      return;
+    }
+
+    try {
+      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
+      s3.innerHTML = '<option value="">-- Selecciona Nivel 3 --</option>' + 
+        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+      s3.disabled = false;
+    } catch (e) {
+      s3.innerHTML = '<option value="">-- Error al cargar --</option>';
+    }
+  }
+
+  async guardarDireccion(e) {
+    e.preventDefault();
+    const form = this.querySelector('#direccionForm');
+    const errorAlert = this.querySelector('#direccionModalErrorAlert');
+    const errorMessage = this.querySelector('#direccionModalErrorMessage');
+
+    const selectNivel1 = this.querySelector('#dirNivel1Select');
+    const selectNivel2 = this.querySelector('#dirNivel2Select');
+    const selectNivel3 = this.querySelector('#dirNivel3Select');
+
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      return;
+    }
+
+    const territorioIdVal = selectNivel3.value || selectNivel2.value || selectNivel1.value;
+    if (!territorioIdVal) {
+      errorAlert.classList.remove('d-none');
+      errorMessage.textContent = 'Debe seleccionar al menos un nivel geográfico (Nivel 1, 2 o 3) para la dirección.';
+      return;
+    }
+
+    const id = this.querySelector('#direccionId').value;
+    const latVal = this.querySelector('#direccionLatitud').value;
+    const lngVal = this.querySelector('#direccionLongitud').value;
+
+    const payload = {
+      territorio_id: parseInt(territorioIdVal),
+      detalle: this.querySelector('#direccionDetalle').value,
+      referencia: this.querySelector('#direccionReferencia').value || null,
+      codigo_postal: this.querySelector('#direccionCodigoPostal').value || null,
+      latitud: latVal ? parseFloat(latVal) : null,
+      longitud: lngVal ? parseFloat(lngVal) : null,
+      activo: this.querySelector('#direccionActivo').checked,
+    };
+
+    try {
+      if (id) {
+        await UbicacionesService.updateDireccion(id, payload);
+        this.mostrarAlertaLocal('success', 'Dirección actualizada con éxito.');
+      } else {
+        await UbicacionesService.createDireccion(payload);
+        this.mostrarAlertaLocal('success', 'Dirección creada con éxito.');
+      }
+
+      this.direccionModalObj.hide();
+      await this.cargarDirecciones();
+    } catch (error) {
+      console.error('Error al guardar dirección:', error);
+      errorAlert.classList.remove('d-none');
+      errorMessage.textContent = error.message || 'Error al guardar el registro.';
+    }
+  }
+
+  async eliminarDireccion(id) {
+    if (!confirm('¿Está seguro de que desea eliminar esta dirección?')) return;
+
+    try {
+      await UbicacionesService.deleteDireccion(id);
+      this.mostrarAlertaLocal('success', 'Dirección eliminada con éxito.');
+      await this.cargarDirecciones();
+    } catch (error) {
+      console.error('Error al eliminar dirección:', error);
+      this.mostrarAlertaLocal('error', `No se pudo eliminar: ${error.message}`);
+    }
+  }
+
+  mostrarAlertaLocal(tipo, mensaje) {
+    const successAlert = this.querySelector('#direccionesSuccessAlert');
+    const successMsg = this.querySelector('#direccionesSuccessMessage');
+    const errorAlert = this.querySelector('#direccionesErrorAlert');
+    const errorMsg = this.querySelector('#direccionesErrorMessage');
+
+    if (tipo === 'success') {
+      errorAlert.classList.add('d-none');
+      successMsg.textContent = mensaje;
+      successAlert.classList.remove('d-none');
+      setTimeout(() => successAlert.classList.add('d-none'), 5000);
+    } else {
+      successAlert.classList.add('d-none');
+      errorMsg.textContent = mensaje;
+      errorAlert.classList.remove('d-none');
+      setTimeout(() => errorAlert.classList.add('d-none'), 6000);
+    }
+  }
+}
+
+customElements.define('app-ubicaciones-direcciones', UbicacionesDireccionesComponent);
