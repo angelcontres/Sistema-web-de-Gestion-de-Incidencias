@@ -1,6 +1,6 @@
-# Walkthrough de Cambios: Pantalla de Mantenimiento de Ubicaciones con Mapa Interactivo
+# Walkthrough de Cambios: Pantalla de Mantenimiento de Ubicaciones con Mapa Interactivo (Versión Modular)
 
-Este documento detalla los cambios realizados en el proyecto **Sistema Web de Gestión de Incidencias** para implementar la pantalla de mantenimiento de **Ubicaciones** e integrar un sistema de mapas geográficos interactivo ("mapa insano").
+Este documento detalla los cambios realizados en el proyecto **Sistema Web de Gestión de Incidencias** para implementar la pantalla de mantenimiento de **Ubicaciones** e integrar un sistema de mapas geográficos interactivo, estructurado de manera altamente modular mediante Web Components.
 
 ---
 
@@ -11,7 +11,11 @@ Para la gestión de ubicaciones y direcciones, se diseñó una solución de tres
 2. **Territorios** (ej: Departamentos/Estados/Provincias $\rightarrow$ Provincias/Cantones/Municipios $\rightarrow$ Distritos/Parroquias)
 3. **Direcciones** (asociadas al nivel territorial más específico, ahora con coordenadas geográficas).
 
-Además, se integró la biblioteca de mapas de código abierto **Leaflet.js** para visualizar las direcciones sobre un mapa interactivo y permitir ubicar nuevas direcciones haciendo clic en el mapa.
+El módulo de Ubicaciones se dividió en componentes altamente desacoplados y enfocados en una sola responsabilidad:
+*   `app-ubicaciones-index`: Contenedor principal que maneja la estructura de pestañas y coordina la inicialización de mapas.
+*   `app-ubicaciones-paises`: Maneja el catálogo de países y su CRUD.
+*   `app-ubicaciones-territorios`: Administrador de jerarquías (Miller Columns) y su CRUD.
+*   `app-ubicaciones-direcciones`: Gestiona el listado de direcciones físicas, el mapa principal y el georeferenciador interactivo del modal.
 
 ---
 
@@ -31,42 +35,38 @@ Se agregaron los campos de coordenadas geográficas (`latitud` y `longitud`) a l
     *   Se incluyeron `latitud` y `longitud` dentro del atributo `#[Fillable(...)]`.
     *   Se configuró el casteo automático a tipo `float` en la función `casts()` para evitar discrepancias de tipos al consumir la API desde Javascript.
 *   **Controlador de la API ([DireccionController.php](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/backend/api/app/Http/Controllers/DireccionController.php)):**
-    *   Se actualizaron las validaciones en los métodos `store` y `update` para restringir y verificar los rangos geográficos permitidos (`latitud` entre -90 y 90, `longitud` entre -180 y 180).
+    *   Se actualizaron las validaciones en los métodos `store` y `update` para verificar los rangos geográficos permitidos (`latitud` entre -90 y 90, `longitud` entre -180 y 180).
 *   **Sembrado de Datos ([UbicacionesSeeder.php](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/backend/api/database/seeders/UbicacionesSeeder.php)):**
     *   Se agregaron las coordenadas de latitud y longitud reales correspondientes a las direcciones iniciales de **Perú**, **México** y **Ecuador** (ej: el Gobierno Zonal en Guayaquil, y el CCI en Quito).
 
 ---
 
-### 2. 💻 Frontend (Vanilla JS SPA)
+### 2. 💻 Frontend (Refactorización Modular en Web Components)
 
-Se integró **Leaflet.js** y se rediseñó la pestaña de direcciones para ofrecer un panel de visualización moderno en pantalla dividida.
+Se dividió el módulo en componentes independientes comunicados mediante eventos nativos del DOM.
 
 *   **Biblioteca de Mapas ([index.html](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/frontend/index.html)):**
-    *   Se importaron las hojas de estilo y scripts de **Leaflet.js** desde un CDN confiable de forma global para la aplicación.
-*   **Rediseño de la Plantilla HTML ([ubicaciones-index.component.html](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/frontend/js/pages/ubicaciones/component/index/ubicaciones-index.component.html)):**
-    *   **Pestaña Direcciones:** Modificada a un diseño de dos columnas (`row` con `.col-lg-7` y `.col-lg-5`):
-        *   **Izquierda:** Tabla compacta e interactiva con el listado de direcciones registradas.
-        *   **Derecha:** Un panel contenedor para el mapa geográfico (`#map`) que ocupa todo el alto disponible, junto con un botón para centrar la cámara en todos los marcadores disponibles.
-    *   **Modal de Dirección:**
-        *   Se dividió el modal en dos columnas: el formulario tradicional de detalles del lado izquierdo, y un mapa dinámico interactivo (`#modalMap`) del lado derecho.
-        *   Se agregaron inputs de lectura para que el usuario visualice las coordenadas exactas de latitud y longitud asignadas.
-*   **Lógica Interactiva del Componente JS ([ubicaciones-index.component.js](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/frontend/js/pages/ubicaciones/component/index/ubicaciones-index.component.js)):**
-    *   **Carga Perezosa (Lazy Load):** Los mapas de Leaflet requieren calcular el espacio físico del contenedor. Se programó la inicialización del mapa principal solo cuando se muestra la pestaña "Direcciones" (`shown.bs.tab`), y el mapa del modal solo cuando este se despliega por completo (`shown.bs.modal`).
-    *   **Interacción Tabla-Mapa:** Al hacer clic en cualquier fila de dirección dentro de la tabla, el mapa realiza un paneo suave (`setView`) hacia las coordenadas de esa dirección, aumentando el zoom y abriendo automáticamente su globo de información (*popup*).
-    *   **Creador Geográfico (Pinning):** Al abrir el modal de creación o edición, el mapa se centrará en el país seleccionado. El usuario puede hacer clic en cualquier lugar del mapa para colocar o arrastrar un marcador. Las coordenadas del input se actualizan automáticamente al instante de soltar el pin.
-    *   **Capa de Azulejos Estética:** Se cargó el estilo de mapas *CartoDB Voyager*, el cual ofrece una estética moderna, limpia y minimalista ideal para sistemas web empresariales.
+    *   Se importaron las hojas de estilo y scripts de **Leaflet.js** desde un CDN confiable.
+*   **Contenedor Principal (`app-ubicaciones-index`):**
+    *   [ubicaciones-index.component.html](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/frontend/js/pages/ubicaciones/component/index/ubicaciones-index.component.html): Contiene la navegación por pestañas de Bootstrap 5 y hospeda los tres sub-componentes.
+    *   [ubicaciones-index.component.js](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/frontend/js/pages/ubicaciones/component/index/ubicaciones-index.component.js): Registra el elemento e importa los sub-componentes. Escucha el cambio de pestaña para forzar al mapa a recalcular su tamaño (`invalidateSize`).
+*   **Sub-componente Países (`app-ubicaciones-paises`):**
+    *   [ubicaciones-paises.component.js](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/frontend/js/pages/ubicaciones/components/paises/ubicaciones-paises.component.js): Administra la tabla y el modal de países. Al actualizarse la lista, emite el evento personalizado `paises-updated`.
+*   **Sub-componente Territorios (`app-ubicaciones-territorios`):**
+    *   [ubicaciones-territorios.component.js](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/frontend/js/pages/ubicaciones/components/territorios/ubicaciones-territorios.component.js): Implementa la vista de 3 columnas para territorios. Escucha `paises-updated` para sincronizar el selector de países. Al registrar cambios, emite `territorios-updated`.
+*   **Sub-componente Direcciones (`app-ubicaciones-direcciones`):**
+    *   [ubicaciones-direcciones.component.js](file:///home/angel/Documentos/GitHub/Sistema-web-de-Gestion-de-Incidencias/frontend/js/pages/ubicaciones/components/direcciones/ubicaciones-direcciones.component.js): Controla la tabla de direcciones, la sincronización del mapa principal, y el modal con selectores en cascada y mapa georeferenciador. Escucha `paises-updated` para sincronizar su formulario.
 
 ---
 
-## 🌟 Características Destacadas de la Interfaz (UX/UI)
+## 🌟 Ventajas del Diseño Modular (UX/UI & Arquitectura)
 
-1.  **Miller Columns (Explorador de Territorios):**
-    *   Navegación fluida de 3 columnas para estructurar áreas geográficas por países.
-2.  **Geolocalización en Pantalla Dividida (Split View):**
-    *   El mapa se sincroniza en tiempo real con las filas seleccionadas de la tabla.
-3.  **Marcado Fácil e Intuitivo:**
-    *   Arrastra y suelta el pin en el mapa dentro del modal para reajustar las coordenadas geográficas de la dirección.
-4.  **Auto-Ajuste de Cámara (Fit Bounds):**
-    *   Al cargar la pestaña, el mapa calcula la caja delimitadora de todos los marcadores y hace un zoom óptimo para encuadrarlos a todos (tanto Perú, México como Ecuador).
-5.  **Centrado Inteligente:**
-    *   Al cambiar el selector de país en el modal de dirección, el mapa del modal realiza un viaje suave al centro geográfico de ese país en específico.
+1.  **Código Mantenible y Limpio:**
+    *   En lugar de tener un único archivo monolítico de 700 líneas de JS y 500 de HTML, ahora cada archivo tiene menos de 250 líneas y está enfocado en una sola responsabilidad.
+2.  **Comunicación Reactiva mediante Eventos del DOM:**
+    *   Los componentes no se acoplan entre sí. Comparten información de manera limpia mediante eventos estándar como `paises-updated` y `territorios-updated`.
+3.  **Seguridad Integrada:**
+    *   Cada componente valida de manera independiente los permisos del usuario logueado (`AuthService.isAdmin()`) para ocultar o mostrar los botones de acción (Nuevo, Editar, Eliminar).
+4.  **UX Premium del Mapa:**
+    *   El mapa se sincroniza al hacer clic en las filas de la tabla de direcciones, realizando un paneo fluido al marcador correspondiente.
+    *   El georeferenciador del modal permite colocar y arrastrar un pin de manera sumamente interactiva.
