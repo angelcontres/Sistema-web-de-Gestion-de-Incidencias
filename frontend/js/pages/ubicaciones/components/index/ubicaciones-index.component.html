@@ -12,8 +12,8 @@
   <!-- Pestañas de Navegación -->
   <ul class="nav nav-tabs mb-4 border-bottom-2" id="ubicacionesTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active fw-bold text-uppercase small py-3 px-4" id="paises-tab" data-bs-toggle="tab" data-bs-target="#paises-pane" type="button" role="tab" aria-controls="paises-pane" aria-selected="true">
-        <i class="bi bi-globe2 me-2"></i> Países
+      <button class="nav-link active fw-bold text-uppercase small py-3 px-4" id="direcciones-tab" data-bs-toggle="tab" data-bs-target="#direcciones-pane" type="button" role="tab" aria-controls="direcciones-pane" aria-selected="true">
+        <i class="bi bi-geo-alt-fill me-2"></i> Direcciones
       </button>
     </li>
     <li class="nav-item" role="presentation">
@@ -22,8 +22,8 @@
       </button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link fw-bold text-uppercase small py-3 px-4" id="direcciones-tab" data-bs-toggle="tab" data-bs-target="#direcciones-pane" type="button" role="tab" aria-controls="direcciones-pane" aria-selected="false">
-        <i class="bi bi-geo-alt-fill me-2"></i> Direcciones
+      <button class="nav-link fw-bold text-uppercase small py-3 px-4" id="paises-tab" data-bs-toggle="tab" data-bs-target="#paises-pane" type="button" role="tab" aria-controls="paises-pane" aria-selected="false">
+        <i class="bi bi-globe2 me-2"></i> Países
       </button>
     </li>
   </ul>
@@ -31,9 +31,9 @@
   <!-- Contenido de Pestañas -->
   <div class="tab-content" id="ubicacionesTabsContent">
     
-    <!-- PESTAÑA 1: PAÍSES -->
-    <div class="tab-pane fade show active" id="paises-pane" role="tabpanel" aria-labelledby="paises-tab" tabindex="0">
-      <app-ubicaciones-paises></app-ubicaciones-paises>
+    <!-- PESTAÑA 1: DIRECCIONES -->
+    <div class="tab-pane fade show active" id="direcciones-pane" role="tabpanel" aria-labelledby="direcciones-tab" tabindex="0">
+      <app-ubicaciones-direcciones id="direccionesComponent"></app-ubicaciones-direcciones>
     </div>
 
     <!-- PESTAÑA 2: EXPLORADOR DE TERRITORIOS -->
@@ -41,9 +41,9 @@
       <app-ubicaciones-territorios></app-ubicaciones-territorios>
     </div>
 
-    <!-- PESTAÑA 3: DIRECCIONES -->
-    <div class="tab-pane fade" id="direcciones-pane" role="tabpanel" aria-labelledby="direcciones-tab" tabindex="0">
-      <app-ubicaciones-direcciones id="direccionesComponent"></app-ubicaciones-direcciones>
+    <!-- PESTAÑA 3: PAÍSES -->
+    <div class="tab-pane fade" id="paises-pane" role="tabpanel" aria-labelledby="paises-tab" tabindex="0">
+      <app-ubicaciones-paises></app-ubicaciones-paises>
     </div>
 
   </div>

@@ -20,27 +20,12 @@ export class UbicacionesIndexComponent extends BaseComponent {
       const paisesTab = this.querySelector('#paises-tab');
       if (paisesTab) {
         paisesTab.parentElement.classList.add('d-none');
-        paisesTab.classList.remove('active');
-        paisesTab.setAttribute('aria-selected', 'false');
       }
 
       // Hide Paises pane
       const paisesPane = this.querySelector('#paises-pane');
       if (paisesPane) {
-        paisesPane.classList.remove('show', 'active');
-      }
-
-      // Show Territorios tab header as active
-      const territoriosTab = this.querySelector('#territorios-tab');
-      if (territoriosTab) {
-        territoriosTab.classList.add('active');
-        territoriosTab.setAttribute('aria-selected', 'true');
-      }
-
-      // Show Territorios pane as active
-      const territoriosPane = this.querySelector('#territorios-pane');
-      if (territoriosPane) {
-        territoriosPane.classList.add('show', 'active');
+        paisesPane.classList.add('d-none');
       }
     }
 
@@ -53,6 +38,17 @@ export class UbicacionesIndexComponent extends BaseComponent {
           dirComponent.initMainMap();
         }
       });
+    }
+
+    // If Direcciones is the active tab on load, initialize the map
+    const direccionesPane = this.querySelector('#direcciones-pane');
+    if (direccionesPane && direccionesPane.classList.contains('active')) {
+      setTimeout(() => {
+        const dirComponent = this.querySelector('#direccionesComponent');
+        if (dirComponent && typeof dirComponent.initMainMap === 'function') {
+          dirComponent.initMainMap();
+        }
+      }, 100);
     }
   }
 }
