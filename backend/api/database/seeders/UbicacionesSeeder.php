@@ -163,6 +163,65 @@ class UbicacionesSeeder extends Seeder
             'tipo' => 'Parroquia',
         ]);
 
+        // Provincia de Santa Elena
+        $santaElenaProv = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => null,
+            'nombre' => 'Santa Elena',
+            'tipo' => 'Provincia',
+        ]);
+
+        // Cantones de Santa Elena
+        $santaElenaCanton = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $santaElenaProv->id,
+            'nombre' => 'Santa Elena',
+            'tipo' => 'Cantón',
+        ]);
+
+        $laLibertadCanton = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $santaElenaProv->id,
+            'nombre' => 'La Libertad',
+            'tipo' => 'Cantón',
+        ]);
+
+        $salinasCanton = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $santaElenaProv->id,
+            'nombre' => 'Salinas',
+            'tipo' => 'Cantón',
+        ]);
+
+        // Parroquias de Santa Elena
+        $santaElenaParroquia = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $santaElenaCanton->id,
+            'nombre' => 'Santa Elena',
+            'tipo' => 'Parroquia',
+        ]);
+
+        $manglaralto = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $santaElenaCanton->id,
+            'nombre' => 'Manglaralto',
+            'tipo' => 'Parroquia',
+        ]);
+
+        $laLibertadParroquia = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $laLibertadCanton->id,
+            'nombre' => 'La Libertad',
+            'tipo' => 'Parroquia',
+        ]);
+
+        $salinasParroquia = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $salinasCanton->id,
+            'nombre' => 'Salinas',
+            'tipo' => 'Parroquia',
+        ]);
+
         // 3. Direcciones (Asociadas al último nodo)
         Direccion::create([
             'territorio_id' => $surco->id,
@@ -207,6 +266,34 @@ class UbicacionesSeeder extends Seeder
             'codigo_postal' => '170504',
             'latitud' => -0.17640000,
             'longitud' => -78.48780000,
+        ]);
+
+        // Nuevas direcciones para Santa Elena, Ecuador
+        Direccion::create([
+            'territorio_id' => $salinasParroquia->id,
+            'detalle' => 'Malecón de Salinas y Calle 19',
+            'referencia' => 'Frente a la Playa de San Lorenzo, Salinas',
+            'codigo_postal' => '241550',
+            'latitud' => -2.21720000,
+            'longitud' => -80.96340000,
+        ]);
+
+        Direccion::create([
+            'territorio_id' => $laLibertadParroquia->id,
+            'detalle' => 'Av. Eleodoro Solorzano, Paseo Shopping',
+            'referencia' => 'Centro Comercial Paseo Shopping La Libertad',
+            'codigo_postal' => '240201',
+            'latitud' => -2.22850000,
+            'longitud' => -80.91020000,
+        ]);
+
+        Direccion::create([
+            'territorio_id' => $manglaralto->id,
+            'detalle' => 'Calle Principal de Montañita, Sector La Punta',
+            'referencia' => 'Cerca de la playa de surf de Montañita',
+            'codigo_postal' => '240103',
+            'latitud' => -1.82840000,
+            'longitud' => -80.75310000,
         ]);
     }
 }
