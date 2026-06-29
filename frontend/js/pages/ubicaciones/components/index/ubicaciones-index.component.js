@@ -7,7 +7,7 @@ import '../direcciones/ubicaciones-direcciones.component.js';
 
 export class UbicacionesIndexComponent extends BaseComponent {
   constructor() {
-    super('js/pages/ubicaciones/component/index/ubicaciones-index.component.html');
+    super('js/pages/ubicaciones/components/index/ubicaciones-index.component.html');
   }
 
   onInit() {
