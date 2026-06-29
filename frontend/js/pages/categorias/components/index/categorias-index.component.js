@@ -89,22 +89,15 @@ export class CategoriasIndexComponent extends BaseComponent {
               </span>
             </td>
             <td class="text-end pe-4">
-              <div class="d-flex justify-content-end gap-1" onclick="event.stopPropagation()">
-                ${canCreate ? `
-                  <button class="btn btn-sm btn-link text-success p-1 border-0 bg-transparent" type="button" data-action="agregar-sub" data-parent-id="${main.id}" title="Agregar Subcategoría">
-                    <i class="bi bi-plus-circle fs-5"></i>
-                  </button>
-                ` : ''}
-                ${canEdit ? `
-                  <button class="btn btn-sm btn-link text-primary p-1 border-0 bg-transparent" type="button" data-action="editar" data-id="${main.id}" title="Editar">
-                    <i class="bi bi-pencil-square fs-5"></i>
-                  </button>
-                ` : ''}
-                ${canDelete ? `
-                  <button class="btn btn-sm btn-link text-danger p-1 border-0 bg-transparent" type="button" data-action="eliminar" data-id="${main.id}" title="Eliminar">
-                    <i class="bi bi-trash fs-5"></i>
-                  </button>
-                ` : ''}
+              <div class="dropdown" onclick="event.stopPropagation()">
+                <button class="btn btn-light btn-sm text-secondary p-1.5 rounded-2 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-three-dots-vertical fs-6"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                  ${canCreate ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-success small fw-medium" type="button" data-action="agregar-sub"><i class="bi bi-plus-circle"></i> Agregar Subcategoría</button></li>` : ''}
+                  ${canEdit ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium" type="button" data-action="editar"><i class="bi bi-pencil-square"></i> Editar</button></li>` : ''}
+                  ${canDelete ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium" type="button" data-action="eliminar"><i class="bi bi-trash"></i> Eliminar</button></li>` : ''}
+                </ul>
               </div>
             </td>
           </tr>
@@ -127,17 +120,14 @@ export class CategoriasIndexComponent extends BaseComponent {
                 </span>
               </td>
               <td class="text-end pe-4">
-                <div class="d-flex justify-content-end gap-1" onclick="event.stopPropagation()">
-                  ${canEdit ? `
-                    <button class="btn btn-sm btn-link text-primary p-1 border-0 bg-transparent" type="button" data-action="editar" data-id="${sub.id}" title="Editar">
-                      <i class="bi bi-pencil-square fs-5"></i>
-                    </button>
-                  ` : ''}
-                  ${canDelete ? `
-                    <button class="btn btn-sm btn-link text-danger p-1 border-0 bg-transparent" type="button" data-action="eliminar" data-id="${sub.id}" title="Eliminar">
-                      <i class="bi bi-trash fs-5"></i>
-                    </button>
-                  ` : ''}
+                <div class="dropdown" onclick="event.stopPropagation()">
+                  <button class="btn btn-light btn-sm text-secondary p-1.5 rounded-2 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical fs-6"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                    ${canEdit ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium" type="button" data-action="editar"><i class="bi bi-pencil-square"></i> Editar</button></li>` : ''}
+                    ${canDelete ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium" type="button" data-action="eliminar"><i class="bi bi-trash"></i> Eliminar</button></li>` : ''}
+                  </ul>
                 </div>
               </td>
             </tr>
