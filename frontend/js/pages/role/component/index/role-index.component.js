@@ -47,7 +47,8 @@ export class RoleIndexComponent extends BaseComponent {
 
   /**
    * Carga los roles del backend y llena el grid de tarjetas
-     async cargarRoles() {
+   */
+  async cargarRoles() {
     const rolesGrid = this.querySelector('#rolesGrid');
     const loadingSpinner = this.querySelector('#loadingSpinner');
     const emptyState = this.querySelector('#emptyState');
