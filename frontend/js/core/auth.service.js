@@ -88,4 +88,9 @@ export const AuthService = {
     const user = this.getCurrentUser();
     return user ? !!user.is_admin : false;
   },
+
+  getPaisId() {
+    const user = this.getCurrentUser();
+    return user ? user.pais_id : null;
+  },
 };

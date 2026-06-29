@@ -42,5 +42,20 @@ class DatabaseSeeder extends Seeder
         if ($adminRole) {
             $user->roles()->sync([$adminRole->id]);
         }
+
+        // Create an Operator user assigned to Ecuador
+        $operator = User::create([
+            'name' => 'Operador Ecuador',
+            'username' => 'Operador EC',
+            'email' => 'operator@example.com',
+            'password' => Hash::make('password123'),
+            'activo' => true,
+            'pais_id' => 3, // Ecuador (Peru is 1, Mexico is 2, Ecuador is 3)
+        ]);
+
+        $operatorRole = Role::where('nombre', 'Operador')->first();
+        if ($operatorRole) {
+            $operator->roles()->sync([$operatorRole->id]);
+        }
     }
 }

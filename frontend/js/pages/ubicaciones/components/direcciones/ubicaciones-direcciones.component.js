@@ -129,19 +129,28 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     const select = this.querySelector('#dirPaisSelect');
     const filterSelect = this.querySelector('#filterPaisSelect');
     
-    const optionsHtml = this.paisesList
-      .filter(p => p.activo)
+    const activePaises = this.paisesList.filter(p => p.activo);
+    const optionsHtml = activePaises
       .map(p => `<option value="${p.id}">${p.nombre}</option>`)
       .join('');
 
     if (select) {
       select.innerHTML = `<option value="">-- Seleccione --</option>${optionsHtml}`;
+      if (activePaises.length === 1) {
+        select.value = activePaises[0].id;
+        // Trigger Nivel 1 dropdown load
+        this.cargarDireccionDropdownNivel1(activePaises[0].id);
+      }
     }
     
     if (filterSelect) {
       const currentVal = filterSelect.value;
       filterSelect.innerHTML = `<option value="">Todos los Países</option>${optionsHtml}`;
-      filterSelect.value = currentVal;
+      if (activePaises.length === 1) {
+        filterSelect.value = activePaises[0].id;
+      } else {
+        filterSelect.value = currentVal;
+      }
     }
   }
 
@@ -434,10 +443,17 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     form.classList.remove('was-validated');
 
     // Reset dropdowns
-    selectPais.value = '';
-    selectNivel1.value = '';
-    selectNivel1.disabled = true;
-    selectNivel1.innerHTML = '<option value="">-- Seleccione País primero --</option>';
+    const activePaises = this.paisesList.filter(p => p.activo);
+    if (activePaises.length === 1) {
+      selectPais.value = activePaises[0].id;
+      this.cargarDireccionDropdownNivel1(activePaises[0].id);
+    } else {
+      selectPais.value = '';
+      selectNivel1.value = '';
+      selectNivel1.disabled = true;
+      selectNivel1.innerHTML = '<option value="">-- Seleccione País primero --</option>';
+    }
+    
     selectNivel2.value = '';
     selectNivel2.disabled = true;
     selectNivel2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';

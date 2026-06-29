@@ -14,7 +14,10 @@ class TerritorioController extends Controller
     {
         $query = Territorio::with(['pais', 'parent']);
 
-        if ($request->has('pais_id')) {
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+            $query->where('pais_id', $user->pais_id);
+        } else if ($request->has('pais_id')) {
             $query->where('pais_id', $request->input('pais_id'));
         }
 
@@ -35,6 +38,11 @@ class TerritorioController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+            $request->merge(['pais_id' => $user->pais_id]);
+        }
+
         $request->validate([
             'pais_id' => 'required|exists:paises,id',
             'parent_id' => 'nullable|exists:territorios,id',
@@ -63,6 +71,12 @@ class TerritorioController extends Controller
     public function show($id)
     {
         $territorio = Territorio::with(['pais', 'parent', 'hijos'])->findOrFail($id);
+        
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $territorio->pais_id != $user->pais_id) {
+            return response()->json(['message' => 'No autorizado para ver este territorio.'], 403);
+        }
+
         return response()->json($territorio, 200);
     }
 
@@ -72,6 +86,14 @@ class TerritorioController extends Controller
     public function update(Request $request, $id)
     {
         $territorio = Territorio::findOrFail($id);
+
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+            if ($territorio->pais_id != $user->pais_id) {
+                return response()->json(['message' => 'No autorizado para modificar este territorio.'], 403);
+            }
+            $request->merge(['pais_id' => $user->pais_id]);
+        }
 
         $request->validate([
             'pais_id' => 'sometimes|required|exists:paises,id',

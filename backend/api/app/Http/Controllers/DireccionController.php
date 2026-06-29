@@ -14,7 +14,12 @@ class DireccionController extends Controller
     {
         $query = Direccion::with(['territorio.pais']);
 
-        if ($request->has('territorio_id')) {
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+            $query->whereHas('territorio', function ($q) use ($user) {
+                $q->where('pais_id', $user->pais_id);
+            });
+        } else if ($request->has('territorio_id')) {
             $query->where('territorio_id', $request->input('territorio_id'));
         }
 
@@ -35,6 +40,14 @@ class DireccionController extends Controller
             'longitud' => 'nullable|numeric|between:-180,180',
             'activo' => 'boolean',
         ]);
+
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+            $territorio = \App\Models\Territorio::findOrFail($request->territorio_id);
+            if ($territorio->pais_id != $user->pais_id) {
+                return response()->json(['message' => 'El territorio seleccionado debe pertenecer a su país asignado.'], 403);
+            }
+        }
 
         $direccion = Direccion::create([
             'territorio_id' => $request->territorio_id,
@@ -58,6 +71,12 @@ class DireccionController extends Controller
     public function show($id)
     {
         $direccion = Direccion::with(['territorio.pais'])->findOrFail($id);
+        
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio->pais_id != $user->pais_id) {
+            return response()->json(['message' => 'No autorizado para ver esta dirección.'], 403);
+        }
+
         return response()->json($direccion, 200);
     }
 
@@ -67,6 +86,19 @@ class DireccionController extends Controller
     public function update(Request $request, $id)
     {
         $direccion = Direccion::findOrFail($id);
+
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+            if ($direccion->territorio->pais_id != $user->pais_id) {
+                return response()->json(['message' => 'No autorizado para modificar esta dirección.'], 403);
+            }
+            if ($request->has('territorio_id')) {
+                $territorio = \App\Models\Territorio::findOrFail($request->territorio_id);
+                if ($territorio->pais_id != $user->pais_id) {
+                    return response()->json(['message' => 'El nuevo territorio seleccionado debe pertenecer a su país asignado.'], 403);
+                }
+            }
+        }
 
         $request->validate([
             'territorio_id' => 'sometimes|required|exists:territorios,id',
@@ -92,6 +124,12 @@ class DireccionController extends Controller
     public function destroy($id)
     {
         $direccion = Direccion::findOrFail($id);
+
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio->pais_id != $user->pais_id) {
+            return response()->json(['message' => 'No autorizado para eliminar esta dirección.'], 403);
+        }
+
         $direccion->delete();
 
         return response()->json([

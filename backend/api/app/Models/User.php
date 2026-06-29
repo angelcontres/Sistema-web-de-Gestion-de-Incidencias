@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'username', 'email', 'password', 'activo'])]
+#[Fillable(['name', 'username', 'email', 'password', 'activo', 'pais_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -38,6 +38,14 @@ class User extends Authenticatable
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'roles_users', 'user_id', 'rol_id')->withTimestamps();
+    }
+
+    /**
+     * Relación: El país asignado a este usuario (si es operador).
+     */
+    public function pais()
+    {
+        return $this->belongsTo(Pais::class, 'pais_id');
     }
 
     /**

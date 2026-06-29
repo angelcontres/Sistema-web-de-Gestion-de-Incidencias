@@ -12,6 +12,10 @@ class PaisController extends Controller
      */
     public function index()
     {
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+            return response()->json(Pais::where('id', $user->pais_id)->get(), 200);
+        }
         return response()->json(Pais::orderBy('nombre')->get(), 200);
     }
 
@@ -43,6 +47,11 @@ class PaisController extends Controller
      */
     public function show($id)
     {
+        $user = auth()->user();
+        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $user->pais_id != $id) {
+            return response()->json(['message' => 'No autorizado para ver este país.'], 403);
+        }
+
         $pais = Pais::findOrFail($id);
         return response()->json($pais, 200);
     }

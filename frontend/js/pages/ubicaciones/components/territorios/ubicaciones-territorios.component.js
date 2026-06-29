@@ -84,13 +84,23 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     if (!select) return;
     
     const currentVal = select.value;
-    const optionsHtml = this.paisesList
-      .filter(p => p.activo)
+    const activePaises = this.paisesList.filter(p => p.activo);
+
+    const optionsHtml = activePaises
       .map(p => `<option value="${p.id}">${p.nombre}</option>`)
       .join('');
       
     select.innerHTML = `<option value="">-- Selecciona un País --</option>${optionsHtml}`;
-    select.value = currentVal;
+    
+    if (activePaises.length === 1) {
+      select.value = activePaises[0].id;
+      this.selectedPaisId = activePaises[0].id;
+      this.selectedNivel1Id = null;
+      this.selectedNivel2Id = null;
+      this.cargarTerritoriosColumna1();
+    } else {
+      select.value = currentVal;
+    }
   }
 
   async cargarTerritoriosColumna1() {

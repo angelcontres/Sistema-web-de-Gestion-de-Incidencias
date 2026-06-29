@@ -66,6 +66,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'is_admin' => $isAdmin,
                 'permisos' => $permisosList,
+                'pais_id' => $user->pais_id,
             ],
         ], 200);
     }
