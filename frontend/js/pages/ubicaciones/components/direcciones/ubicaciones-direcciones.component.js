@@ -58,7 +58,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
     }
 
-    // Combined Filters (Search + Country + Status)
+    // Combined Filters (Search + Country + Status) with Debounce (250ms)
     const direccionSearch = this.querySelector('#direccionSearch');
     const filterPaisSelect = this.querySelector('#filterPaisSelect');
     const filterEstadoSelect = this.querySelector('#filterEstadoSelect');
@@ -66,7 +66,11 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     const triggerFilter = () => this.filtrarDirecciones();
 
     if (direccionSearch) {
-      direccionSearch.addEventListener('input', triggerFilter);
+      let debounceTimeout;
+      direccionSearch.addEventListener('input', () => {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(triggerFilter, 250);
+      });
     }
     if (filterPaisSelect) {
       filterPaisSelect.addEventListener('change', triggerFilter);
@@ -78,7 +82,20 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     // Cascading dropdowns (Modal Form)
     const dirPaisSelect = this.querySelector('#dirPaisSelect');
     if (dirPaisSelect) {
-      dirPaisSelect.addEventListener('change', (e) => this.cargarDireccionDropdownNivel1(e.target.value));
+      dirPaisSelect.addEventListener('change', (e) => {
+        this.cargarDireccionDropdownNivel1(e.target.value);
+        
+        // Clear coordinates and marker when country changes to prevent geo-incoherence
+        const inputLat = document.querySelector('#direccionLatitud');
+        const inputLng = document.querySelector('#direccionLongitud');
+        if (inputLat) inputLat.value = '';
+        if (inputLng) inputLng.value = '';
+        this.tempCoords = null;
+        if (this.modalMarker && this.modalMap) {
+          this.modalMap.removeLayer(this.modalMarker);
+          this.modalMarker = null;
+        }
+      });
     }
 
     const dirNivel1Select = this.querySelector('#dirNivel1Select');
@@ -117,6 +134,26 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
         this.initMainMap();
       }
     }, 100);
+  }
+
+  disconnectedCallback() {
+    // Memory leak prevention: Clean up Leaflet map instances
+    if (this.map) {
+      try {
+        this.map.remove();
+      } catch (e) {
+        console.warn('Error al destruir el mapa principal:', e);
+      }
+      this.map = null;
+    }
+    if (this.modalMap) {
+      try {
+        this.modalMap.remove();
+      } catch (e) {
+        console.warn('Error al destruir el mapa del modal:', e);
+      }
+      this.modalMap = null;
+    }
   }
 
   async cargarPaises() {
@@ -670,6 +707,15 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       activo: document.querySelector('#direccionActivo').checked,
     };
 
+    // Double-submit protection: Disable submit button and show spinner
+    const btnSubmit = form.querySelector('button[type="submit"]');
+    let originalText = '';
+    if (btnSubmit) {
+      originalText = btnSubmit.innerHTML;
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Guardando...';
+    }
+
     try {
       if (id) {
         await UbicacionesService.updateDireccion(id, payload);
@@ -685,6 +731,11 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       console.error('Error al guardar dirección:', error);
       errorAlert.classList.remove('d-none');
       errorMessage.textContent = error.message || 'Error al guardar el registro.';
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = originalText;
+      }
     }
   }
 
