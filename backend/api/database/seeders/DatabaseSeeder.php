@@ -43,19 +43,43 @@ class DatabaseSeeder extends Seeder
             $user->roles()->sync([$adminRole->id]);
         }
 
-        // Create an Operator user assigned to Ecuador
-        $operator = User::create([
-            'name' => 'Operador Ecuador',
-            'username' => 'Operador EC',
-            'email' => 'operator@example.com',
-            'password' => Hash::make('password123'),
-            'activo' => true,
-            'pais_id' => 3, // Ecuador (Peru is 1, Mexico is 2, Ecuador is 3)
-        ]);
+        // Create Operator users for each country
+        $operatorsData = [
+            [
+                'name' => 'Operador Perú',
+                'username' => 'Operador PE',
+                'email' => 'operator.pe@example.com',
+                'pais_id' => 1, // Perú
+            ],
+            [
+                'name' => 'Operador México',
+                'username' => 'Operador MX',
+                'email' => 'operator.mx@example.com',
+                'pais_id' => 2, // México
+            ],
+            [
+                'name' => 'Operador Ecuador',
+                'username' => 'Operador EC',
+                'email' => 'operator.ec@example.com',
+                'pais_id' => 3, // Ecuador
+            ],
+        ];
 
         $operatorRole = Role::where('nombre', 'Operador')->first();
-        if ($operatorRole) {
-            $operator->roles()->sync([$operatorRole->id]);
+
+        foreach ($operatorsData as $data) {
+            $opUser = User::create([
+                'name' => $data['name'],
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'password' => Hash::make('password123'),
+                'activo' => true,
+                'pais_id' => $data['pais_id'],
+            ]);
+
+            if ($operatorRole) {
+                $opUser->roles()->sync([$operatorRole->id]);
+            }
         }
     }
 }
