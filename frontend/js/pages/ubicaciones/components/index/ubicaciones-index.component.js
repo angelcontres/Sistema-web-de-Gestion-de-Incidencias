@@ -1,4 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
+import { AuthService } from '../../../../core/auth.service.js';
 
 // Import sub-components to register them
 import '../paises/ubicaciones-paises.component.js';
