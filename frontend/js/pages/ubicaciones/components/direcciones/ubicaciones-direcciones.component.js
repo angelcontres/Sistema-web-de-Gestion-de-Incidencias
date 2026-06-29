@@ -181,44 +181,79 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       return;
     }
 
-    this.map = L.map(mapDiv).setView([-1.8312, -78.1834], 5);
+    // Default center depending on user's assigned country
+    const user = AuthService.getCurrentUser();
+    let centro = [-1.8312, -78.1834]; // Ecuador by default
+    let zoom = 5;
+
+    if (user && user.pais) {
+      const centrosPaises = {
+        'PE': [-9.1900, -75.0152],
+        'MX': [23.6345, -102.5528],
+        'EC': [-1.8312, -78.1834],
+      };
+      centro = centrosPaises[user.pais.codigo_iso] || [-1.8312, -78.1834];
+      zoom = 6;
+    }
+
+    this.map = L.map(mapDiv).setView(centro, zoom);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20
     }).addTo(this.map);
-
-    this.actualizarMarcadoresMapaPrincipal();
   }
 
-  actualizarMarcadoresMapaPrincipal(lista = this.direccionesList) {
+  limpiarMapaPrincipal() {
     if (!this.map) return;
 
     // Clear previous markers
     this.mapMarkers.forEach(m => this.map.removeLayer(m));
     this.mapMarkers = [];
 
-    lista.forEach((dir) => {
-      if (dir.latitud && dir.longitud) {
-        const marker = L.marker([dir.latitud, dir.longitud]).addTo(this.map);
-        const pais = dir.territorio?.pais?.nombre || '';
-        const path = this.obtenerPathTerritorio(dir.territorio);
-        
-        const popupHtml = `
-          <div class="p-1">
-            <h6 class="fw-bold text-dark mb-1">${dir.detalle}</h6>
-            <p class="text-muted small mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> ${pais} &raquo; ${path}</p>
-            ${dir.referencia ? `<small class="text-secondary d-block mb-1">Ref: ${dir.referencia}</small>` : ''}
-            ${dir.codigo_postal ? `<span class="badge bg-secondary-soft text-secondary small">CP: ${dir.codigo_postal}</span>` : ''}
-          </div>
-        `;
-        marker.bindPopup(popupHtml);
-        this.mapMarkers.push(marker);
-      }
-    });
+    // Recenter to default country view
+    const user = AuthService.getCurrentUser();
+    let centro = [-1.8312, -78.1834];
+    let zoom = 5;
+    if (user && user.pais) {
+      const centrosPaises = {
+        'PE': [-9.1900, -75.0152],
+        'MX': [23.6345, -102.5528],
+        'EC': [-1.8312, -78.1834],
+      };
+      centro = centrosPaises[user.pais.codigo_iso] || [-1.8312, -78.1834];
+      zoom = 6;
+    }
+    this.map.setView(centro, zoom);
+  }
 
-    this.centrarMapaEnTodo();
+  mostrarUnicoMarcadorEnMapa(dir) {
+    if (!this.map) return;
+
+    // Clear previous markers
+    this.mapMarkers.forEach(m => this.map.removeLayer(m));
+    this.mapMarkers = [];
+
+    // Create single marker
+    const marker = L.marker([dir.latitud, dir.longitud]).addTo(this.map);
+    const pais = dir.territorio?.pais?.nombre || '';
+    const path = this.obtenerPathTerritorio(dir.territorio);
+    
+    const popupHtml = `
+      <div class="p-1">
+        <h6 class="fw-bold text-dark mb-1">${dir.detalle}</h6>
+        <p class="text-muted small mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> ${pais} &raquo; ${path}</p>
+        ${dir.referencia ? `<small class="text-secondary d-block mb-1">Ref: ${dir.referencia}</small>` : ''}
+        ${dir.codigo_postal ? `<span class="badge bg-secondary-soft text-secondary small">CP: ${dir.codigo_postal}</span>` : ''}
+      </div>
+    `;
+    
+    marker.bindPopup(popupHtml).openPopup();
+    this.mapMarkers.push(marker);
+
+    // Zoom and center
+    this.map.setView([dir.latitud, dir.longitud], 16);
   }
 
   centrarMapaEnTodo() {
@@ -366,12 +401,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
         if (e.target.closest('.dropdown') || e.target.closest('button')) return;
         
         if (dir.latitud && dir.longitud && this.map) {
-          this.map.setView([dir.latitud, dir.longitud], 15);
-          const matched = this.mapMarkers.find(m => {
-            const pos = m.getLatLng();
-            return Math.abs(pos.lat - dir.latitud) < 0.0001 && Math.abs(pos.lng - dir.longitud) < 0.0001;
-          });
-          if (matched) matched.openPopup();
+          this.mostrarUnicoMarcadorEnMapa(dir);
         } else {
           this.mostrarAlertaLocal('error', 'Esta dirección no cuenta con coordenadas.');
         }
@@ -424,7 +454,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     });
 
     this.renderDireccionesTable(filtered);
-    this.actualizarMarcadoresMapaPrincipal(filtered);
+    this.limpiarMapaPrincipal();
   }
 
   async abrirModalDireccion(direccion = null) {
