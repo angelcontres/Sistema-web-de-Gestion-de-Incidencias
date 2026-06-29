@@ -20,9 +20,13 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   async onInit() {
-    // Initialize Modal
+    // Initialize Modal and move it to document.body to avoid stacking context / backdrop issues
     try {
-      this.direccionModalObj = new bootstrap.Modal(this.querySelector('#direccionModal'));
+      const modalEl = this.querySelector('#direccionModal');
+      if (modalEl) {
+        document.body.appendChild(modalEl);
+        this.direccionModalObj = new bootstrap.Modal(modalEl);
+      }
     } catch (e) {
       console.warn('Error inicializando el modal de direcciones.', e);
     }
@@ -102,7 +106,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     }
 
     // Modal shown map load
-    const modalEl = this.querySelector('#direccionModal');
+    const modalEl = document.querySelector('#direccionModal');
     if (modalEl) {
       modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
     }
@@ -224,7 +228,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   initModalMap() {
-    const modalMapDiv = this.querySelector('#modalMap');
+    const modalMapDiv = document.querySelector('#modalMap');
     if (!modalMapDiv) return;
 
     if (this.modalMap) {
@@ -270,8 +274,8 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   actualizarInputsCoordenadas(lat, lng) {
-    const inputLat = this.querySelector('#direccionLatitud');
-    const inputLng = this.querySelector('#direccionLongitud');
+    const inputLat = document.querySelector('#direccionLatitud');
+    const inputLng = document.querySelector('#direccionLongitud');
     if (inputLat && inputLng) {
       inputLat.value = lat.toFixed(6);
       inputLng.value = lng.toFixed(6);
@@ -279,7 +283,8 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   centrarModalMapaSegunPais() {
-    const paisId = this.querySelector('#dirPaisSelect').value;
+    const selectPais = document.querySelector('#dirPaisSelect');
+    const paisId = selectPais ? selectPais.value : '';
     if (!paisId || !this.modalMap) return;
 
     const pais = this.paisesList.find(p => p.id == paisId);
@@ -423,22 +428,22 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   async abrirModalDireccion(direccion = null) {
-    const modalTitle = this.querySelector('#direccionModalLabel');
-    const form = this.querySelector('#direccionForm');
-    const inputId = this.querySelector('#direccionId');
-    const inputDetalle = this.querySelector('#direccionDetalle');
-    const inputReferencia = this.querySelector('#direccionReferencia');
-    const inputCodigoPostal = this.querySelector('#direccionCodigoPostal');
-    const inputActivo = this.querySelector('#direccionActivo');
-    const inputLat = this.querySelector('#direccionLatitud');
-    const inputLng = this.querySelector('#direccionLongitud');
+    const modalTitle = document.querySelector('#direccionModalLabel');
+    const form = document.querySelector('#direccionForm');
+    const inputId = document.querySelector('#direccionId');
+    const inputDetalle = document.querySelector('#direccionDetalle');
+    const inputReferencia = document.querySelector('#direccionReferencia');
+    const inputCodigoPostal = document.querySelector('#direccionCodigoPostal');
+    const inputActivo = document.querySelector('#direccionActivo');
+    const inputLat = document.querySelector('#direccionLatitud');
+    const inputLng = document.querySelector('#direccionLongitud');
     
-    const selectPais = this.querySelector('#dirPaisSelect');
-    const selectNivel1 = this.querySelector('#dirNivel1Select');
-    const selectNivel2 = this.querySelector('#dirNivel2Select');
-    const selectNivel3 = this.querySelector('#dirNivel3Select');
+    const selectPais = document.querySelector('#dirPaisSelect');
+    const selectNivel1 = document.querySelector('#dirNivel1Select');
+    const selectNivel2 = document.querySelector('#dirNivel2Select');
+    const selectNivel3 = document.querySelector('#dirNivel3Select');
     
-    const errorAlert = this.querySelector('#direccionModalErrorAlert');
+    const errorAlert = document.querySelector('#direccionModalErrorAlert');
 
     errorAlert.classList.add('d-none');
     form.classList.remove('was-validated');
@@ -601,13 +606,13 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
   async guardarDireccion(e) {
     e.preventDefault();
-    const form = this.querySelector('#direccionForm');
-    const errorAlert = this.querySelector('#direccionModalErrorAlert');
-    const errorMessage = this.querySelector('#direccionModalErrorMessage');
+    const form = document.querySelector('#direccionForm');
+    const errorAlert = document.querySelector('#direccionModalErrorAlert');
+    const errorMessage = document.querySelector('#direccionModalErrorMessage');
 
-    const selectNivel1 = this.querySelector('#dirNivel1Select');
-    const selectNivel2 = this.querySelector('#dirNivel2Select');
-    const selectNivel3 = this.querySelector('#dirNivel3Select');
+    const selectNivel1 = document.querySelector('#dirNivel1Select');
+    const selectNivel2 = document.querySelector('#dirNivel2Select');
+    const selectNivel3 = document.querySelector('#dirNivel3Select');
 
     if (!form.checkValidity()) {
       form.classList.add('was-validated');
@@ -621,18 +626,18 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       return;
     }
 
-    const id = this.querySelector('#direccionId').value;
-    const latVal = this.querySelector('#direccionLatitud').value;
-    const lngVal = this.querySelector('#direccionLongitud').value;
+    const id = document.querySelector('#direccionId').value;
+    const latVal = document.querySelector('#direccionLatitud').value;
+    const lngVal = document.querySelector('#direccionLongitud').value;
 
     const payload = {
       territorio_id: parseInt(territorioIdVal),
-      detalle: this.querySelector('#direccionDetalle').value,
-      referencia: this.querySelector('#direccionReferencia').value || null,
-      codigo_postal: this.querySelector('#direccionCodigoPostal').value || null,
+      detalle: document.querySelector('#direccionDetalle').value,
+      referencia: document.querySelector('#direccionReferencia').value || null,
+      codigo_postal: document.querySelector('#direccionCodigoPostal').value || null,
       latitud: latVal ? parseFloat(latVal) : null,
       longitud: lngVal ? parseFloat(lngVal) : null,
-      activo: this.querySelector('#direccionActivo').checked,
+      activo: document.querySelector('#direccionActivo').checked,
     };
 
     try {
