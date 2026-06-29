@@ -68,19 +68,14 @@ export const AuthService = {
     }
   },
 
-  hasPermission(accion, recurso) {
+  hasPermission(permissionName) {
     if (this.isAdmin()) return true;
 
     const user = this.getCurrentUser();
     if (!user || !Array.isArray(user.permisos)) return false;
 
     return user.permisos.some(
-      (p) =>
-        p &&
-        p.accion &&
-        p.recurso &&
-        p.accion.toUpperCase() === accion.toUpperCase() &&
-        p.recurso.toLowerCase() === recurso.toLowerCase()
+      (p) => p && typeof p === 'string' && p.toLowerCase() === permissionName.toLowerCase()
     );
   },
 
