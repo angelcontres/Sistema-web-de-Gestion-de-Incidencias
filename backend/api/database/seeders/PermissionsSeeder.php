@@ -21,6 +21,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'Rol',
             'Permisos' => 'Permiso',
             'Opciones de Menú' => 'Opción de Menú',
+            'Ubicaciones' => 'Ubicación',
         ];
 
         $acciones = [
@@ -35,6 +36,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'roles',
             'Permisos' => 'permisos',
             'Opciones de Menú' => 'opciones_menu',
+            'Ubicaciones' => 'ubicaciones',
         ];
 
         foreach ($opciones as $opcionPlural => $opcionSingular) {
@@ -49,6 +51,27 @@ class PermissionsSeeder extends Seeder
                         'accion' => $metodo,
                         'recurso' => $recursoStr,
                         'opcion_menu_id' => $opcionMenu->id,
+                        'created_by' => $user->id,
+                    ]);
+                }
+            }
+        }
+
+        // Seed locations sub-resources permissions under the Ubicaciones menu option
+        $ubicacionesMenu = OpcionMenu::where('nombre', 'Ubicaciones')->first();
+        if ($ubicacionesMenu) {
+            $subRecursos = [
+                'paises' => 'País',
+                'territorios' => 'Territorio',
+                'direcciones' => 'Dirección',
+            ];
+            foreach ($subRecursos as $recursoSub => $nombreSingular) {
+                foreach ($acciones as $verbo => $metodo) {
+                    Permiso::create([
+                        'nombre' => "{$verbo} {$nombreSingular}",
+                        'accion' => $metodo,
+                        'recurso' => $recursoSub,
+                        'opcion_menu_id' => $ubicacionesMenu->id,
                         'created_by' => $user->id,
                     ]);
                 }

@@ -7,6 +7,9 @@ use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserMenuController;
+use App\Http\Controllers\PaisController;
+use App\Http\Controllers\TerritorioController;
+use App\Http\Controllers\DireccionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckResourcePermission;
 
@@ -35,4 +38,9 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::post('v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
     Route::apiResource('v1/permisos', PermisoController::class);
     Route::apiResource('v1/usuarios', UserController::class);
+    
+    Route::apiResource('v1/paises', PaisController::class);
+    Route::apiResource('v1/territorios', TerritorioController::class);
+    Route::apiResource('v1/direcciones', DireccionController::class);
 });
+

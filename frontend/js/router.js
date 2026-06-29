@@ -9,6 +9,7 @@ const routes = {
   '#/permisos': 'app-permission-index',
   '#/usuarios': 'app-user-index',
   '#/usuarios/form': 'app-user-form',
+  '#/ubicaciones': 'app-ubicaciones-index',
   '#/public': 'app-public',
 };
 
@@ -32,7 +33,7 @@ function navigate() {
     }
 
     // RBAC: Block non-admins from accessing configuration routes
-    const adminRoutes = ['#/opciones-menu', '#/roles', '#/permisos'];
+    const adminRoutes = ['#/opciones-menu', '#/roles', '#/permisos', '#/ubicaciones'];
     const basePath = hash.split('?')[0].replace(/\/form$/, '');
 
     if (adminRoutes.includes(basePath) && !AuthService.isAdmin()) {

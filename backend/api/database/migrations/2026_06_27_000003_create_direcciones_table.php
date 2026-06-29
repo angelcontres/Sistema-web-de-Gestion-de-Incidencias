@@ -17,6 +17,8 @@ return new class extends Migration
             $table->text('detalle');
             $table->text('referencia')->nullable();
             $table->string('codigo_postal')->nullable();
+            $table->decimal('latitud', 10, 8)->nullable();
+            $table->decimal('longitud', 11, 8)->nullable();
             $table->boolean('activo')->default(true);
             $table->timestamps();
         });

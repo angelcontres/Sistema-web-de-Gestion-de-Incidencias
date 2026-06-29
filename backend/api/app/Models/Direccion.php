@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'activo'])]
+#[Fillable(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'latitud', 'longitud', 'activo'])]
 class Direccion extends Model
 {
     use HasFactory;
@@ -19,6 +19,8 @@ class Direccion extends Model
         return [
             'territorio_id' => 'integer',
             'activo' => 'boolean',
+            'latitud' => 'float',
+            'longitud' => 'float',
         ];
     }
 

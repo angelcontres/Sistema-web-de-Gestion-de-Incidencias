@@ -27,6 +27,12 @@ class UbicacionesSeeder extends Seeder
             'activo' => true,
         ]);
 
+        $ecuador = Pais::create([
+            'nombre' => 'Ecuador',
+            'codigo_iso' => 'EC',
+            'activo' => true,
+        ]);
+
         // 2. Territorios (Perú)
         // Nivel 1: Departamentos
         $limaDpto = Territorio::create([
@@ -111,12 +117,60 @@ class UbicacionesSeeder extends Seeder
             'tipo' => 'Municipio',
         ]);
 
+        // Territorios (Ecuador)
+        // Nivel 1: Provincias
+        $guayas = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => null,
+            'nombre' => 'Guayas',
+            'tipo' => 'Provincia',
+        ]);
+
+        $pichincha = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => null,
+            'nombre' => 'Pichincha',
+            'tipo' => 'Provincia',
+        ]);
+
+        // Nivel 2: Cantones
+        $guayaquil = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $guayas->id,
+            'nombre' => 'Guayaquil',
+            'tipo' => 'Cantón',
+        ]);
+
+        $quito = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $pichincha->id,
+            'nombre' => 'Quito',
+            'tipo' => 'Cantón',
+        ]);
+
+        // Nivel 3: Parroquias (Leaf nodes)
+        $tarqui = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $guayaquil->id,
+            'nombre' => 'Tarqui',
+            'tipo' => 'Parroquia',
+        ]);
+
+        $inaquito = Territorio::create([
+            'pais_id' => $ecuador->id,
+            'parent_id' => $quito->id,
+            'nombre' => 'Iñaquito',
+            'tipo' => 'Parroquia',
+        ]);
+
         // 3. Direcciones (Asociadas al último nodo)
         Direccion::create([
             'territorio_id' => $surco->id,
             'detalle' => 'Av. Javier Prado Este 4200',
             'referencia' => 'Cerca al Centro Comercial Jockey Plaza',
             'codigo_postal' => '15023',
+            'latitud' => -12.11430000,
+            'longitud' => -76.97490000,
         ]);
 
         Direccion::create([
@@ -124,6 +178,8 @@ class UbicacionesSeeder extends Seeder
             'detalle' => 'Calle Larco 750',
             'referencia' => 'Frente al Parque Kennedy',
             'codigo_postal' => '15074',
+            'latitud' => -12.12210000,
+            'longitud' => -77.02890000,
         ]);
 
         Direccion::create([
@@ -131,6 +187,26 @@ class UbicacionesSeeder extends Seeder
             'detalle' => 'Calle Londres 247, Del Carmen',
             'referencia' => 'Museo Frida Kahlo (Casa Azul)',
             'codigo_postal' => '04100',
+            'latitud' => 19.34960000,
+            'longitud' => -99.16250000,
+        ]);
+
+        Direccion::create([
+            'territorio_id' => $tarqui->id,
+            'detalle' => 'Av. Francisco de Orellana y Justino Cornejo',
+            'referencia' => 'Gobierno Zonal de Guayaquil',
+            'codigo_postal' => '090506',
+            'latitud' => -2.16430000,
+            'longitud' => -79.89720000,
+        ]);
+
+        Direccion::create([
+            'territorio_id' => $inaquito->id,
+            'detalle' => 'Av. Amazonas N37-29 y Corea',
+            'referencia' => 'Frente al CCI',
+            'codigo_postal' => '170504',
+            'latitud' => -0.17640000,
+            'longitud' => -78.48780000,
         ]);
     }
 }

@@ -1,0 +1,457 @@
+<div class="page-fade-in">
+  <!-- Cabecera de Página -->
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Mantenimiento de Ubicaciones</h1>
+      <p class="text-muted small mb-0">
+        Administra la estructura geográfica y de direcciones físicas del sistema (Países, Territorios y Direcciones).
+      </p>
+    </div>
+  </div>
+
+  <!-- Alertas globales -->
+  <div id="globalErrorAlert" class="alert alert-danger mx-0 my-2 d-none">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <span id="globalErrorMessage">Error en la operación.</span>
+  </div>
+  <div id="globalSuccessAlert" class="alert alert-success mx-0 my-2 d-none">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    <span id="globalSuccessMessage">Operación realizada con éxito.</span>
+  </div>
+
+  <!-- Pestañas de Navegación -->
+  <ul class="nav nav-tabs mb-4 border-bottom-2" id="ubicacionesTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-bold text-uppercase small py-3 px-4" id="paises-tab" data-bs-toggle="tab" data-bs-target="#paises-pane" type="button" role="tab" aria-controls="paises-pane" aria-selected="true">
+        <i class="bi bi-globe2 me-2"></i> Países
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold text-uppercase small py-3 px-4" id="territorios-tab" data-bs-toggle="tab" data-bs-target="#territorios-pane" type="button" role="tab" aria-controls="territorios-pane" aria-selected="false">
+        <i class="bi bi-diagram-3-fill me-2"></i> Explorador de Territorios
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold text-uppercase small py-3 px-4" id="direcciones-tab" data-bs-toggle="tab" data-bs-target="#direcciones-pane" type="button" role="tab" aria-controls="direcciones-pane" aria-selected="false">
+        <i class="bi bi-geo-alt-fill me-2"></i> Direcciones
+      </button>
+    </li>
+  </ul>
+
+  <!-- Contenido de Pestañas -->
+  <div class="tab-content" id="ubicacionesTabsContent">
+    
+    <!-- PESTAÑA 1: PAÍSES -->
+    <div class="tab-pane fade show active" id="paises-pane" role="tabpanel" aria-labelledby="paises-tab" tabindex="0">
+      <div class="card custom-card border-0 shadow-sm overflow-hidden">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+          <h5 class="card-title fw-bold mb-0 text-dark">Catálogo de Países</h5>
+          <button id="btnNuevoPais" class="btn btn-sm btn-primary fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i> Nuevo País
+          </button>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light text-muted small uppercase">
+                <tr>
+                  <th class="ps-4">Nombre</th>
+                  <th>Código ISO</th>
+                  <th>Estado</th>
+                  <th class="text-end pe-4">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="paisesTableBody">
+                <!-- Se inyecta dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+          <div id="paisesEmptyState" class="text-center py-5 d-none">
+            <i class="bi bi-globe2 text-muted display-4"></i>
+            <p class="text-muted mt-2">No hay países registrados.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 2: EXPLORADOR DE TERRITORIOS (Miller Columns) -->
+    <div class="tab-pane fade" id="territorios-pane" role="tabpanel" aria-labelledby="territorios-tab" tabindex="0">
+      <div class="card custom-card border-0 shadow-sm overflow-hidden mb-4">
+        <div class="card-body bg-white p-3">
+          <div class="row align-items-center">
+            <div class="col-md-6 col-sm-12">
+              <label for="explorerPaisSelect" class="form-label fw-bold text-dark mb-1">
+                <i class="bi bi-search me-1"></i> Selecciona un País para Explorar:
+              </label>
+              <select id="explorerPaisSelect" class="form-select border-2">
+                <option value="">-- Selecciona un País --</option>
+                <!-- Se inyecta dinámicamente -->
+              </select>
+            </div>
+            <div class="col-md-6 col-sm-12 mt-3 mt-md-0 text-md-end">
+              <span class="text-muted small">
+                <i class="bi bi-info-circle-fill me-1 text-primary"></i> 
+                Haz clic en los elementos para navegar hacia niveles más profundos.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explorador de Tres Niveles (Columnas Interactivas) -->
+      <div class="row g-3" id="territoriosExplorerContainer">
+        <!-- Columna Nivel 1 -->
+        <div class="col-lg-4 col-md-6">
+          <div class="card border shadow-sm h-100 bg-white">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+              <span class="fw-bold text-dark small" id="lblNivel1">Nivel 1 (ej: Estado/Dpto)</span>
+              <button id="btnAddNivel1" class="btn btn-xs btn-outline-primary p-1 rounded d-none" title="Agregar elemento a Nivel 1">
+                <i class="bi bi-plus-lg"></i> Agregar
+              </button>
+            </div>
+            <div class="list-group list-group-flush overflow-auto style-scrollbar" style="max-height: 400px; min-height: 250px;" id="listNivel1">
+              <div class="text-center py-4 text-muted small">
+                Selecciona un país para comenzar
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Nivel 2 -->
+        <div class="col-lg-4 col-md-6">
+          <div class="card border shadow-sm h-100 bg-white">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+              <span class="fw-bold text-dark small" id="lblNivel2">Nivel 2 (ej: Municipio/Provincia)</span>
+              <button id="btnAddNivel2" class="btn btn-xs btn-outline-primary p-1 rounded d-none" title="Agregar elemento a Nivel 2">
+                <i class="bi bi-plus-lg"></i> Agregar
+              </button>
+            </div>
+            <div class="list-group list-group-flush overflow-auto style-scrollbar" style="max-height: 400px; min-height: 250px;" id="listNivel2">
+              <div class="text-center py-4 text-muted small">
+                Selecciona un elemento del Nivel 1
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Nivel 3 -->
+        <div class="col-lg-4 col-md-12">
+          <div class="card border shadow-sm h-100 bg-white">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+              <span class="fw-bold text-dark small" id="lblNivel3">Nivel 3 (ej: Distrito/Localidad)</span>
+              <button id="btnAddNivel3" class="btn btn-xs btn-outline-primary p-1 rounded d-none" title="Agregar elemento a Nivel 3">
+                <i class="bi bi-plus-lg"></i> Agregar
+              </button>
+            </div>
+            <div class="list-group list-group-flush overflow-auto style-scrollbar" style="max-height: 400px; min-height: 250px;" id="listNivel3">
+              <div class="text-center py-4 text-muted small">
+                Selecciona un elemento del Nivel 2
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 3: DIRECCIONES -->
+    <div class="tab-pane fade" id="direcciones-pane" role="tabpanel" aria-labelledby="direcciones-tab" tabindex="0">
+      <div class="row g-3">
+        <!-- Columna de la Tabla -->
+        <div class="col-lg-7">
+          <div class="card custom-card border-0 shadow-sm overflow-hidden h-100">
+            <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+              <h5 class="card-title fw-bold mb-0 text-dark">Direcciones Registradas</h5>
+              <div class="d-flex gap-2">
+                <input type="text" id="direccionSearch" class="form-control form-control-sm" placeholder="Buscar dirección..." style="width: 180px;" />
+                <button id="btnNuevaDireccion" class="btn btn-sm btn-primary fw-semibold px-2 py-1.5 rounded-2 d-flex align-items-center gap-1.5">
+                  <i class="bi bi-plus-lg"></i> Nueva
+                </button>
+              </div>
+            </div>
+            
+            <div class="card-body p-0">
+              <div class="table-responsive" style="max-height: 450px;">
+                <table class="table table-hover align-middle mb-0 table-sm text-nowrap">
+                  <thead class="table-light text-muted small uppercase">
+                    <tr>
+                      <th class="ps-3">País</th>
+                      <th>Ubicación</th>
+                      <th>Dirección / Detalle</th>
+                      <th>Código Postal</th>
+                      <th>Estado</th>
+                      <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="direccionesTableBody">
+                    <!-- Se inyecta dinámicamente -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="direccionesEmptyState" class="text-center py-5 d-none">
+                <i class="bi bi-geo-alt text-muted display-4"></i>
+                <p class="text-muted mt-2">No hay direcciones registradas.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna del Mapa -->
+        <div class="col-lg-5">
+          <div class="card custom-card border shadow-sm h-100 overflow-hidden bg-white">
+            <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+              <span class="fw-bold text-dark small"><i class="bi bi-map-fill text-primary me-1"></i> Geolocalización</span>
+              <button id="btnCentrarMapa" class="btn btn-xs btn-outline-secondary">
+                <i class="bi bi-crosshair"></i> Centrar todo
+              </button>
+            </div>
+            <div class="card-body p-0 position-relative">
+              <div id="map" style="height: 450px; z-index: 1;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL PAÍS -->
+<div class="modal fade" id="paisModal" tabindex="-1" aria-labelledby="paisModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="paisModalLabel">Nuevo País</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <div id="paisModalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="paisModalErrorMessage">Error.</span>
+        </div>
+        <form id="paisForm" novalidate>
+          <input type="hidden" id="paisId" />
+          <div class="mb-3">
+            <label for="paisNombre" class="form-label fw-semibold text-dark">Nombre del País</label>
+            <input type="text" class="form-control" id="paisNombre" required placeholder="Ej: Perú, México" />
+            <div class="invalid-feedback">El nombre es obligatorio.</div>
+          </div>
+          <div class="mb-3">
+            <label for="paisCodigo" class="form-label fw-semibold text-dark">Código ISO (2 o 3 letras)</label>
+            <input type="text" class="form-control" id="paisCodigo" required placeholder="Ej: PE, MX" maxlength="5" />
+            <div class="invalid-feedback">El código ISO es obligatorio.</div>
+          </div>
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" role="switch" id="paisActivo" checked />
+            <label class="form-check-label fw-semibold text-dark" for="paisActivo">País Activo</label>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnPaisSubmit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TERRITORIO -->
+<div class="modal fade" id="territorioModal" tabindex="-1" aria-labelledby="territorioModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="territorioModalLabel">Nuevo Territorio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <div id="territorioModalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="territorioModalErrorMessage">Error.</span>
+        </div>
+        <form id="territorioForm" novalidate>
+          <input type="hidden" id="territorioId" />
+          <input type="hidden" id="territorioParentId" />
+          <input type="hidden" id="territorioPaisId" />
+          
+          <div class="mb-3 bg-light p-3 rounded border">
+            <span class="text-muted small d-block mb-1">Ubicación del elemento:</span>
+            <strong class="text-dark small" id="territorioContextLabel">Raíz del país</strong>
+          </div>
+
+          <div class="mb-3">
+            <label for="territorioNombre" class="form-label fw-semibold text-dark">Nombre del Territorio</label>
+            <input type="text" class="form-control" id="territorioNombre" required placeholder="Ej: Lima, Jalisco, Miraflores" />
+            <div class="invalid-feedback">El nombre es obligatorio.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="territorioTipo" class="form-label fw-semibold text-dark">Tipo de Territorio</label>
+            <input type="text" class="form-control" id="territorioTipo" required placeholder="Ej: Departamento, Estado, Provincia, Municipio, Distrito, Alcaldía" />
+            <div class="invalid-feedback">El tipo es obligatorio.</div>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" role="switch" id="territorioActivo" checked />
+            <label class="form-check-label fw-semibold text-dark" for="territorioActivo">Territorio Activo</label>
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnTerritorioSubmit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DIRECCIÓN -->
+<div class="modal fade" id="direccionModal" tabindex="-1" aria-labelledby="direccionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="direccionModalLabel">Nueva Dirección</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <div id="direccionModalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="direccionModalErrorMessage">Error.</span>
+        </div>
+        
+        <form id="direccionForm" novalidate>
+          <input type="hidden" id="direccionId" />
+          
+          <!-- Selectores Cascaded para el territorio -->
+          <div class="bg-light p-3 rounded border mb-4">
+            <h6 class="fw-bold text-dark small mb-3"><i class="bi bi-geo-fill text-primary"></i> Ubicación Geográfica</h6>
+            <div class="row g-3">
+              <!-- País -->
+              <div class="col-md-6">
+                <label for="dirPaisSelect" class="form-label small fw-semibold text-dark">País</label>
+                <select id="dirPaisSelect" class="form-select form-select-sm" required>
+                  <option value="">-- Seleccione --</option>
+                  <!-- Se inyecta dinámicamente -->
+                </select>
+                <div class="invalid-feedback">Debe seleccionar un país.</div>
+              </div>
+
+              <!-- Nivel 1 -->
+              <div class="col-md-6">
+                <label id="lblDirNivel1" for="dirNivel1Select" class="form-label small fw-semibold text-dark">Nivel 1</label>
+                <select id="dirNivel1Select" class="form-select form-select-sm" disabled>
+                  <option value="">-- Seleccione País primero --</option>
+                </select>
+              </div>
+
+              <!-- Nivel 2 -->
+              <div class="col-md-6">
+                <label id="lblDirNivel2" for="dirNivel2Select" class="form-label small fw-semibold text-dark">Nivel 2</label>
+                <select id="dirNivel2Select" class="form-select form-select-sm" disabled>
+                  <option value="">-- Seleccione Nivel 1 primero --</option>
+                </select>
+              </div>
+
+              <!-- Nivel 3 -->
+              <div class="col-md-6">
+                <label id="lblDirNivel3" for="dirNivel3Select" class="form-label small fw-semibold text-dark">Nivel 3</label>
+                <select id="dirNivel3Select" class="form-select form-select-sm" disabled>
+                  <option value="">-- Seleccione Nivel 2 primero --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <!-- Formulario lado izquierdo -->
+            <div class="col-md-6">
+              <!-- Campos Detalle, Referencia, CP -->
+              <div class="mb-3">
+                <label for="direccionDetalle" class="form-label fw-semibold text-dark">Dirección (Detalle)</label>
+                <input type="text" class="form-control" id="direccionDetalle" required placeholder="Ej: Av. Francisco de Orellana" />
+                <div class="invalid-feedback">La dirección es obligatoria.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="direccionReferencia" class="form-label fw-semibold text-dark">Referencia</label>
+                <input type="text" class="form-control" id="direccionReferencia" placeholder="Ej: Frente al centro comercial" />
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-6">
+                  <label for="direccionCodigoPostal" class="form-label fw-semibold text-dark">Cód. Postal</label>
+                  <input type="text" class="form-control" id="direccionCodigoPostal" placeholder="Ej: 15023" />
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold text-dark">Estado</label>
+                  <div class="form-check form-switch pt-2">
+                    <input class="form-check-input" type="checkbox" role="switch" id="direccionActivo" checked />
+                    <label class="form-check-label fw-semibold text-dark" for="direccionActivo">Activa</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label for="direccionLatitud" class="form-label small fw-semibold text-dark">Latitud</label>
+                  <input type="text" class="form-control form-control-sm" id="direccionLatitud" readonly placeholder="Clic en el mapa" />
+                </div>
+                <div class="col-6">
+                  <label for="direccionLongitud" class="form-label small fw-semibold text-dark">Longitud</label>
+                  <input type="text" class="form-control form-control-sm" id="direccionLongitud" readonly placeholder="Clic en el mapa" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Mapa lado derecho -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-dark d-flex justify-content-between">
+                <span>Pin en el Mapa</span>
+                <span class="text-muted small fw-normal"><i class="bi bi-info-circle"></i> Haz clic para marcar</span>
+              </label>
+              <div id="modalMap" class="border shadow-sm" style="height: 250px; border-radius: 8px; z-index: 1;"></div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnDireccionSubmit">Guardar Dirección</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Custom styles for the Miller columns explorer */
+  .style-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .style-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .style-scrollbar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+  }
+  .style-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #999;
+  }
+  
+  .list-group-item-action.active-item {
+    background-color: var(--bs-primary-bg-subtle, #e9ecef) !important;
+    color: var(--bs-primary, #0d6efd) !important;
+    border-left: 3px solid var(--bs-primary, #0d6efd);
+    font-weight: 600;
+  }
+  
+  .btn-xs {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    border-radius: 0.2rem;
+  }
+</style>
