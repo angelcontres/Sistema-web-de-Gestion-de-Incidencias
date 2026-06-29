@@ -345,19 +345,20 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
         <td><code class="text-secondary small fw-semibold">${dir.codigo_postal || 'N/A'}</code></td>
         <td><span class="badge ${badgeClass} rounded-pill px-2 py-0.5 small">${badgeText}</span></td>
         <td class="text-end pe-3">
-          <div class="btn-group ${isAdmin ? '' : 'd-none'}">
-            <button class="btn btn-sm btn-light border-0 btn-editar-dir" data-id="${dir.id}" title="Editar Dirección">
-              <i class="bi bi-pencil-square text-primary"></i>
+          <div class="dropdown ${isAdmin ? '' : 'd-none'}" onclick="event.stopPropagation()">
+            <button class="btn btn-light btn-sm text-secondary p-1.5 rounded-2 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-three-dots-vertical fs-6"></i>
             </button>
-            <button class="btn btn-sm btn-light border-0 btn-eliminar-dir" data-id="${dir.id}" title="Eliminar Dirección">
-              <i class="bi bi-trash text-danger"></i>
-            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+              <li><button class="dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium btn-editar-dir" type="button" data-id="${dir.id}"><i class="bi bi-pencil-square"></i> Editar</button></li>
+              <li><button class="dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium btn-eliminar-dir" type="button" data-id="${dir.id}"><i class="bi bi-trash"></i> Eliminar</button></li>
+            </ul>
           </div>
         </td>
       `;
 
       tr.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-group') || e.target.closest('button')) return;
+        if (e.target.closest('.dropdown') || e.target.closest('button')) return;
         
         if (dir.latitud && dir.longitud && this.map) {
           this.map.setView([dir.latitud, dir.longitud], 15);
