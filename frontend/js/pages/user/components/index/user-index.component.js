@@ -4,7 +4,7 @@ import { AuthService } from '../../../../core/auth.service.js';
 
 export class UserIndexComponent extends BaseComponent {
   constructor() {
-    super('js/pages/user/component/index/user-index.component.html');
+    super('js/pages/user/components/index/user-index.component.html');
   }
 
   async onInit() {

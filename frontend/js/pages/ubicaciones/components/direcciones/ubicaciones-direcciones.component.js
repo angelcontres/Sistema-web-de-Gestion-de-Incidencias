@@ -1,5 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
-import { UbicacionesService } from '../../services/ubicaciones.service.js';
+import { UbicacionesService } from '../../../../shared/services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 
 export class UbicacionesDireccionesComponent extends BaseComponent {
