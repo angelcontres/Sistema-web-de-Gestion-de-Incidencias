@@ -1,0 +1,116 @@
+<div class="modal fade" id="direccionModal" tabindex="-1" aria-labelledby="direccionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="direccionModalLabel">Nueva Dirección</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <div id="direccionModalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="direccionModalErrorMessage">Error.</span>
+        </div>
+        
+        <form id="direccionForm" novalidate>
+          <input type="hidden" id="direccionId" />
+          
+          <!-- Selectores Cascaded para el territorio -->
+          <div class="bg-light p-3 rounded border mb-4">
+            <h6 class="fw-bold text-dark small mb-3"><i class="bi bi-geo-fill text-primary"></i> Ubicación Geográfica</h6>
+            <div class="row g-3">
+              <!-- País -->
+              <div class="col-md-6">
+                <label for="dirPaisSelect" class="form-label small fw-semibold text-dark">País</label>
+                <select id="dirPaisSelect" class="form-select form-select-sm" required>
+                  <option value="">-- Seleccione --</option>
+                  <!-- Se inyecta dinámicamente -->
+                </select>
+                <div class="invalid-feedback">Debe seleccionar un país.</div>
+              </div>
+
+              <!-- Nivel 1 -->
+              <div class="col-md-6">
+                <label id="lblDirNivel1" for="dirNivel1Select" class="form-label small fw-semibold text-dark">Nivel 1</label>
+                <select id="dirNivel1Select" class="form-select form-select-sm" disabled>
+                  <option value="">-- Seleccione País primero --</option>
+                </select>
+              </div>
+
+              <!-- Nivel 2 -->
+              <div class="col-md-6">
+                <label id="lblDirNivel2" for="dirNivel2Select" class="form-label small fw-semibold text-dark">Nivel 2</label>
+                <select id="dirNivel2Select" class="form-select form-select-sm" disabled>
+                  <option value="">-- Seleccione Nivel 1 primero --</option>
+                </select>
+              </div>
+
+              <!-- Nivel 3 -->
+              <div class="col-md-6">
+                <label id="lblDirNivel3" for="dirNivel3Select" class="form-label small fw-semibold text-dark">Nivel 3</label>
+                <select id="dirNivel3Select" class="form-select form-select-sm" disabled>
+                  <option value="">-- Seleccione Nivel 2 primero --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <!-- Formulario lado izquierdo -->
+            <div class="col-md-6">
+              <!-- Campos Detalle, Referencia, CP -->
+              <div class="mb-3">
+                <label for="direccionDetalle" class="form-label fw-semibold text-dark">Dirección (Detalle)</label>
+                <input type="text" class="form-control" id="direccionDetalle" required placeholder="Ej: Av. Francisco de Orellana" />
+                <div class="invalid-feedback">La dirección es obligatoria.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="direccionReferencia" class="form-label fw-semibold text-dark">Referencia</label>
+                <input type="text" class="form-control" id="direccionReferencia" placeholder="Ej: Frente al centro comercial" />
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-6">
+                  <label for="direccionCodigoPostal" class="form-label fw-semibold text-dark">Cód. Postal</label>
+                  <input type="text" class="form-control" id="direccionCodigoPostal" placeholder="Ej: 15023" />
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold text-dark">Estado</label>
+                  <div class="form-check form-switch pt-2">
+                    <input class="form-check-input" type="checkbox" role="switch" id="direccionActivo" checked />
+                    <label class="form-check-label fw-semibold text-dark" for="direccionActivo">Activa</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label for="direccionLatitud" class="form-label small fw-semibold text-dark">Latitud</label>
+                  <input type="text" class="form-control form-control-sm" id="direccionLatitud" readonly placeholder="Clic en el mapa" />
+                </div>
+                <div class="col-6">
+                  <label for="direccionLongitud" class="form-label small fw-semibold text-dark">Longitud</label>
+                  <input type="text" class="form-control form-control-sm" id="direccionLongitud" readonly placeholder="Clic en el mapa" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Mapa lado derecho -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-dark d-flex justify-content-between">
+                <span>Pin en el Mapa</span>
+                <span class="text-muted small fw-normal"><i class="bi bi-info-circle"></i> Haz clic para marcar</span>
+              </label>
+              <div id="modalMap" class="border shadow-sm" style="height: 250px; border-radius: 8px; z-index: 1;"></div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnDireccionSubmit">Guardar Dirección</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

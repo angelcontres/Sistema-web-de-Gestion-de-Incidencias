@@ -3,6 +3,7 @@ import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { MAP_CONFIG } from '../../../../shared/constants.js';
+import './direccion-form.component.js';
 
 export class UbicacionesDireccionesComponent extends BaseComponent {
   constructor() {
@@ -13,26 +14,10 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     
     // Maps
     this.map = null;
-    this.modalMap = null;
     this.mapMarkers = [];
-    this.modalMarker = null;
-    this.tempCoords = null;
-    
-    this.direccionModalObj = null;
   }
 
   async onInit() {
-    // Initialize Modal and move it to document.body to avoid stacking context / backdrop issues
-    try {
-      const modalEl = this.querySelector('#direccionModal');
-      if (modalEl) {
-        document.body.appendChild(modalEl);
-        this.direccionModalObj = new bootstrap.Modal(modalEl);
-      }
-    } catch (e) {
-      console.warn('Error inicializando el modal de direcciones.', e);
-    }
-
     // Load initial data
     await this.cargarPaises();
     await this.cargarDirecciones();
@@ -43,6 +28,13 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       this.llenarPaisSelect();
     });
 
+    // Listen to form component save event
+    this.addEventListener('direccion-saved', (e) => {
+      const isEdit = e.detail.isEdit;
+      UIHelper.mostrarAlerta(this, 'success', `Dirección ${isEdit ? 'actualizada' : 'creada'} con éxito.`);
+      this.cargarDirecciones();
+    });
+
     // Setup Event Listeners
     const btnNuevaDireccion = this.querySelector('#btnNuevaDireccion');
     const isAdmin = AuthService.isAdmin();
@@ -51,13 +43,11 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       if (!isAdmin) {
         btnNuevaDireccion.classList.add('d-none');
       } else {
-        btnNuevaDireccion.addEventListener('click', () => this.abrirModalDireccion());
+        btnNuevaDireccion.addEventListener('click', () => {
+          const formComp = this.querySelector('#direccionFormComp');
+          if (formComp) formComp.abrir();
+        });
       }
-    }
-
-    const direccionForm = this.querySelector('#direccionForm');
-    if (direccionForm) {
-      direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
     }
 
     // Combined Filters (Search + Country + Status) with Debounce (250ms)
@@ -81,53 +71,10 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       filterEstadoSelect.addEventListener('change', triggerFilter);
     }
 
-    // Cascading dropdowns (Modal Form)
-    const dirPaisSelect = this.querySelector('#dirPaisSelect');
-    if (dirPaisSelect) {
-      dirPaisSelect.addEventListener('change', (e) => {
-        this.cargarDireccionDropdownNivel1(e.target.value);
-        
-        // Clear coordinates and marker when country changes to prevent geo-incoherence
-        const inputLat = document.querySelector('#direccionLatitud');
-        const inputLng = document.querySelector('#direccionLongitud');
-        if (inputLat) inputLat.value = '';
-        if (inputLng) inputLng.value = '';
-        this.tempCoords = null;
-        if (this.modalMarker && this.modalMap) {
-          this.modalMap.removeLayer(this.modalMarker);
-          this.modalMarker = null;
-        }
-      });
-    }
-
-    const dirNivel1Select = this.querySelector('#dirNivel1Select');
-    if (dirNivel1Select) {
-      dirNivel1Select.addEventListener('change', (e) => {
-        const parentId = e.target.value;
-        const paisId = this.querySelector('#dirPaisSelect').value;
-        this.cargarDireccionDropdownNivel2(paisId, parentId);
-      });
-    }
-
-    const dirNivel2Select = this.querySelector('#dirNivel2Select');
-    if (dirNivel2Select) {
-      dirNivel2Select.addEventListener('change', (e) => {
-        const parentId = e.target.value;
-        const paisId = this.querySelector('#dirPaisSelect').value;
-        this.cargarDireccionDropdownNivel3(paisId, parentId);
-      });
-    }
-
     // Map listeners
     const btnCentrarMapa = this.querySelector('#btnCentrarMapa');
     if (btnCentrarMapa) {
       btnCentrarMapa.addEventListener('click', () => this.centrarMapaEnTodo());
-    }
-
-    // Modal shown map load
-    const modalEl = document.querySelector('#direccionModal');
-    if (modalEl) {
-      modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
     }
 
     // Lazy load the main map when visible
@@ -148,14 +95,6 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       }
       this.map = null;
     }
-    if (this.modalMap) {
-      try {
-        this.modalMap.remove();
-      } catch (e) {
-        console.warn('Error al destruir el mapa del modal:', e);
-      }
-      this.modalMap = null;
-    }
   }
 
   async cargarPaises() {
@@ -169,48 +108,25 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   llenarPaisSelect() {
-    const select = this.querySelector('#dirPaisSelect');
     const filterSelect = this.querySelector('#filterPaisSelect');
+    if (!filterSelect) return;
     
     const activePaises = this.paisesList.filter(p => p.activo);
-    const optionsHtml = activePaises
-      .map(p => `<option value="${p.id}">${p.nombre}</option>`)
-      .join('');
-
-    if (select) {
-      select.innerHTML = `<option value="">-- Seleccione --</option>${optionsHtml}`;
-      if (activePaises.length === 1) {
-        select.value = activePaises[0].id;
-        // Trigger Nivel 1 dropdown load
-        this.cargarDireccionDropdownNivel1(activePaises[0].id);
-      }
-    }
-    
-    if (filterSelect) {
-      const currentVal = filterSelect.value;
-      filterSelect.innerHTML = `<option value="">Todos los Países</option>${optionsHtml}`;
-      if (activePaises.length === 1) {
-        filterSelect.value = activePaises[0].id;
-      } else {
-        filterSelect.value = currentVal;
-      }
-    }
+    filterSelect.innerHTML = '<option value="">Todos los Países</option>' + 
+      activePaises.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
   }
 
   async cargarDirecciones() {
     try {
-      const direcciones = await UbicacionesService.getDirecciones();
-      this.direccionesList = direcciones || [];
-      
-      // Apply filters on initial load
+      const list = await UbicacionesService.getDirecciones();
+      this.direccionesList = list || [];
       this.filtrarDirecciones();
     } catch (error) {
       console.error('Error cargando direcciones:', error);
-      this.mostrarAlertaLocal('error', `Error al cargar direcciones: ${error.message}`);
+      UIHelper.mostrarAlerta(this, 'error', 'No se pudieron cargar las direcciones.');
     }
   }
 
-  // Map Logic
   initMainMap() {
     const mapDiv = this.querySelector('#map');
     if (!mapDiv) return;
@@ -294,76 +210,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   centrarMapaEnTodo() {
     if (!this.map || this.mapMarkers.length === 0) return;
     const group = new L.featureGroup(this.mapMarkers);
-    this.map.fitBounds(group.getBounds().pad(0.15));
-  }
-
-  initModalMap() {
-    const modalMapDiv = document.querySelector('#modalMap');
-    if (!modalMapDiv) return;
-
-    if (this.modalMap) {
-      this.modalMap.invalidateSize();
-      return;
-    }
-
-    this.modalMap = L.map(modalMapDiv).setView(MAP_CONFIG.DEFAULT_CENTER, MAP_CONFIG.DEFAULT_ZOOM);
-
-    L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
-      attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
-      subdomains: 'abcd',
-      maxZoom: 20
-    }).addTo(this.modalMap);
-
-    this.modalMap.on('click', (e) => {
-      const { lat, lng } = e.latlng;
-      this.establecerMarcadorModal(lat, lng);
-    });
-
-    if (this.tempCoords) {
-      this.establecerMarcadorModal(this.tempCoords.lat, this.tempCoords.lng);
-      this.modalMap.setView([this.tempCoords.lat, this.tempCoords.lng], 14);
-      this.tempCoords = null;
-    } else {
-      this.centrarModalMapaSegunPais();
-    }
-  }
-
-  establecerMarcadorModal(lat, lng) {
-    if (!this.modalMap) return;
-
-    if (this.modalMarker) {
-      this.modalMarker.setLatLng([lat, lng]);
-    } else {
-      this.modalMarker = L.marker([lat, lng], { draggable: true }).addTo(this.modalMap);
-      this.modalMarker.on('dragend', (e) => {
-        const pos = e.target.getLatLng();
-        this.actualizarInputsCoordenadas(pos.lat, pos.lng);
-      });
-    }
-
-    this.actualizarInputsCoordenadas(lat, lng);
-  }
-
-  actualizarInputsCoordenadas(lat, lng) {
-    const inputLat = document.querySelector('#direccionLatitud');
-    const inputLng = document.querySelector('#direccionLongitud');
-    if (inputLat && inputLng) {
-      inputLat.value = lat.toFixed(6);
-      inputLng.value = lng.toFixed(6);
-    }
-  }
-
-  centrarModalMapaSegunPais() {
-    const selectPais = document.querySelector('#dirPaisSelect');
-    const paisId = selectPais ? selectPais.value : '';
-    if (!paisId || !this.modalMap) return;
-
-    const pais = this.paisesList.find(p => p.id == paisId);
-    if (!pais) return;
-
-    const config = MAP_CONFIG.COUNTRY_CENTERS[pais.codigo_iso];
-    const centro = config ? config.center : MAP_CONFIG.DEFAULT_CENTER;
-    this.modalMap.setView(centro, 6);
+    this.map.fitBounds(group.getBounds().pad(0.1));
   }
 
   obtenerPathTerritorio(territorio) {
@@ -434,12 +281,15 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
         if (dir.latitud && dir.longitud && this.map) {
           this.mostrarUnicoMarcadorEnMapa(dir);
         } else {
-          this.mostrarAlertaLocal('error', 'Esta dirección no cuenta con coordenadas.');
+          UIHelper.mostrarAlerta(this, 'error', 'Esta dirección no cuenta con coordenadas.');
         }
       });
 
       if (isAdmin) {
-        tr.querySelector('.btn-editar-dir').addEventListener('click', () => this.abrirModalDireccion(dir));
+        tr.querySelector('.btn-editar-dir').addEventListener('click', () => {
+          const formComp = this.querySelector('#direccionFormComp');
+          if (formComp) formComp.abrir(dir);
+        });
         tr.querySelector('.btn-eliminar-dir').addEventListener('click', () => this.eliminarDireccion(dir.id));
       }
 
@@ -470,267 +320,16 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       }
 
       // 2. Country Filter
-      let matchesCountry = true;
-      if (paisId) {
-        matchesCountry = dir.territorio?.pais_id == paisId;
-      }
+      const matchesPais = !paisId || (dir.territorio?.pais_id == paisId);
 
       // 3. Status Filter
-      let matchesStatus = true;
-      if (estado) {
-        matchesStatus = estado === 'activo' ? dir.activo : !dir.activo;
-      }
+      const matchesEstado = !estado || (estado === 'activo' ? dir.activo : !dir.activo);
 
-      return matchesText && matchesCountry && matchesStatus;
+      return matchesText && matchesPais && matchesEstado;
     });
 
     this.renderDireccionesTable(filtered);
     this.limpiarMapaPrincipal();
-  }
-
-  async abrirModalDireccion(direccion = null) {
-    const modalTitle = document.querySelector('#direccionModalLabel');
-    const form = document.querySelector('#direccionForm');
-    const inputId = document.querySelector('#direccionId');
-    const inputDetalle = document.querySelector('#direccionDetalle');
-    const inputReferencia = document.querySelector('#direccionReferencia');
-    const inputCodigoPostal = document.querySelector('#direccionCodigoPostal');
-    const inputActivo = document.querySelector('#direccionActivo');
-    const inputLat = document.querySelector('#direccionLatitud');
-    const inputLng = document.querySelector('#direccionLongitud');
-    
-    const selectPais = document.querySelector('#dirPaisSelect');
-    const selectNivel1 = document.querySelector('#dirNivel1Select');
-    const selectNivel2 = document.querySelector('#dirNivel2Select');
-    const selectNivel3 = document.querySelector('#dirNivel3Select');
-    
-    const errorAlert = document.querySelector('#direccionModalErrorAlert');
-
-    errorAlert.classList.add('d-none');
-    form.classList.remove('was-validated');
-
-    // Reset dropdowns
-    const activePaises = this.paisesList.filter(p => p.activo);
-    if (activePaises.length === 1) {
-      selectPais.value = activePaises[0].id;
-      this.cargarDireccionDropdownNivel1(activePaises[0].id);
-    } else {
-      selectPais.value = '';
-      selectNivel1.value = '';
-      selectNivel1.disabled = true;
-      selectNivel1.innerHTML = '<option value="">-- Seleccione País primero --</option>';
-    }
-    
-    selectNivel2.value = '';
-    selectNivel2.disabled = true;
-    selectNivel2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
-    selectNivel3.value = '';
-    selectNivel3.disabled = true;
-    selectNivel3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
-
-    if (this.modalMarker) {
-      if (this.modalMap) this.modalMap.removeLayer(this.modalMarker);
-      this.modalMarker = null;
-    }
-    this.tempCoords = null;
-    inputLat.value = '';
-    inputLng.value = '';
-
-    if (direccion) {
-      modalTitle.textContent = 'Editar Dirección';
-      inputId.value = direccion.id;
-      inputDetalle.value = direccion.detalle;
-      inputReferencia.value = direccion.referencia || '';
-      inputCodigoPostal.value = direccion.codigo_postal || '';
-      inputActivo.checked = direccion.activo;
-
-      if (direccion.latitud && direccion.longitud) {
-        inputLat.value = direccion.latitud.toFixed(6);
-        inputLng.value = direccion.longitud.toFixed(6);
-        this.tempCoords = { lat: direccion.latitud, lng: direccion.longitud };
-      }
-
-      if (direccion.territorio) {
-        const terr = direccion.territorio;
-        const paisId = terr.pais_id;
-        selectPais.value = paisId;
-        
-        await this.cargarDireccionDropdownNivel1(paisId);
-        
-        if (terr.parent_id === null) {
-          selectNivel1.value = terr.id;
-        } else {
-          try {
-            const parentTerr = await UbicacionesService.getTerritorioById(terr.parent_id);
-            if (parentTerr.parent_id === null) {
-              selectNivel1.value = parentTerr.id;
-              await this.cargarDireccionDropdownNivel2(paisId, parentTerr.id);
-              selectNivel2.value = terr.id;
-            } else {
-              const grandParentId = parentTerr.parent_id;
-              selectNivel1.value = grandParentId;
-              await this.cargarDireccionDropdownNivel2(paisId, grandParentId);
-              selectNivel2.value = parentTerr.id;
-              await this.cargarDireccionDropdownNivel3(paisId, parentTerr.id);
-              selectNivel3.value = terr.id;
-            }
-          } catch (err) {
-            console.error(err);
-          }
-        }
-      }
-    } else {
-      modalTitle.textContent = 'Nueva Dirección';
-      inputId.value = '';
-      inputDetalle.value = '';
-      inputReferencia.value = '';
-      inputCodigoPostal.value = '';
-      inputActivo.checked = true;
-    }
-
-    this.direccionModalObj.show();
-  }
-
-  // Cascading Dropdowns loading
-  async cargarDireccionDropdownNivel1(paisId) {
-    const s1 = document.querySelector('#dirNivel1Select');
-    const s2 = document.querySelector('#dirNivel2Select');
-    const s3 = document.querySelector('#dirNivel3Select');
-
-    s1.innerHTML = '<option value="">-- Cargando --</option>';
-    s1.disabled = true;
-    s2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
-    s2.disabled = true;
-    s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
-    s3.disabled = true;
-
-    if (!paisId) {
-      s1.innerHTML = '<option value="">-- Seleccione País primero --</option>';
-      return;
-    }
-
-    try {
-      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: null });
-      s1.innerHTML = '<option value="">-- Selecciona Nivel 1 --</option>' + 
-        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
-      s1.disabled = false;
-    } catch (e) {
-      s1.innerHTML = '<option value="">-- Error al cargar --</option>';
-    }
-
-    this.centrarModalMapaSegunPais();
-  }
-
-  async cargarDireccionDropdownNivel2(paisId, parentId) {
-    const s2 = document.querySelector('#dirNivel2Select');
-    const s3 = document.querySelector('#dirNivel3Select');
-
-    s2.innerHTML = '<option value="">-- Cargando --</option>';
-    s2.disabled = true;
-    s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
-    s3.disabled = true;
-
-    if (!parentId) {
-      s2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
-      return;
-    }
-
-    try {
-      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
-      s2.innerHTML = '<option value="">-- Selecciona Nivel 2 --</option>' + 
-        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
-      s2.disabled = false;
-    } catch (e) {
-      s2.innerHTML = '<option value="">-- Error al cargar --</option>';
-    }
-  }
-
-  async cargarDireccionDropdownNivel3(paisId, parentId) {
-    const s3 = document.querySelector('#dirNivel3Select');
-    s3.innerHTML = '<option value="">-- Cargando --</option>';
-    s3.disabled = true;
-
-    if (!parentId) {
-      s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
-      return;
-    }
-
-    try {
-      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
-      s3.innerHTML = '<option value="">-- Selecciona Nivel 3 --</option>' + 
-        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
-      s3.disabled = false;
-    } catch (e) {
-      s3.innerHTML = '<option value="">-- Error al cargar --</option>';
-    }
-  }
-
-  async guardarDireccion(e) {
-    e.preventDefault();
-    const form = document.querySelector('#direccionForm');
-    const errorAlert = document.querySelector('#direccionModalErrorAlert');
-    const errorMessage = document.querySelector('#direccionModalErrorMessage');
-
-    const selectNivel1 = document.querySelector('#dirNivel1Select');
-    const selectNivel2 = document.querySelector('#dirNivel2Select');
-    const selectNivel3 = document.querySelector('#dirNivel3Select');
-
-    if (!form.checkValidity()) {
-      form.classList.add('was-validated');
-      return;
-    }
-
-    const territorioIdVal = selectNivel3.value || selectNivel2.value || selectNivel1.value;
-    if (!territorioIdVal) {
-      errorAlert.classList.remove('d-none');
-      errorMessage.textContent = 'Debe seleccionar al menos un nivel geográfico (Nivel 1, 2 o 3) para la dirección.';
-      return;
-    }
-
-    const id = document.querySelector('#direccionId').value;
-    const latVal = document.querySelector('#direccionLatitud').value;
-    const lngVal = document.querySelector('#direccionLongitud').value;
-
-    const payload = {
-      territorio_id: parseInt(territorioIdVal),
-      detalle: document.querySelector('#direccionDetalle').value,
-      referencia: document.querySelector('#direccionReferencia').value || null,
-      codigo_postal: document.querySelector('#direccionCodigoPostal').value || null,
-      latitud: latVal ? parseFloat(latVal) : null,
-      longitud: lngVal ? parseFloat(lngVal) : null,
-      activo: document.querySelector('#direccionActivo').checked,
-    };
-
-    // Double-submit protection: Disable submit button and show spinner
-    const btnSubmit = form.querySelector('button[type="submit"]');
-    let originalText = '';
-    if (btnSubmit) {
-      originalText = btnSubmit.innerHTML;
-      btnSubmit.disabled = true;
-      btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Guardando...';
-    }
-
-    try {
-      if (id) {
-        await UbicacionesService.updateDireccion(id, payload);
-        UIHelper.mostrarAlerta(this, 'success', 'Dirección actualizada con éxito.');
-      } else {
-        await UbicacionesService.createDireccion(payload);
-        UIHelper.mostrarAlerta(this, 'success', 'Dirección creada con éxito.');
-      }
-
-      this.direccionModalObj.hide();
-      await this.cargarDirecciones();
-    } catch (error) {
-      console.error('Error al guardar dirección:', error);
-      errorAlert.classList.remove('d-none');
-      errorMessage.textContent = error.message || 'Error al guardar el registro.';
-    } finally {
-      if (btnSubmit) {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = originalText;
-      }
-    }
   }
 
   async eliminarDireccion(id) {
