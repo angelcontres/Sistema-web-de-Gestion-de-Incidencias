@@ -82,6 +82,13 @@ export class UbicacionesPaisesComponent extends BaseComponent {
     }
   }
 
+  disconnectedCallback() {
+    const modalEl = document.querySelector('#paisModal');
+    if (modalEl) {
+      modalEl.remove();
+    }
+  }
+
   async cargarPaises() {
     const tblDatos = this.querySelector('#tbl-datos-paises');
     if (!tblDatos) return;

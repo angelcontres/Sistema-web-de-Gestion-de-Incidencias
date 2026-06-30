@@ -77,6 +77,13 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     }
   }
 
+  disconnectedCallback() {
+    const modalEl = document.querySelector('#territorioModal');
+    if (modalEl) {
+      modalEl.remove();
+    }
+  }
+
   async cargarPaises() {
     try {
       const paises = await UbicacionesService.getPaises();
