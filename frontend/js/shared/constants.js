@@ -12,3 +12,26 @@ export const MAP_CONFIG = {
     'EC': { center: [-1.8312, -78.1834], zoom: 6 },
   }
 };
+
+export const COUNTRY_LEVELS = {
+  'EC': {
+    nivel1: 'Provincia',
+    nivel2: 'Cantón',
+    nivel3: 'Parroquia'
+  },
+  'PE': {
+    nivel1: 'Departamento',
+    nivel2: 'Provincia',
+    nivel3: 'Distrito'
+  },
+  'MX': {
+    nivel1: 'Estado',
+    nivel2: 'Municipio',
+    nivel3: 'Colonia'
+  },
+  'DEFAULT': {
+    nivel1: 'Nivel 1',
+    nivel2: 'Nivel 2',
+    nivel3: 'Nivel 3'
+  }
+};

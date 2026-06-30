@@ -11,9 +11,11 @@ export class UbicacionesPaisesComponent extends BaseComponent {
 
   async onInit() {
     // Initialize Bootstrap Modal and move it to document.body to avoid backdrop issues
+    let paisForm = null;
     try {
       const modalEl = this.querySelector('#paisModal');
       if (modalEl) {
+        paisForm = modalEl.querySelector('#paisForm');
         document.body.appendChild(modalEl);
         this.paisModalObj = new bootstrap.Modal(modalEl);
       }
@@ -32,7 +34,6 @@ export class UbicacionesPaisesComponent extends BaseComponent {
       }
     }
 
-    const paisForm = this.querySelector('#paisForm');
     if (paisForm) {
       paisForm.addEventListener('submit', (e) => this.guardarPais(e));
     }

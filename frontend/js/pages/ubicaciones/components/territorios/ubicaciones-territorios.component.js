@@ -2,6 +2,7 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { UIHelper } from '../../../../shared/utils/ui-helper.js';
+import { COUNTRY_LEVELS } from '../../../../shared/constants.js';
 
 export class UbicacionesTerritoriosComponent extends BaseComponent {
   constructor() {
@@ -22,9 +23,11 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
   async onInit() {
     // Initialize Modal and move it to document.body to avoid backdrop issues
+    let territorioForm = null;
     try {
       const modalEl = this.querySelector('#territorioModal');
       if (modalEl) {
+        territorioForm = modalEl.querySelector('#territorioForm');
         document.body.appendChild(modalEl);
         this.territorioModalObj = new bootstrap.Modal(modalEl);
       }
@@ -48,6 +51,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
         this.selectedPaisId = e.target.value;
         this.selectedNivel1Id = null;
         this.selectedNivel2Id = null;
+        this.actualizarEtiquetasColumnas(e.target.value);
         this.cargarTerritoriosColumna1();
       });
     }
@@ -68,7 +72,6 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       if (btnAddNivel3) btnAddNivel3.addEventListener('click', () => this.abrirModalTerritorio(3));
     }
 
-    const territorioForm = this.querySelector('#territorioForm');
     if (territorioForm) {
       territorioForm.addEventListener('submit', (e) => this.guardarTerritorio(e));
     }
@@ -100,10 +103,9 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     if (activePaises.length === 1) {
       select.value = activePaises[0].id;
       this.selectedPaisId = activePaises[0].id;
-      this.selectedNivel1Id = null;
-      this.selectedNivel2Id = null;
+      this.actualizarEtiquetasColumnas(this.selectedPaisId);
       this.cargarTerritoriosColumna1();
-    } else {
+    } else if (currentVal) {
       select.value = currentVal;
     }
   }
@@ -117,9 +119,13 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const btnAdd3 = this.querySelector('#btnAddNivel3');
     const isAdmin = AuthService.isAdmin();
 
+    const pais = this.paisesList.find(p => p.id == this.selectedPaisId);
+    const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
     list1.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
-    list2.innerHTML = '<div class="text-center py-4 text-muted small">Selecciona un elemento del Nivel 1</div>';
-    list3.innerHTML = '<div class="text-center py-4 text-muted small">Selecciona un elemento del Nivel 2</div>';
+    list2.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel1}</div>`;
+    list3.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel2}</div>`;
 
     if (btnAdd1 && isAdmin) btnAdd1.classList.add('d-none');
     if (btnAdd2 && isAdmin) btnAdd2.classList.add('d-none');
@@ -204,8 +210,12 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const btnAdd3 = this.querySelector('#btnAddNivel3');
     const isAdmin = AuthService.isAdmin();
 
+    const pais = this.paisesList.find(p => p.id == this.selectedPaisId);
+    const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
     list2.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
-    list3.innerHTML = '<div class="text-center py-4 text-muted small">Selecciona un elemento del Nivel 2</div>';
+    list3.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel2}</div>`;
 
     if (btnAdd2 && isAdmin) btnAdd2.classList.add('d-none');
     if (btnAdd3 && isAdmin) btnAdd3.classList.add('d-none');
@@ -356,39 +366,47 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
     inputPaisId.value = this.selectedPaisId;
 
+    const pais = this.paisesList.find(p => p.id == this.selectedPaisId);
+    const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
+    let nivelName = '';
     let parentName = '';
-    const paisNombre = this.paisesList.find(p => p.id == this.selectedPaisId)?.nombre || 'País';
+    const paisNombre = pais?.nombre || 'País';
 
     if (columnaNivel === 1) {
+      nivelName = config.nivel1;
       inputParentId.value = '';
       parentName = `Raíz de ${paisNombre}`;
-      inputTipo.placeholder = 'Ej: Departamento, Estado';
+      inputTipo.placeholder = `Ej: ${config.nivel1}`;
     } else if (columnaNivel === 2) {
+      nivelName = config.nivel2;
       inputParentId.value = this.selectedNivel1Id;
       const parentObj = this.territoriosNivel1.find(t => t.id == this.selectedNivel1Id);
-      parentName = `${paisNombre} > ${parentObj?.nombre || 'Nivel 1'}`;
-      inputTipo.placeholder = 'Ej: Provincia, Municipio';
+      parentName = `${paisNombre} > ${parentObj?.nombre || config.nivel1}`;
+      inputTipo.placeholder = `Ej: ${config.nivel2}`;
     } else if (columnaNivel === 3) {
+      nivelName = config.nivel3;
       inputParentId.value = this.selectedNivel2Id;
       const parentObj1 = this.territoriosNivel1.find(t => t.id == this.selectedNivel1Id);
       const parentObj2 = this.territoriosNivel2.find(t => t.id == this.selectedNivel2Id);
-      parentName = `${paisNombre} > ${parentObj1?.nombre || 'Nivel 1'} > ${parentObj2?.nombre || 'Nivel 2'}`;
-      inputTipo.placeholder = 'Ej: Distrito, Alcaldía, Localidad';
+      parentName = `${paisNombre} > ${parentObj1?.nombre || config.nivel1} > ${parentObj2?.nombre || config.nivel2}`;
+      inputTipo.placeholder = `Ej: ${config.nivel3}`;
     }
 
     contextLabel.textContent = parentName;
 
     if (territorio) {
-      modalTitle.textContent = 'Editar Territorio';
+      modalTitle.textContent = `Editar ${nivelName}`;
       inputId.value = territorio.id;
       inputNombre.value = territorio.nombre;
       inputTipo.value = territorio.tipo;
       inputActivo.checked = territorio.activo;
     } else {
-      modalTitle.textContent = 'Nuevo Territorio';
+      modalTitle.textContent = `Nuevo ${nivelName}`;
       inputId.value = '';
       inputNombre.value = '';
-      inputTipo.value = '';
+      inputTipo.value = nivelName; // Prefill default level type
       inputActivo.checked = true;
     }
 
@@ -473,6 +491,48 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     } catch (error) {
       console.error('Error al eliminar territorio:', error);
       UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
+    }
+  }
+
+  actualizarEtiquetasColumnas(paisId) {
+    const pais = this.paisesList.find(p => p.id == paisId);
+    const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
+    const lblN1 = this.querySelector('#lblNivel1');
+    const lblN2 = this.querySelector('#lblNivel2');
+    const lblN3 = this.querySelector('#lblNivel3');
+
+    if (lblN1) lblN1.textContent = config.nivel1;
+    if (lblN2) lblN2.textContent = config.nivel2;
+    if (lblN3) lblN3.textContent = config.nivel3;
+
+    const btnAddN1 = this.querySelector('#btnAddNivel1');
+    const btnAddN2 = this.querySelector('#btnAddNivel2');
+    const btnAddN3 = this.querySelector('#btnAddNivel3');
+
+    if (btnAddN1) {
+      btnAddN1.title = `Agregar ${config.nivel1}`;
+      btnAddN1.innerHTML = `<i class="bi bi-plus-lg"></i> Agregar`;
+    }
+    if (btnAddN2) {
+      btnAddN2.title = `Agregar ${config.nivel2}`;
+      btnAddN2.innerHTML = `<i class="bi bi-plus-lg"></i> Agregar`;
+    }
+    if (btnAddN3) {
+      btnAddN3.title = `Agregar ${config.nivel3}`;
+      btnAddN3.innerHTML = `<i class="bi bi-plus-lg"></i> Agregar`;
+    }
+
+    // Update empty states
+    const list2 = this.querySelector('#listNivel2');
+    const list3 = this.querySelector('#listNivel3');
+
+    if (list2 && (!this.selectedNivel1Id)) {
+      list2.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel1}</div>`;
+    }
+    if (list3 && (!this.selectedNivel2Id)) {
+      list3.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel2}</div>`;
     }
   }
 }

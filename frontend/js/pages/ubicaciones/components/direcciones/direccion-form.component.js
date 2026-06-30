@@ -2,7 +2,7 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { UIHelper } from '../../../../shared/utils/ui-helper.js';
-import { MAP_CONFIG } from '../../../../shared/constants.js';
+import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../shared/constants.js';
 
 export class DireccionFormComponent extends BaseComponent {
   constructor() {
@@ -16,22 +16,26 @@ export class DireccionFormComponent extends BaseComponent {
 
   async onInit() {
     const modalEl = this.querySelector('#direccionModal');
-    if (modalEl) {
-      document.body.appendChild(modalEl);
-      this.direccionModalObj = new bootstrap.Modal(modalEl);
-      modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
-    }
+    if (!modalEl) return;
+
+    const direccionForm = modalEl.querySelector('#direccionForm');
+    const dirPaisSelect = modalEl.querySelector('#dirPaisSelect');
+    const dirNivel1Select = modalEl.querySelector('#dirNivel1Select');
+    const dirNivel2Select = modalEl.querySelector('#dirNivel2Select');
+
+    document.body.appendChild(modalEl);
+    this.direccionModalObj = new bootstrap.Modal(modalEl);
+    modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
 
     // Setup Event Listeners
-    const direccionForm = document.querySelector('#direccionForm');
     if (direccionForm) {
       direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
     }
 
     // Cascading dropdowns (Modal Form)
-    const dirPaisSelect = document.querySelector('#dirPaisSelect');
     if (dirPaisSelect) {
       dirPaisSelect.addEventListener('change', (e) => {
+        this.actualizarEtiquetasNiveles(e.target.value);
         this.cargarDireccionDropdownNivel1(e.target.value);
         
         // Clear coordinates and marker when country changes to prevent geo-incoherence
@@ -47,7 +51,6 @@ export class DireccionFormComponent extends BaseComponent {
       });
     }
 
-    const dirNivel1Select = document.querySelector('#dirNivel1Select');
     if (dirNivel1Select) {
       dirNivel1Select.addEventListener('change', (e) => {
         const parentId = e.target.value;
@@ -56,7 +59,6 @@ export class DireccionFormComponent extends BaseComponent {
       });
     }
 
-    const dirNivel2Select = document.querySelector('#dirNivel2Select');
     if (dirNivel2Select) {
       dirNivel2Select.addEventListener('change', (e) => {
         const parentId = e.target.value;
@@ -149,6 +151,8 @@ export class DireccionFormComponent extends BaseComponent {
       document.querySelector('#dirPaisSelect').value = paisId;
       document.querySelector('#dirPaisSelect').disabled = false; // Admin editing
 
+      this.actualizarEtiquetasNiveles(paisId);
+
       // Await cascading load
       await this.cargarDireccionDropdownNivel1(paisId, direccion.territorio);
     } else {
@@ -159,9 +163,11 @@ export class DireccionFormComponent extends BaseComponent {
       if (user && user.pais_id) {
         document.querySelector('#dirPaisSelect').value = user.pais_id;
         document.querySelector('#dirPaisSelect').disabled = true;
+        this.actualizarEtiquetasNiveles(user.pais_id);
         await this.cargarDireccionDropdownNivel1(user.pais_id);
       } else {
         document.querySelector('#dirPaisSelect').disabled = false;
+        this.actualizarEtiquetasNiveles('');
       }
     }
 
@@ -187,18 +193,18 @@ export class DireccionFormComponent extends BaseComponent {
 
     this.modalMap.on('click', (e) => {
       const { lat, lng } = e.latlng;
-      this.establecerMarcadorModal(lat, lng);
+      this.establecerMarcadorModal(lat, lng, true);
     });
 
     if (this.tempCoords) {
-      this.establecerMarcadorModal(this.tempCoords.lat, this.tempCoords.lng);
+      this.establecerMarcadorModal(this.tempCoords.lat, this.tempCoords.lng, false);
       this.modalMap.setView([this.tempCoords.lat, this.tempCoords.lng], 14);
     } else {
       this.centrarModalMapaSegunPais();
     }
   }
 
-  establecerMarcadorModal(lat, lng) {
+  establecerMarcadorModal(lat, lng, isManualClick = false) {
     if (!this.modalMap) return;
 
     const latVal = parseFloat(lat).toFixed(6);
@@ -214,8 +220,12 @@ export class DireccionFormComponent extends BaseComponent {
       this.modalMarker = L.marker([lat, lng], { draggable: true }).addTo(this.modalMap);
       this.modalMarker.on('dragend', (e) => {
         const position = e.target.getLatLng();
-        this.establecerMarcadorModal(position.lat, position.lng);
+        this.establecerMarcadorModal(position.lat, position.lng, true);
       });
+    }
+
+    if (isManualClick) {
+      this.autofillUbicacionDesdeCoords(parseFloat(latVal), parseFloat(lngVal));
     }
   }
 
@@ -233,15 +243,19 @@ export class DireccionFormComponent extends BaseComponent {
   }
 
   async cargarDireccionDropdownNivel1(paisId, selectedTerritorio = null) {
+    const pais = this.paisesList.find(p => p.id == paisId);
+    const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
     const s1 = document.querySelector('#dirNivel1Select');
     const s2 = document.querySelector('#dirNivel2Select');
     const s3 = document.querySelector('#dirNivel3Select');
 
     s1.innerHTML = '<option value="">-- Cargando --</option>';
     s1.disabled = true;
-    s2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
+    s2.innerHTML = `<option value="">-- Seleccione ${config.nivel1} primero --</option>`;
     s2.disabled = true;
-    s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
+    s3.innerHTML = `<option value="">-- Seleccione ${config.nivel2} primero --</option>`;
     s3.disabled = true;
 
     if (!paisId) {
@@ -251,7 +265,7 @@ export class DireccionFormComponent extends BaseComponent {
 
     try {
       const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: null });
-      s1.innerHTML = '<option value="">-- Selecciona Nivel 1 --</option>' + 
+      s1.innerHTML = `<option value="">-- Selecciona ${config.nivel1} --</option>` + 
         list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
       s1.disabled = false;
 
@@ -283,22 +297,26 @@ export class DireccionFormComponent extends BaseComponent {
   }
 
   async cargarDireccionDropdownNivel2(paisId, parentId, selectVal = null, selectValNivel3 = null) {
+    const pais = this.paisesList.find(p => p.id == paisId);
+    const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
     const s2 = document.querySelector('#dirNivel2Select');
     const s3 = document.querySelector('#dirNivel3Select');
 
     s2.innerHTML = '<option value="">-- Cargando --</option>';
     s2.disabled = true;
-    s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
+    s3.innerHTML = `<option value="">-- Seleccione ${config.nivel2} primero --</option>`;
     s3.disabled = true;
 
     if (!parentId) {
-      s2.innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
+      s2.innerHTML = `<option value="">-- Seleccione ${config.nivel1} primero --</option>`;
       return;
     }
 
     try {
       const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
-      s2.innerHTML = '<option value="">-- Selecciona Nivel 2 --</option>' + 
+      s2.innerHTML = `<option value="">-- Selecciona ${config.nivel2} --</option>` + 
         list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
       s2.disabled = false;
 
@@ -314,18 +332,22 @@ export class DireccionFormComponent extends BaseComponent {
   }
 
   async cargarDireccionDropdownNivel3(paisId, parentId, selectVal = null) {
+    const pais = this.paisesList.find(p => p.id == paisId);
+    const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
     const s3 = document.querySelector('#dirNivel3Select');
     s3.innerHTML = '<option value="">-- Cargando --</option>';
     s3.disabled = true;
 
     if (!parentId) {
-      s3.innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
+      s3.innerHTML = `<option value="">-- Seleccione ${config.nivel2} primero --</option>`;
       return;
     }
 
     try {
       const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
-      s3.innerHTML = '<option value="">-- Selecciona Nivel 3 --</option>' + 
+      s3.innerHTML = `<option value="">-- Selecciona ${config.nivel3} --</option>` + 
         list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
       s3.disabled = false;
 
@@ -355,7 +377,7 @@ export class DireccionFormComponent extends BaseComponent {
     const territorioIdVal = selectNivel3.value || selectNivel2.value || selectNivel1.value;
     if (!territorioIdVal) {
       errorAlert.classList.remove('d-none');
-      errorMessage.textContent = 'Debe seleccionar al menos un nivel geográfico (Nivel 1, 2 o 3) para la dirección.';
+      errorMessage.textContent = 'Debe seleccionar al menos un nivel geográfico para la dirección.';
       return;
     }
 
@@ -406,6 +428,190 @@ export class DireccionFormComponent extends BaseComponent {
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = originalText;
       }
+    }
+  }
+
+  async autofillUbicacionDesdeCoords(lat, lng) {
+    const statusContainer = document.querySelector('#autofillStatus');
+    const statusText = document.querySelector('#autofillStatusText');
+    
+    if (statusContainer && statusText) {
+      statusContainer.classList.remove('d-none');
+      statusText.textContent = 'Autorellenando ubicación...';
+    }
+
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+        headers: {
+          'Accept-Language': 'es'
+        }
+      });
+      if (!response.ok) throw new Error('Error en geocodificación');
+
+      const data = await response.json();
+      const address = data.address || {};
+
+      // 1. Detalle de dirección (Calle + número)
+      const street = address.road || address.pedestrian || address.suburb || address.neighbourhood || '';
+      const houseNumber = address.house_number || '';
+      const detalleText = [street, houseNumber].filter(Boolean).join(' ') || data.display_name || '';
+      
+      const inputDetalle = document.querySelector('#direccionDetalle');
+      if (inputDetalle && detalleText) {
+        inputDetalle.value = detalleText;
+      }
+
+      // 2. Código Postal
+      const inputCP = document.querySelector('#direccionCodigoPostal');
+      if (inputCP) {
+        inputCP.value = address.postcode || '';
+      }
+
+      // 3. País
+      const countryCode = (address.country_code || '').toUpperCase();
+      if (countryCode && this.paisesList.length > 0) {
+        const matchedPais = this.paisesList.find(p => p.codigo_iso.toUpperCase() === countryCode);
+        if (matchedPais) {
+          const selectPais = document.querySelector('#dirPaisSelect');
+          if (selectPais && !selectPais.disabled) {
+            selectPais.value = matchedPais.id;
+          }
+
+          const currentPaisId = selectPais ? selectPais.value : null;
+          if (currentPaisId) {
+            const pais = this.paisesList.find(p => p.id == currentPaisId);
+            const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+            const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
+            if (statusText) statusText.textContent = `Buscando ${config.nivel1}...`;
+            
+            // Cargar Nivel 1
+            await this.cargarDireccionDropdownNivel1(currentPaisId);
+            
+            const s1 = document.querySelector('#dirNivel1Select');
+            const possibleNivel1Names = [address.state, address.region, address.county, address.state_district].filter(Boolean);
+            let matchedN1Id = null;
+
+            if (s1 && !s1.disabled && possibleNivel1Names.length > 0) {
+              const options = Array.from(s1.options);
+              for (const name of possibleNivel1Names) {
+                const cleanName = this.normalizeText(name);
+                const foundOpt = options.find(opt => {
+                  const optText = this.normalizeText(opt.text);
+                  return optText.includes(cleanName) || cleanName.includes(optText);
+                });
+                if (foundOpt && foundOpt.value) {
+                  s1.value = foundOpt.value;
+                  matchedN1Id = foundOpt.value;
+                  break;
+                }
+              }
+            }
+
+            // Cargar Nivel 2
+            if (matchedN1Id) {
+              if (statusText) statusText.textContent = `Buscando ${config.nivel2}...`;
+              await this.cargarDireccionDropdownNivel2(currentPaisId, matchedN1Id);
+              
+              const s2 = document.querySelector('#dirNivel2Select');
+              const possibleNivel2Names = [address.county, address.city, address.town, address.municipality, address.city_district].filter(Boolean);
+              let matchedN2Id = null;
+
+              if (s2 && !s2.disabled && possibleNivel2Names.length > 0) {
+                const options = Array.from(s2.options);
+                for (const name of possibleNivel2Names) {
+                  const cleanName = this.normalizeText(name);
+                  const foundOpt = options.find(opt => {
+                    const optText = this.normalizeText(opt.text);
+                    return optText.includes(cleanName) || cleanName.includes(optText);
+                  });
+                  if (foundOpt && foundOpt.value) {
+                    s2.value = foundOpt.value;
+                    matchedN2Id = foundOpt.value;
+                    break;
+                  }
+                }
+              }
+
+              // Cargar Nivel 3
+              if (matchedN2Id) {
+                if (statusText) statusText.textContent = `Buscando ${config.nivel3}...`;
+                await this.cargarDireccionDropdownNivel3(currentPaisId, matchedN2Id);
+                
+                const s3 = document.querySelector('#dirNivel3Select');
+                const possibleNivel3Names = [address.suburb, address.neighbourhood, address.village, address.hamlet, address.city_district].filter(Boolean);
+
+                if (s3 && !s3.disabled && possibleNivel3Names.length > 0) {
+                  const options = Array.from(s3.options);
+                  for (const name of possibleNivel3Names) {
+                    const cleanName = this.normalizeText(name);
+                    const foundOpt = options.find(opt => {
+                      const optText = this.normalizeText(opt.text);
+                      return optText.includes(cleanName) || cleanName.includes(optText);
+                    });
+                    if (foundOpt && foundOpt.value) {
+                      s3.value = foundOpt.value;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Error al autorellenar la ubicación:', error);
+    } finally {
+      if (statusContainer) {
+        statusContainer.classList.add('d-none');
+      }
+    }
+  }
+
+  normalizeText(str) {
+    if (!str) return '';
+    return str.toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s]/g, '')
+      .trim();
+  }
+
+  actualizarEtiquetasNiveles(paisId) {
+    const pais = this.paisesList.find(p => p.id == paisId);
+    const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
+    const lblN1 = document.querySelector('#lblDirNivel1');
+    const lblN2 = document.querySelector('#lblDirNivel2');
+    const lblN3 = document.querySelector('#lblDirNivel3');
+
+    if (lblN1) lblN1.textContent = config.nivel1;
+    if (lblN2) lblN2.textContent = config.nivel2;
+    if (lblN3) lblN3.textContent = config.nivel3;
+
+    // Update select placeholders if they are not loaded
+    const s1 = document.querySelector('#dirNivel1Select');
+    const s2 = document.querySelector('#dirNivel2Select');
+    const s3 = document.querySelector('#dirNivel3Select');
+
+    if (s1 && s1.disabled) {
+      s1.innerHTML = `<option value="">-- Seleccione País primero --</option>`;
+    } else if (s1) {
+      s1.options[0].text = `-- Selecciona ${config.nivel1} --`;
+    }
+
+    if (s2 && s2.disabled) {
+      s2.innerHTML = `<option value="">-- Seleccione ${config.nivel1} primero --</option>`;
+    } else if (s2) {
+      s2.options[0].text = `-- Selecciona ${config.nivel2} --`;
+    }
+
+    if (s3 && s3.disabled) {
+      s3.innerHTML = `<option value="">-- Seleccione ${config.nivel2} primero --</option>`;
+    } else if (s3) {
+      s3.options[0].text = `-- Selecciona ${config.nivel3} --`;
     }
   }
 }
