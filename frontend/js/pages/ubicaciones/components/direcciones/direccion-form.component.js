@@ -12,6 +12,7 @@ export class DireccionFormComponent extends BaseComponent {
     this.tempCoords = null;
     this.direccionModalObj = null;
     this.paisesList = [];
+    this.pendingTerritory = null;
   }
 
   async onInit() {
@@ -30,6 +31,34 @@ export class DireccionFormComponent extends BaseComponent {
     // Setup Event Listeners
     if (direccionForm) {
       direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
+    }
+
+    const resolveRadios = modalEl.querySelectorAll('input[name="territoryResolveOption"]');
+    resolveRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (!this.pendingTerritory) return;
+        const selectN3 = document.querySelector('#dirNivel3Select');
+        if (!selectN3) return;
+
+        if (e.target.value === 'fallback') {
+          selectN3.value = this.pendingTerritory.fallbackId || '';
+          selectN3.disabled = true;
+        } else if (e.target.value === 'existing') {
+          selectN3.disabled = false;
+          selectN3.focus();
+        } else if (e.target.value === 'register') {
+          selectN3.value = '';
+          selectN3.disabled = true;
+        }
+        
+        this.actualizarFeedbackResolver();
+      });
+    });
+
+    if (dirNivel3Select) {
+      dirNivel3Select.addEventListener('change', () => {
+        this.actualizarFeedbackResolver();
+      });
     }
 
     // Cascading dropdowns (Modal Form)
@@ -120,6 +149,16 @@ export class DireccionFormComponent extends BaseComponent {
     if (gpsInfo) {
       gpsInfo.classList.add('d-none');
     }
+
+    const missingAlert = document.querySelector('#missingTerritoryAlert');
+    if (missingAlert) {
+      missingAlert.classList.add('d-none');
+    }
+    const resolverCard = document.querySelector('#missingTerritoryResolver');
+    if (resolverCard) {
+      resolverCard.classList.add('d-none');
+    }
+    this.pendingTerritory = null;
 
     document.querySelector('#direccionId').value = '';
     document.querySelector('#direccionLatitud').value = '';
@@ -422,15 +461,8 @@ export class DireccionFormComponent extends BaseComponent {
     const latVal = document.querySelector('#direccionLatitud').value;
     const lngVal = document.querySelector('#direccionLongitud').value;
 
-    const payload = {
-      territorio_id: parseInt(territorioIdVal),
-      detalle: document.querySelector('#direccionDetalle').value,
-      referencia: document.querySelector('#direccionReferencia').value || null,
-      codigo_postal: document.querySelector('#direccionCodigoPostal').value || null,
-      latitud: latVal ? parseFloat(latVal) : null,
-      longitud: lngVal ? parseFloat(lngVal) : null,
-      activo: document.querySelector('#direccionActivo').checked,
-    };
+    const resolveRadioRegister = document.querySelector('#resolveOptRegister');
+    let finalTerritorioId = selectNivel3.value || selectNivel2.value || selectNivel1.value;
 
     // Double-submit protection
     const btnSubmit = form.querySelector('button[type="submit"]');
@@ -442,6 +474,53 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     try {
+      // Si se eligió registrar una nueva parroquia automáticamente al guardar la dirección
+      if (resolveRadioRegister && resolveRadioRegister.checked && this.pendingTerritory) {
+        if (btnSubmit) {
+          btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando Parroquia...';
+        }
+
+        const payloadTerritorio = {
+          pais_id: this.pendingTerritory.pais_id,
+          parent_id: this.pendingTerritory.parent_id,
+          nombre: this.pendingTerritory.nombre,
+          tipo: this.pendingTerritory.tipo,
+          activo: true
+        };
+
+        const resTerritorio = await UbicacionesService.createTerritorio(payloadTerritorio);
+        const newTerritory = resTerritorio.data || resTerritorio;
+        
+        finalTerritorioId = newTerritory.id;
+
+        // Despachar evento para notificar al explorador de territorios
+        this.dispatchEvent(new CustomEvent('territorios-updated', {
+          bubbles: true,
+          composed: true
+        }));
+      }
+
+      if (!finalTerritorioId) {
+        // Si no hay territorio ID y se eligió seleccionar otra existente, mostrar error
+        errorAlert.classList.remove('d-none');
+        errorMessage.textContent = 'Debe seleccionar la parroquia correspondiente de la lista.';
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = originalText;
+        }
+        return;
+      }
+
+      const payload = {
+        territorio_id: parseInt(finalTerritorioId),
+        detalle: document.querySelector('#direccionDetalle').value,
+        referencia: document.querySelector('#direccionReferencia').value || null,
+        codigo_postal: document.querySelector('#direccionCodigoPostal').value || null,
+        latitud: latVal ? parseFloat(latVal) : null,
+        longitud: lngVal ? parseFloat(lngVal) : null,
+        activo: document.querySelector('#direccionActivo').checked,
+      };
+
       if (id) {
         await UbicacionesService.updateDireccion(id, payload);
       } else {
@@ -478,15 +557,9 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
-        headers: {
-          'Accept-Language': 'es'
-        }
-      });
-      if (!response.ok) throw new Error('Error en geocodificación');
-
-      const data = await response.json();
+      const data = await UbicacionesService.reverseGeocode(lat, lng);
       const address = data.address || {};
+      let missingTerritoryData = null;
 
       // Mostrar la ubicación completa detectada por GPS
       const gpsInfo = document.querySelector('#gpsLocationInfo');
@@ -504,6 +577,15 @@ export class DireccionFormComponent extends BaseComponent {
         gpsInfo.classList.remove('d-none');
       }
 
+      // Reset de alerta de territorio faltante
+      const missingAlert = document.querySelector('#missingTerritoryAlert');
+      const missingMsg = document.querySelector('#missingTerritoryMessage');
+      const btnRegisterMissing = document.querySelector('#btnRegistrarTerritorioFaltante');
+      
+      if (missingAlert) missingAlert.classList.add('d-none');
+      if (btnRegisterMissing) btnRegisterMissing.classList.add('d-none');
+      this.pendingTerritory = null;
+
       // 1. Detalle de dirección (Calle + número)
       const street = address.road || address.pedestrian || address.suburb || address.neighbourhood || '';
       const houseNumber = address.house_number || '';
@@ -520,113 +602,308 @@ export class DireccionFormComponent extends BaseComponent {
         inputCP.value = address.postcode || '';
       }
 
-      // 3. País
+      // 3. País y Niveles Geográficos (Búsqueda e integración)
       const countryCode = (address.country_code || '').toUpperCase();
-      if (countryCode && this.paisesList.length > 0) {
-        const matchedPais = this.paisesList.find(p => p.codigo_iso.toUpperCase() === countryCode);
+      let currentPaisId = null;
+
+      const selectPais = document.querySelector('#dirPaisSelect');
+      if (selectPais && selectPais.disabled) {
+        // Si el selector de país está deshabilitado (ej. es operador), forzamos su país asignado
+        currentPaisId = selectPais.value;
+      } else if (countryCode && this.paisesList.length > 0) {
+        const matchedPais = this.paisesList.find(p => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode);
         if (matchedPais) {
-          const selectPais = document.querySelector('#dirPaisSelect');
-          if (selectPais && !selectPais.disabled) {
-            selectPais.value = matchedPais.id;
+          currentPaisId = matchedPais.id;
+          if (selectPais) {
+            selectPais.value = currentPaisId;
           }
+          this.actualizarEtiquetasNiveles(currentPaisId);
+        }
+      }
 
-          const currentPaisId = selectPais ? selectPais.value : null;
-          if (currentPaisId) {
-            const pais = this.paisesList.find(p => p.id == currentPaisId);
-            const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
-            const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+      if (currentPaisId) {
+        const paisObj = this.paisesList.find(p => p.id == currentPaisId);
+        const iso = paisObj ? (paisObj.codigo_iso || '').toUpperCase() : '';
+        const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
-            if (statusText) statusText.textContent = `Buscando ${config.nivel1}...`;
-            
-            // Cargar Nivel 1
-            await this.cargarDireccionDropdownNivel1(currentPaisId);
-            
-            const s1 = document.querySelector('#dirNivel1Select');
-            const possibleNivel1Names = [address.state, address.region, address.county, address.state_district].filter(Boolean);
-            let matchedN1Id = null;
+        let matchedN1Id = null;
+        let matchedN2Id = null;
+        let matchedN3Id = null;
+        missingTerritoryData = null;
 
-            if (s1 && !s1.disabled && possibleNivel1Names.length > 0) {
-              const options = Array.from(s1.options);
-              for (const name of possibleNivel1Names) {
-                const cleanName = this.normalizeText(name);
-                const foundOpt = options.find(opt => {
-                  const optText = this.normalizeText(opt.text);
-                  return optText.includes(cleanName) || cleanName.includes(optText);
-                });
-                if (foundOpt && foundOpt.value) {
-                  s1.value = foundOpt.value;
-                  matchedN1Id = foundOpt.value;
-                  break;
-                }
+        // A. Cargar y Buscar Nivel 1
+        if (statusText) statusText.textContent = `Buscando ${config.nivel1}...`;
+        await this.cargarDireccionDropdownNivel1(currentPaisId);
+        
+        const s1 = document.querySelector('#dirNivel1Select');
+        const possibleNivel1Names = [address.state, address.region, address.province, address.state_district].filter(Boolean);
+        const n1NameFoundInGps = possibleNivel1Names[0] || null;
+
+        if (s1 && !s1.disabled && possibleNivel1Names.length > 0) {
+          const options = Array.from(s1.options);
+          for (const name of possibleNivel1Names) {
+            const cleanName = this.normalizeText(name);
+            const foundOpt = options.find(opt => {
+              const optText = this.normalizeText(opt.text);
+              return optText.includes(cleanName) || cleanName.includes(optText);
+            });
+            if (foundOpt && foundOpt.value) {
+              s1.value = foundOpt.value;
+              matchedN1Id = foundOpt.value;
+              break;
+            }
+          }
+        }
+
+        if (n1NameFoundInGps && !matchedN1Id) {
+          // Nivel 1 faltante en BD
+          missingTerritoryData = {
+            nivel: 1,
+            nombre: this.capitalizeWords(n1NameFoundInGps),
+            tipo: config.nivel1,
+            parent_id: null,
+            pais_id: parseInt(currentPaisId)
+          };
+        }
+
+        // B. Cargar y Buscar Nivel 2
+        if (matchedN1Id) {
+          if (statusText) statusText.textContent = `Buscando ${config.nivel2}...`;
+          await this.cargarDireccionDropdownNivel2(currentPaisId, matchedN1Id);
+          
+          const s2 = document.querySelector('#dirNivel2Select');
+          const possibleNivel2Names = [address.county, address.city, address.town, address.municipality, address.city_district].filter(Boolean);
+          const n2NameFoundInGps = possibleNivel2Names[0] || null;
+
+          if (s2 && !s2.disabled && possibleNivel2Names.length > 0) {
+            const options = Array.from(s2.options);
+            for (const name of possibleNivel2Names) {
+              const cleanName = this.normalizeText(name);
+              const foundOpt = options.find(opt => {
+                const optText = this.normalizeText(opt.text);
+                return optText.includes(cleanName) || cleanName.includes(optText);
+              });
+              if (foundOpt && foundOpt.value) {
+                s2.value = foundOpt.value;
+                matchedN2Id = foundOpt.value;
+                break;
               }
             }
+          }
 
-            // Cargar Nivel 2
-            if (matchedN1Id) {
-              if (statusText) statusText.textContent = `Buscando ${config.nivel2}...`;
-              await this.cargarDireccionDropdownNivel2(currentPaisId, matchedN1Id);
-              
-              const s2 = document.querySelector('#dirNivel2Select');
-              const possibleNivel2Names = [address.county, address.city, address.town, address.municipality, address.city_district].filter(Boolean);
-              let matchedN2Id = null;
+          if (n2NameFoundInGps && !matchedN2Id) {
+            // Nivel 2 faltante en BD
+            missingTerritoryData = {
+              nivel: 2,
+              nombre: this.capitalizeWords(n2NameFoundInGps),
+              tipo: config.nivel2,
+              parent_id: parseInt(matchedN1Id),
+              pais_id: parseInt(currentPaisId)
+            };
+          }
+        }
 
-              if (s2 && !s2.disabled && possibleNivel2Names.length > 0) {
-                const options = Array.from(s2.options);
-                for (const name of possibleNivel2Names) {
-                  const cleanName = this.normalizeText(name);
-                  const foundOpt = options.find(opt => {
-                    const optText = this.normalizeText(opt.text);
-                    return optText.includes(cleanName) || cleanName.includes(optText);
-                  });
-                  if (foundOpt && foundOpt.value) {
-                    s2.value = foundOpt.value;
-                    matchedN2Id = foundOpt.value;
-                    break;
-                  }
-                }
+        // C. Cargar y Buscar Nivel 3
+        if (matchedN2Id) {
+          if (statusText) statusText.textContent = `Buscando ${config.nivel3}...`;
+          await this.cargarDireccionDropdownNivel3(currentPaisId, matchedN2Id);
+          
+          const s3 = document.querySelector('#dirNivel3Select');
+          const possibleNivel3Names = [
+            address.parish,
+            address.suburb,
+            address.neighbourhood,
+            address.quarter,
+            address.village,
+            address.town,
+            address.city_district,
+            address.hamlet
+          ].filter(Boolean);
+          const n3NameFoundInGps = possibleNivel3Names[0] || null;
+
+          if (s3 && !s3.disabled && possibleNivel3Names.length > 0) {
+            const options = Array.from(s3.options);
+            for (const name of possibleNivel3Names) {
+              const cleanName = this.normalizeText(name);
+              const foundOpt = options.find(opt => {
+                const optText = this.normalizeText(opt.text);
+                return optText.includes(cleanName) || cleanName.includes(optText);
+              });
+              if (foundOpt && foundOpt.value) {
+                s3.value = foundOpt.value;
+                matchedN3Id = foundOpt.value;
+                break;
               }
+            }
+          }
 
-              // Cargar Nivel 3
-              if (matchedN2Id) {
-                if (statusText) statusText.textContent = `Buscando ${config.nivel3}...`;
-                await this.cargarDireccionDropdownNivel3(currentPaisId, matchedN2Id);
-                
-                const s3 = document.querySelector('#dirNivel3Select');
-                const possibleNivel3Names = [
-                  address.parish,
-                  address.suburb,
-                  address.neighbourhood,
-                  address.quarter,
-                  address.village,
-                  address.town,
-                  address.city_district,
-                  address.hamlet
-                ].filter(Boolean);
+          if (n3NameFoundInGps && !matchedN3Id) {
+            // Nivel 3 faltante en BD
+            missingTerritoryData = {
+              nivel: 3,
+              nombre: this.capitalizeWords(n3NameFoundInGps),
+              tipo: config.nivel3,
+              parent_id: parseInt(matchedN2Id),
+              pais_id: parseInt(currentPaisId)
+            };
 
-                if (s3 && !s3.disabled && possibleNivel3Names.length > 0) {
-                  const options = Array.from(s3.options);
-                  for (const name of possibleNivel3Names) {
-                    const cleanName = this.normalizeText(name);
-                    const foundOpt = options.find(opt => {
-                      const optText = this.normalizeText(opt.text);
-                      return optText.includes(cleanName) || cleanName.includes(optText);
-                    });
-                    if (foundOpt && foundOpt.value) {
-                      s3.value = foundOpt.value;
-                      break;
-                    }
-                  }
-                }
+            // Intentar buscar una parroquia cabecera (que tenga nombre similar al Cantón)
+            const cantonSelect = document.querySelector('#dirNivel2Select');
+            const cantonName = cantonSelect && cantonSelect.selectedIndex >= 0 ? cantonSelect.options[cantonSelect.selectedIndex].text : '';
+            const cleanCantonName = this.normalizeText(cantonName);
+            
+            if (s3 && cleanCantonName) {
+              const options = Array.from(s3.options);
+              const cabeceraOpt = options.find(opt => {
+                const optText = this.normalizeText(opt.text);
+                return optText.includes(cleanCantonName) || cleanCantonName.includes(optText);
+              });
+              
+              if (cabeceraOpt && cabeceraOpt.value) {
+                s3.value = cabeceraOpt.value;
+                matchedN3Id = cabeceraOpt.value;
+                missingTerritoryData.fallbackNombre = cabeceraOpt.text.replace(/^\[.*?\]\s*/, ''); // Limpiar tipo si existe
+                missingTerritoryData.fallbackId = cabeceraOpt.value;
               }
             }
           }
         }
       }
+
+      // Mostrar resolvedor si hay algún territorio faltante detectado
+      const resolverCard = document.querySelector('#missingTerritoryResolver');
+        if (missingTerritoryData && resolverCard) {
+          this.pendingTerritory = missingTerritoryData;
+          
+          const nameSpan = document.querySelector('#missingTerritoryNameSpan');
+          if (nameSpan) nameSpan.textContent = missingTerritoryData.nombre;
+          
+          const newParishSpan = document.querySelector('#newParishNameSpan');
+          if (newParishSpan) newParishSpan.textContent = missingTerritoryData.nombre;
+          
+          const fallbackContainer = document.querySelector('#resolveOptFallbackContainer');
+          const registerRadio = document.querySelector('#resolveOptRegister');
+          const fallbackRadio = document.querySelector('#resolveOptFallback');
+          const existingRadio = document.querySelector('#resolveOptExisting');
+          const selectN3 = document.querySelector('#dirNivel3Select');
+          const isAdmin = AuthService.isAdmin();
+ 
+          // 1. Configurar opción de Cabecera/Fallback
+          if (missingTerritoryData.fallbackId && fallbackContainer) {
+            fallbackContainer.classList.remove('d-none');
+            const fallbackSpan = document.querySelector('#fallbackParishNameSpan');
+            if (fallbackSpan) fallbackSpan.textContent = missingTerritoryData.fallbackNombre;
+            fallbackRadio.checked = true;
+            if (selectN3) {
+              selectN3.value = missingTerritoryData.fallbackId;
+              selectN3.disabled = true; // Deshabilitado por defecto al usar fallback
+            }
+          } else if (fallbackContainer) {
+            fallbackContainer.classList.add('d-none');
+            if (existingRadio) {
+              existingRadio.checked = true;
+            }
+            if (selectN3) {
+              selectN3.disabled = false;
+              selectN3.value = '';
+            }
+          }
+
+          // 2. Configurar opción de Registro (Solo Admin)
+          const labelRegister = document.querySelector('label[for="resolveOptRegister"]');
+          if (isAdmin) {
+            registerRadio.disabled = false;
+            if (labelRegister) {
+              labelRegister.innerHTML = `<strong>Crear y usar nueva:</strong> Registrar "${missingTerritoryData.nombre}" automáticamente al guardar`;
+            }
+          } else {
+            registerRadio.disabled = true;
+            if (labelRegister) {
+              labelRegister.innerHTML = `<strong>Crear y usar nueva:</strong> <span class="text-muted">(Requiere rol de Administrador para registrar)</span>`;
+            }
+            // Si no es admin y hay fallback, forzar fallback
+            if (missingTerritoryData.fallbackId && fallbackRadio) {
+              fallbackRadio.checked = true;
+              if (selectN3) {
+                selectN3.value = missingTerritoryData.fallbackId;
+                selectN3.disabled = true;
+              }
+            }
+          }
+
+          resolverCard.classList.remove('d-none');
+          this.actualizarFeedbackResolver();
+        } else if (resolverCard) {
+          resolverCard.classList.add('d-none');
+        }
     } catch (error) {
       console.warn('Error al autorellenar la ubicación:', error);
+      const errorAlert = document.querySelector('#direccionModalErrorAlert');
+      const errorMessage = document.querySelector('#direccionModalErrorMessage');
+      if (errorAlert && errorMessage) {
+        errorAlert.classList.remove('d-none');
+        errorMessage.textContent = `Error de Autorelleno: ${error.message} (Ver consola para más detalles)`;
+      }
     } finally {
       if (statusContainer) {
         statusContainer.classList.add('d-none');
+      }
+    }
+  }
+
+  actualizarFeedbackResolver() {
+    if (!this.pendingTerritory) return;
+
+    const resolverCard = document.querySelector('#missingTerritoryResolver');
+    if (!resolverCard) return;
+
+    const cardDiv = resolverCard.querySelector('.card');
+    const icon = resolverCard.querySelector('.bi-exclamation-triangle-fill, .bi-info-circle-fill, .bi-check-circle-fill');
+    const titleSpan = resolverCard.querySelector('.fw-bold');
+    const descSpan = resolverCard.querySelector('.text-secondary');
+    const selectN3 = document.querySelector('#dirNivel3Select');
+    const activeOption = document.querySelector('input[name="territoryResolveOption"]:checked')?.value;
+
+    if (!cardDiv || !titleSpan) return;
+
+    if (activeOption === 'existing') {
+      if (selectN3 && selectN3.value) {
+        // Estado: Resuelto con otra existente
+        const selectedText = selectN3.options[selectN3.selectedIndex].text.replace(/^\[.*?\]\s*/, '');
+        cardDiv.className = 'card border-success border-opacity-25 bg-success bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
+        if (icon) icon.className = 'bi bi-check-circle-fill text-success fs-5';
+        titleSpan.textContent = 'Parroquia Seleccionada';
+        titleSpan.className = 'fw-bold text-success d-block';
+        if (descSpan) {
+          descSpan.innerHTML = `Se asociará esta dirección a la parroquia existente <strong>"${selectedText}"</strong>.`;
+        }
+      } else {
+        // Estado: Pendiente de seleccionar existente
+        cardDiv.className = 'card border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
+        if (icon) icon.className = 'bi bi-exclamation-triangle-fill text-warning fs-5';
+        titleSpan.textContent = 'Selección Requerida';
+        titleSpan.className = 'fw-bold text-dark d-block';
+        if (descSpan) {
+          descSpan.innerHTML = 'Por favor, selecciona una parroquia de la lista desplegable.';
+        }
+      }
+    } else if (activeOption === 'fallback') {
+      // Estado: Resuelto por Cabecera
+      cardDiv.className = 'card border-info border-opacity-25 bg-info bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
+      if (icon) icon.className = 'bi bi-info-circle-fill text-info fs-5';
+      titleSpan.textContent = 'Ubicación Sugerida';
+      titleSpan.className = 'fw-bold text-info d-block';
+      if (descSpan) {
+        descSpan.innerHTML = `La parroquia clickeada no está registrada. Se usará la cabecera cantonal <strong>"${this.pendingTerritory.fallbackNombre}"</strong>.`;
+      }
+    } else {
+      // Estado: Advertencia / Pendiente de registro
+      cardDiv.className = 'card border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
+      if (icon) icon.className = 'bi bi-exclamation-triangle-fill text-warning fs-5';
+      titleSpan.textContent = 'Parroquia Faltante Detectada';
+      titleSpan.className = 'fw-bold text-dark d-block';
+      if (descSpan) {
+        descSpan.innerHTML = `La parroquia <strong>"${this.pendingTerritory.nombre}"</strong> no está registrada. Se creará automáticamente al guardar.`;
       }
     }
   }
@@ -662,6 +939,77 @@ export class DireccionFormComponent extends BaseComponent {
         }
       }, 300);
     }
+  }
+
+  async registrarTerritorioFaltante() {
+    if (!this.pendingTerritory) return;
+    
+    const btn = document.querySelector('#btnRegistrarTerritorioFaltante');
+    let originalText = '';
+    if (btn) {
+      originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Registrando...';
+    }
+
+    try {
+      const payload = {
+        pais_id: this.pendingTerritory.pais_id,
+        parent_id: this.pendingTerritory.parent_id,
+        nombre: this.pendingTerritory.nombre,
+        tipo: this.pendingTerritory.tipo,
+        activo: true
+      };
+
+      const res = await UbicacionesService.createTerritorio(payload);
+      const newTerritory = res.data || res;
+
+      UIHelper.mostrarAlerta(this, 'success', `${this.pendingTerritory.tipo} "${this.pendingTerritory.nombre}" registrada con éxito.`);
+
+      // Ocultar alerta de territorio faltante
+      const missingAlert = document.querySelector('#missingTerritoryAlert');
+      if (missingAlert) missingAlert.classList.add('d-none');
+
+      const paisId = this.pendingTerritory.pais_id;
+      const level = this.pendingTerritory.nivel;
+      
+      if (level === 1) {
+        await this.cargarDireccionDropdownNivel1(paisId);
+        document.querySelector('#dirNivel1Select').value = newTerritory.id;
+        document.querySelector('#dirNivel1Select').dispatchEvent(new Event('change'));
+      } else if (level === 2) {
+        const parentId = this.pendingTerritory.parent_id;
+        await this.cargarDireccionDropdownNivel2(paisId, parentId);
+        document.querySelector('#dirNivel2Select').value = newTerritory.id;
+        document.querySelector('#dirNivel2Select').dispatchEvent(new Event('change'));
+      } else if (level === 3) {
+        const parentId = this.pendingTerritory.parent_id;
+        await this.cargarDireccionDropdownNivel3(paisId, parentId);
+        document.querySelector('#dirNivel3Select').value = newTerritory.id;
+      }
+
+      this.pendingTerritory = null;
+
+      // Despachar evento para notificar al explorador de territorios
+      this.dispatchEvent(new CustomEvent('territorios-updated', {
+        bubbles: true,
+        composed: true
+      }));
+
+    } catch (e) {
+      console.error('Error al registrar territorio faltante:', e);
+      UIHelper.mostrarAlerta(this, 'error', `No se pudo registrar: ${e.message}`);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+  }
+
+  capitalizeWords(str) {
+    if (!str) return '';
+    return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   }
 
   actualizarEtiquetasNiveles(paisId) {

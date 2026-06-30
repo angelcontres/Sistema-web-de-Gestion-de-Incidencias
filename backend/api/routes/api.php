@@ -23,6 +23,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v1/catalogos/territorios', [CatalogoController::class, 'territorios']);
     Route::get('/v1/catalogos/direcciones', [CatalogoController::class, 'direcciones']);
     Route::get('/v1/catalogos/categorias-incidencia', [CatalogoController::class, 'categoriasIncidencia']);
+    Route::get('/v1/geocodificacion/reversa', [DireccionController::class, 'reverseGeocode']);
 });
 
 // Rutas protegidas por autenticación y permisos de recursos

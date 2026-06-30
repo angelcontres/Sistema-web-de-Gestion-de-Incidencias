@@ -136,4 +136,85 @@ class DireccionController extends Controller
             'message' => 'Dirección eliminada con éxito',
         ], 200);
     }
+
+    /**
+     * Proxy para geocodificación reversa de Nominatim con fallback a BigDataCloud (evita CORS y bloqueos 429).
+     */
+    public function reverseGeocode(Request $request)
+    {
+        $request->validate([
+            'lat' => 'required|numeric|between:-90,90',
+            'lng' => 'required|numeric|between:-180,180',
+        ]);
+
+        $lat = $request->input('lat');
+        $lng = $request->input('lng');
+
+        // 1. Intentar con Nominatim (OpenStreetMap)
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(3)
+                ->withHeaders([
+                    'User-Agent' => 'SistemaWebGestionIncidencias/1.0 (contacto: admin@sistema.local)',
+                    'Accept-Language' => 'es'
+                ])->get('https://nominatim.openstreetmap.org/reverse', [
+                    'format' => 'json',
+                    'lat' => $lat,
+                    'lon' => $lng,
+                    'zoom' => 18,
+                    'addressdetails' => 1,
+                ]);
+
+            if ($response->successful()) {
+                return response()->json($response->json(), 200);
+            }
+        } catch (\Exception $e) {
+            // Continuar silenciosamente al plan B (Fallback)
+        }
+
+        // 2. Fallback: Intentar con BigDataCloud (API gratuita sin límite estricto de IP y con CORS)
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(3)
+                ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
+                    'latitude' => $lat,
+                    'longitude' => $lng,
+                    'localityLanguage' => 'es'
+                ]);
+
+            if ($response->successful()) {
+                $bdc = $response->json();
+                
+                // Mapear al formato de Nominatim para que el frontend lo procese igual
+                $mapped = [
+                    'address' => [
+                        'country' => $bdc['countryName'] ?? null,
+                        'country_code' => $bdc['countryCode'] ?? null,
+                        'state' => $bdc['principalSubdivision'] ?? null,
+                        'city' => $bdc['city'] ?? null,
+                        'town' => $bdc['city'] ?? null,
+                        'parish' => $bdc['locality'] ?? null,
+                        'suburb' => $bdc['locality'] ?? null,
+                        'neighbourhood' => $bdc['locality'] ?? null,
+                        'postcode' => $bdc['postcode'] ?? null,
+                        'road' => $bdc['locality'] ?? null,
+                    ],
+                    'display_name' => implode(', ', array_filter([
+                        $bdc['locality'] ?? null,
+                        $bdc['city'] ?? null,
+                        $bdc['principalSubdivision'] ?? null,
+                        $bdc['countryName'] ?? null
+                    ]))
+                ];
+
+                return response()->json($mapped, 200);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error en todos los servicios de geocodificación: ' . $e->getMessage()
+            ], 502);
+        }
+
+        return response()->json([
+            'message' => 'No se pudo obtener información de geocodificación de ningún servicio.'
+        ], 502);
+    }
 }

@@ -84,4 +84,7 @@ export const UbicacionesService = {
       method: 'DELETE',
     });
   },
+  reverseGeocode(lat, lng) {
+    return apiRequest(`/v1/geocodificacion/reversa?lat=${lat}&lng=${lng}`);
+  },
 };
