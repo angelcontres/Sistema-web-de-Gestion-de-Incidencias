@@ -29,7 +29,7 @@
               </div>
 
               <!-- Nivel 1 -->
-              <div class="col-md-6">
+              <div class="col-md-6 d-none" id="colDirNivel1" style="opacity: 0; transform: translateY(-10px); transition: opacity 0.3s ease, transform 0.3s ease;">
                 <label id="lblDirNivel1" for="dirNivel1Select" class="form-label small fw-semibold text-dark">Nivel 1</label>
                 <select id="dirNivel1Select" class="form-select form-select-sm" disabled>
                   <option value="">-- Seleccione País primero --</option>
@@ -37,7 +37,7 @@
               </div>
 
               <!-- Nivel 2 -->
-              <div class="col-md-6">
+              <div class="col-md-6 d-none" id="colDirNivel2" style="opacity: 0; transform: translateY(-10px); transition: opacity 0.3s ease, transform 0.3s ease;">
                 <label id="lblDirNivel2" for="dirNivel2Select" class="form-label small fw-semibold text-dark">Nivel 2</label>
                 <select id="dirNivel2Select" class="form-select form-select-sm" disabled>
                   <option value="">-- Seleccione Nivel 1 primero --</option>
@@ -45,7 +45,7 @@
               </div>
 
               <!-- Nivel 3 -->
-              <div class="col-md-6">
+              <div class="col-md-6 d-none" id="colDirNivel3" style="opacity: 0; transform: translateY(-10px); transition: opacity 0.3s ease, transform 0.3s ease;">
                 <label id="lblDirNivel3" for="dirNivel3Select" class="form-label small fw-semibold text-dark">Nivel 3</label>
                 <select id="dirNivel3Select" class="form-select form-select-sm" disabled>
                   <option value="">-- Seleccione Nivel 2 primero --</option>
@@ -91,6 +91,17 @@
                 <div class="col-6">
                   <label for="direccionLongitud" class="form-label small fw-semibold text-dark">Longitud</label>
                   <input type="text" class="form-control form-control-sm" id="direccionLongitud" readonly placeholder="Clic en el mapa" />
+                </div>
+              </div>
+
+              <!-- Info de ubicación detectada por GPS (Nominatim) -->
+              <div id="gpsLocationInfo" class="alert alert-info d-none p-2.5 mb-3 border-0 shadow-sm" style="font-size: 0.85rem; border-radius: 8px; background-color: #e8f4fd; color: #1a73e8;">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-geo-alt-fill fs-5 me-2" style="color: #1a73e8;"></i>
+                  <div>
+                    <span class="fw-bold d-block" style="color: #0d47a1;">Ubicación detectada (GPS):</span>
+                    <span id="gpsLocationText" class="fw-medium">Cargando...</span>
+                  </div>
                 </div>
               </div>
             </div>

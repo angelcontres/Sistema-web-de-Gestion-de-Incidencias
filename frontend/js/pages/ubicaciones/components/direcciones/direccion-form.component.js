@@ -56,6 +56,7 @@ export class DireccionFormComponent extends BaseComponent {
         const parentId = e.target.value;
         const paisId = document.querySelector('#dirPaisSelect').value;
         this.cargarDireccionDropdownNivel2(paisId, parentId);
+        this.ocultarCampo('#colDirNivel3');
       });
     }
 
@@ -107,12 +108,17 @@ export class DireccionFormComponent extends BaseComponent {
 
     const form = document.querySelector('#direccionForm');
     const errorAlert = document.querySelector('#direccionModalErrorAlert');
+    const gpsInfo = document.querySelector('#gpsLocationInfo');
+    
     if (form) {
       form.classList.remove('was-validated');
       form.reset();
     }
     if (errorAlert) {
       errorAlert.classList.add('d-none');
+    }
+    if (gpsInfo) {
+      gpsInfo.classList.add('d-none');
     }
 
     document.querySelector('#direccionId').value = '';
@@ -132,6 +138,10 @@ export class DireccionFormComponent extends BaseComponent {
     document.querySelector('#dirNivel2Select').disabled = true;
     document.querySelector('#dirNivel3Select').innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
     document.querySelector('#dirNivel3Select').disabled = true;
+
+    this.ocultarCampo('#colDirNivel1');
+    this.ocultarCampo('#colDirNivel2');
+    this.ocultarCampo('#colDirNivel3');
 
     if (direccion) {
       document.querySelector('#direccionModalLabel').textContent = 'Editar Dirección';
@@ -260,14 +270,25 @@ export class DireccionFormComponent extends BaseComponent {
 
     if (!paisId) {
       s1.innerHTML = '<option value="">-- Seleccione País primero --</option>';
+      this.ocultarCampo('#colDirNivel1');
+      this.ocultarCampo('#colDirNivel2');
+      this.ocultarCampo('#colDirNivel3');
       return;
     }
 
     try {
       const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: null });
-      s1.innerHTML = `<option value="">-- Selecciona ${config.nivel1} --</option>` + 
-        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
-      s1.disabled = false;
+      if (list.length > 0) {
+        s1.innerHTML = `<option value="">-- Selecciona ${config.nivel1} --</option>` + 
+          list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+        s1.disabled = false;
+        this.mostrarCampo('#colDirNivel1');
+      } else {
+        s1.innerHTML = `<option value="">-- No hay ${config.nivel1} registrados --</option>`;
+        this.ocultarCampo('#colDirNivel1');
+        this.ocultarCampo('#colDirNivel2');
+        this.ocultarCampo('#colDirNivel3');
+      }
 
       // Handle editing pre-selection
       if (selectedTerritorio) {
@@ -311,14 +332,23 @@ export class DireccionFormComponent extends BaseComponent {
 
     if (!parentId) {
       s2.innerHTML = `<option value="">-- Seleccione ${config.nivel1} primero --</option>`;
+      this.ocultarCampo('#colDirNivel2');
+      this.ocultarCampo('#colDirNivel3');
       return;
     }
 
     try {
       const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
-      s2.innerHTML = `<option value="">-- Selecciona ${config.nivel2} --</option>` + 
-        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
-      s2.disabled = false;
+      if (list.length > 0) {
+        s2.innerHTML = `<option value="">-- Selecciona ${config.nivel2} --</option>` + 
+          list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+        s2.disabled = false;
+        this.mostrarCampo('#colDirNivel2');
+      } else {
+        s2.innerHTML = `<option value="">-- No hay ${config.nivel2} registrados --</option>`;
+        this.ocultarCampo('#colDirNivel2');
+        this.ocultarCampo('#colDirNivel3');
+      }
 
       if (selectVal) {
         s2.value = selectVal;
@@ -342,14 +372,21 @@ export class DireccionFormComponent extends BaseComponent {
 
     if (!parentId) {
       s3.innerHTML = `<option value="">-- Seleccione ${config.nivel2} primero --</option>`;
+      this.ocultarCampo('#colDirNivel3');
       return;
     }
 
     try {
       const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
-      s3.innerHTML = `<option value="">-- Selecciona ${config.nivel3} --</option>` + 
-        list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
-      s3.disabled = false;
+      if (list.length > 0) {
+        s3.innerHTML = `<option value="">-- Selecciona ${config.nivel3} --</option>` + 
+          list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+        s3.disabled = false;
+        this.mostrarCampo('#colDirNivel3');
+      } else {
+        s3.innerHTML = `<option value="">-- No hay ${config.nivel3} registrados --</option>`;
+        this.ocultarCampo('#colDirNivel3');
+      }
 
       if (selectVal) {
         s3.value = selectVal;
@@ -451,6 +488,22 @@ export class DireccionFormComponent extends BaseComponent {
       const data = await response.json();
       const address = data.address || {};
 
+      // Mostrar la ubicación completa detectada por GPS
+      const gpsInfo = document.querySelector('#gpsLocationInfo');
+      const gpsText = document.querySelector('#gpsLocationText');
+      if (gpsInfo && gpsText) {
+        const addressParts = [
+          address.road || address.pedestrian,
+          address.suburb || address.neighbourhood || address.parish || address.quarter,
+          address.city || address.town || address.village,
+          address.state,
+          address.country
+        ].filter(Boolean);
+        
+        gpsText.textContent = addressParts.join(', ') || data.display_name || 'Ubicación desconocida';
+        gpsInfo.classList.remove('d-none');
+      }
+
       // 1. Detalle de dirección (Calle + número)
       const street = address.road || address.pedestrian || address.suburb || address.neighbourhood || '';
       const houseNumber = address.house_number || '';
@@ -539,7 +592,16 @@ export class DireccionFormComponent extends BaseComponent {
                 await this.cargarDireccionDropdownNivel3(currentPaisId, matchedN2Id);
                 
                 const s3 = document.querySelector('#dirNivel3Select');
-                const possibleNivel3Names = [address.suburb, address.neighbourhood, address.village, address.hamlet, address.city_district].filter(Boolean);
+                const possibleNivel3Names = [
+                  address.parish,
+                  address.suburb,
+                  address.neighbourhood,
+                  address.quarter,
+                  address.village,
+                  address.town,
+                  address.city_district,
+                  address.hamlet
+                ].filter(Boolean);
 
                 if (s3 && !s3.disabled && possibleNivel3Names.length > 0) {
                   const options = Array.from(s3.options);
@@ -576,6 +638,30 @@ export class DireccionFormComponent extends BaseComponent {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^\w\s]/g, '')
       .trim();
+  }
+
+  mostrarCampo(selector) {
+    const el = document.querySelector(selector);
+    if (el && el.classList.contains('d-none')) {
+      el.classList.remove('d-none');
+      // Force reflow
+      el.offsetHeight;
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }
+  }
+
+  ocultarCampo(selector) {
+    const el = document.querySelector(selector);
+    if (el && !el.classList.contains('d-none')) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-10px)';
+      setTimeout(() => {
+        if (el.style.opacity === '0') {
+          el.classList.add('d-none');
+        }
+      }, 300);
+    }
   }
 
   actualizarEtiquetasNiveles(paisId) {

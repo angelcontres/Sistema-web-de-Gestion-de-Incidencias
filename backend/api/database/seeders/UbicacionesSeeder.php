@@ -117,112 +117,67 @@ class UbicacionesSeeder extends Seeder
             'tipo' => 'Municipio',
         ]);
 
-        // Territorios (Ecuador)
-        // Nivel 1: Provincias
-        $guayas = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => null,
-            'nombre' => 'Guayas',
-            'tipo' => 'Provincia',
-        ]);
+        // Territorios (Ecuador) desde JSON completo
+        $jsonPath = database_path('seeders/data/ecuador.json');
+        if (!file_exists($jsonPath)) {
+            throw new \Exception("El archivo ecuador.json no existe en {$jsonPath}. Asegúrese de haberlo descargado.");
+        }
 
-        $pichincha = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => null,
-            'nombre' => 'Pichincha',
-            'tipo' => 'Provincia',
-        ]);
+        $ecuadorData = json_decode(file_get_contents($jsonPath), true);
+        $parroquias = [];
 
-        // Nivel 2: Cantones
-        $guayaquil = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $guayas->id,
-            'nombre' => 'Guayaquil',
-            'tipo' => 'Cantón',
-        ]);
+        foreach ($ecuadorData as $provId => $provData) {
+            if (!isset($provData['provincia'])) {
+                continue;
+            }
 
-        $quito = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $pichincha->id,
-            'nombre' => 'Quito',
-            'tipo' => 'Cantón',
-        ]);
+            $provName = mb_convert_case($provData['provincia'], MB_CASE_TITLE, "UTF-8");
+            
+            $prov = Territorio::create([
+                'pais_id' => $ecuador->id,
+                'parent_id' => null,
+                'nombre' => $provName,
+                'tipo' => 'Provincia',
+            ]);
 
-        // Nivel 3: Parroquias (Leaf nodes)
-        $tarqui = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $guayaquil->id,
-            'nombre' => 'Tarqui',
-            'tipo' => 'Parroquia',
-        ]);
+            if (!isset($provData['cantones']) || !is_array($provData['cantones'])) {
+                continue;
+            }
 
-        $inaquito = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $quito->id,
-            'nombre' => 'Iñaquito',
-            'tipo' => 'Parroquia',
-        ]);
+            foreach ($provData['cantones'] as $cantId => $cantData) {
+                if (!isset($cantData['canton'])) {
+                    continue;
+                }
 
-        // Provincia de Santa Elena
-        $santaElenaProv = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => null,
-            'nombre' => 'Santa Elena',
-            'tipo' => 'Provincia',
-        ]);
+                $cantName = mb_convert_case($cantData['canton'], MB_CASE_TITLE, "UTF-8");
+                $cant = Territorio::create([
+                    'pais_id' => $ecuador->id,
+                    'parent_id' => $prov->id,
+                    'nombre' => $cantName,
+                    'tipo' => 'Cantón',
+                ]);
 
-        // Cantones de Santa Elena
-        $santaElenaCanton = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $santaElenaProv->id,
-            'nombre' => 'Santa Elena',
-            'tipo' => 'Cantón',
-        ]);
+                if (!isset($cantData['parroquias']) || !is_array($cantData['parroquias'])) {
+                    continue;
+                }
 
-        $laLibertadCanton = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $santaElenaProv->id,
-            'nombre' => 'La Libertad',
-            'tipo' => 'Cantón',
-        ]);
+                foreach ($cantData['parroquias'] as $parrId => $parrNameRaw) {
+                    $parrName = mb_convert_case($parrNameRaw, MB_CASE_TITLE, "UTF-8");
+                    $parr = Territorio::create([
+                        'pais_id' => $ecuador->id,
+                        'parent_id' => $cant->id,
+                        'nombre' => $parrName,
+                        'tipo' => 'Parroquia',
+                    ]);
 
-        $salinasCanton = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $santaElenaProv->id,
-            'nombre' => 'Salinas',
-            'tipo' => 'Cantón',
-        ]);
+                    // Guardar referencia normalizada para las direcciones
+                    $key = self::normalizeString("{$provName}.{$cantName}.{$parrName}");
+                    $parroquias[$key] = $parr;
+                }
+            }
+        }
 
-        // Parroquias de Santa Elena
-        $santaElenaParroquia = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $santaElenaCanton->id,
-            'nombre' => 'Santa Elena',
-            'tipo' => 'Parroquia',
-        ]);
-
-        $manglaralto = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $santaElenaCanton->id,
-            'nombre' => 'Manglaralto',
-            'tipo' => 'Parroquia',
-        ]);
-
-        $laLibertadParroquia = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $laLibertadCanton->id,
-            'nombre' => 'La Libertad',
-            'tipo' => 'Parroquia',
-        ]);
-
-        $salinasParroquia = Territorio::create([
-            'pais_id' => $ecuador->id,
-            'parent_id' => $salinasCanton->id,
-            'nombre' => 'Salinas',
-            'tipo' => 'Parroquia',
-        ]);
-
-        // 3. Direcciones (Asociadas al último nodo)
+        // 3. Direcciones (Asociadas al último de los nodos)
         Direccion::create([
             'territorio_id' => $surco->id,
             'detalle' => 'Av. Javier Prado Este 4200',
@@ -251,7 +206,7 @@ class UbicacionesSeeder extends Seeder
         ]);
 
         Direccion::create([
-            'territorio_id' => $tarqui->id,
+            'territorio_id' => $parroquias['guayas.guayaquil.tarqui']->id,
             'detalle' => 'Av. Francisco de Orellana y Justino Cornejo',
             'referencia' => 'Gobierno Zonal de Guayaquil',
             'codigo_postal' => '090506',
@@ -260,7 +215,7 @@ class UbicacionesSeeder extends Seeder
         ]);
 
         Direccion::create([
-            'territorio_id' => $inaquito->id,
+            'territorio_id' => $parroquias['pichincha.quito.inaquito']->id,
             'detalle' => 'Av. Amazonas N37-29 y Corea',
             'referencia' => 'Frente al CCI',
             'codigo_postal' => '170504',
@@ -268,9 +223,8 @@ class UbicacionesSeeder extends Seeder
             'longitud' => -78.48780000,
         ]);
 
-        // Nuevas direcciones para Santa Elena, Ecuador
         Direccion::create([
-            'territorio_id' => $salinasParroquia->id,
+            'territorio_id' => $parroquias['santa elena.salinas.salinas']->id,
             'detalle' => 'Malecón de Salinas y Calle 19',
             'referencia' => 'Frente a la Playa de San Lorenzo, Salinas',
             'codigo_postal' => '241550',
@@ -279,7 +233,7 @@ class UbicacionesSeeder extends Seeder
         ]);
 
         Direccion::create([
-            'territorio_id' => $laLibertadParroquia->id,
+            'territorio_id' => $parroquias['santa elena.la libertad.la libertad']->id,
             'detalle' => 'Av. Eleodoro Solorzano, Paseo Shopping',
             'referencia' => 'Centro Comercial Paseo Shopping La Libertad',
             'codigo_postal' => '240201',
@@ -288,12 +242,33 @@ class UbicacionesSeeder extends Seeder
         ]);
 
         Direccion::create([
-            'territorio_id' => $manglaralto->id,
+            'territorio_id' => $parroquias['santa elena.santa elena.manglaralto']->id,
             'detalle' => 'Calle Principal de Montañita, Sector La Punta',
             'referencia' => 'Cerca de la playa de surf de Montañita',
             'codigo_postal' => '240103',
             'latitud' => -1.82840000,
             'longitud' => -80.75310000,
         ]);
+    }
+
+    /**
+     * Normaliza una cadena quitando acentos, la letra ñ y convirtiéndola a minúsculas.
+     */
+    private static function normalizeString(string $str): string
+    {
+        $str = mb_strtolower($str, 'UTF-8');
+        $utf8 = array(
+            '/[áàâãªä]/u'   =>   'a',
+            '/[éèêë]/u'     =>   'e',
+            '/[íìîï]/u'     =>   'i',
+            '/[óòôõºö]/u'   =>   'o',
+            '/[úùûü]/u'     =>   'u',
+            '/ç/'           =>   'c',
+            '/ñ/'           =>   'n',
+            '/–/'           =>   '-',
+            '/[’‘‹›‚]/u'    =>   ' ',
+            '/[“”«»„]/u'    =>   ' ',
+        );
+        return preg_replace(array_keys($utf8), array_values($utf8), $str);
     }
 }

@@ -361,6 +361,10 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const contextLabel = document.querySelector('#territorioContextLabel');
     const errorAlert = document.querySelector('#territorioModalErrorAlert');
 
+    // Select name label and invalid feedback
+    const lblNombre = document.querySelector('label[for="territorioNombre"]');
+    const valFeedback = document.querySelector('#territorioNombre ~ .invalid-feedback');
+
     errorAlert.classList.add('d-none');
     form.classList.remove('was-validated');
 
@@ -371,27 +375,45 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
     let nivelName = '';
+    let art = '';
     let parentName = '';
     const paisNombre = pais?.nombre || 'País';
 
     if (columnaNivel === 1) {
       nivelName = config.nivel1;
+      art = config.nivel1_art;
       inputParentId.value = '';
       parentName = `Raíz de ${paisNombre}`;
       inputTipo.placeholder = `Ej: ${config.nivel1}`;
+      inputNombre.placeholder = 'Ej: Pichincha, Lima, Jalisco';
     } else if (columnaNivel === 2) {
       nivelName = config.nivel2;
+      art = config.nivel2_art;
       inputParentId.value = this.selectedNivel1Id;
       const parentObj = this.territoriosNivel1.find(t => t.id == this.selectedNivel1Id);
       parentName = `${paisNombre} > ${parentObj?.nombre || config.nivel1}`;
       inputTipo.placeholder = `Ej: ${config.nivel2}`;
+      inputNombre.placeholder = 'Ej: Quito, Miraflores, Guadalajara';
     } else if (columnaNivel === 3) {
       nivelName = config.nivel3;
+      art = config.nivel3_art;
       inputParentId.value = this.selectedNivel2Id;
       const parentObj1 = this.territoriosNivel1.find(t => t.id == this.selectedNivel1Id);
       const parentObj2 = this.territoriosNivel2.find(t => t.id == this.selectedNivel2Id);
       parentName = `${paisNombre} > ${parentObj1?.nombre || config.nivel1} > ${parentObj2?.nombre || config.nivel2}`;
       inputTipo.placeholder = `Ej: ${config.nivel3}`;
+      inputNombre.placeholder = 'Ej: Iñaquito, San Isidro, Chapultepec';
+    }
+
+    // Dynamic labels and messages
+    const prep = art === 'la' ? `de la ${nivelName}` : `del ${nivelName}`;
+    const genderWordNuevo = art === 'la' ? 'Nueva' : 'Nuevo';
+
+    if (lblNombre) {
+      lblNombre.textContent = `Nombre ${prep}`;
+    }
+    if (valFeedback) {
+      valFeedback.textContent = `El nombre ${prep} es obligatorio.`;
     }
 
     contextLabel.textContent = parentName;
@@ -403,7 +425,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       inputTipo.value = territorio.tipo;
       inputActivo.checked = territorio.activo;
     } else {
-      modalTitle.textContent = `Nuevo ${nivelName}`;
+      modalTitle.textContent = `${genderWordNuevo} ${nivelName}`;
       inputId.value = '';
       inputNombre.value = '';
       inputTipo.value = nivelName; // Prefill default level type

@@ -264,7 +264,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
         <td><span class="badge ${badgeClass} rounded-pill px-2 py-0.5 small">${badgeText}</span></td>
         <td class="text-end pe-3">
           <div class="dropdown ${isAdmin ? '' : 'd-none'}" onclick="event.stopPropagation()">
-            <button class="btn btn-light btn-sm text-secondary p-1.5 rounded-2 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn btn-light btn-sm text-secondary p-1.5 rounded-2 border-0" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
               <i class="bi bi-three-dots-vertical fs-6"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
