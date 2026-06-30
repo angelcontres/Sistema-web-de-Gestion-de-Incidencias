@@ -153,6 +153,7 @@ class DireccionController extends Controller
         // 1. Intentar con Nominatim (OpenStreetMap)
         try {
             $response = \Illuminate\Support\Facades\Http::timeout(3)
+                ->withoutVerifying()
                 ->withHeaders([
                     'User-Agent' => 'SistemaWebGestionIncidencias/1.0 (contacto: admin@sistema.local)',
                     'Accept-Language' => 'es'
@@ -174,6 +175,7 @@ class DireccionController extends Controller
         // 2. Fallback: Intentar con BigDataCloud (API gratuita sin límite estricto de IP y con CORS)
         try {
             $response = \Illuminate\Support\Facades\Http::timeout(3)
+                ->withoutVerifying()
                 ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
                     'latitude' => $lat,
                     'longitude' => $lng,
