@@ -62,5 +62,21 @@ class MenuOptionSeeder extends Seeder
             'padre_id' => $config->id,
             'created_by' => $user->id,
         ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Ubicaciones',
+            'ruta' => '#/ubicaciones',
+            'icono' => 'bi bi-geo-alt-fill',
+            'padre_id' => $config->id,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Categorías de Incidencias',
+            'ruta' => '#/categorias',
+            'icono' => 'bi bi-tags-fill',
+            'padre_id' => $config->id,
+            'created_by' => $user->id,
+        ]);
     }
 }

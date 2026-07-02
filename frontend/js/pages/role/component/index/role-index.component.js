@@ -68,116 +68,72 @@ export class RoleIndexComponent extends BaseComponent {
         totalRolesBadge.textContent = `${roles.length} Registros`;
       }
 
-      rolesGrid.innerHTML = '';
-
       if (roles.length === 0) {
         if (emptyState) emptyState.classList.remove('d-none');
         loadingSpinner.classList.add('d-none');
         return;
       }
 
+      const canEdit = AuthService.hasPermission('UPDATE', 'roles');
+      const canDelete = AuthService.hasPermission('DELETE', 'roles');
+
+      // Render cards using template literal
+      rolesGrid.innerHTML = roles.map((rol) => `
+        <div class="col-md-4 col-sm-6">
+          <div class="card h-100 border shadow-sm role-card cursor-pointer" data-id="${rol.id}" style="transition: all 0.2s ease;">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+              <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center" style="width: 48px; height: 48px; flex-shrink: 0;">
+                <i class="bi bi-key fs-5"></i>
+              </div>
+              <div class="flex-grow-1 text-truncate">
+                <h6 class="fw-bold mb-0 text-dark text-truncate">${rol.nombre}</h6>
+                <span class="text-muted small">${rol.descripcion || ''}</span>
+              </div>
+              <div>
+                <i class="bi bi-chevron-right text-muted"></i>
+              </div>
+              <div class="dropdown ms-2" onclick="event.stopPropagation()">
+                <button class="btn btn-sm btn-light border-0 p-1 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                  ${canEdit ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium" type="button" data-action="editar"><i class="bi bi-pencil-square"></i> Editar</button></li>` : ''}
+                  ${canDelete ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium" type="button" data-action="eliminar"><i class="bi bi-trash"></i> Eliminar</button></li>` : ''}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Bind events to rendered elements
       roles.forEach((rol) => {
-        const col = document.createElement('div');
-        col.className = 'col-md-4 col-sm-6';
+        const cardEl = rolesGrid.querySelector(`.role-card[data-id="${rol.id}"]`);
+        if (cardEl) {
+          // Hover effects
+          cardEl.addEventListener('mouseover', () => cardEl.classList.add('shadow'));
+          cardEl.addEventListener('mouseout', () => cardEl.classList.remove('shadow'));
+          
+          // Open permissions on click
+          cardEl.addEventListener('click', () => this.abrirPanelPermisos(rol));
 
-        const card = document.createElement('div');
-        card.className = 'card h-100 border shadow-sm role-card';
-        card.style.cursor = 'pointer';
-        card.style.transition = 'all 0.2s ease';
-        card.onmouseover = () => card.classList.add('shadow');
-        card.onmouseout = () => card.classList.remove('shadow');
+          // Action buttons
+          const btnEdit = cardEl.querySelector('[data-action="editar"]');
+          if (btnEdit) {
+            btnEdit.addEventListener('click', (e) => {
+              e.stopPropagation();
+              this.abrirModalEditar(rol, roles);
+            });
+          }
 
-        const cardBody = document.createElement('div');
-        cardBody.className = 'card-body d-flex align-items-center gap-3 p-3';
-
-        // Icon
-        const iconDiv = document.createElement('div');
-        iconDiv.className =
-          'bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center';
-        iconDiv.style.width = '48px';
-        iconDiv.style.height = '48px';
-        iconDiv.style.flexShrink = '0';
-        iconDiv.innerHTML = '<i class="bi bi-key fs-5"></i>';
-
-        // Text info
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'flex-grow-1 text-truncate';
-        infoDiv.innerHTML = `
-          <h6 class="fw-bold mb-0 text-dark text-truncate">${rol.nombre}</h6>
-          <span class="text-muted small">${rol.descripcion}</span>
-        `;
-
-        // Chevron
-        const chevronDiv = document.createElement('div');
-        chevronDiv.innerHTML = '<i class="bi bi-chevron-right text-muted"></i>';
-
-        // Context menu (3 dots)
-        const dropdownDiv = document.createElement('div');
-        dropdownDiv.className = 'dropdown ms-2';
-
-        const btnDropdown = document.createElement('button');
-        btnDropdown.className =
-          'btn btn-sm btn-light border-0 p-1 rounded-circle d-flex align-items-center justify-content-center';
-        btnDropdown.type = 'button';
-        btnDropdown.style.width = '32px';
-        btnDropdown.style.height = '32px';
-        btnDropdown.setAttribute('data-bs-toggle', 'dropdown');
-        btnDropdown.onclick = (e) => e.stopPropagation();
-        btnDropdown.innerHTML = '<i class="bi bi-three-dots-vertical"></i>';
-
-        const ulMenu = document.createElement('ul');
-        ulMenu.className = 'dropdown-menu dropdown-menu-end shadow-sm border-0';
-
-        const canEdit = AuthService.hasPermission('UPDATE', 'roles');
-        const canDelete = AuthService.hasPermission('DELETE', 'roles');
-
-        if (canEdit) {
-          const liEdit = document.createElement('li');
-          const btnEdit = document.createElement('button');
-          btnEdit.className =
-            'dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium';
-          btnEdit.innerHTML = '<i class="bi bi-pencil-square"></i> Editar';
-          btnEdit.onclick = (e) => {
-            e.stopPropagation();
-            this.abrirModalEditar(rol, roles);
-          };
-          liEdit.appendChild(btnEdit);
-          ulMenu.appendChild(liEdit);
+          const btnDelete = cardEl.querySelector('[data-action="eliminar"]');
+          if (btnDelete) {
+            btnDelete.addEventListener('click', (e) => {
+              e.stopPropagation();
+              this.eliminarRol(rol.id, rol.nombre);
+            });
+          }
         }
-
-        if (canDelete) {
-          const liDelete = document.createElement('li');
-          const btnDelete = document.createElement('button');
-          btnDelete.className =
-            'dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium';
-          btnDelete.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
-          btnDelete.onclick = (e) => {
-            e.stopPropagation();
-            this.eliminarRol(rol.id, rol.nombre);
-          };
-          liDelete.appendChild(btnDelete);
-          ulMenu.appendChild(liDelete);
-        }
-
-        if (!canEdit && !canDelete) {
-          btnDropdown.classList.add('d-none');
-        }
-
-        dropdownDiv.appendChild(btnDropdown);
-        dropdownDiv.appendChild(ulMenu);
-
-        // Append everything
-        cardBody.appendChild(iconDiv);
-        cardBody.appendChild(infoDiv);
-        cardBody.appendChild(chevronDiv);
-        cardBody.appendChild(dropdownDiv);
-        card.appendChild(cardBody);
-
-        // Open permissions when clicking the card
-        card.onclick = () => this.abrirPanelPermisos(rol);
-
-        col.appendChild(card);
-        rolesGrid.appendChild(col);
       });
 
       loadingSpinner.classList.add('d-none');
@@ -381,122 +337,88 @@ export class RoleIndexComponent extends BaseComponent {
       });
 
       let accordionIndex = 0;
-      for (const [menuNombre, permisos] of Object.entries(permisosAgrupados)) {
-        const accordionItem = document.createElement('div');
-        accordionItem.className = 'accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden';
+      let accordionHtml = '';
 
+      for (const [menuNombre, permisos] of Object.entries(permisosAgrupados)) {
         const headingId = `headingMenu${accordionIndex}`;
         const collapseId = `collapseMenu${accordionIndex}`;
-
-        // Header
-        const h2 = document.createElement('h2');
-        h2.className = 'accordion-header';
-        h2.id = headingId;
-
-        const button = document.createElement('button');
-        button.className = `accordion-button bg-white text-dark fw-bold border-bottom ${accordionIndex === 0 ? '' : 'collapsed'}`;
-        button.type = 'button';
-        button.setAttribute('data-bs-toggle', 'collapse');
-        button.setAttribute('data-bs-target', `#${collapseId}`);
-        button.setAttribute('aria-expanded', accordionIndex === 0 ? 'true' : 'false');
-        button.setAttribute('aria-controls', collapseId);
         const allChecked = permisos.length > 0 && permisos.every(p => permisosAsignados.includes(p.id));
-        const someChecked = permisos.some(p => permisosAsignados.includes(p.id));
 
-        button.innerHTML = `
-          <div class="d-flex align-items-center gap-2 w-100 me-3">
-            <input type="checkbox" class="form-check-input mt-0 select-all-menu" ${allChecked ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
-            <span>${menuNombre}</span>
+        accordionHtml += `
+          <div class="accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden">
+            <h2 class="accordion-header" id="${headingId}">
+              <button class="accordion-button bg-white text-dark fw-bold border-bottom ${accordionIndex === 0 ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${accordionIndex === 0 ? 'true' : 'false'}" aria-controls="${collapseId}">
+                <div class="d-flex align-items-center gap-2 w-100 me-3">
+                  <input type="checkbox" class="form-check-input mt-0 select-all-menu" data-menu-index="${accordionIndex}" ${allChecked ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                  <span>${menuNombre}</span>
+                </div>
+              </button>
+            </h2>
+            <div id="${collapseId}" class="accordion-collapse collapse ${accordionIndex === 0 ? 'show' : ''}" aria-labelledby="${headingId}">
+              <div class="accordion-body bg-light">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                  ${permisos.map(permiso => `
+                    <div class="col">
+                      <div class="form-check bg-white p-3 rounded shadow-sm border h-100 d-flex align-items-center">
+                        <input class="form-check-input permission-checkbox flex-shrink-0 mt-0 me-3" type="checkbox" value="${permiso.id}" id="permiso_${permiso.id}" ${permisosAsignados.includes(permiso.id) ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                        <label class="form-check-label user-select-none w-100" for="permiso_${permiso.id}" style="cursor: pointer;">
+                          <div class="fw-semibold text-dark">${permiso.nombre}</div>
+                          <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">
+                            <span class="badge bg-secondary-soft text-dark px-2 py-1">${permiso.accion || '-'}</span> 
+                            ${permiso.recurso || ''}
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
           </div>
         `;
+        accordionIndex++;
+      }
 
-        const selectAllCheckbox = button.querySelector('.select-all-menu');
-        selectAllCheckbox.indeterminate = someChecked && !allChecked;
+      accordionMenus.innerHTML = accordionHtml;
 
-        selectAllCheckbox.addEventListener('click', (e) => {
-          e.stopPropagation();
-        });
+      // Bind events for checkboxes
+      accordionIndex = 0;
+      for (const [menuNombre, permisos] of Object.entries(permisosAgrupados)) {
+        const itemEl = accordionMenus.children[accordionIndex];
+        if (itemEl) {
+          const selectAllCheckbox = itemEl.querySelector('.select-all-menu');
+          const checkboxes = itemEl.querySelectorAll('.permission-checkbox');
 
-        selectAllCheckbox.addEventListener('change', (e) => {
-          const isChecked = e.target.checked;
-          const checkboxes = row.querySelectorAll('.permission-checkbox');
+          // Prevent accordion toggle when clicking select-all checkbox
+          selectAllCheckbox.addEventListener('click', (e) => {
+            e.stopPropagation();
+          });
+
+          // Toggle all checkboxes in this group
+          selectAllCheckbox.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            checkboxes.forEach(cb => {
+              if (!cb.disabled) {
+                cb.checked = isChecked;
+              }
+            });
+          });
+
+          // Update select-all state when individual checkboxes change
           checkboxes.forEach(cb => {
-            if (!cb.disabled) cb.checked = isChecked;
-          });
-        });
-
-        h2.appendChild(button);
-        accordionItem.appendChild(h2);
-
-        // Body
-        const collapseDiv = document.createElement('div');
-        collapseDiv.id = collapseId;
-        collapseDiv.className = `accordion-collapse collapse ${accordionIndex === 0 ? 'show' : ''}`;
-        collapseDiv.setAttribute('aria-labelledby', headingId);
-        // Si queremos que solo haya uno abierto a la vez, descomentar la siguiente línea:
-        // collapseDiv.setAttribute('data-bs-parent', '#accordionMenus');
-
-        const accordionBody = document.createElement('div');
-        accordionBody.className = 'accordion-body bg-light';
-
-        const row = document.createElement('div');
-        row.className = 'row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3';
-
-        permisos.forEach((permiso) => {
-          const col = document.createElement('div');
-          col.className = 'col';
-
-          const formCheck = document.createElement('div');
-          formCheck.className =
-            'form-check bg-white p-3 rounded shadow-sm border h-100 d-flex align-items-center';
-
-          const checkbox = document.createElement('input');
-          checkbox.className = 'form-check-input permission-checkbox flex-shrink-0 mt-0 me-3';
-          checkbox.type = 'checkbox';
-          checkbox.value = permiso.id;
-          checkbox.id = `permiso_${permiso.id}`;
-          checkbox.style.width = '1.2rem';
-          checkbox.style.height = '1.2rem';
-          checkbox.style.cursor = 'pointer';
-
-          if (permisosAsignados.includes(permiso.id)) {
-            checkbox.checked = true;
-          }
-
-          if (!canAssign) {
-            checkbox.disabled = true;
-          }
-
-          checkbox.addEventListener('change', () => {
-             const allCbs = Array.from(row.querySelectorAll('.permission-checkbox'));
-             const checkedCbs = allCbs.filter(cb => cb.checked);
-             selectAllCheckbox.checked = checkedCbs.length === allCbs.length;
-             selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+            cb.addEventListener('change', () => {
+              const allCbs = Array.from(checkboxes);
+              const checkedCbs = allCbs.filter(c => c.checked);
+              selectAllCheckbox.checked = checkedCbs.length === allCbs.length;
+              selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+            });
           });
 
-          const label = document.createElement('label');
-          label.className = 'form-check-label user-select-none w-100';
-          label.htmlFor = `permiso_${permiso.id}`;
-          label.style.cursor = 'pointer';
-          label.innerHTML = `
-            <div class="fw-semibold text-dark">${permiso.nombre}</div>
-            <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">
-              <span class="badge bg-secondary-soft text-dark px-2 py-1">${permiso.accion || '-'}</span> 
-              ${permiso.recurso || ''}
-            </div>
-          `;
-
-          formCheck.appendChild(checkbox);
-          formCheck.appendChild(label);
-          col.appendChild(formCheck);
-          row.appendChild(col);
-        });
-
-        accordionBody.appendChild(row);
-        collapseDiv.appendChild(accordionBody);
-        accordionItem.appendChild(collapseDiv);
-
-        accordionMenus.appendChild(accordionItem);
+          // Initialize indeterminate state
+          const allCbs = Array.from(checkboxes);
+          const checkedCbs = allCbs.filter(c => c.checked);
+          selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+        }
         accordionIndex++;
       }
     } catch (error) {
