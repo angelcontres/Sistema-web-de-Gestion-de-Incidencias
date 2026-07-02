@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Direccion;
+use App\Http\Requests\DireccionesRequest;
 use Illuminate\Http\Request;
 
 class DireccionController extends Controller
@@ -29,18 +30,8 @@ class DireccionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(DireccionesRequest $request)
     {
-        $request->validate([
-            'territorio_id' => 'required|exists:territorios,id',
-            'detalle' => 'required|string|max:255',
-            'referencia' => 'nullable|string|max:255',
-            'codigo_postal' => 'nullable|string|max:20',
-            'latitud' => 'nullable|numeric|between:-90,90',
-            'longitud' => 'nullable|numeric|between:-180,180',
-            'activo' => 'boolean',
-        ]);
-
         $user = auth()->user();
         if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
             $territorio = \App\Models\Territorio::findOrFail($request->territorio_id);
@@ -83,7 +74,7 @@ class DireccionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(DireccionesRequest $request, $id)
     {
         $direccion = Direccion::findOrFail($id);
 
@@ -99,16 +90,6 @@ class DireccionController extends Controller
                 }
             }
         }
-
-        $request->validate([
-            'territorio_id' => 'sometimes|required|exists:territorios,id',
-            'detalle' => 'sometimes|required|string|max:255',
-            'referencia' => 'nullable|string|max:255',
-            'codigo_postal' => 'nullable|string|max:20',
-            'latitud' => 'nullable|numeric|between:-90,90',
-            'longitud' => 'nullable|numeric|between:-180,180',
-            'activo' => 'boolean',
-        ]);
 
         $direccion->update($request->only(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'latitud', 'longitud', 'activo']));
 
