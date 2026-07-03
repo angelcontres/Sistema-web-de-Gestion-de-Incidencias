@@ -41,10 +41,13 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::post('v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
     Route::apiResource('v1/permisos', PermisoController::class);
     Route::apiResource('v1/usuarios', UserController::class);
-    
+
     Route::apiResource('v1/paises', PaisController::class);
     Route::apiResource('v1/territorios', TerritorioController::class);
     Route::apiResource('v1/direcciones', DireccionController::class);
     Route::apiResource('v1/categorias-incidencia', CategoriaIncidenciaController::class);
+
+    Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
+    Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
 });
 
