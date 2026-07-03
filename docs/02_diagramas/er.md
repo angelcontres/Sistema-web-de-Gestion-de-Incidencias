@@ -1,17 +1,17 @@
 erDiagram
-    usuarios {
-        int id PK
-        varchar username UK
-        varchar email UK
-        varchar password
-        boolean activo
-        timestamp created_at
-        int created_by
-        timestamp updated_at
-        int updated_by
-        timestamp deleted_at
-        int deleted_by
-    }
+usuarios {
+int id PK
+varchar username UK
+varchar email UK
+varchar password
+boolean activo
+timestamp created_at
+int created_by
+timestamp updated_at
+int updated_by
+timestamp deleted_at
+int deleted_by
+}
 
     roles {
         int id PK
@@ -74,7 +74,8 @@ erDiagram
         int deleted_by
     }
 
-    cantones {
+    %% Recursiva, provincia, cantón, parroquia
+    territorios {
         int id PK
         varchar nombre
         int provincia_id FK
@@ -149,21 +150,13 @@ erDiagram
         int deleted_by
     }
 
-    tipo_incidencia {
-        int id PK
-        varchar nombre
-        timestamp created_at
-        int created_by
-        timestamp updated_at
-        int updated_by
-        timestamp deleted_at
-        int deleted_by
-    }
-
-    sub_tipo_incidencia {
-        int id PK
-        int tipo_incidencia_id FK
-        varchar nombre
+    %% Recursiva Clasificación de Incidencias (Categoria y subcategoria)
+    categoria_incidencia {
+        int parent_id PK
+        int institucion_id FK
+        varchar nombre UK
+        text descripcion
+        boolean activo
         timestamp created_at
         int created_by
         timestamp updated_at
@@ -214,10 +207,10 @@ erDiagram
     usuarios ||--o{ usuarios_roles : "tiene"
     roles ||--o{ usuarios_roles : "se asigna a"
     roles |o--o| roles : "hereda de (padre_id)"
-    
+
     roles ||--o{ roles_permisos : "contiene"
     permisos ||--o{ roles_permisos : "pertenece a"
-    
+
     opciones_menu ||--o{ permisos : "aloja"
     opciones_menu |o--o| opciones_menu : "tiene submenus (padre_id)"
 
