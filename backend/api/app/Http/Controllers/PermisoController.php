@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Permiso;
 use App\Models\OpcionMenu;
+use App\Models\Permiso;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PermisoController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      */
@@ -37,7 +37,7 @@ class PermisoController extends Controller
             'created_by' => Auth::id() ?? 1,
         ]);
 
-        $adminRole = \App\Models\Role::where('nombre', 'Admin')->first();
+        $adminRole = Role::where('nombre', 'Admin')->first();
         if ($adminRole) {
             $adminRole->permisos()->attach($permiso->id);
         }
@@ -64,7 +64,7 @@ class PermisoController extends Controller
     public function update(Request $request, string $id)
     {
         $permiso = Permiso::findOrFail($id);
-        
+
         $recurso = $permiso->recurso;
         if ($request->has('opcion_menu_id') && $request->opcion_menu_id != $permiso->opcion_menu_id) {
             $opcionMenu = OpcionMenu::findOrFail($request->opcion_menu_id);

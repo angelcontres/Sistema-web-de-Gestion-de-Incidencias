@@ -15,9 +15,9 @@ class TerritorioController extends Controller
         $query = Territorio::with(['pais', 'parent']);
 
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
             $query->where('pais_id', $user->pais_id);
-        } else if ($request->has('pais_id')) {
+        } elseif ($request->has('pais_id')) {
             $query->where('pais_id', $request->input('pais_id'));
         }
 
@@ -39,7 +39,7 @@ class TerritorioController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
             $request->merge(['pais_id' => $user->pais_id]);
         }
 
@@ -71,9 +71,9 @@ class TerritorioController extends Controller
     public function show($id)
     {
         $territorio = Territorio::with(['pais', 'parent', 'hijos'])->findOrFail($id);
-        
+
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $territorio->pais_id != $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $territorio->pais_id != $user->pais_id) {
             return response()->json(['message' => 'No autorizado para ver este territorio.'], 403);
         }
 
@@ -88,7 +88,7 @@ class TerritorioController extends Controller
         $territorio = Territorio::findOrFail($id);
 
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
             if ($territorio->pais_id != $user->pais_id) {
                 return response()->json(['message' => 'No autorizado para modificar este territorio.'], 403);
             }

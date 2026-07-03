@@ -58,6 +58,7 @@ class CategoriaIncidenciaController extends Controller
     public function show($id): JsonResponse
     {
         $categoria = CategoriaIncidencia::with(['parent', 'hijos'])->findOrFail($id);
+
         return response()->json($categoria, 200);
     }
 
@@ -131,6 +132,7 @@ class CategoriaIncidenciaController extends Controller
                 return true;
             }
         }
+
         return false;
     }
 }
