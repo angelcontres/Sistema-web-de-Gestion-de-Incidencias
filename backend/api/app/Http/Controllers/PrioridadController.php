@@ -15,6 +15,7 @@ class PrioridadController extends Controller
     {
         // Se muestran todas las prioridades
         $prioridades = Prioridad::orderBy('id')->get();
+
         return response()->json($prioridades, 200);
     }
 
@@ -42,6 +43,7 @@ class PrioridadController extends Controller
     public function show($id): JsonResponse
     {
         $prioridad = Prioridad::findOrFail($id);
+
         return response()->json($prioridad, 200);
     }
 

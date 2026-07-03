@@ -8,9 +8,9 @@ use App\Http\Controllers\InstitucionController;
 use App\Http\Controllers\OpcionMenuController;
 use App\Http\Controllers\PaisController;
 use App\Http\Controllers\PermisoController;
+use App\Http\Controllers\PrioridadController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TerritorioController;
-use App\Http\Controllers\PrioridadController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserMenuController;
 use App\Http\Middleware\CheckResourcePermission;
@@ -48,9 +48,9 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::apiResource('v1/direcciones', DireccionController::class);
     Route::apiResource('v1/categorias-incidencia', CategoriaIncidenciaController::class);
     Route::apiResource('v1/instituciones', InstitucionController::class)->parameters([
-        'instituciones' => 'institucion'
+        'instituciones' => 'institucion',
     ]);
     Route::apiResource('v1/prioridades', PrioridadController::class)->parameters([
-        'prioridades' => 'prioridad'
+        'prioridades' => 'prioridad',
     ]);
 });

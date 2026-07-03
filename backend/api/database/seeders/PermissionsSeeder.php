@@ -23,7 +23,7 @@ class PermissionsSeeder extends Seeder
             'Opciones de Menú' => 'Opción de Menú',
             'Ubicaciones' => 'Ubicación',
             'Categorías de Incidencias' => 'Categoría de Incidencia',
-            'Instituciones' => 'Institución'
+            'Instituciones' => 'Institución',
         ];
 
         $acciones = [
