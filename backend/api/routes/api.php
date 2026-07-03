@@ -2,18 +2,32 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\SqaController;
+use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\OpcionMenuController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserMenuController;
+use App\Http\Controllers\PaisController;
+use App\Http\Controllers\TerritorioController;
+use App\Http\Controllers\DireccionController;
+use App\Http\Controllers\CategoriaIncidenciaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckResourcePermission;
 
 // Rutas públicas
 Route::post('/v1/login', [AuthController::class, 'login']);
 
-// Rutas protegidas por autenticación
+// Rutas de catálogos (protegidas por autenticación, accesibles para todos los usuarios logueados)
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/v1/catalogos/paises', [CatalogoController::class, 'paises']);
+    Route::get('/v1/catalogos/territorios', [CatalogoController::class, 'territorios']);
+    Route::get('/v1/catalogos/direcciones', [CatalogoController::class, 'direcciones']);
+    Route::get('/v1/catalogos/categorias-incidencia', [CatalogoController::class, 'categoriasIncidencia']);
+    Route::get('/v1/geocodificacion/reversa', [DireccionController::class, 'reverseGeocode']);
+});
+
+// Rutas protegidas por autenticación y permisos de recursos
 Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(function () {
     Route::post('/v1/logout', [AuthController::class, 'logout']);
 
@@ -22,11 +36,15 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
 
     Route::get('/v1/me/menu', [UserMenuController::class, 'index']);
 
-    Route::apiResource('/v1/opciones-menu', OpcionMenuController::class);
-    Route::apiResource('/v1/roles', RoleController::class);
-    Route::post('/v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
-    Route::apiResource('/v1/permisos', PermisoController::class);
-    Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
-    Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
-    Route::apiResource('/v1/usuarios', UserController::class);
+    Route::apiResource('v1/opciones-menu', OpcionMenuController::class);
+    Route::apiResource('v1/roles', RoleController::class);
+    Route::post('v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
+    Route::apiResource('v1/permisos', PermisoController::class);
+    Route::apiResource('v1/usuarios', UserController::class);
+    
+    Route::apiResource('v1/paises', PaisController::class);
+    Route::apiResource('v1/territorios', TerritorioController::class);
+    Route::apiResource('v1/direcciones', DireccionController::class);
+    Route::apiResource('v1/categorias-incidencia', CategoriaIncidenciaController::class);
 });
+

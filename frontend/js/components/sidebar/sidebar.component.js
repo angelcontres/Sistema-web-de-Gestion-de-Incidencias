@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../core/base-component.js';
 import { apiRequest } from '../../core/api.js';
+import { AuthService } from '../../core/auth.service.js';
 
 export class SideBarComponent extends BaseComponent {
   constructor() {
@@ -59,6 +60,7 @@ export class SideBarComponent extends BaseComponent {
       if (!this.menuLoaded) {
         this.loadMenuData();
       }
+      this.renderUserCard();
     }
   }
 
@@ -221,6 +223,30 @@ export class SideBarComponent extends BaseComponent {
         }
       }
     });
+  }
+
+  renderUserCard() {
+    const userCard = this.querySelector('#sidebarUserCard');
+    if (!userCard) return;
+
+    if (AuthService.isAuthenticated()) {
+      const user = AuthService.getCurrentUser() || {};
+      const name = user.name || user.email || 'Usuario';
+      const initials = name.substring(0, 2).toUpperCase();
+      const role = AuthService.isAdmin() ? 'Administrador' : 'Operador';
+
+      const avatarEl = this.querySelector('#sidebarUserAvatar');
+      const nameEl = this.querySelector('#sidebarUserName');
+      const roleEl = this.querySelector('#sidebarUserRole');
+
+      if (avatarEl) avatarEl.textContent = initials;
+      if (nameEl) nameEl.textContent = name;
+      if (roleEl) roleEl.textContent = role;
+
+      userCard.style.display = 'block';
+    } else {
+      userCard.style.display = 'none';
+    }
   }
 }
 

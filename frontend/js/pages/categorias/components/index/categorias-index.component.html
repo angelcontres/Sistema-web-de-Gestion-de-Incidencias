@@ -1,0 +1,92 @@
+<div class="page-fade-in">
+  <!-- Cabecera de Página -->
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Categorías de Incidencias</h1>
+      <p class="text-muted small mb-0">
+        Administra la clasificación de incidencias (ej: Servicios Públicos, Seguridad, Infraestructura) y sus subcategorías.
+      </p>
+    </div>
+    <button id="btnNuevaCategoria" class="btn btn-sm btn-primary fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2">
+      <i class="bi bi-plus-lg"></i> Nueva Categoría
+    </button>
+  </div>
+
+
+  <!-- Tabla de Categorías Colapsable (Tree Table) -->
+  <div class="card custom-card border-0 shadow-sm overflow-hidden d-none" id="categoriasTableContainer">
+    <div class="card-header bg-white border-0 py-3">
+      <h5 class="card-title fw-bold mb-0 text-dark">Listado de Categorías</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="tbl-categorias">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4" style="width: 35%;">Nombre</th>
+              <th style="width: 45%;">Descripción / Ejemplos</th>
+              <th style="width: 10%;">Estado</th>
+              <th class="text-end pe-4" style="width: 10%;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-categorias">
+            <!-- Se inyectan las filas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORÍA -->
+<div class="modal fade" id="categoriaModal" tabindex="-1" aria-labelledby="categoriaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="categoriaModalLabel">Nueva Categoría</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <div id="categoriaModalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="categoriaModalErrorMessage">Error.</span>
+        </div>
+        <form id="categoriaForm" novalidate>
+          <input type="hidden" id="categoriaId" />
+          
+          <div class="mb-3">
+            <label for="categoriaNombre" class="form-label fw-semibold text-dark">Nombre de la Categoría</label>
+            <input type="text" class="form-control" id="categoriaNombre" required placeholder="Ej: Fuga de Agua, Alumbrado Público" />
+            <div class="invalid-feedback">El nombre es obligatorio.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="categoriaDescripcion" class="form-label fw-semibold text-dark">Descripción</label>
+            <textarea class="form-control" id="categoriaDescripcion" rows="2" placeholder="Describe brevemente el tipo de incidencias de esta categoría..."></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="categoriaParentSelect" class="form-label fw-semibold text-dark">Categoría Padre (Opcional)</label>
+            <select id="categoriaParentSelect" class="form-select">
+              <option value="">-- Ninguna (Categoría Raíz) --</option>
+              <!-- Se inyecta dinámicamente -->
+            </select>
+            <div class="form-text text-muted small">
+              Asigna un padre si esta es una subcategoría.
+            </div>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" role="switch" id="categoriaActivo" checked />
+            <label class="form-check-label fw-semibold text-dark" for="categoriaActivo">Categoría Activa</label>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnCategoriaSubmit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

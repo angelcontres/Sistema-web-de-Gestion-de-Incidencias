@@ -5,7 +5,7 @@ import { AuthService } from '../../../../core/auth.service.js';
 
 export class UserFormComponent extends BaseComponent {
   constructor() {
-    super('js/pages/user/component/form/user-form.component.html');
+    super('js/pages/user/components/form/user-form.component.html');
   }
 
   async onInit() {
