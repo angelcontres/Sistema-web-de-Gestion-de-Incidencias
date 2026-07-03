@@ -47,6 +47,21 @@ class RoleSeeder extends Seeder
         $allPermissionsIds = Permiso::pluck('id')->toArray();
         $adminRole->permisos()->sync($allPermissionsIds);
 
+        // Assign specific permissions to the Operador role
+        $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones', 'categorias_incidencia'])
+            ->where(function ($query) {
+                // Operators can only view countries and categories (READ), not modify them
+                $query->where(function ($q) {
+                    $q->whereIn('recurso', ['paises', 'categorias_incidencia'])->where('accion', 'READ');
+                })
+                // Operators have full CRUD for the main menu, territories, and addresses
+                ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones']);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        $operadorRole->permisos()->sync($operadorPermissions);
+
         // Verificamos en consola
         $adminPermisosCount = $adminRole->permisos()->count();
         $operadorPermisosCount = $operadorRole->permisos()->count();
@@ -54,8 +69,7 @@ class RoleSeeder extends Seeder
         echo "--- RESULTADO DEL TEST DE PERMISOS ---\n";
 
         echo 'Permisos de Admin (Deberían ser '.count($allPermissionsIds).'): '.$adminPermisosCount."\n";
-
-        echo 'Permisos de Operador (Deberían ser 0): '.$operadorPermisosCount."\n";
+        echo 'Permisos de Operador (Deberían ser ' . count($operadorPermissions) . '): '.$operadorPermisosCount."\n";
         echo "--------------------------------------\n";
     }
 }

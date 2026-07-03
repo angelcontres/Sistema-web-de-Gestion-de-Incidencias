@@ -68,6 +68,18 @@ class MenuOptionSeeder extends Seeder
             'ruta' => '#/sqa-dashboard',
             'icono' => 'bi bi-graph-up',
             'padre_id' => null,
+            'nombre' => 'Ubicaciones',
+            'ruta' => '#/ubicaciones',
+            'icono' => 'bi bi-geo-alt-fill',
+            'padre_id' => $config->id,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Categorías de Incidencias',
+            'ruta' => '#/categorias',
+            'icono' => 'bi bi-tags-fill',
+            'padre_id' => $config->id,
             'created_by' => $user->id,
         ]);
     }
