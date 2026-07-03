@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
 
         // Seed catalogs
         $this->call(UbicacionesSeeder::class);
+        $this->call(InstitucionesSeeder::class);
         $this->call(ClasificacionesSeeder::class);
 
         // Assign the Admin role to the test user

@@ -55,7 +55,7 @@ class RoleSeeder extends Seeder
                     $q->whereIn('recurso', ['paises', 'categorias_incidencia'])->where('accion', 'READ');
                 })
                 // Operators have full CRUD for the main menu, territories, and addresses
-                ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones']);
+                    ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones']);
             })
             ->pluck('id')
             ->toArray();
@@ -69,7 +69,7 @@ class RoleSeeder extends Seeder
         echo "--- RESULTADO DEL TEST DE PERMISOS ---\n";
 
         echo 'Permisos de Admin (Deberían ser '.count($allPermissionsIds).'): '.$adminPermisosCount."\n";
-        echo 'Permisos de Operador (Deberían ser ' . count($operadorPermissions) . '): '.$operadorPermisosCount."\n";
+        echo 'Permisos de Operador (Deberían ser '.count($operadorPermissions).'): '.$operadorPermisosCount."\n";
         echo "--------------------------------------\n";
     }
 }

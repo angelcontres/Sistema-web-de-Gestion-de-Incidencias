@@ -12,6 +12,7 @@ const routes = {
   '#/usuarios/form': 'app-user-form',
   '#/ubicaciones': 'app-ubicaciones-index',
   '#/categorias': 'app-categorias-index',
+  '#/instituciones': 'app-institucion-index',
   '#/public': 'app-public',
 };
 
@@ -51,6 +52,13 @@ function navigate() {
 
     // Protect #/categorias based on 'Ver Categoría de Incidencia' permission
     if (basePath === '#/categorias' && !AuthService.hasPermission('Ver Categoría de Incidencia')) {
+      window.location.hash = '#/';
+      return;
+    }
+
+    // Protect #/instituciones based on 'Ver Institución' permission (si existiese)
+    if (basePath === '#/instituciones' && !AuthService.hasPermission('Ver Institución')) {
+      // Asumimos que tienen un permiso equivalente, o simplemente lo dejamos libre para usuarios logueados si no hay permiso específico aún.
       window.location.hash = '#/';
       return;
     }

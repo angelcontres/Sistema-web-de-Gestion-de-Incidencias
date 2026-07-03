@@ -1,17 +1,17 @@
 erDiagram
-    usuarios {
-        int id PK
-        varchar username UK
-        varchar email UK
-        varchar password
-        boolean activo
-        timestamp created_at
-        int created_by
-        timestamp updated_at
-        int updated_by
-        timestamp deleted_at
-        int deleted_by
-    }
+usuarios {
+int id PK
+varchar username UK
+varchar email UK
+varchar password
+boolean activo
+timestamp created_at
+int created_by
+timestamp updated_at
+int updated_by
+timestamp deleted_at
+int deleted_by
+}
 
     roles {
         int id PK
@@ -63,9 +63,11 @@ erDiagram
         int deleted_by
     }
 
-    provincias {
+    paises {
         int id PK
-        varchar nombre UK
+        varchar nombre
+        varchar codigo_iso
+        boolean activo
         timestamp created_at
         int created_by
         timestamp updated_at
@@ -74,22 +76,13 @@ erDiagram
         int deleted_by
     }
 
-    cantones {
+    territorios {
         int id PK
+        int pais_id FK
+        int parent_id FK
         varchar nombre
-        int provincia_id FK
-        timestamp created_at
-        int created_by
-        timestamp updated_at
-        int updated_by
-        timestamp deleted_at
-        int deleted_by
-    }
-
-    parroquias {
-        int id PK
-        varchar nombre
-        int canton_id FK
+        varchar tipo
+        boolean activo
         timestamp created_at
         int created_by
         timestamp updated_at
@@ -100,11 +93,13 @@ erDiagram
 
     direcciones {
         int id PK
-        varchar calle_principal
-        varchar calle_secundaria
+        int territorio_id FK
+        varchar detalle
         text referencia
+        varchar codigo_postal
         decimal latitud
         decimal longitud
+        boolean activo
         int parroquia_id FK
         timestamp created_at
         int created_by
@@ -214,10 +209,10 @@ erDiagram
     usuarios ||--o{ usuarios_roles : "tiene"
     roles ||--o{ usuarios_roles : "se asigna a"
     roles |o--o| roles : "hereda de (padre_id)"
-    
+
     roles ||--o{ roles_permisos : "contiene"
     permisos ||--o{ roles_permisos : "pertenece a"
-    
+
     opciones_menu ||--o{ permisos : "aloja"
     opciones_menu |o--o| opciones_menu : "tiene submenus (padre_id)"
 
