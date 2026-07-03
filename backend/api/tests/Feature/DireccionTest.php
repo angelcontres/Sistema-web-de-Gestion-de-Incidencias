@@ -14,7 +14,9 @@ class DireccionTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Pais $pais;
+
     private Territorio $territorio;
 
     protected function setUp(): void
@@ -27,7 +29,7 @@ class DireccionTest extends TestCase
         $this->pais = Pais::create([
             'nombre' => 'Perú',
             'codigo_iso' => 'PE',
-            'activo' => true
+            'activo' => true,
         ]);
 
         $this->territorio = Territorio::create([

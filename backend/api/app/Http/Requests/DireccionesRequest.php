@@ -25,8 +25,8 @@ class DireccionesRequest extends FormRequest
         $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
 
         return [
-            'territorio_id' => ($isUpdate ? 'sometimes|' : '') . 'required|exists:territorios,id',
-            'detalle' => ($isUpdate ? 'sometimes|' : '') . 'required|string|max:255',
+            'territorio_id' => ($isUpdate ? 'sometimes|' : '').'required|exists:territorios,id',
+            'detalle' => ($isUpdate ? 'sometimes|' : '').'required|string|max:255',
             'referencia' => 'nullable|string|max:255',
             'codigo_postal' => 'nullable|string|max:20',
             'latitud' => 'nullable|numeric|between:-90,90',
@@ -35,4 +35,3 @@ class DireccionesRequest extends FormRequest
         ];
     }
 }
-

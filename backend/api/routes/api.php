@@ -2,17 +2,18 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\CategoriaIncidenciaController;
+use App\Http\Controllers\DireccionController;
+use App\Http\Controllers\InstitucionController;
 use App\Http\Controllers\OpcionMenuController;
+use App\Http\Controllers\PaisController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\TerritorioController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserMenuController;
-use App\Http\Controllers\PaisController;
-use App\Http\Controllers\TerritorioController;
-use App\Http\Controllers\DireccionController;
-use App\Http\Controllers\CategoriaIncidenciaController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckResourcePermission;
+use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
 Route::post('/v1/login', [AuthController::class, 'login']);
@@ -40,10 +41,12 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::post('v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
     Route::apiResource('v1/permisos', PermisoController::class);
     Route::apiResource('v1/usuarios', UserController::class);
-    
+
     Route::apiResource('v1/paises', PaisController::class);
     Route::apiResource('v1/territorios', TerritorioController::class);
     Route::apiResource('v1/direcciones', DireccionController::class);
     Route::apiResource('v1/categorias-incidencia', CategoriaIncidenciaController::class);
+    Route::apiResource('v1/instituciones', InstitucionController::class)->parameters([
+        'instituciones' => 'institucion'
+    ]);
 });
-

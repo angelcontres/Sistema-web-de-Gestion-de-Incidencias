@@ -119,7 +119,7 @@ class UbicacionesSeeder extends Seeder
 
         // Territorios (Ecuador) desde JSON completo
         $jsonPath = database_path('seeders/data/ecuador.json');
-        if (!file_exists($jsonPath)) {
+        if (! file_exists($jsonPath)) {
             throw new \Exception("El archivo ecuador.json no existe en {$jsonPath}. Asegúrese de haberlo descargado.");
         }
 
@@ -127,12 +127,12 @@ class UbicacionesSeeder extends Seeder
         $parroquias = [];
 
         foreach ($ecuadorData as $provId => $provData) {
-            if (!isset($provData['provincia'])) {
+            if (! isset($provData['provincia'])) {
                 continue;
             }
 
-            $provName = mb_convert_case($provData['provincia'], MB_CASE_TITLE, "UTF-8");
-            
+            $provName = mb_convert_case($provData['provincia'], MB_CASE_TITLE, 'UTF-8');
+
             $prov = Territorio::create([
                 'pais_id' => $ecuador->id,
                 'parent_id' => null,
@@ -140,16 +140,16 @@ class UbicacionesSeeder extends Seeder
                 'tipo' => 'Provincia',
             ]);
 
-            if (!isset($provData['cantones']) || !is_array($provData['cantones'])) {
+            if (! isset($provData['cantones']) || ! is_array($provData['cantones'])) {
                 continue;
             }
 
             foreach ($provData['cantones'] as $cantId => $cantData) {
-                if (!isset($cantData['canton'])) {
+                if (! isset($cantData['canton'])) {
                     continue;
                 }
 
-                $cantName = mb_convert_case($cantData['canton'], MB_CASE_TITLE, "UTF-8");
+                $cantName = mb_convert_case($cantData['canton'], MB_CASE_TITLE, 'UTF-8');
                 $cant = Territorio::create([
                     'pais_id' => $ecuador->id,
                     'parent_id' => $prov->id,
@@ -157,12 +157,12 @@ class UbicacionesSeeder extends Seeder
                     'tipo' => 'Cantón',
                 ]);
 
-                if (!isset($cantData['parroquias']) || !is_array($cantData['parroquias'])) {
+                if (! isset($cantData['parroquias']) || ! is_array($cantData['parroquias'])) {
                     continue;
                 }
 
                 foreach ($cantData['parroquias'] as $parrId => $parrNameRaw) {
-                    $parrName = mb_convert_case($parrNameRaw, MB_CASE_TITLE, "UTF-8");
+                    $parrName = mb_convert_case($parrNameRaw, MB_CASE_TITLE, 'UTF-8');
                     $parr = Territorio::create([
                         'pais_id' => $ecuador->id,
                         'parent_id' => $cant->id,
@@ -257,18 +257,19 @@ class UbicacionesSeeder extends Seeder
     private static function normalizeString(string $str): string
     {
         $str = mb_strtolower($str, 'UTF-8');
-        $utf8 = array(
-            '/[áàâãªä]/u'   =>   'a',
-            '/[éèêë]/u'     =>   'e',
-            '/[íìîï]/u'     =>   'i',
-            '/[óòôõºö]/u'   =>   'o',
-            '/[úùûü]/u'     =>   'u',
-            '/ç/'           =>   'c',
-            '/ñ/'           =>   'n',
-            '/–/'           =>   '-',
-            '/[’‘‹›‚]/u'    =>   ' ',
-            '/[“”«»„]/u'    =>   ' ',
-        );
+        $utf8 = [
+            '/[áàâãªä]/u' => 'a',
+            '/[éèêë]/u' => 'e',
+            '/[íìîï]/u' => 'i',
+            '/[óòôõºö]/u' => 'o',
+            '/[úùûü]/u' => 'u',
+            '/ç/' => 'c',
+            '/ñ/' => 'n',
+            '/–/' => '-',
+            '/[’‘‹›‚]/u' => ' ',
+            '/[“”«»„]/u' => ' ',
+        ];
+
         return preg_replace(array_keys($utf8), array_values($utf8), $str);
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\CategoriaIncidencia;
 use App\Models\Direccion;
 use App\Models\Pais;
-use App\Models\CategoriaIncidencia;
 use App\Models\Territorio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
