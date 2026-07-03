@@ -47,6 +47,14 @@ export class InstitucionIndexComponent extends BaseComponent {
       const columns = [
         { header: 'Nombre', key: 'nombre', class: 'ps-4 fw-bold text-dark' },
         { header: 'Siglas', key: 'siglas', class: 'text-secondary fw-semibold' },
+        {
+          header: 'Estado',
+          render: (item) => `
+            <span class="badge bg-${item.activo ? 'success' : 'danger'}-soft text-${item.activo ? 'success' : 'danger'} small fw-semibold">
+              ${item.activo ? 'Activo' : 'Inactivo'}
+            </span>
+          `,
+        },
       ];
 
       if (isAdmin) {

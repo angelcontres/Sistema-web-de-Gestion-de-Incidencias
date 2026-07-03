@@ -30,7 +30,7 @@ class InstitucionController extends Controller
      */
     public function store(InstitucionesRequest $request): JsonResponse
     {
-        $data = $request->only(['nombre', 'siglas']);
+        $data = $request->only(['nombre', 'siglas', 'activo']);
         if (auth()->check()) {
             $data['created_by'] = auth()->id();
         }
@@ -60,7 +60,7 @@ class InstitucionController extends Controller
     {
         $institucion = Institucion::findOrFail($id);
 
-        $data = $request->only(['nombre', 'siglas']);
+        $data = $request->only(['nombre', 'siglas', 'activo']);
         if (auth()->check()) {
             $data['updated_by'] = auth()->id();
         }

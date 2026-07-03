@@ -20,6 +20,7 @@ export class InstitucionFormComponent extends BaseComponent {
     this.form = this.modalElement.querySelector('#institucionForm');
     this.nombreInput = this.modalElement.querySelector('#institucionNombre');
     this.siglasInput = this.modalElement.querySelector('#siglas');
+    this.activoInput = this.modalElement.querySelector('#institucionActivo');
     this.formTitle = this.modalElement.querySelector('#institucionModalLabel');
     this.btnGuardarInstitucion = this.modalElement.querySelector('#btnGuardarInstitucion');
     this.formAlertContainer = this.modalElement.querySelector('#institucionModalErrorAlert');
@@ -56,6 +57,7 @@ export class InstitucionFormComponent extends BaseComponent {
     } else {
       if (this.formTitle) this.formTitle.textContent = 'Nueva Institución';
       if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.textContent = 'Guardar';
+      if (this.activoInput) this.activoInput.checked = true;
     }
 
     this.bsModal.show();
@@ -67,6 +69,7 @@ export class InstitucionFormComponent extends BaseComponent {
       if (institucion) {
         if (this.nombreInput) this.nombreInput.value = institucion.nombre || '';
         if (this.siglasInput) this.siglasInput.value = institucion.siglas || '';
+        if (this.activoInput) this.activoInput.checked = institucion.activo !== false;
       }
     } catch (error) {
       console.error('Error al cargar datos de la institución:', error);
@@ -91,6 +94,7 @@ export class InstitucionFormComponent extends BaseComponent {
     const payload = {
       nombre: this.nombreInput.value.trim(),
       siglas: this.siglasInput.value.trim(),
+      activo: this.activoInput ? this.activoInput.checked : true,
     };
 
     try {

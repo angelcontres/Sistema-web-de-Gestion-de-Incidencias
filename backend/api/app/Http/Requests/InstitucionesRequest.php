@@ -31,12 +31,14 @@ class InstitucionesRequest extends FormRequest
             return [
                 'nombre' => 'sometimes|required|string|max:255|unique:instituciones,nombre,'.$institucionId,
                 'siglas' => 'sometimes|required|string|max:50|unique:instituciones,siglas,'.$institucionId,
+                'activo' => 'sometimes|boolean',
             ];
         }
 
         return [
             'nombre' => 'required|string|max:255|unique:instituciones,nombre',
             'siglas' => 'required|string|max:50|unique:instituciones,siglas',
+            'activo' => 'boolean',
         ];
     }
 }
