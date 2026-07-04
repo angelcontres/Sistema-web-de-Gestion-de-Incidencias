@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class DireccionesRequest extends FormRequest
+class PrioridadRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,15 +23,18 @@ class DireccionesRequest extends FormRequest
     public function rules(): array
     {
         $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
+        $prioridadId = $this->route('prioridad') ?? $this->route('prioridades');
+
+        if ($isUpdate) {
+            return [
+                'nombre' => 'sometimes|required|string|max:255|unique:prioridades,nombre,'.$prioridadId,
+                'color_hex' => 'sometimes|required|string|max:7',
+            ];
+        }
 
         return [
-            'territorio_id' => ($isUpdate ? 'sometimes|' : '').'required|exists:territorios,id',
-            'detalle' => ($isUpdate ? 'sometimes|' : '').'required|string|max:255',
-            'referencia' => 'nullable|string|max:255',
-            'codigo_postal' => 'nullable|string|max:20',
-            'latitud' => 'nullable|numeric|between:-90,90',
-            'longitud' => 'nullable|numeric|between:-180,180',
-            'activo' => 'boolean',
+            'nombre' => 'required|string|max:255|unique:prioridades,nombre',
+            'color_hex' => 'required|string|max:7',
         ];
     }
 }

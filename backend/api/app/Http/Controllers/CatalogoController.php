@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CategoriaIncidencia;
 use App\Models\Direccion;
 use App\Models\Pais;
-use App\Models\CategoriaIncidencia;
 use App\Models\Territorio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +17,7 @@ class CatalogoController extends Controller
     public function paises(): JsonResponse
     {
         $paises = Pais::where('activo', true)->orderBy('nombre')->get();
+
         return response()->json($paises);
     }
 
@@ -41,6 +42,7 @@ class CatalogoController extends Controller
         }
 
         $territorios = $query->orderBy('nombre')->get();
+
         return response()->json($territorios);
     }
 
@@ -56,6 +58,7 @@ class CatalogoController extends Controller
         }
 
         $direcciones = $query->get();
+
         return response()->json($direcciones);
     }
 
@@ -81,6 +84,7 @@ class CatalogoController extends Controller
         }
 
         $categorias = $query->orderBy('nombre')->get();
+
         return response()->json($categorias);
     }
 

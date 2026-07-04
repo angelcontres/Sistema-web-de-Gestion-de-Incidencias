@@ -25,6 +25,7 @@ class PermissionsSeeder extends Seeder
             'Ubicaciones' => 'Ubicación',
             'Categorías de Incidencias' => 'Categoría de Incidencia',
             'Incidencias' => 'Incidencia',
+            'Instituciones' => 'Institución',
         ];
 
         $acciones = [
@@ -43,6 +44,7 @@ class PermissionsSeeder extends Seeder
             'Ubicaciones' => 'ubicaciones',
             'Categorías de Incidencias' => 'categorias_incidencia',
             'Incidencias' => 'incidencias',
+            'Instituciones' => 'instituciones',
         ];
 
         foreach ($opciones as $opcionPlural => $opcionSingular) {

@@ -76,6 +76,14 @@ class MenuOptionSeeder extends Seeder
         ]);
 
         OpcionMenu::create([
+            'nombre' => 'Instituciones',
+            'ruta' => '#/instituciones',
+            'icono' => 'bi bi-building-fill',
+            'padre_id' => $config->id,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
             'nombre' => 'Categorías de Incidencias',
             'ruta' => '#/categorias',
             'icono' => 'bi bi-tags-fill',

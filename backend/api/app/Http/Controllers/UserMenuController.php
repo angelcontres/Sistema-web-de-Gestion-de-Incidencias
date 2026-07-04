@@ -16,7 +16,7 @@ class UserMenuController extends Controller
         $query = OpcionMenu::query();
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'status' => 'success',
                 'data' => [],

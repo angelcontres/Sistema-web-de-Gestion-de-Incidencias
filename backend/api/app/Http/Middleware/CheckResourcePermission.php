@@ -11,7 +11,7 @@ class CheckResourcePermission
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -19,7 +19,7 @@ class CheckResourcePermission
 
         // If no user is authenticated, we assume other middlewares (like auth:sanctum) will handle it,
         // but just in case, we return 401.
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'No autorizado'], 401);
         }
 
@@ -38,7 +38,7 @@ class CheckResourcePermission
             default => null,
         };
 
-        if (!$accion) {
+        if (! $accion) {
             return response()->json(['message' => 'Método HTTP no soportado'], 405);
         }
 
@@ -55,10 +55,9 @@ class CheckResourcePermission
 
         // Some specific routes shouldn't be blocked here
         $ignoredResources = ['login', 'logout', 'me', 'me/menu'];
-        if (!$recurso || in_array($recurso, $ignoredResources) || $request->is('api/v1/me/menu')) {
+        if (! $recurso || in_array($recurso, $ignoredResources) || $request->is('api/v1/me/menu')) {
             return $next($request);
         }
-
 
         // Replace hyphens with underscores to match db convention
         $recurso = str_replace('-', '_', $recurso);
@@ -76,33 +75,33 @@ class CheckResourcePermission
             }
         }
 
-        if (!$hasPermission) {
+        if (! $hasPermission) {
 
             $strAccionLower = strtolower($accion);
 
-            if($strAccionLower == 'read'){
+            if ($strAccionLower == 'read') {
                 return response()->json([
-                    'message' => 'No tiene permisos para consultar este recurso: ' . strtolower($recurso)
+                    'message' => 'No tiene permisos para consultar este recurso: '.strtolower($recurso),
                 ], 403);
             }
-            if($strAccionLower == 'create'){
+            if ($strAccionLower == 'create') {
                 return response()->json([
-                    'message' => 'No tiene permisos para crear este recurso: ' . strtolower($recurso)
+                    'message' => 'No tiene permisos para crear este recurso: '.strtolower($recurso),
                 ], 403);
             }
-            if($strAccionLower == 'update'){
+            if ($strAccionLower == 'update') {
                 return response()->json([
-                    'message' => 'No tiene permisos para actualizar este recurso: ' . strtolower($recurso)
+                    'message' => 'No tiene permisos para actualizar este recurso: '.strtolower($recurso),
                 ], 403);
             }
-            if($strAccionLower == 'delete'){
+            if ($strAccionLower == 'delete') {
                 return response()->json([
-                    'message' => 'No tiene permisos para eliminar este recurso' . strtolower($recurso)
+                    'message' => 'No tiene permisos para eliminar este recurso'.strtolower($recurso),
                 ], 403);
             }
 
             return response()->json([
-                'message' => 'No tiene permisos ' . strtolower($recurso) . ':' . strtolower($accion)
+                'message' => 'No tiene permisos '.strtolower($recurso).':'.strtolower($accion),
             ], 403);
         }
 

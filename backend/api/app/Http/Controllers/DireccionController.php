@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Direccion;
 use App\Http\Requests\DireccionesRequest;
+use App\Models\Direccion;
+use App\Models\Territorio;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class DireccionController extends Controller
 {
@@ -16,11 +18,11 @@ class DireccionController extends Controller
         $query = Direccion::with(['territorio.pais']);
 
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
             $query->whereHas('territorio', function ($q) use ($user) {
                 $q->where('pais_id', $user->pais_id);
             });
-        } else if ($request->has('territorio_id')) {
+        } elseif ($request->has('territorio_id')) {
             $query->where('territorio_id', $request->input('territorio_id'));
         }
 
@@ -33,8 +35,8 @@ class DireccionController extends Controller
     public function store(DireccionesRequest $request)
     {
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
-            $territorio = \App\Models\Territorio::findOrFail($request->territorio_id);
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+            $territorio = Territorio::findOrFail($request->territorio_id);
             if ($territorio->pais_id != $user->pais_id) {
                 return response()->json(['message' => 'El territorio seleccionado debe pertenecer a su país asignado.'], 403);
             }
@@ -62,9 +64,9 @@ class DireccionController extends Controller
     public function show($id)
     {
         $direccion = Direccion::with(['territorio.pais'])->findOrFail($id);
-        
+
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio->pais_id != $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio->pais_id != $user->pais_id) {
             return response()->json(['message' => 'No autorizado para ver esta dirección.'], 403);
         }
 
@@ -79,12 +81,12 @@ class DireccionController extends Controller
         $direccion = Direccion::findOrFail($id);
 
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
             if ($direccion->territorio->pais_id != $user->pais_id) {
                 return response()->json(['message' => 'No autorizado para modificar esta dirección.'], 403);
             }
             if ($request->has('territorio_id')) {
-                $territorio = \App\Models\Territorio::findOrFail($request->territorio_id);
+                $territorio = Territorio::findOrFail($request->territorio_id);
                 if ($territorio->pais_id != $user->pais_id) {
                     return response()->json(['message' => 'El nuevo territorio seleccionado debe pertenecer a su país asignado.'], 403);
                 }
@@ -107,7 +109,7 @@ class DireccionController extends Controller
         $direccion = Direccion::findOrFail($id);
 
         $user = auth()->user();
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio->pais_id != $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio->pais_id != $user->pais_id) {
             return response()->json(['message' => 'No autorizado para eliminar esta dirección.'], 403);
         }
 
@@ -133,11 +135,11 @@ class DireccionController extends Controller
 
         // 1. Intentar con Nominatim (OpenStreetMap)
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(3)
+            $response = Http::timeout(3)
                 ->withoutVerifying()
                 ->withHeaders([
                     'User-Agent' => 'SistemaWebGestionIncidencias/1.0 (contacto: admin@sistema.local)',
-                    'Accept-Language' => 'es'
+                    'Accept-Language' => 'es',
                 ])->get('https://nominatim.openstreetmap.org/reverse', [
                     'format' => 'json',
                     'lat' => $lat,
@@ -155,17 +157,17 @@ class DireccionController extends Controller
 
         // 2. Fallback: Intentar con BigDataCloud (API gratuita sin límite estricto de IP y con CORS)
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(3)
+            $response = Http::timeout(3)
                 ->withoutVerifying()
                 ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
                     'latitude' => $lat,
                     'longitude' => $lng,
-                    'localityLanguage' => 'es'
+                    'localityLanguage' => 'es',
                 ]);
 
             if ($response->successful()) {
                 $bdc = $response->json();
-                
+
                 // Mapear al formato de Nominatim para que el frontend lo procese igual
                 $mapped = [
                     'address' => [
@@ -184,20 +186,20 @@ class DireccionController extends Controller
                         $bdc['locality'] ?? null,
                         $bdc['city'] ?? null,
                         $bdc['principalSubdivision'] ?? null,
-                        $bdc['countryName'] ?? null
-                    ]))
+                        $bdc['countryName'] ?? null,
+                    ])),
                 ];
 
                 return response()->json($mapped, 200);
             }
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error en todos los servicios de geocodificación: ' . $e->getMessage()
+                'message' => 'Error en todos los servicios de geocodificación: '.$e->getMessage(),
             ], 502);
         }
 
         return response()->json([
-            'message' => 'No se pudo obtener información de geocodificación de ningún servicio.'
+            'message' => 'No se pudo obtener información de geocodificación de ningún servicio.',
         ], 502);
     }
 }

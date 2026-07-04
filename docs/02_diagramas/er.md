@@ -85,7 +85,8 @@ int deleted_by
         int pais_id FK
         int parent_id FK
         varchar nombre
-        int provincia_id FK
+        varchar tipo
+        boolean activo
         timestamp created_at
         int created_by
         timestamp updated_at

@@ -3,18 +3,19 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\SqaController;
 use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\CategoriaIncidenciaController;
+use App\Http\Controllers\DireccionController;
+use App\Http\Controllers\InstitucionController;
 use App\Http\Controllers\OpcionMenuController;
+use App\Http\Controllers\PaisController;
 use App\Http\Controllers\PermisoController;
+use App\Http\Controllers\PrioridadController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\TerritorioController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserMenuController;
-use App\Http\Controllers\PaisController;
-use App\Http\Controllers\TerritorioController;
-use App\Http\Controllers\DireccionController;
-use App\Http\Controllers\CategoriaIncidenciaController;
-use App\Http\Controllers\IncidenciaController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckResourcePermission;
+use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
 Route::post('/v1/login', [AuthController::class, 'login']);
@@ -52,5 +53,10 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
 
     Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
     Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
+    Route::apiResource('v1/instituciones', InstitucionController::class)->parameters([
+        'instituciones' => 'institucion',
+    ]);
+    Route::apiResource('v1/prioridades', PrioridadController::class)->parameters([
+        'prioridades' => 'prioridad',
+    ]);
 });
-
