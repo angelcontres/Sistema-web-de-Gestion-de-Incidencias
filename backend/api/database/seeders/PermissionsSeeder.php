@@ -24,7 +24,7 @@ class PermissionsSeeder extends Seeder
             'SQA' => 'SQA',
             'Ubicaciones' => 'Ubicación',
             'Categorías de Incidencias' => 'Categoría de Incidencia',
-            'Instituciones' => 'Institución'
+            'Instituciones' => 'Institución',
         ];
 
         $acciones = [

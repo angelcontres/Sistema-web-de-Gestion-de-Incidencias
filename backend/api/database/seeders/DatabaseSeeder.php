@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UbicacionesSeeder::class);
         $this->call(InstitucionesSeeder::class);
         $this->call(ClasificacionesSeeder::class);
+        $this->call(PrioridadSeeder::class);
 
         // Assign the Admin role to the test user
         $adminRole = Role::where('nombre', 'Admin')->first();

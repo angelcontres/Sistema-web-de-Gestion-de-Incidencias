@@ -9,6 +9,7 @@ use App\Http\Controllers\InstitucionController;
 use App\Http\Controllers\OpcionMenuController;
 use App\Http\Controllers\PaisController;
 use App\Http\Controllers\PermisoController;
+use App\Http\Controllers\PrioridadController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TerritorioController;
 use App\Http\Controllers\UserController;
@@ -51,6 +52,9 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
     Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
     Route::apiResource('v1/instituciones', InstitucionController::class)->parameters([
-        'instituciones' => 'institucion'
+        'instituciones' => 'institucion',
+    ]);
+    Route::apiResource('v1/prioridades', PrioridadController::class)->parameters([
+        'prioridades' => 'prioridad',
     ]);
 });
