@@ -2,26 +2,26 @@ import { apiRequest } from '../../../core/api.js';
 
 export const RoleService = {
   getAll() {
-    return apiRequest('/v1/roles');
+    return apiRequest('/roles');
   },
   getById(id) {
-    return apiRequest(`/v1/roles/${id}`);
+    return apiRequest(`/roles/${id}`);
   },
   create(payload) {
-    return apiRequest('/v1/roles', {
+    return apiRequest('/roles', {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
   },
   update(id, payload) {
-    return apiRequest(`/v1/roles/${id}`, {
+    return apiRequest(`/roles/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
   },
   delete(id) {
-    return apiRequest(`/v1/roles/${id}`, {
-      method: 'DELETE'
+    return apiRequest(`/roles/${id}`, {
+      method: 'DELETE',
     });
-  }
+  },
 };

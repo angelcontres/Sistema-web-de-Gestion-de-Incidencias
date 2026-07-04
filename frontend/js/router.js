@@ -7,6 +7,7 @@ const routes = {
   '#/opciones-menu/form': 'app-menu-options-form',
   '#/roles': 'app-role-index',
   '#/permisos': 'app-permission-index',
+  '#/sqa-dashboard': 'app-sqa-dashboard',
   '#/usuarios': 'app-user-index',
   '#/usuarios/form': 'app-user-form',
   '#/ubicaciones': 'app-ubicaciones-index',
@@ -93,7 +94,7 @@ export function initRouter() {
   // Refresh user profile details if authenticated on load
   if (AuthService.isAuthenticated()) {
     AuthService.refreshUser().catch((err) => {
-      console.error('Error refreshing session from /v1/me:', err);
+      console.error('Error refreshing session from endpoint /me:', err);
     });
   }
 

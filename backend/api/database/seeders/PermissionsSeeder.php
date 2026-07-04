@@ -21,6 +21,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'Rol',
             'Permisos' => 'Permiso',
             'Opciones de Menú' => 'Opción de Menú',
+            'SQA' => 'SQA',
             'Ubicaciones' => 'Ubicación',
             'Categorías de Incidencias' => 'Categoría de Incidencia',
             'Instituciones' => 'Institución'
@@ -38,6 +39,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'roles',
             'Permisos' => 'permisos',
             'Opciones de Menú' => 'opciones_menu',
+            'SQA' => 'sqa',
             'Ubicaciones' => 'ubicaciones',
             'Categorías de Incidencias' => 'categorias_incidencia',
             'Instituciones' => 'instituciones',

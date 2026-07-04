@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SqaController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CategoriaIncidenciaController;
 use App\Http\Controllers\DireccionController;
@@ -46,6 +47,9 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::apiResource('v1/territorios', TerritorioController::class);
     Route::apiResource('v1/direcciones', DireccionController::class);
     Route::apiResource('v1/categorias-incidencia', CategoriaIncidenciaController::class);
+
+    Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
+    Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
     Route::apiResource('v1/instituciones', InstitucionController::class)->parameters([
         'instituciones' => 'institucion'
     ]);

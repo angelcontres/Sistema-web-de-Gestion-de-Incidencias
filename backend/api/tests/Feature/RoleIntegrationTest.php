@@ -30,7 +30,7 @@ class RoleIntegrationTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->getJson('/api/v1/roles');
+        $response = $this->getJson('/v1/roles');
 
         $response->assertStatus(200);
     }

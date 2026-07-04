@@ -4,6 +4,7 @@ Proyecto para gestionar incidencias georreferenciadas: registro, seguimiento,
 asignación y resolución con trazabilidad completa.
 
 ## Integrantes
+
 - Paulo Orrala Arriaga
 - Carlos Fernando Patiño García
 - Angel Alejandro Villon Panimboza
@@ -130,25 +131,33 @@ credenciales de acceso, modelo ER, diagrama de arquitectura).
 
 ## Estándares de Código y Formateo (Para el Equipo)
 
-Para mantener la base de código limpia y evitar conflictos de formato (espaciados, llaves, comillas) en las Pull Requests, el proyecto ya cuenta con **reglas de estilo globales preconfiguradas** en el repositorio (`pint.json` y `.prettierrc`). 
+Para mantener la base de código limpia y evitar conflictos de formato (espaciados, llaves, comillas) en las Pull Requests, el proyecto ya cuenta con **reglas de estilo globales preconfiguradas** en el repositorio (`pint.json` y `.prettierrc`).
 
 Todos los integrantes del equipo deben utilizarlas siguiendo estos pasos:
 
 ### Backend (Laravel) - Laravel Pint
+
 El backend está configurado bajo el estándar de Laravel definido en `backend/api/pint.json`. No debes crear ni modificar reglas, solo ejecutarlas:
+
 1.  **Ejecutar formateador**: Abre tu terminal y corre:
+
     ```bash
     # En Docker:
     docker compose exec laravel ./vendor/bin/pint
-    
+
     # En local:
     cd backend/api
     ./vendor/bin/pint
     ```
+
 2.  Esto escaneará tu código PHP modificado y lo formateará automáticamente.
 
+3.  **El worker que se utiliza para rastrear la duracion de las peticiones REST se ejecuta automaticamente y los datos graficos se pueden ver en el menú SQA del sidebar**
+
 ### Frontend (HTML, CSS, JS) - Prettier
+
 El frontend utiliza las reglas compartidas definidas en `frontend/.prettierrc`.
+
 1.  Instala la extensión **Prettier - Code Formatter** en tu VS Code.
 2.  Como el repositorio ya incluye la configuración compartida en `.vscode/settings.json`, tu editor utilizará Prettier y formateará de forma automática cada vez que guardes un archivo (`Ctrl + S`).
 

@@ -17,12 +17,12 @@ export class MenuOptionsListComponent extends BaseComponent {
     if (tblDatos) {
       // 1. Configurar las columnas de forma parametrizable de acuerdo a los permisos
       const columns = [
-        { 
-          header: 'Nombre', 
-          render: (opcion) => `<div class="fw-bold text-dark">${opcion.nombre || ''}</div>` 
+        {
+          header: 'Nombre',
+          render: (opcion) => `<div class="fw-bold text-dark">${opcion.nombre || ''}</div>`,
         },
-        { 
-          header: 'Icono', 
+        {
+          header: 'Icono',
           render: (opcion) => {
             if (!opcion.icono) return '<span class="text-muted small">-</span>';
             const cleanIcono = opcion.icono.trim().replace(/[^a-zA-Z0-9\s\-]/g, '');
@@ -35,48 +35,67 @@ export class MenuOptionsListComponent extends BaseComponent {
                 <code>${cleanIcono}</code>
               </span>
             `;
-          } 
+          },
         },
-        { 
-          header: 'Ruta', 
-          render: (opcion) => `<code class="text-indigo small font-monospace">${opcion.ruta || ''}</code>` 
+        {
+          header: 'Ruta',
+          render: (opcion) =>
+            `<code class="text-indigo small font-monospace">${opcion.ruta || ''}</code>`,
         },
-        { 
-          header: 'Padre', 
-          render: (opcion) => opcion.padre && opcion.padre.nombre 
-            ? `
+        {
+          header: 'Padre',
+          render: (opcion) =>
+            opcion.padre && opcion.padre.nombre
+              ? `
               <span class="badge bg-secondary-soft text-dark px-2.5 py-1 rounded small fw-medium">
                 <i class="bi bi-folder-fill me-1 small"></i>${opcion.padre.nombre}
               </span>
-            ` 
-            : '<span class="text-muted small">-</span>'
+            `
+              : '<span class="text-muted small">-</span>',
         },
-        { 
-          header: 'Creado el', 
-          render: (opcion) => opcion.created_at 
-            ? new Date(opcion.created_at).toLocaleString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
-            : '-' 
-        }
+        {
+          header: 'Creado el',
+          render: (opcion) =>
+            opcion.created_at
+              ? new Date(opcion.created_at).toLocaleString('es-ES', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : '-',
+        },
       ];
 
       const actions = [];
       if (AuthService.hasPermission('UPDATE', 'opciones_menu')) {
-        actions.push({ name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' });
+        actions.push({
+          name: 'editar',
+          label: 'Editar',
+          icon: 'bi-pencil-square',
+          class: 'text-primary',
+        });
       }
       if (AuthService.hasPermission('DELETE', 'opciones_menu')) {
-        actions.push({ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' });
+        actions.push({
+          name: 'eliminar',
+          label: 'Eliminar',
+          icon: 'bi-trash',
+          class: 'text-danger',
+        });
       }
 
       if (actions.length > 0) {
         columns.push({
           header: 'Acciones',
           class: 'text-center',
-          actions: actions
+          actions: actions,
         });
       }
 
       tblDatos.configure({
-        columns: columns
+        columns: columns,
       });
 
       // 2. Escuchar acciones de la tabla (editar / eliminar)

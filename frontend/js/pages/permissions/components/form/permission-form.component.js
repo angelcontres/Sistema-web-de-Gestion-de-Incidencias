@@ -8,7 +8,7 @@ export class PermissionFormComponent extends BaseComponent {
 
   async onInit() {
     this.modalEl = this.querySelector('#permisoModal');
-    
+
     // Mover el modal al body para evitar problemas de z-index con Bootstrap
     if (this.modalEl) {
       document.body.appendChild(this.modalEl);
@@ -22,7 +22,7 @@ export class PermissionFormComponent extends BaseComponent {
     this.nombreInput = this.modalEl.querySelector('#nombre');
     this.accionInput = this.modalEl.querySelector('#accion');
     this.opcionMenuSelect = this.modalEl.querySelector('#opcion_menu_id');
-    
+
     this.formTitle = this.modalEl.querySelector('#permisoModalLabel');
     this.btnText = this.modalEl.querySelector('#btnText');
     this.btnSubmit = this.modalEl.querySelector('#btnSubmit');
@@ -45,11 +45,12 @@ export class PermissionFormComponent extends BaseComponent {
   async llenarSelectOpcionesMenu(valorSeleccionado = null) {
     if (!this.opcionMenuSelect) return;
 
-    this.opcionMenuSelect.innerHTML = '<option value="" disabled selected>Seleccione una opción...</option>';
+    this.opcionMenuSelect.innerHTML =
+      '<option value="" disabled selected>Seleccione una opción...</option>';
 
     try {
-      const response = await apiRequest('/v1/opciones-menu');
-      const opciones = Array.isArray(response) ? response : (response.data || []);
+      const response = await apiRequest('/opciones-menu');
+      const opciones = Array.isArray(response) ? response : response.data || [];
 
       opciones.forEach((opcion) => {
         const option = document.createElement('option');
@@ -140,13 +141,16 @@ export class PermissionFormComponent extends BaseComponent {
       }
 
       // Despachar evento para notificar al index que se guardó exitosamente
-      this.dispatchEvent(new CustomEvent('permiso-guardado', { 
-        detail: { 
-          mensaje: permisoId ? 'Permiso actualizado correctamente.' : 'Permiso creado correctamente.' 
-        },
-        bubbles: true 
-      }));
-
+      this.dispatchEvent(
+        new CustomEvent('permiso-guardado', {
+          detail: {
+            mensaje: permisoId
+              ? 'Permiso actualizado correctamente.'
+              : 'Permiso creado correctamente.',
+          },
+          bubbles: true,
+        })
+      );
     } catch (error) {
       console.error('Error al guardar permiso:', error);
       this.mostrarError(error.message || 'Error al procesar el formulario.');
@@ -157,7 +161,7 @@ export class PermissionFormComponent extends BaseComponent {
 
   setSubmitting(isSubmitting) {
     if (!this.btnSubmit) return;
-    
+
     if (isSubmitting) {
       this.btnSubmit.disabled = true;
       const originalText = this.btnText ? this.btnText.textContent : 'Guardando...';

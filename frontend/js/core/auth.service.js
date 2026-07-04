@@ -2,13 +2,13 @@ import { apiRequest } from './api.js';
 
 export const AuthService = {
   async login(email, password) {
-    const response = await apiRequest('/v1/login', {
+    const response = await apiRequest('/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
     if (response && response.access_token) {
       localStorage.setItem('access_token', response.access_token);
-      // Fetch user profile and permissions from /v1/me
+      // Fetch user profile and permissions from /me
       await this.refreshUser();
     }
     return response;
@@ -16,7 +16,7 @@ export const AuthService = {
 
   async logout() {
     try {
-      await apiRequest('/v1/logout', { method: 'POST' });
+      await apiRequest('/logout', { method: 'POST' });
     } catch (error) {
       console.error('Error during logout API call:', error);
     } finally {
@@ -29,7 +29,7 @@ export const AuthService = {
 
   async refreshUser() {
     try {
-      const response = await apiRequest('/v1/me');
+      const response = await apiRequest('/me');
       if (response && response.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
         window.dispatchEvent(new CustomEvent('auth-change'));
@@ -43,7 +43,7 @@ export const AuthService = {
 
   async refreshToken() {
     try {
-      const response = await apiRequest('/v1/refresh', { method: 'POST' });
+      const response = await apiRequest('v1/refresh', { method: 'POST' });
       if (response && response.access_token) {
         localStorage.setItem('access_token', response.access_token);
       }

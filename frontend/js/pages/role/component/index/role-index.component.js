@@ -61,7 +61,7 @@ export class RoleIndexComponent extends BaseComponent {
     if (emptyState) emptyState.classList.add('d-none');
 
     try {
-      const response = await apiRequest('/v1/roles');
+      const response = await apiRequest('/roles');
       const roles = response || [];
 
       if (totalRolesBadge) {
@@ -184,7 +184,7 @@ export class RoleIndexComponent extends BaseComponent {
     this.querySelector('#btnText').textContent = 'Guardar Rol';
 
     try {
-      const response = await apiRequest('/v1/roles');
+      const response = await apiRequest('/roles');
       this.llenarSelectPadre(response || []);
     } catch (error) {
       console.error('Error cargando roles para select:', error);
@@ -237,7 +237,7 @@ export class RoleIndexComponent extends BaseComponent {
     const payload = { nombre, descripcion, padre_id };
 
     try {
-      const endpoint = roleId ? `/v1/roles/${roleId}` : '/v1/roles';
+      const endpoint = roleId ? `/roles/${roleId}` : '/roles';
       const method = roleId ? 'PUT' : 'POST';
 
       await apiRequest(endpoint, {
@@ -269,7 +269,7 @@ export class RoleIndexComponent extends BaseComponent {
       )
     ) {
       try {
-        await apiRequest(`/v1/roles/${id}`, { method: 'DELETE' });
+        await apiRequest(`/roles/${id}`, { method: 'DELETE' });
         this.mostrarAlertaExito(`Rol "${nombre}" eliminado con éxito.`);
         await this.cargarRoles();
       } catch (error) {
@@ -307,8 +307,8 @@ export class RoleIndexComponent extends BaseComponent {
 
     try {
       const [todosPermisosResponse, rolDetalle] = await Promise.all([
-        apiRequest('/v1/permisos'),
-        apiRequest(`/v1/roles/${rol.id}`),
+        apiRequest('/permisos'),
+        apiRequest(`/roles/${rol.id}`),
       ]);
 
       const todosPermisos = todosPermisosResponse || [];
@@ -446,7 +446,7 @@ export class RoleIndexComponent extends BaseComponent {
     btnAssignSubmit.disabled = true;
 
     try {
-      await apiRequest(`/v1/roles/${roleId}/permisos`, {
+      await apiRequest(`/roles/${roleId}/permisos`, {
         method: 'POST',
         body: JSON.stringify({ permisos: permisosIds }),
       });
