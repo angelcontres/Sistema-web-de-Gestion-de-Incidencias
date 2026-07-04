@@ -12,6 +12,7 @@ use App\Http\Controllers\PaisController;
 use App\Http\Controllers\TerritorioController;
 use App\Http\Controllers\DireccionController;
 use App\Http\Controllers\CategoriaIncidenciaController;
+use App\Http\Controllers\IncidenciaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckResourcePermission;
 
@@ -24,6 +25,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v1/catalogos/territorios', [CatalogoController::class, 'territorios']);
     Route::get('/v1/catalogos/direcciones', [CatalogoController::class, 'direcciones']);
     Route::get('/v1/catalogos/categorias-incidencia', [CatalogoController::class, 'categoriasIncidencia']);
+    Route::get('/v1/catalogos/instituciones', [CatalogoController::class, 'instituciones']);
     Route::get('/v1/geocodificacion/reversa', [DireccionController::class, 'reverseGeocode']);
 });
 
@@ -46,6 +48,7 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::apiResource('v1/territorios', TerritorioController::class);
     Route::apiResource('v1/direcciones', DireccionController::class);
     Route::apiResource('v1/categorias-incidencia', CategoriaIncidenciaController::class);
+    Route::apiResource('v1/incidencias', IncidenciaController::class);
 
     Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
     Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);

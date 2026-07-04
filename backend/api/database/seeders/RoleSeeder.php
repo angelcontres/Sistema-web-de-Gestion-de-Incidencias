@@ -48,19 +48,26 @@ class RoleSeeder extends Seeder
         $adminRole->permisos()->sync($allPermissionsIds);
 
         // Assign specific permissions to the Operador role
-        $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones', 'categorias_incidencia'])
+        $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones', 'categorias_incidencia', 'incidencias'])
             ->where(function ($query) {
                 // Operators can only view countries and categories (READ), not modify them
                 $query->where(function ($q) {
                     $q->whereIn('recurso', ['paises', 'categorias_incidencia'])->where('accion', 'READ');
                 })
-                // Operators have full CRUD for the main menu, territories, and addresses
-                ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones']);
+                // Operators have full CRUD for the main menu, territories, addresses, and incidents
+                ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones', 'incidencias']);
             })
             ->pluck('id')
             ->toArray();
 
         $operadorRole->permisos()->sync($operadorPermissions);
+
+        // Assign specific permissions to the Institucion role
+        $institucionRole = Role::where('nombre', 'Institucion')->first();
+        if ($institucionRole) {
+            $institucionPermissions = Permiso::whereIn('recurso', ['incidencias', 'direcciones'])->pluck('id')->toArray();
+            $institucionRole->permisos()->sync($institucionPermissions);
+        }
 
         // Verificamos en consola
         $adminPermisosCount = $adminRole->permisos()->count();

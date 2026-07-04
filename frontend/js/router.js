@@ -12,6 +12,8 @@ const routes = {
   '#/usuarios/form': 'app-user-form',
   '#/ubicaciones': 'app-ubicaciones-index',
   '#/categorias': 'app-categorias-index',
+  '#/incidencias': 'app-incidencia-index',
+  '#/incidencias/form': 'app-incidencia-form',
   '#/public': 'app-public',
 };
 
@@ -51,6 +53,12 @@ function navigate() {
 
     // Protect #/categorias based on 'Ver Categoría de Incidencia' permission
     if (basePath === '#/categorias' && !AuthService.hasPermission('Ver Categoría de Incidencia')) {
+      window.location.hash = '#/';
+      return;
+    }
+
+    // Protect #/incidencias based on 'Ver Incidencia' permission
+    if (basePath === '#/incidencias' && !AuthService.hasPermission('Ver Incidencia')) {
       window.location.hash = '#/';
       return;
     }

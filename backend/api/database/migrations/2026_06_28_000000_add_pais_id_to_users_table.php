@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('pais_id')->nullable()->after('activo')->constrained('paises')->nullOnDelete();
+            $table->foreignId('institucion_id')->nullable()->after('activo')->constrained('instituciones')->nullOnDelete();
         });
     }
 
@@ -24,6 +25,8 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['users_pais_id_foreign']);
             $table->dropColumn('pais_id');
+            $table->dropForeign(['users_institucion_id_foreign']);
+            $table->dropColumn('institucion_id');
         });
     }
 };

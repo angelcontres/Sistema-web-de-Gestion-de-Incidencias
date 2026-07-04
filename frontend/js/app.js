@@ -23,6 +23,8 @@ import './pages/sqa-dashboard/sqa-dashboard.component.js';
 import './pages/permissions/components/form/permission-form.component.js';
 import './pages/ubicaciones/components/index/ubicaciones-index.component.js';
 import './pages/categorias/components/index/categorias-index.component.js';
+import './pages/incidencias/components/index/incidencia-index.component.js';
+import './pages/incidencias/components/form/incidencia-form.component.js';
 import './shared/components/app-data-table/app-data-table.component.js';
 // Import and Initialize Router
 import { initRouter } from './router.js';

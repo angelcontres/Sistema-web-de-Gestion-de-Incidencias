@@ -82,5 +82,13 @@ class MenuOptionSeeder extends Seeder
             'padre_id' => $config->id,
             'created_by' => $user->id,
         ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Incidencias',
+            'ruta' => '#/incidencias',
+            'icono' => 'bi bi-exclamation-triangle-fill',
+            'padre_id' => null,
+            'created_by' => $user->id,
+        ]);
     }
 }

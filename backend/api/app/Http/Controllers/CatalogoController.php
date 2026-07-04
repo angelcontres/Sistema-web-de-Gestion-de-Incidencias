@@ -83,4 +83,13 @@ class CatalogoController extends Controller
         $categorias = $query->orderBy('nombre')->get();
         return response()->json($categorias);
     }
+
+    /**
+     * Obtener listado de instituciones activas.
+     */
+    public function instituciones(): JsonResponse
+    {
+        $instituciones = \App\Models\Institucion::where('activo', true)->orderBy('nombre')->get();
+        return response()->json($instituciones);
+    }
 }

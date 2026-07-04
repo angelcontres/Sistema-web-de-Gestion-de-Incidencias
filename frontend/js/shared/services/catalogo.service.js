@@ -64,7 +64,15 @@ export const CatalogoService = {
     }
 
     const queryString = params.toString();
-    const endpoint = `/v1/catalogos/categorias-incidencia${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/v1/catalogos/categorias-incidencia${queryString ? `?${queryString}` : ''}`;;
     return apiRequest(endpoint);
+  },
+
+  /**
+   * Obtiene la lista de instituciones activas.
+   * @returns {Promise<Array>} Lista de instituciones
+   */
+  async getInstituciones() {
+    return apiRequest('/v1/catalogos/instituciones');
   }
 };
