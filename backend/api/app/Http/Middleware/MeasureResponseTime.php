@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Middleware;
+
 use App\Models\PerformanceLog;
 use Closure;
 use Illuminate\Http\Request;

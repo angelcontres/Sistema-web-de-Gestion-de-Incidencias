@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IncidenciasRequest extends FormRequest
@@ -17,15 +18,15 @@ class IncidenciasRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         $rules = [
             'incidencia_descripcion' => 'nullable|string',
             'direccion_id' => 'nullable|integer|exists:direcciones,id',
-            'tipo_incidencia_id' => ($this->isMethod('post') ? 'required' : 'sometimes|required') . '|integer|exists:categorias_incidencia,id',
-            'sub_tipo_incidencia_id' => ($this->isMethod('post') ? 'required' : 'sometimes|required') . '|integer|exists:categorias_incidencia,id',
+            'tipo_incidencia_id' => ($this->isMethod('post') ? 'required' : 'sometimes|required').'|integer|exists:categorias_incidencia,id',
+            'sub_tipo_incidencia_id' => ($this->isMethod('post') ? 'required' : 'sometimes|required').'|integer|exists:categorias_incidencia,id',
             'cantidad_afectados_incidencia' => 'nullable|integer|min:0',
             'institucion_id' => 'nullable|integer|exists:instituciones,id',
         ];

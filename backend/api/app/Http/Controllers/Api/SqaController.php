@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PerformanceLog;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+
 class SqaController extends Controller
 {
     public function performanceStats()
@@ -43,17 +44,17 @@ class SqaController extends Controller
     public function exportLogs(Request $request)
     {
         $format = $request->query('format', 'csv');
-        $fileName = 'performance_logs_' . date('Y_m_d_H_i_s') . '.' . $format;
+        $fileName = 'performance_logs_'.date('Y_m_d_H_i_s').'.'.$format;
 
         $headers = [
             'Content-Type' => $format === 'csv' ? 'text/csv' : 'text/plain',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             'Cache-Control' => 'no-store, no-cache',
         ];
 
         $response = new StreamedResponse(function () use ($format) {
             $handle = fopen('php://output', 'w');
-            
+
             $separator = $format === 'csv' ? ',' : "\t";
 
             // Header

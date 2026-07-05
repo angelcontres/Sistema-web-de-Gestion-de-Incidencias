@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\SqaController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CategoriaIncidenciaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DireccionController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\InstitucionController;
@@ -29,7 +30,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v1/catalogos/categorias-incidencia', [CatalogoController::class, 'categoriasIncidencia']);
     Route::get('/v1/catalogos/instituciones', [CatalogoController::class, 'instituciones']);
     Route::get('/v1/geocodificacion/reversa', [DireccionController::class, 'reverseGeocode']);
-    Route::get('/v1/dashboard/stats', [\App\Http\Controllers\DashboardController::class, 'stats']);
+    Route::get('/v1/dashboard/stats', [DashboardController::class, 'stats']);
 });
 
 // Rutas protegidas por autenticación y permisos de recursos

@@ -1,14 +1,14 @@
-import { BaseComponent } from '../../../../core/base-component.js';
-import { IncidenciaService } from '../../services/incidencia.service.js';
-import { CategoriaIncidenciaService } from '../../../categorias/services/categoria-incidencia.service.js';
-import { UbicacionesService } from '../../../ubicaciones/services/ubicaciones.service.js';
-import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
-import { AuthService } from '../../../../core/auth.service.js';
-import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../shared/constants.js';
+import { BaseComponent } from '../../../../../core/base-component.js';
+import { IncidenciaService } from '../../../services/incidencia.service.js';
+import { CategoriaIncidenciaService } from '../../../../categorias/services/categoria-incidencia.service.js';
+import { UbicacionesService } from '../../../../ubicaciones/services/ubicaciones.service.js';
+import { CatalogoService } from '../../../../../shared/services/catalogo.service.js';
+import { AuthService } from '../../../../../core/auth.service.js';
+import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../../shared/constants.js';
 
 export class IncidenciaFormComponent extends BaseComponent {
   constructor() {
-    super('js/pages/incidencias/components/form/incidencia-form.component.html');
+    super('js/pages/incidencias/components/lobby/form/incidencia-form.component.html');
     this.map = null;
     this.marker = null;
     this.coords = null;
@@ -51,7 +51,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     // Modal elements
     this.modalElement = this.querySelector('#modalRegistrarDireccion');
     this.modalInstance = this.modalElement ? new bootstrap.Modal(this.modalElement) : null;
-    
+
     this.modalDirDetalle = this.querySelector('#modalDirDetalle');
     this.modalDirCodigoPostal = this.querySelector('#modalDirCodigoPostal');
     this.modalDirPais = this.querySelector('#modalDirPais');
@@ -60,15 +60,15 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.modalDirNivel3 = this.querySelector('#modalDirNivel3');
     this.modalDirLat = this.querySelector('#modalDirLat');
     this.modalDirLng = this.querySelector('#modalDirLng');
-    
+
     this.colModalDirNivel1 = this.querySelector('#colModalDirNivel1');
     this.colModalDirNivel2 = this.querySelector('#colModalDirNivel2');
     this.colModalDirNivel3 = this.querySelector('#colModalDirNivel3');
-    
+
     this.btnCancelarModal = this.querySelector('#btnCancelarModal');
     this.btnCerrarModalX = this.querySelector('#btnCerrarModalX');
     this.btnGuardarModalDireccion = this.querySelector('#btnGuardarModalDireccion');
-    
+
     // Tab Elements
     this.dropzoneContainer = this.querySelector('#dropzoneContainer');
     this.fileInput = this.querySelector('#fileInput');
@@ -106,7 +106,12 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
     }
 
-    const isCitizen = user && user.roles && user.roles.every(r => r.nombre !== 'Admin' && r.nombre !== 'Operador' && r.nombre !== 'Institucion');
+    const isCitizen =
+      user &&
+      user.roles &&
+      user.roles.every(
+        (r) => r.nombre !== 'Admin' && r.nombre !== 'Operador' && r.nombre !== 'Institucion'
+      );
     if (isCitizen) {
       this.querySelector('#sectionAsignacion')?.classList.add('d-none');
       const detContainer = this.querySelector('#detallesDireccionContainer');
@@ -139,7 +144,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.tipoSelect.addEventListener('change', () => this.onCategoryChange());
     this.subTipoSelect.addEventListener('change', () => this.onSubCategoryChange());
     this.cantidadAfectadosInput.addEventListener('input', () => this.calcularPrioridadDinamica());
-    
+
     this.dirPaisSelect.addEventListener('change', (e) => {
       this.actualizarEtiquetasNiveles(e.target.value);
       this.cargarDropdownNivel1(e.target.value);
@@ -221,7 +226,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
       attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
       subdomains: 'abcd',
-      maxZoom: 20
+      maxZoom: 20,
     }).addTo(this.map);
 
     this.map.on('click', (e) => {
@@ -267,14 +272,17 @@ export class IncidenciaFormComponent extends BaseComponent {
       const road = address.road || address.pedestrian || '';
       const suburb = address.suburb || address.neighbourhood || address.parish || '';
       const county = address.county || address.city || '';
-      this.dirDetalleInput.value = [road, suburb, county].filter(Boolean).join(', ') || data.display_name || '';
+      this.dirDetalleInput.value =
+        [road, suburb, county].filter(Boolean).join(', ') || data.display_name || '';
 
       // 2. Postal code
       this.dirCodigoPostalInput.value = address.postcode || '';
 
       // 3. Match Country
       const countryCode = (address.country_code || '').toUpperCase();
-      const matchedPais = this.paisesList.find(p => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode);
+      const matchedPais = this.paisesList.find(
+        (p) => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode
+      );
 
       if (matchedPais) {
         this.dirPaisSelect.value = matchedPais.id;
@@ -287,8 +295,8 @@ export class IncidenciaFormComponent extends BaseComponent {
       // Check if location is already registered in DB
       let matchedDbDir = null;
       try {
-        const dbDirs = await CatalogoService.getDirecciones() || [];
-        matchedDbDir = dbDirs.find(d => {
+        const dbDirs = (await CatalogoService.getDirecciones()) || [];
+        matchedDbDir = dbDirs.find((d) => {
           const latDiff = Math.abs(parseFloat(d.latitud) - parseFloat(lat));
           const lngDiff = Math.abs(parseFloat(d.longitud) - parseFloat(lng));
           return latDiff < 0.00025 && lngDiff < 0.00025;
@@ -298,7 +306,12 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
 
       const user = AuthService.getCurrentUser();
-      const isCitizen = user && user.roles && user.roles.every(r => r.nombre !== 'Admin' && r.nombre !== 'Operador' && r.nombre !== 'Institucion');
+      const isCitizen =
+        user &&
+        user.roles &&
+        user.roles.every(
+          (r) => r.nombre !== 'Admin' && r.nombre !== 'Operador' && r.nombre !== 'Institucion'
+        );
 
       if (matchedDbDir) {
         this.selectedDireccionId = matchedDbDir.id;
@@ -307,7 +320,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         this.dirLngInput.value = matchedDbDir.longitud;
         this.dirPaisSelect.value = matchedDbDir.territorio?.pais_id || '';
         this.dirCodigoPostalInput.value = matchedDbDir.codigo_postal || '';
-        
+
         this.actualizarIndicadorMinimalista();
 
         if (isCitizen) {
@@ -319,9 +332,10 @@ export class IncidenciaFormComponent extends BaseComponent {
           if (this.modalInstance) {
             this.modalDirLat.value = lat;
             this.modalDirLng.value = lng;
-            this.modalDirDetalle.value = [road, suburb, county].filter(Boolean).join(', ') || data.display_name || '';
+            this.modalDirDetalle.value =
+              [road, suburb, county].filter(Boolean).join(', ') || data.display_name || '';
             this.modalDirCodigoPostal.value = address.postcode || '';
-            
+
             if (matchedPais) {
               this.modalDirPais.value = matchedPais.id;
               this.actualizarEtiquetasNivelesModal(matchedPais.id);
@@ -354,7 +368,12 @@ export class IncidenciaFormComponent extends BaseComponent {
         this.dirNivel1Select.value = opt1.value;
         this.querySelector('#colDirNivel1').classList.remove('d-none');
 
-        const possibleNivel2Names = [address.county, address.city, address.town, address.municipality].filter(Boolean);
+        const possibleNivel2Names = [
+          address.county,
+          address.city,
+          address.town,
+          address.municipality,
+        ].filter(Boolean);
         const n2Name = possibleNivel2Names[0] || '';
         if (n2Name) {
           await this.cargarDropdownNivel2(paisId, opt1.value);
@@ -363,7 +382,12 @@ export class IncidenciaFormComponent extends BaseComponent {
             this.dirNivel2Select.value = opt2.value;
             this.querySelector('#colDirNivel2').classList.remove('d-none');
 
-            const possibleNivel3Names = [address.parish, address.suburb, address.neighbourhood, address.quarter].filter(Boolean);
+            const possibleNivel3Names = [
+              address.parish,
+              address.suburb,
+              address.neighbourhood,
+              address.quarter,
+            ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
             if (n3Name) {
               await this.cargarDropdownNivel3(paisId, opt2.value);
@@ -390,7 +414,12 @@ export class IncidenciaFormComponent extends BaseComponent {
         this.modalDirNivel1.value = opt1.value;
         this.colModalDirNivel1.classList.remove('d-none');
 
-        const possibleNivel2Names = [address.county, address.city, address.town, address.municipality].filter(Boolean);
+        const possibleNivel2Names = [
+          address.county,
+          address.city,
+          address.town,
+          address.municipality,
+        ].filter(Boolean);
         const n2Name = possibleNivel2Names[0] || '';
         if (n2Name) {
           await this.cargarModalDropdownNivel2(paisId, opt1.value);
@@ -399,7 +428,12 @@ export class IncidenciaFormComponent extends BaseComponent {
             this.modalDirNivel2.value = opt2.value;
             this.colModalDirNivel2.classList.remove('d-none');
 
-            const possibleNivel3Names = [address.parish, address.suburb, address.neighbourhood, address.quarter].filter(Boolean);
+            const possibleNivel3Names = [
+              address.parish,
+              address.suburb,
+              address.neighbourhood,
+              address.quarter,
+            ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
             if (n3Name) {
               await this.cargarModalDropdownNivel3(paisId, opt2.value);
@@ -421,15 +455,18 @@ export class IncidenciaFormComponent extends BaseComponent {
     const lbl2 = this.querySelector('#lblModalDirNivel2');
     const lbl3 = this.querySelector('#lblModalDirNivel3');
 
-    if (pId === 1) { // Perú
+    if (pId === 1) {
+      // Perú
       if (lbl1) lbl1.textContent = 'Departamento *';
       if (lbl2) lbl2.textContent = 'Provincia *';
       if (lbl3) lbl3.textContent = 'Distrito *';
-    } else if (pId === 2) { // México
+    } else if (pId === 2) {
+      // México
       if (lbl1) lbl1.textContent = 'Estado *';
       if (lbl2) lbl2.textContent = 'Municipio *';
       if (lbl3) lbl3.textContent = 'Colonia/Localidad *';
-    } else { // Ecuador / default
+    } else {
+      // Ecuador / default
       if (lbl1) lbl1.textContent = 'Provincia *';
       if (lbl2) lbl2.textContent = 'Cantón *';
       if (lbl3) lbl3.textContent = 'Parroquia *';
@@ -444,8 +481,9 @@ export class IncidenciaFormComponent extends BaseComponent {
     try {
       const list = await CatalogoService.getTerritorios(paisId, null);
       if (list.length > 0) {
-        s1.innerHTML = '<option value="">-- Seleccione --</option>' + 
-          list.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+        s1.innerHTML =
+          '<option value="">-- Seleccione --</option>' +
+          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
         s1.disabled = false;
         this.colModalDirNivel1.classList.remove('d-none');
       } else {
@@ -471,8 +509,9 @@ export class IncidenciaFormComponent extends BaseComponent {
     try {
       const list = await CatalogoService.getTerritorios(paisId, parentId);
       if (list.length > 0) {
-        s2.innerHTML = '<option value="">-- Seleccione --</option>' + 
-          list.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+        s2.innerHTML =
+          '<option value="">-- Seleccione --</option>' +
+          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
         s2.disabled = false;
         this.colModalDirNivel2.classList.remove('d-none');
       } else {
@@ -497,8 +536,9 @@ export class IncidenciaFormComponent extends BaseComponent {
     try {
       const list = await CatalogoService.getTerritorios(paisId, parentId);
       if (list.length > 0) {
-        s3.innerHTML = '<option value="">-- Seleccione --</option>' + 
-          list.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+        s3.innerHTML =
+          '<option value="">-- Seleccione --</option>' +
+          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
         s3.disabled = false;
         this.colModalDirNivel3.classList.remove('d-none');
       } else {
@@ -515,9 +555,12 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   async guardarDireccionModal() {
-    const finalTerritorioId = this.modalDirNivel3.value || this.modalDirNivel2.value || this.modalDirNivel1.value;
+    const finalTerritorioId =
+      this.modalDirNivel3.value || this.modalDirNivel2.value || this.modalDirNivel1.value;
     if (!finalTerritorioId) {
-      alert('Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).');
+      alert(
+        'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
+      );
       return;
     }
     if (!this.modalDirDetalle.value) {
@@ -531,7 +574,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       codigo_postal: this.modalDirCodigoPostal.value || null,
       latitud: parseFloat(this.modalDirLat.value),
       longitud: parseFloat(this.modalDirLng.value),
-      activo: true
+      activo: true,
     };
 
     try {
@@ -558,12 +601,12 @@ export class IncidenciaFormComponent extends BaseComponent {
 
   actualizarIndicadorMinimalista() {
     const paisId = this.dirPaisSelect.value;
-    const paisNombre = this.paisesList.find(p => p.id == paisId)?.nombre || '';
+    const paisNombre = this.paisesList.find((p) => p.id == paisId)?.nombre || '';
     const detalle = this.dirDetalleInput.value;
     const cp = this.dirCodigoPostalInput.value;
     const lat = this.coords?.lat || '';
     const lng = this.coords?.lng || '';
-    
+
     const txt = this.querySelector('#txtInfoUbicacion');
     if (txt) {
       if (detalle) {
@@ -575,9 +618,15 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   findOptionMatchingText(selectEl, text) {
-    const normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    return Array.from(selectEl.options).find(opt => {
-      const optNorm = opt.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const normalized = text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    return Array.from(selectEl.options).find((opt) => {
+      const optNorm = opt.text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
       return optNorm.includes(normalized) || normalized.includes(optNorm);
     });
   }
@@ -621,16 +670,21 @@ export class IncidenciaFormComponent extends BaseComponent {
   async cargarCatalogosIniciales() {
     try {
       // 1. Fetch categories
-      this.categorias = await CatalogoService.getCategoriasIncidencia() || [];
-      const rootCategories = this.categorias.filter(c => c.parent_id === null && c.activo);
-      this.tipoSelect.innerHTML = '<option value="">-- Seleccione --</option>' + 
-        rootCategories.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+      this.categorias = (await CatalogoService.getCategoriasIncidencia()) || [];
+      const rootCategories = this.categorias.filter((c) => c.parent_id === null && c.activo);
+      this.tipoSelect.innerHTML =
+        '<option value="">-- Seleccione --</option>' +
+        rootCategories.map((c) => `<option value="${c.id}">${c.nombre}</option>`).join('');
 
       // 2. Fetch countries
       const paises = await CatalogoService.getPaises();
       this.paisesList = paises || [];
-      const optionsHtml = '<option value="">-- Seleccione --</option>' + 
-        this.paisesList.filter(p => p.activo).map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+      const optionsHtml =
+        '<option value="">-- Seleccione --</option>' +
+        this.paisesList
+          .filter((p) => p.activo)
+          .map((p) => `<option value="${p.id}">${p.nombre}</option>`)
+          .join('');
       this.dirPaisSelect.innerHTML = optionsHtml;
       if (this.modalDirPais) {
         this.modalDirPais.innerHTML = optionsHtml;
@@ -638,8 +692,9 @@ export class IncidenciaFormComponent extends BaseComponent {
 
       // 3. Fetch institutions
       const insts = await CatalogoService.getInstituciones();
-      this.institucionSelect.innerHTML = '<option value="">-- Ninguna --</option>' + 
-        insts.map(i => `<option value="${i.id}">${i.nombre} (${i.siglas})</option>`).join('');
+      this.institucionSelect.innerHTML =
+        '<option value="">-- Ninguna --</option>' +
+        insts.map((i) => `<option value="${i.id}">${i.nombre} (${i.siglas})</option>`).join('');
 
       // 4. Populate state dropdown
       const estados = [
@@ -648,11 +703,12 @@ export class IncidenciaFormComponent extends BaseComponent {
         { id: 3, nombre: 'En Revisión' },
         { id: 4, nombre: 'En Proceso' },
         { id: 5, nombre: 'Resuelto' },
-        { id: 6, nombre: 'Rechazado' }
+        { id: 6, nombre: 'Rechazado' },
       ];
-      this.estadoSelect.innerHTML = estados.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+      this.estadoSelect.innerHTML = estados
+        .map((e) => `<option value="${e.id}">${e.nombre}</option>`)
+        .join('');
       this.estadoSelect.value = 2; // Default Pendiente
-
     } catch (e) {
       console.error('Error loading initial catalog dropdowns:', e);
     }
@@ -668,9 +724,10 @@ export class IncidenciaFormComponent extends BaseComponent {
       return;
     }
 
-    const subCats = this.categorias.filter(c => c.parent_id == parentId && c.activo);
-    this.subTipoSelect.innerHTML = '<option value="">-- Seleccione --</option>' + 
-      subCats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    const subCats = this.categorias.filter((c) => c.parent_id == parentId && c.activo);
+    this.subTipoSelect.innerHTML =
+      '<option value="">-- Seleccione --</option>' +
+      subCats.map((c) => `<option value="${c.id}">${c.nombre}</option>`).join('');
     this.subTipoSelect.disabled = false;
     this.calcularPrioridadDinamica();
   }
@@ -678,7 +735,7 @@ export class IncidenciaFormComponent extends BaseComponent {
   onSubCategoryChange() {
     const subTipoId = this.subTipoSelect.value;
     if (subTipoId) {
-      const subcat = this.categorias.find(c => c.id == subTipoId);
+      const subcat = this.categorias.find((c) => c.id == subTipoId);
       if (subcat && subcat.institucion_id && this.institucionSelect) {
         this.institucionSelect.value = subcat.institucion_id;
       }
@@ -697,7 +754,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       return;
     }
 
-    const subcat = this.categorias.find(c => c.id == subTipoId);
+    const subcat = this.categorias.find((c) => c.id == subTipoId);
     if (!subcat || !subcat.prioridad_id) {
       this.prioridadDisplay.textContent = '-';
       this.prioridadDisplay.style.color = '';
@@ -740,13 +797,16 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   actualizarEtiquetasNiveles(paisId) {
-    const pais = this.paisesList.find(p => p.id == paisId);
+    const pais = this.paisesList.find((p) => p.id == paisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
-    this.querySelector('#lblDirNivel1').innerHTML = `${config.nivel1} <span class="text-danger">*</span>`;
-    this.querySelector('#lblDirNivel2').innerHTML = `${config.nivel2} <span class="text-danger">*</span>`;
-    this.querySelector('#lblDirNivel3').innerHTML = `${config.nivel3} <span class="text-danger">*</span>`;
+    this.querySelector('#lblDirNivel1').innerHTML =
+      `${config.nivel1} <span class="text-danger">*</span>`;
+    this.querySelector('#lblDirNivel2').innerHTML =
+      `${config.nivel2} <span class="text-danger">*</span>`;
+    this.querySelector('#lblDirNivel3').innerHTML =
+      `${config.nivel3} <span class="text-danger">*</span>`;
   }
 
   async cargarDropdownNivel1(paisId, selectVal = null) {
@@ -760,8 +820,9 @@ export class IncidenciaFormComponent extends BaseComponent {
     try {
       const list = await CatalogoService.getTerritorios(paisId, null);
       if (list.length > 0) {
-        s1.innerHTML = '<option value="">-- Seleccione --</option>' + 
-          list.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+        s1.innerHTML =
+          '<option value="">-- Seleccione --</option>' +
+          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
         s1.disabled = false;
         this.querySelector('#colDirNivel1').classList.remove('d-none');
       } else {
@@ -787,8 +848,9 @@ export class IncidenciaFormComponent extends BaseComponent {
     try {
       const list = await CatalogoService.getTerritorios(paisId, parentId);
       if (list.length > 0) {
-        s2.innerHTML = '<option value="">-- Seleccione --</option>' + 
-          list.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+        s2.innerHTML =
+          '<option value="">-- Seleccione --</option>' +
+          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
         s2.disabled = false;
         this.querySelector('#colDirNivel2').classList.remove('d-none');
       } else {
@@ -813,8 +875,9 @@ export class IncidenciaFormComponent extends BaseComponent {
     try {
       const list = await CatalogoService.getTerritorios(paisId, parentId);
       if (list.length > 0) {
-        s3.innerHTML = '<option value="">-- Seleccione --</option>' + 
-          list.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+        s3.innerHTML =
+          '<option value="">-- Seleccione --</option>' +
+          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
         s3.disabled = false;
         this.querySelector('#colDirNivel3').classList.remove('d-none');
       } else {
@@ -834,7 +897,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     document.title = 'Registrar Incidencia';
     this.formTitle.textContent = 'Registrar Incidencia';
     this.btnText.textContent = 'Guardar Incidencia';
-    
+
     // Auto-select operator's country if exists
     const user = AuthService.getCurrentUser();
     if (user && user.pais_id) {
@@ -864,11 +927,11 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.versionInput.value = inc.version || 1;
       this.selectedDireccionId = inc.direccion_id;
       this.tipoSelect.value = inc.tipo_incidencia_id || '';
-      
+
       // Load subcategories
       this.onCategoryChange();
       this.subTipoSelect.value = inc.sub_tipo_incidencia_id || '';
-      
+
       this.cantidadAfectadosInput.value = inc.cantidad_afectados_incidencia || 0;
       this.descripcionInput.value = inc.incidencia_descripcion || '';
       this.institucionSelect.value = inc.institucion_id || '';
@@ -881,7 +944,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         const dir = inc.direccion;
         this.dirDetalleInput.value = dir.detalle || '';
         this.dirCodigoPostalInput.value = dir.codigo_postal || '';
-        
+
         if (dir.latitud && dir.longitud) {
           this.actualizarMarcador(dir.latitud, dir.longitud, false);
           this.map.setView([dir.latitud, dir.longitud], 15);
@@ -893,7 +956,9 @@ export class IncidenciaFormComponent extends BaseComponent {
           this.actualizarEtiquetasNiveles(terr.pais_id);
 
           // Rebuild cascade
-          let n1 = null, n2 = null, n3 = null;
+          let n1 = null,
+            n2 = null,
+            n3 = null;
           if (terr.parent && terr.parent.parent) {
             n1 = terr.parent.parent.id;
             n2 = terr.parent.id;
@@ -921,7 +986,8 @@ export class IncidenciaFormComponent extends BaseComponent {
 
       // Check if user is of role Institucion
       const user = AuthService.getCurrentUser();
-      const isInstitucion = user && user.roles && user.roles.some(r => r.nombre === 'Institucion');
+      const isInstitucion =
+        user && user.roles && user.roles.some((r) => r.nombre === 'Institucion');
       if (isInstitucion) {
         this.disableFormFields();
         // If state is 'En Proceso' (4), show confirm button
@@ -929,7 +995,9 @@ export class IncidenciaFormComponent extends BaseComponent {
           if (this.btnConfirmarResolucion) {
             this.btnConfirmarResolucion.classList.remove('d-none');
             this.btnConfirmarResolucion.disabled = false;
-            this.btnConfirmarResolucion.addEventListener('click', () => this.confirmarResolucion(inc.id));
+            this.btnConfirmarResolucion.addEventListener('click', () =>
+              this.confirmarResolucion(inc.id)
+            );
           }
           if (this.btnSubmit) {
             this.btnSubmit.classList.add('d-none');
@@ -943,17 +1011,21 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   disableFormFields() {
-    const inputs = this.querySelectorAll('input, select, textarea, button:not(#btnConfirmarResolucion):not([href])');
-    inputs.forEach(el => {
+    const inputs = this.querySelectorAll(
+      'input, select, textarea, button:not(#btnConfirmarResolucion):not([href])'
+    );
+    inputs.forEach((el) => {
       el.disabled = true;
     });
     // Hide map instructions, search button/input, and dropzone
     this.querySelector('#direccionSearch')?.classList.add('d-none');
     this.querySelector('#btnBuscarDireccion')?.classList.add('d-none');
     this.querySelector('#dropzoneContainer')?.classList.add('d-none');
-    
+
     // Select instruction text using a broader selector or class
-    const dragText = this.querySelector('.text-muted.small.mt-1\\.5') || this.querySelector('span.text-muted.small.mt-1\\.5');
+    const dragText =
+      this.querySelector('.text-muted.small.mt-1\\.5') ||
+      this.querySelector('span.text-muted.small.mt-1\\.5');
     if (dragText) dragText.classList.add('d-none');
   }
 
@@ -961,20 +1033,20 @@ export class IncidenciaFormComponent extends BaseComponent {
     if (!confirm('¿Está seguro de que desea confirmar la resolución de esta incidencia?')) {
       return;
     }
-    
+
     if (this.btnConfirmarResolucion) this.btnConfirmarResolucion.disabled = true;
     const spinner = this.querySelector('#loadingSpinner');
     if (spinner) spinner.classList.remove('d-none');
-    
+
     try {
       // Get current version to avoid optimistic locking
       const inc = await IncidenciaService.getById(id);
-      
+
       const payload = {
         estado_id: 5, // Resuelto
-        version: inc.version
+        version: inc.version,
       };
-      
+
       await IncidenciaService.update(id, payload);
       this.mostrarAlertaExito('Incidencia marcada como Resuelta con éxito.');
       setTimeout(() => {
@@ -999,7 +1071,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     }
 
     const id = this.incidenciaIdInput.value;
-    
+
     // Validate that we have coordinates and detailed address
     if (!this.coords) {
       this.mostrarError('Debe marcar la ubicación en el mapa.');
@@ -1009,9 +1081,12 @@ export class IncidenciaFormComponent extends BaseComponent {
     let direccionId = this.selectedDireccionId;
 
     if (!direccionId) {
-      const finalTerritorioId = this.dirNivel3Select.value || this.dirNivel2Select.value || this.dirNivel1Select.value;
+      const finalTerritorioId =
+        this.dirNivel3Select.value || this.dirNivel2Select.value || this.dirNivel1Select.value;
       if (!finalTerritorioId) {
-        this.mostrarError('Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).');
+        this.mostrarError(
+          'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
+        );
         return;
       }
 
@@ -1027,7 +1102,7 @@ export class IncidenciaFormComponent extends BaseComponent {
           codigo_postal: this.dirCodigoPostalInput.value || null,
           latitud: this.coords.lat,
           longitud: this.coords.lng,
-          activo: true
+          activo: true,
         };
 
         if (id) {
@@ -1060,9 +1135,11 @@ export class IncidenciaFormComponent extends BaseComponent {
         tipo_incidencia_id: parseInt(this.tipoSelect.value),
         sub_tipo_incidencia_id: parseInt(this.subTipoSelect.value),
         cantidad_afectados_incidencia: parseInt(this.cantidadAfectadosInput.value) || 0,
-        institucion_id: this.institucionSelect.value ? parseInt(this.institucionSelect.value) : null,
+        institucion_id: this.institucionSelect.value
+          ? parseInt(this.institucionSelect.value)
+          : null,
         estado_id: parseInt(this.estadoSelect.value) || 2,
-        version: parseInt(this.versionInput.value) || 1
+        version: parseInt(this.versionInput.value) || 1,
       };
 
       if (id) {
@@ -1076,7 +1153,6 @@ export class IncidenciaFormComponent extends BaseComponent {
       setTimeout(() => {
         window.location.hash = '#/incidencias';
       }, 1500);
-
     } catch (err) {
       console.error(err);
       this.mostrarError(err.message || 'Error al procesar la incidencia.');
@@ -1089,18 +1165,26 @@ export class IncidenciaFormComponent extends BaseComponent {
   setupDropzoneDragAndDrop() {
     const dropzone = this.dropzoneContainer;
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropzone.classList.add('border-primary', 'bg-primary-soft');
-      }, false);
+    ['dragenter', 'dragover'].forEach((eventName) => {
+      dropzone.addEventListener(
+        eventName,
+        (e) => {
+          e.preventDefault();
+          dropzone.classList.add('border-primary', 'bg-primary-soft');
+        },
+        false
+      );
     });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('border-primary', 'bg-primary-soft');
-      }, false);
+    ['dragleave', 'drop'].forEach((eventName) => {
+      dropzone.addEventListener(
+        eventName,
+        (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('border-primary', 'bg-primary-soft');
+        },
+        false
+      );
     });
 
     dropzone.addEventListener('drop', (e) => {
@@ -1116,7 +1200,7 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   processFiles(files) {
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file) => {
       if (!file.type.startsWith('image/')) {
         alert('Solo se permiten archivos de imagen.');
         return;
@@ -1135,7 +1219,7 @@ export class IncidenciaFormComponent extends BaseComponent {
           size: file.size,
           type: file.type,
           base64: reader.result,
-          compressed: true // Mock compression flag (representing .webp automatic client compression)
+          compressed: true, // Mock compression flag (representing .webp automatic client compression)
         };
 
         this.recursosFiles.push(fileObj);
@@ -1146,7 +1230,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
   renderThumbnails() {
     this.thumbnailsContainer.innerHTML = '';
-    
+
     this.recursosFiles.forEach((file, index) => {
       const col = document.createElement('div');
       col.className = 'col';
@@ -1200,7 +1284,6 @@ export class IncidenciaFormComponent extends BaseComponent {
     const errorAlert = this.querySelector('#formErrorAlert');
     if (errorAlert) errorAlert.classList.add('d-none');
   }
-  
 }
 
 customElements.define('app-incidencia-form', IncidenciaFormComponent);

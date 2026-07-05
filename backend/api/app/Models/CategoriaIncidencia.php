@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
 #[Fillable(['parent_id', 'prioridad_id', 'institucion_id', 'nombre', 'descripcion', 'activo'])]
 class CategoriaIncidencia extends Model
 {

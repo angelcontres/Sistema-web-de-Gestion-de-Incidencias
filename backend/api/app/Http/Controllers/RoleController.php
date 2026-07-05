@@ -4,17 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RoleRequest;
 use App\Models\Role;
+use App\Services\Contracts\PermissionServiceInterface;
+use App\Services\Contracts\RoleServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RoleController extends Controller
 {
+    protected RoleServiceInterface $roleService;
+
+    protected PermissionServiceInterface $permissionService;
+
+    public function __construct(RoleServiceInterface $roleService, PermissionServiceInterface $permissionService)
+    {
+        $this->roleService = $roleService;
+        $this->permissionService = $permissionService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return response()->json(Role::all(), 200);
+        return response()->json($this->roleService->getAllRoles(), 200);
     }
 
     /**
@@ -40,7 +52,11 @@ class RoleController extends Controller
      */
     public function show($id)
     {
-        $role = Role::with('permisos')->findOrFail($id);
+        $role = $this->roleService->getRoleById($id);
+
+        if (! $role) {
+            return response()->json(['message' => 'Rol no encontrado'], 404);
+        }
 
         return response()->json($role, 200);
     }
@@ -84,7 +100,7 @@ class RoleController extends Controller
     {
         $role = Role::findOrFail($id);
 
-        $role->permisos()->sync($request->permisos ?? []);
+        $this->permissionService->syncPermissionsToRole($role, $request->permisos ?? []);
 
         return response()->json([
             'message' => 'Permisos asignados con éxito al rol.',

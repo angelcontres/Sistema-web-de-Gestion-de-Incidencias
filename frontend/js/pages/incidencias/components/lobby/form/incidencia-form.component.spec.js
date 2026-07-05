@@ -1,5 +1,5 @@
 import { IncidenciaFormComponent } from './incidencia-form.component.js';
-import { AuthService } from '../../../../core/auth.service.js';
+import { AuthService } from '../../../../../core/auth.service.js';
 
 describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
   let component;
@@ -9,7 +9,7 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
     AuthService.getCurrentUser = () => ({
       name: 'Ciudadano Ejemplo',
       email: 'ciudadano@example.com',
-      roles: [{ nombre: 'Ciudadano' }]
+      roles: [{ nombre: 'Ciudadano' }],
     });
 
     // Mockear la respuesta de la plantilla HTML
@@ -51,9 +51,10 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
     `;
 
     // Mock de fetch para retornar la plantilla simulada
-    window.fetch = () => Promise.resolve({
-      text: () => Promise.resolve(mockHtml)
-    });
+    window.fetch = () =>
+      Promise.resolve({
+        text: () => Promise.resolve(mockHtml),
+      });
 
     // Instanciar el componente
     component = new IncidenciaFormComponent();

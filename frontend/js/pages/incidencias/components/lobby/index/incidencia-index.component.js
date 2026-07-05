@@ -1,10 +1,10 @@
-import { BaseComponent } from '../../../../core/base-component.js';
-import { IncidenciaService } from '../../services/incidencia.service.js';
-import { AuthService } from '../../../../core/auth.service.js';
+import { BaseComponent } from '../../../../../core/base-component.js';
+import { IncidenciaService } from '../../../services/incidencia.service.js';
+import { AuthService } from '../../../../../core/auth.service.js';
 
 export class IncidenciaIndexComponent extends BaseComponent {
   constructor() {
-    super('js/pages/incidencias/components/index/incidencia-index.component.html');
+    super('js/pages/incidencias/components/lobby/index/incidencia-index.component.html');
   }
 
   async onInit() {
@@ -30,26 +30,34 @@ export class IncidenciaIndexComponent extends BaseComponent {
             header: 'Clasificación',
             render: (inc) => {
               const tipo = inc.tipo ? inc.tipo.nombre : '-';
-              const subTipo = inc.sub_tipo ? inc.sub_tipo.nombre : (inc.subTipo ? inc.subTipo.nombre : '-');
+              const subTipo = inc.sub_tipo
+                ? inc.sub_tipo.nombre
+                : inc.subTipo
+                  ? inc.subTipo.nombre
+                  : '-';
               return `<div class="fw-semibold text-dark">${tipo}</div><div class="text-muted small">${subTipo}</div>`;
-            }
+            },
           },
           {
             header: 'Descripción',
-            render: (inc) => `<div class="text-truncate" style="max-width: 250px;" title="${inc.incidencia_descripcion || ''}">${inc.incidencia_descripcion || 'Sin descripción.'}</div>`
+            render: (inc) =>
+              `<div class="text-truncate" style="max-width: 250px;" title="${inc.incidencia_descripcion || ''}">${inc.incidencia_descripcion || 'Sin descripción.'}</div>`,
           },
           {
             header: 'Ubicación / Dirección',
             render: (inc) => {
               const detalle = inc.direccion ? inc.direccion.detalle : 'Sin dirección.';
-              const pais = (inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais) ? inc.direccion.territorio.pais.nombre : '';
+              const pais =
+                inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
+                  ? inc.direccion.territorio.pais.nombre
+                  : '';
               return `<div>${detalle}</div><div class="text-muted small">${pais}</div>`;
-            }
+            },
           },
           {
             header: 'Afectados',
             key: 'cantidad_afectados_incidencia',
-            class: 'text-center fw-bold'
+            class: 'text-center fw-bold',
           },
           {
             header: 'Prioridad',
@@ -61,7 +69,7 @@ export class IncidenciaIndexComponent extends BaseComponent {
                 </span>`;
               }
               return '-';
-            }
+            },
           },
           {
             header: 'Estado',
@@ -76,18 +84,32 @@ export class IncidenciaIndexComponent extends BaseComponent {
                 </span>`;
               }
               return '-';
-            }
+            },
           },
           {
             header: 'Atendido por',
-            render: (inc) => inc.institucion ? `<span class="fw-medium text-secondary">${inc.institucion.nombre}</span>` : '<span class="text-muted small">No asignado</span>'
+            render: (inc) =>
+              inc.institucion
+                ? `<span class="fw-medium text-secondary">${inc.institucion.nombre}</span>`
+                : '<span class="text-muted small">No asignado</span>',
           },
           {
             header: 'Acciones',
             class: 'text-center pe-4',
             actions: [
-              ...(AuthService.hasPermission('Actualizar Incidencia') ? [{ name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' }] : []),
-              ...(AuthService.hasPermission('Eliminar Incidencia') ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }] : []),
+              ...(AuthService.hasPermission('Actualizar Incidencia')
+                ? [
+                    {
+                      name: 'editar',
+                      label: 'Editar',
+                      icon: 'bi-pencil-square',
+                      class: 'text-primary',
+                    },
+                  ]
+                : []),
+              ...(AuthService.hasPermission('Eliminar Incidencia')
+                ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }]
+                : []),
             ],
           },
         ],
