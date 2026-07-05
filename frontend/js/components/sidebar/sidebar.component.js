@@ -139,11 +139,13 @@ export class SideBarComponent extends BaseComponent {
         const collapseId = `collapse-menu-${menu.id}`;
         html += `
           <div class="nav-item">
-            <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" data-bs-toggle="collapse" href="#${collapseId}" role="button" aria-expanded="false">
-              <i class="${menu.icono || 'bi bi-circle'} text-secondary"></i>
-              <span>${menu.nombre}</span>
-              <i class="bi bi-chevron-down ms-auto small text-muted"></i>
-            </a>
+              <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="${menu.ruta}">
+                <i class="${menu.icono || 'bi bi-circle'} text-secondary"></i>
+                <span>${menu.nombre}</span>
+                <span class="ms-auto p-1 sidebar-toggle-btn" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" style="cursor: pointer; z-index: 2; position: relative;">
+                  <i class="bi bi-chevron-down small text-muted"></i>
+                </span>
+              </a>
             <div class="collapse ms-3" id="${collapseId}">
               <div class="nav flex-column gap-1 mt-1">
                 ${menu.children
@@ -171,6 +173,15 @@ export class SideBarComponent extends BaseComponent {
     });
 
     container.innerHTML = html;
+
+    // Prevent navigation when clicking the toggle arrow
+    const toggleBtns = container.querySelectorAll('.sidebar-toggle-btn');
+    toggleBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
   }
 
   updateActiveLink() {
@@ -181,7 +192,7 @@ export class SideBarComponent extends BaseComponent {
       const href = link.getAttribute('href');
 
       if (href === currentHash && !link.hasAttribute('data-bs-toggle')) {
-        link.classList.remove('text-dark', 'text-secondary');
+        link.classList.remove('text-dark', 'text-secondary', 'text-primary');
         link.classList.add('active', 'bg-primary', 'text-white');
 
         const icon = link.querySelector('i:first-child');
@@ -194,14 +205,18 @@ export class SideBarComponent extends BaseComponent {
         if (parentCollapse) {
           parentCollapse.classList.add('show');
 
-          const parentLink = document.querySelector(`[href="#${parentCollapse.id}"]`);
-          if (parentLink) {
-            parentLink.classList.remove('text-dark');
-            parentLink.classList.add('text-primary');
+          // The toggle button that controls this collapse
+          const parentBtn = document.querySelector(`[data-bs-target="#${parentCollapse.id}"]`);
+          if (parentBtn) {
+            const parentLink = parentBtn.closest('.sidebar-link');
+            if (parentLink) {
+              parentLink.classList.remove('text-dark');
+              parentLink.classList.add('text-primary');
+            }
           }
         }
       } else {
-        link.classList.remove('active', 'bg-primary', 'text-white');
+        link.classList.remove('active', 'bg-primary', 'text-white', 'text-primary');
 
         const icon = link.querySelector('i:first-child');
         if (icon) {
@@ -209,15 +224,10 @@ export class SideBarComponent extends BaseComponent {
           icon.classList.add('text-secondary');
         }
 
-        if (link.hasAttribute('data-bs-toggle')) {
-          link.classList.remove('text-primary');
-          link.classList.add('text-dark');
+        if (link.closest('.collapse')) {
+          link.classList.add('text-secondary');
         } else {
-          if (link.closest('.collapse')) {
-            link.classList.add('text-secondary');
-          } else {
-            link.classList.add('text-dark');
-          }
+          link.classList.add('text-dark');
         }
       }
     });
