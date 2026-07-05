@@ -68,6 +68,10 @@ class MenuOptionSeeder extends Seeder
             'ruta' => '#/sqa-dashboard',
             'icono' => 'bi bi-graph-up',
             'padre_id' => null,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
             'nombre' => 'Ubicaciones',
             'ruta' => '#/ubicaciones',
             'icono' => 'bi bi-geo-alt-fill',
