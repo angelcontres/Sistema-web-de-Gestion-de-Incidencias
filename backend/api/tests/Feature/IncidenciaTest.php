@@ -2,16 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Models\CategoriaIncidencia;
 use App\Models\Direccion;
+use App\Models\EstadoIncidencia;
+use App\Models\Incidencia;
+use App\Models\Institucion;
 use App\Models\Pais;
+use App\Models\Permiso;
+use App\Models\Prioridad;
+use App\Models\Role;
 use App\Models\Territorio;
 use App\Models\User;
-use App\Models\Role;
-use App\Models\Prioridad;
-use App\Models\Institucion;
-use App\Models\EstadoIncidencia;
-use App\Models\CategoriaIncidencia;
-use App\Models\Incidencia;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -20,17 +21,29 @@ class IncidenciaTest extends TestCase
     use DatabaseTransactions;
 
     private User $admin;
+
     private Pais $pais;
+
     private Territorio $territorio;
+
     private Direccion $direccion;
+
     private Prioridad $critica;
+
     private Prioridad $alta;
+
     private Prioridad $media;
+
     private Prioridad $baja;
+
     private Institucion $bomberos;
+
     private Institucion $policia;
+
     private EstadoIncidencia $estadoRevision;
+
     private CategoriaIncidencia $categoriaPadre;
+
     private CategoriaIncidencia $subcategoriaAlta;
 
     protected function setUp(): void
@@ -80,7 +93,7 @@ class IncidenciaTest extends TestCase
                 'parent_id' => $this->categoriaPadre->id,
                 'prioridad_id' => $this->alta->id,
                 'institucion_id' => $this->policia->id,
-                'activo' => true
+                'activo' => true,
             ]
         );
     }
@@ -215,8 +228,8 @@ class IncidenciaTest extends TestCase
         $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano']);
         $ciudadanoUser->roles()->sync([$ciudadanoRole->id]);
 
-        $permisoVer = \App\Models\Permiso::firstOrCreate(['nombre' => 'Ver Incidencia'], ['accion' => 'READ', 'recurso' => 'incidencias']);
-        $permisoCrear = \App\Models\Permiso::firstOrCreate(['nombre' => 'Crear Incidencia'], ['accion' => 'CREATE', 'recurso' => 'incidencias']);
+        $permisoVer = Permiso::firstOrCreate(['nombre' => 'Ver Incidencia'], ['accion' => 'READ', 'recurso' => 'incidencias']);
+        $permisoCrear = Permiso::firstOrCreate(['nombre' => 'Crear Incidencia'], ['accion' => 'CREATE', 'recurso' => 'incidencias']);
         $ciudadanoRole->permisos()->sync([$permisoVer->id, $permisoCrear->id]);
 
         $payload = [

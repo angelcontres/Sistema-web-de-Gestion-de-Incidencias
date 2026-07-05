@@ -95,7 +95,7 @@ class MenuOptionSeeder extends Seeder
             'created_by' => $user->id,
         ]);
 
-        $incidencia =OpcionMenu::create([
+        $incidencia = OpcionMenu::create([
             'nombre' => 'Incidencias',
             'ruta' => '#/incidencias',
             'icono' => 'bi bi-exclamation-triangle-fill',

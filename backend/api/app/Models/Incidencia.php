@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'incidencia_descripcion',
@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
     'version',
     'created_by',
     'updated_by',
-    'deleted_by'
+    'deleted_by',
 ])]
 class Incidencia extends Model
 {
@@ -110,6 +110,6 @@ class Incidencia extends Model
     public function operadores(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'usuario_incidencia', 'reporte_incidencia_id', 'user_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 }

@@ -4,9 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Services\Contracts\RoleServiceInterface;
 
 class UserController extends Controller
 {
+    protected RoleServiceInterface $roleService;
+
+    public function __construct(RoleServiceInterface $roleService)
+    {
+        $this->roleService = $roleService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -33,7 +41,7 @@ class UserController extends Controller
         ]);
 
         if (! empty($datosValidados['roles'])) {
-            $user->roles()->attach($datosValidados['roles']);
+            $this->roleService->syncRolesToUser($user, $datosValidados['roles']);
         }
 
         return response()->json([
@@ -76,7 +84,7 @@ class UserController extends Controller
         $user->update($updateData);
 
         // Sync roles (many-to-many relationship)
-        $user->roles()->sync($datosValidados['roles'] ?? []);
+        $this->roleService->syncRolesToUser($user, $datosValidados['roles'] ?? []);
 
         return response()->json([
             'message' => 'Usuario actualizado con éxito',

@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\PermissionsEnum;
+use App\Services\Contracts\PermissionServiceInterface;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +29,10 @@ class CheckPermission
             return $next($request);
         }
 
-        if (! $user || ! $user->hasPermission($permission)) {
+        $enum = PermissionsEnum::tryFrom($permission);
+        $hasPerm = $enum ? app(PermissionServiceInterface::class)->userHasPermission($user, $enum) : $user->hasPermission($permission);
+
+        if (! $hasPerm) {
             return response()->json([
                 'message' => 'No tiene autorización para realizar esta acción. Se requiere el permiso: '.$permission,
             ], 403);

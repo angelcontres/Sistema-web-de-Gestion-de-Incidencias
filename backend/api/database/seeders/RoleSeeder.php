@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Permiso;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Contracts\PermissionServiceInterface;
+use App\Services\Contracts\RoleServiceInterface;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
@@ -27,7 +29,10 @@ class RoleSeeder extends Seeder
             'created_by' => $user->id,
         ]);
 
-        $user->roles()->sync([$adminRole->id]);
+        $roleService = app(RoleServiceInterface::class);
+        $permissionService = app(PermissionServiceInterface::class);
+
+        $roleService->syncRolesToUser($user, [$adminRole->id]);
 
         $operadorRole = Role::create([
             'nombre' => 'Operador',
@@ -52,7 +57,7 @@ class RoleSeeder extends Seeder
 
         // Assign all existing permissions to the Admin role
         $allPermissionsIds = Permiso::pluck('id')->toArray();
-        $adminRole->permisos()->sync($allPermissionsIds);
+        $permissionService->syncPermissionsToRole($adminRole, $allPermissionsIds);
 
         // Assign specific permissions to the Operador role
         $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones', 'categorias_incidencia', 'incidencias', 'despacho_de_incidencias'])
@@ -62,18 +67,18 @@ class RoleSeeder extends Seeder
                     $q->whereIn('recurso', ['paises', 'categorias_incidencia'])->where('accion', 'READ');
                 })
                 // Operators have full CRUD for the main menu, territories, addresses, incidents, and dispatch
-                ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones', 'incidencias', 'despacho_de_incidencias']);
+                    ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones', 'incidencias', 'despacho_de_incidencias']);
             })
             ->pluck('id')
             ->toArray();
 
-        $operadorRole->permisos()->sync($operadorPermissions);
+        $permissionService->syncPermissionsToRole($operadorRole, $operadorPermissions);
 
         // Assign specific permissions to the Institucion role
         $institucionRole = Role::where('nombre', 'Institucion')->first();
         if ($institucionRole) {
             $institucionPermissions = Permiso::whereIn('recurso', ['incidencias', 'direcciones'])->pluck('id')->toArray();
-            $institucionRole->permisos()->sync($institucionPermissions);
+            $permissionService->syncPermissionsToRole($institucionRole, $institucionPermissions);
         }
 
         // Assign specific permissions to the Ciudadano role
@@ -83,7 +88,7 @@ class RoleSeeder extends Seeder
                 ->whereIn('accion', ['READ', 'CREATE'])
                 ->pluck('id')
                 ->toArray();
-            $ciudadanoRole->permisos()->sync($ciudadanoPermissions);
+            $permissionService->syncPermissionsToRole($ciudadanoRole, $ciudadanoPermissions);
         }
 
         // Verificamos en consola

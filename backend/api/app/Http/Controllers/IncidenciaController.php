@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Incidencia;
-use App\Models\CategoriaIncidencia;
 use App\Http\Requests\IncidenciasRequest;
+use App\Models\CategoriaIncidencia;
+use App\Models\Incidencia;
 use Illuminate\Http\Request;
 
 class IncidenciaController extends Controller
@@ -15,7 +15,7 @@ class IncidenciaController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        
+
         // Automatic state transition: when Supervisor (Operador role) queries list, Pendiente (2) -> En Revisión (3)
         if ($user && $user->roles()->where('nombre', 'Operador')->exists()) {
             $transitionQuery = Incidencia::where('estado_id', 2);
@@ -35,17 +35,17 @@ class IncidenciaController extends Controller
             'tipo',
             'subTipo',
             'prioridad',
-            'operadores'
+            'operadores',
         ]);
 
-        if ($user && !$user->roles()->where('nombre', 'Admin')->exists()) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
             if ($user->roles()->where('nombre', 'Operador')->exists()) {
                 if ($user->pais_id) {
                     $query->whereHas('direccion.territorio', function ($q) use ($user) {
                         $q->where('pais_id', $user->pais_id);
                     });
                 }
-            } else if ($user->roles()->where('nombre', 'Institucion')->exists()) {
+            } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
                 $query->where('institucion_id', $user->institucion_id);
             } else {
                 // If they are regular citizens, they can only see their own reports
@@ -94,7 +94,7 @@ class IncidenciaController extends Controller
                 'tipo',
                 'subTipo',
                 'prioridad',
-                'operadores'
+                'operadores',
             ]),
         ], 201);
     }
@@ -112,11 +112,11 @@ class IncidenciaController extends Controller
             'tipo',
             'subTipo',
             'prioridad',
-            'operadores'
+            'operadores',
         ])->findOrFail($id);
 
         $user = auth()->user();
-        if ($user && !$this->checkAccess($user, $incidencia)) {
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
             return response()->json(['message' => 'No autorizado para ver esta incidencia.'], 403);
         }
 
@@ -131,14 +131,14 @@ class IncidenciaController extends Controller
         $incidencia = Incidencia::findOrFail($id);
         $user = auth()->user();
 
-        if ($user && !$this->checkAccess($user, $incidencia)) {
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
             return response()->json(['message' => 'No autorizado para modificar esta incidencia.'], 403);
         }
 
         // Optimistic locking check
         if ($incidencia->version !== (int) $request->input('version')) {
             return response()->json([
-                'message' => 'La incidencia ha sido modificada por otro usuario. Por favor, recarga la página.'
+                'message' => 'La incidencia ha sido modificada por otro usuario. Por favor, recarga la página.',
             ], 409);
         }
 
@@ -170,7 +170,7 @@ class IncidenciaController extends Controller
                 'tipo',
                 'subTipo',
                 'prioridad',
-                'operadores'
+                'operadores',
             ]),
         ], 200);
     }
@@ -183,7 +183,7 @@ class IncidenciaController extends Controller
         $incidencia = Incidencia::findOrFail($id);
         $user = auth()->user();
 
-        if ($user && !$this->checkAccess($user, $incidencia)) {
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
             return response()->json(['message' => 'No autorizado para eliminar esta incidencia.'], 403);
         }
 
@@ -193,7 +193,7 @@ class IncidenciaController extends Controller
         $incidencia->delete();
 
         return response()->json([
-            'message' => 'Incidencia eliminada con éxito'
+            'message' => 'Incidencia eliminada con éxito',
         ], 200);
     }
 
@@ -203,12 +203,12 @@ class IncidenciaController extends Controller
     private function calculatePriority(int $subTipoId, int $afectados): ?int
     {
         $subtipo = CategoriaIncidencia::find($subTipoId);
-        if (!$subtipo) {
+        if (! $subtipo) {
             return null;
         }
 
         $basePriorityId = $subtipo->prioridad_id;
-        if (!$basePriorityId) {
+        if (! $basePriorityId) {
             return null;
         }
 
@@ -242,6 +242,7 @@ class IncidenciaController extends Controller
             if ($user->pais_id && $incidencia->direccion && $incidencia->direccion->territorio && $incidencia->direccion->territorio->pais_id != $user->pais_id) {
                 return false;
             }
+
             return true;
         }
 
@@ -249,6 +250,7 @@ class IncidenciaController extends Controller
             if ($incidencia->institucion_id != $user->institucion_id) {
                 return false;
             }
+
             return true;
         }
 
