@@ -1,0 +1,58 @@
+<div class="page-fade-in">
+  <!-- Cabecera de Página -->
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Módulo de Despacho de Incidencias</h1>
+      <p class="text-muted small mb-0">
+        Supervisa las incidencias asignadas a tu país de atención y desvíalas a las instituciones de auxilio correspondientes.
+      </p>
+    </div>
+  </div>
+
+  <!-- Alertas de éxito y error -->
+  <div id="successAlert" class="alert alert-success d-none mb-3" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-check-circle-fill"></i>
+      <span id="successMessage"></span>
+    </div>
+  </div>
+
+  <div id="errorAlert" class="alert alert-danger d-none mb-3" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span id="errorMessage"></span>
+    </div>
+  </div>
+
+  <!-- Navegación por Pestañas (Filtros por Estado) -->
+  <div class="card border rounded-3 mb-4 shadow-sm">
+    <div class="card-header bg-white border-bottom-0 pt-3 pb-0 px-4">
+      <ul class="nav nav-tabs card-header-tabs border-bottom-0" id="supervisorTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active fw-semibold text-primary" id="tab-revision" data-estado="3" type="button" role="tab">
+            <i class="bi bi-clipboard-pulse me-1"></i> En Revisión
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-semibold text-secondary" id="tab-proceso" data-estado="4" type="button" role="tab">
+            <i class="bi bi-activity me-1"></i> En Proceso
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-semibold text-secondary" id="tab-resuelto" data-estado="5" type="button" role="tab">
+            <i class="bi bi-check2-all me-1"></i> Resueltas
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-semibold text-secondary" id="tab-todas" data-estado="all" type="button" role="tab">
+            <i class="bi bi-layers me-1"></i> Todas
+          </button>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body p-0">
+      <!-- Tabla de Datos -->
+      <app-data-table id="tbl-datos-supervisor" title="Incidencias Asignadas" empty-text="No hay incidencias para mostrar en esta sección."></app-data-table>
+    </div>
+  </div>
+</div>

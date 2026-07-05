@@ -43,19 +43,26 @@ class RoleSeeder extends Seeder
             'created_by' => $user->id,
         ]);
 
+        Role::create([
+            'nombre' => 'Ciudadano',
+            'descripcion' => 'Ciudadano que reporta incidencias',
+            'padre_id' => null,
+            'created_by' => $user->id,
+        ]);
+
         // Assign all existing permissions to the Admin role
         $allPermissionsIds = Permiso::pluck('id')->toArray();
         $adminRole->permisos()->sync($allPermissionsIds);
 
         // Assign specific permissions to the Operador role
-        $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones', 'categorias_incidencia', 'incidencias'])
+        $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones', 'categorias_incidencia', 'incidencias', 'despacho_de_incidencias'])
             ->where(function ($query) {
                 // Operators can only view countries and categories (READ), not modify them
                 $query->where(function ($q) {
                     $q->whereIn('recurso', ['paises', 'categorias_incidencia'])->where('accion', 'READ');
                 })
-                // Operators have full CRUD for the main menu, territories, addresses, and incidents
-                ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones', 'incidencias']);
+                // Operators have full CRUD for the main menu, territories, addresses, incidents, and dispatch
+                ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones', 'incidencias', 'despacho_de_incidencias']);
             })
             ->pluck('id')
             ->toArray();
@@ -67,6 +74,16 @@ class RoleSeeder extends Seeder
         if ($institucionRole) {
             $institucionPermissions = Permiso::whereIn('recurso', ['incidencias', 'direcciones'])->pluck('id')->toArray();
             $institucionRole->permisos()->sync($institucionPermissions);
+        }
+
+        // Assign specific permissions to the Ciudadano role
+        $ciudadanoRole = Role::where('nombre', 'Ciudadano')->first();
+        if ($ciudadanoRole) {
+            $ciudadanoPermissions = Permiso::whereIn('recurso', ['incidencias', 'direcciones'])
+                ->whereIn('accion', ['READ', 'CREATE'])
+                ->pluck('id')
+                ->toArray();
+            $ciudadanoRole->permisos()->sync($ciudadanoPermissions);
         }
 
         // Verificamos en consola

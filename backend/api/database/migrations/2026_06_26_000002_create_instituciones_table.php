@@ -15,12 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('nombre')->unique();
             $table->string('siglas')->unique();
-            $table->boolean('activo')->default(true);
             $table->timestamps();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users');
+            $table->foreignId('updated_by')->nullable()->constrained('users');
             $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('deleted_by')->nullable()->constrained('users');
         });
     }
 

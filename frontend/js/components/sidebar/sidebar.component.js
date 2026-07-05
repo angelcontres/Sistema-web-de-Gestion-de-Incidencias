@@ -24,13 +24,9 @@ export class SideBarComponent extends BaseComponent {
     window.addEventListener('auth-change', this._onAuthChange);
 
     this._onToggleSidebar = () => {
-      const sidebarContainer = this.firstElementChild;
-
-      if (!sidebarContainer) return;
-
-      const willHide = !sidebarContainer.classList.contains('d-none');
-      sidebarContainer.dataset.userHidden = willHide ? 'true' : 'false';
-      sidebarContainer.classList.toggle('d-none');
+      const willHide = !this.classList.contains('collapsed');
+      this.dataset.userHidden = willHide ? 'true' : 'false';
+      this.classList.toggle('collapsed');
     };
     window.addEventListener('toggle-sidebar', this._onToggleSidebar);
   }
@@ -48,15 +44,17 @@ export class SideBarComponent extends BaseComponent {
 
     const token = localStorage.getItem('access_token');
     const hash = window.location.hash || '#/';
-    const userHidden = sidebarContainer.dataset.userHidden === 'true';
+    const userHidden = this.dataset.userHidden === 'true';
 
     if (!token || hash === '#/login') {
-      sidebarContainer.dataset.userHidden = 'false';
-      sidebarContainer.classList.add('d-none');
+      this.dataset.userHidden = 'false';
+      this.classList.add('d-none');
     } else if (userHidden) {
-      sidebarContainer.classList.add('d-none');
+      this.classList.remove('d-none');
+      this.classList.add('collapsed');
     } else {
-      sidebarContainer.classList.remove('d-none');
+      this.classList.remove('d-none');
+      this.classList.remove('collapsed');
       if (!this.menuLoaded) {
         this.loadMenuData();
       }
@@ -226,27 +224,7 @@ export class SideBarComponent extends BaseComponent {
   }
 
   renderUserCard() {
-    const userCard = this.querySelector('#sidebarUserCard');
-    if (!userCard) return;
-
-    if (AuthService.isAuthenticated()) {
-      const user = AuthService.getCurrentUser() || {};
-      const name = user.name || user.email || 'Usuario';
-      const initials = name.substring(0, 2).toUpperCase();
-      const role = AuthService.isAdmin() ? 'Administrador' : 'Operador';
-
-      const avatarEl = this.querySelector('#sidebarUserAvatar');
-      const nameEl = this.querySelector('#sidebarUserName');
-      const roleEl = this.querySelector('#sidebarUserRole');
-
-      if (avatarEl) avatarEl.textContent = initials;
-      if (nameEl) nameEl.textContent = name;
-      if (roleEl) roleEl.textContent = role;
-
-      userCard.style.display = 'block';
-    } else {
-      userCard.style.display = 'none';
-    }
+    // Deprecated: user profile info is shown in the top navbar dropdown.
   }
 }
 

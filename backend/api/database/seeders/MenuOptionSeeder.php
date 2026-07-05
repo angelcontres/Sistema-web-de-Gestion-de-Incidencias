@@ -91,11 +91,27 @@ class MenuOptionSeeder extends Seeder
             'created_by' => $user->id,
         ]);
 
-        OpcionMenu::create([
+        $incidencia =OpcionMenu::create([
             'nombre' => 'Incidencias',
             'ruta' => '#/incidencias',
             'icono' => 'bi bi-exclamation-triangle-fill',
             'padre_id' => null,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Registro',
+            'ruta' => '#/incidencias/registro',
+            'icono' => 'bi bi-pencil-square',
+            'padre_id' => $incidencia->id,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Despacho',
+            'ruta' => '#/incidencias/despacho',
+            'icono' => 'bi bi-send-check-fill',
+            'padre_id' => $incidencia->id,
             'created_by' => $user->id,
         ]);
     }

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('metrics.performance_logs', function (Blueprint $table) {
+        Schema::create('performance_logs', function (Blueprint $table) {
             $table->id();
             $table->integer('trp')->comment('Tiempo de respuesta en milisegundos');
             $table->string('endpoint');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('metrics.performance_logs');
+        Schema::dropIfExists('performance_logs');
     }
 };

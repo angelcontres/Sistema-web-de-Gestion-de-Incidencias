@@ -14,9 +14,11 @@ class EstadoIncidenciaSeeder extends Seeder
     {
         $estados = [
             ['id' => 1, 'nombre' => 'Borrador'],
-            ['id' => 2, 'nombre' => 'En Revisión'],
-            ['id' => 3, 'nombre' => 'Aprobado'],
-            ['id' => 4, 'nombre' => 'Rechazado'],
+            ['id' => 2, 'nombre' => 'Pendiente'],
+            ['id' => 3, 'nombre' => 'En Revisión'],
+            ['id' => 4, 'nombre' => 'En Proceso'],
+            ['id' => 5, 'nombre' => 'Resuelto'],
+            ['id' => 6, 'nombre' => 'Rechazado'],
         ];
 
         foreach ($estados as $estado) {

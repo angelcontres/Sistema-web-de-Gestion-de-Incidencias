@@ -15,6 +15,18 @@ class IncidenciaController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        
+        // Automatic state transition: when Supervisor (Operador role) queries list, Pendiente (2) -> En Revisión (3)
+        if ($user && $user->roles()->where('nombre', 'Operador')->exists()) {
+            $transitionQuery = Incidencia::where('estado_id', 2);
+            if ($user->pais_id) {
+                $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
+                    $q->where('pais_id', $user->pais_id);
+                });
+            }
+            $transitionQuery->update(['estado_id' => 3]);
+        }
+
         $query = Incidencia::with([
             'direccion.territorio.pais',
             'cliente',
@@ -52,9 +64,10 @@ class IncidenciaController extends Controller
         $user = auth()->user();
 
         // Calculate initial priority based on subcategory and affected count
+        $afectados = (int) $request->input('cantidad_afectados_incidencia', 0);
         $prioridadId = $this->calculatePriority(
             $request->sub_tipo_incidencia_id,
-            $request->cantidad_afectados_incidencia
+            $afectados
         );
 
         $incidencia = Incidencia::create([
@@ -66,7 +79,7 @@ class IncidenciaController extends Controller
             'tipo_incidencia_id' => $request->tipo_incidencia_id,
             'sub_tipo_incidencia_id' => $request->sub_tipo_incidencia_id,
             'prioridad_id' => $prioridadId,
-            'cantidad_afectados_incidencia' => $request->cantidad_afectados_incidencia,
+            'cantidad_afectados_incidencia' => $afectados,
             'version' => 1,
             'created_by' => $user ? $user->id : null,
         ]);

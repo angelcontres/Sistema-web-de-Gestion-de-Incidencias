@@ -52,9 +52,10 @@
           <!-- PESTAÑA 1: DATOS Y GEOLOCALIZACIÓN -->
           <div class="tab-pane fade show active" id="datos-pane" role="tabpanel" aria-labelledby="datos-tab" tabindex="0">
             
-            <!-- Clasificación y Afectados -->
+            <!-- Clasificación -->
             <div class="row g-3 mb-4">
-              <div class="col-md-4">
+              <input type="hidden" id="cantidadAfectados" value="0" />
+              <div class="col-md-6">
                 <label for="tipoSelect" class="form-label fw-semibold text-dark small">Categoría Principal <span class="text-danger">*</span></label>
                 <select id="tipoSelect" class="form-select rounded-2 border-secondary-subtle" required>
                   <option value="">-- Seleccione --</option>
@@ -62,21 +63,12 @@
                 <div class="invalid-feedback">Por favor seleccione una categoría principal.</div>
               </div>
               
-              <div class="col-md-4">
+              <div class="col-md-6">
                 <label for="subTipoSelect" class="form-label fw-semibold text-dark small">Subcategoría <span class="text-danger">*</span></label>
                 <select id="subTipoSelect" class="form-select rounded-2 border-secondary-subtle" required disabled>
                   <option value="">-- Seleccione categoría primero --</option>
                 </select>
                 <div class="invalid-feedback">Por favor seleccione una subcategoría.</div>
-              </div>
-
-              <div class="col-md-4">
-                <label for="cantidadAfectados" class="form-label fw-semibold text-dark small">Personas Afectadas <span class="text-danger">*</span></label>
-                <div class="input-group">
-                  <span class="input-group-text bg-light border-secondary-subtle"><i class="bi bi-people"></i></span>
-                  <input type="number" id="cantidadAfectados" class="form-control rounded-end-2 border-secondary-subtle" min="0" required placeholder="0" />
-                  <div class="invalid-feedback">Ingrese un número válido de personas afectadas (mínimo 0).</div>
-                </div>
               </div>
             </div>
 
@@ -84,9 +76,9 @@
             <div class="row g-3 mb-4">
               <div class="col-md-4">
                 <div class="h-100 p-3 rounded-3 bg-light border border-secondary-subtle d-flex flex-column justify-content-center align-items-center text-center">
-                  <div class="text-muted small fw-medium mb-1">Prioridad Calculada</div>
+                  <div class="text-muted small fw-medium mb-1">Prioridad del Incidente</div>
                   <div id="prioridadDisplay" class="fw-bold fs-5 text-secondary">-</div>
-                  <div class="text-muted small mt-1" style="font-size: 0.75rem;">(Calculada según subcategoría y afectados)</div>
+                  <div class="text-muted small mt-1" style="font-size: 0.75rem;">(Definida por la subcategoría)</div>
                 </div>
               </div>
               
@@ -99,7 +91,7 @@
 
             <!-- Asignación de Institución y Estado (Solo para operadores/administradores) -->
             <div class="row g-3 mb-4 border-top pt-4" id="sectionAsignacion">
-              <div class="col-md-6">
+              <div class="col-md-6" id="divInstitucion">
                 <label for="institucionSelect" class="form-label fw-semibold text-dark small">Institución Asignada</label>
                 <select id="institucionSelect" class="form-select rounded-2 border-secondary-subtle">
                   <option value="">-- Ninguna --</option>
@@ -128,7 +120,7 @@
 
               <!-- Fila con Mapa y Campos de Detalle -->
               <div class="row g-3">
-                <div class="col-lg-7">
+                <div class="col-lg-7" id="colMapaContainer">
                   <div class="rounded-3 border overflow-hidden position-relative" style="height: 350px;">
                     <div id="incidenciaMapa" class="w-100 h-100 bg-light" style="z-index: 1;"></div>
                     <div id="mapLoader" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex justify-content-center align-items-center d-none" style="z-index: 2;">
@@ -138,9 +130,14 @@
                     </div>
                   </div>
                   <span class="text-muted small mt-1.5 d-block"><i class="bi bi-info-circle me-1"></i>Haga clic en el mapa o arrastre el marcador para fijar la ubicación exacta.</span>
+                  <!-- Indicador minimalista de ubicación -->
+                  <div id="infoUbicacionMinimalista" class="mt-2 p-2 bg-light rounded border border-light-subtle text-dark-emphasis small d-none">
+                    <i class="bi bi-geo-alt-fill text-primary me-1"></i>
+                    <span id="txtInfoUbicacion" class="fw-medium">Ubicación seleccionada: Ninguna</span>
+                  </div>
                 </div>
 
-                <div class="col-lg-5">
+                <div class="col-lg-5" id="detallesDireccionContainer">
                   <div class="row g-2">
                     <div class="col-12">
                       <label for="dirDetalle" class="form-label fw-semibold text-dark small">Dirección Detallada <span class="text-danger">*</span></label>
@@ -233,14 +230,97 @@
         </div>
 
         <!-- Botones de Acción del Formulario -->
-        <div class="card-footer bg-white border-0 pt-3 pb-0 d-flex justify-content-end align-items-center gap-3 border-top mt-4">
-          <a href="#/incidencias" class="btn btn-light fw-semibold px-4 py-2 rounded-2">Cancelar</a>
-          <button type="submit" id="btnSubmit" class="btn btn-primary fw-semibold px-5 py-2 rounded-2 d-flex align-items-center gap-2">
+        <div class="card-footer bg-white border-0 pt-3 pb-0 d-flex flex-column-reverse flex-sm-row justify-content-sm-end align-items-stretch align-items-sm-center gap-3 border-top mt-4">
+          <a href="#/incidencias" class="btn btn-light fw-semibold px-4 py-2 rounded-2 w-100 w-sm-auto text-center">Cancelar</a>
+          <button type="button" id="btnConfirmarResolucion" class="btn btn-success fw-semibold px-4 py-2 rounded-2 w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2 d-none">
+            <i class="bi bi-check-circle"></i> Confirmar Resolución
+          </button>
+          <button type="submit" id="btnSubmit" class="btn btn-primary fw-semibold px-5 py-2 rounded-2 w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
             <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
             <span id="btnText">Guardar Incidencia</span>
           </button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para registrar nueva dirección -->
+<div class="modal fade" id="modalRegistrarDireccion" tabindex="-1" aria-labelledby="modalRegistrarDireccionLabel" aria-hidden="true" style="z-index: 1060;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-3">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark" id="modalRegistrarDireccionLabel">
+          <i class="bi bi-geo-alt-fill text-primary me-2"></i>Registrar Nueva Ubicación
+        </h5>
+        <button type="button" class="btn-close" id="btnCerrarModalX" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3">
+        <div class="alert alert-info py-2 px-3 small border-0 rounded-2 mb-3">
+          <i class="bi bi-info-circle-fill me-1.5"></i> La ubicación que seleccionó no está registrada. Por favor complete los detalles para guardarla.
+        </div>
+        <form id="formModalDireccion" class="needs-validation" novalidate>
+          <div class="row g-2">
+            <div class="col-12">
+              <label for="modalDirDetalle" class="form-label fw-semibold text-dark small">Dirección Detallada <span class="text-danger">*</span></label>
+              <input type="text" id="modalDirDetalle" class="form-control rounded-2 border-secondary-subtle" required placeholder="Calle, número, intersección" />
+              <div class="invalid-feedback">La dirección detallada es obligatoria.</div>
+            </div>
+            
+            <div class="col-6">
+              <label for="modalDirCodigoPostal" class="form-label fw-semibold text-dark small">Código Postal</label>
+              <input type="text" id="modalDirCodigoPostal" class="form-control rounded-2 border-secondary-subtle" placeholder="123456" />
+            </div>
+
+            <div class="col-6">
+              <label for="modalDirPais" class="form-label fw-semibold text-dark small">País <span class="text-danger">*</span></label>
+              <select id="modalDirPais" class="form-select rounded-2 border-secondary-subtle" required>
+                <option value="">-- Seleccione --</option>
+              </select>
+              <div class="invalid-feedback">El país es obligatorio.</div>
+            </div>
+
+            <!-- Cascading Dropdowns para Territorio en Modal -->
+            <div class="col-12 d-none" id="colModalDirNivel1">
+              <label id="lblModalDirNivel1" for="modalDirNivel1" class="form-label fw-semibold text-dark small">Provincia <span class="text-danger">*</span></label>
+              <select id="modalDirNivel1" class="form-select rounded-2 border-secondary-subtle" required>
+                <option value="">-- Seleccione --</option>
+              </select>
+              <div class="invalid-feedback">La provincia es obligatoria.</div>
+            </div>
+
+            <div class="col-12 d-none" id="colModalDirNivel2">
+              <label id="lblModalDirNivel2" for="modalDirNivel2" class="form-label fw-semibold text-dark small">Cantón <span class="text-danger">*</span></label>
+              <select id="modalDirNivel2" class="form-select rounded-2 border-secondary-subtle" required>
+                <option value="">-- Seleccione --</option>
+              </select>
+              <div class="invalid-feedback">El cantón es obligatorio.</div>
+            </div>
+
+            <div class="col-12 d-none" id="colModalDirNivel3">
+              <label id="lblModalDirNivel3" for="modalDirNivel3" class="form-label fw-semibold text-dark small">Parroquia <span class="text-danger">*</span></label>
+              <select id="modalDirNivel3" class="form-select rounded-2 border-secondary-subtle" required>
+                <option value="">-- Seleccione --</option>
+              </select>
+              <div class="invalid-feedback">La parroquia es obligatoria.</div>
+            </div>
+
+            <div class="col-6">
+              <label for="modalDirLat" class="form-label fw-semibold text-dark small">Latitud</label>
+              <input type="text" id="modalDirLat" class="form-control rounded-2 border-secondary-subtle bg-light text-muted" readonly />
+            </div>
+            
+            <div class="col-6">
+              <label for="modalDirLng" class="form-label fw-semibold text-dark small">Longitud</label>
+              <input type="text" id="modalDirLng" class="form-control rounded-2 border-secondary-subtle bg-light text-muted" readonly />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-top-0 pt-0">
+        <button type="button" class="btn btn-light fw-semibold rounded-2 px-3" id="btnCancelarModal">Cancelar</button>
+        <button type="button" class="btn btn-primary fw-semibold rounded-2 px-4" id="btnGuardarModalDireccion">Guardar Ubicación</button>
+      </div>
     </div>
   </div>
 </div>

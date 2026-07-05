@@ -2,25 +2,25 @@ import { apiRequest } from '../../../core/api.js';
 
 export const IncidenciaService = {
   getAll() {
-    return apiRequest('/v1/incidencias');
+    return apiRequest('/incidencias');
   },
   getById(id) {
-    return apiRequest(`/v1/incidencias/${id}`);
+    return apiRequest(`/incidencias/${id}`);
   },
   create(payload) {
-    return apiRequest('/v1/incidencias', {
+    return apiRequest('/incidencias', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
   },
   update(id, payload) {
-    return apiRequest(`/v1/incidencias/${id}`, {
+    return apiRequest(`/incidencias/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
   delete(id) {
-    return apiRequest(`/v1/incidencias/${id}`, {
+    return apiRequest(`/incidencias/${id}`, {
       method: 'DELETE',
     });
   },

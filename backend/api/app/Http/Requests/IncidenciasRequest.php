@@ -24,9 +24,9 @@ class IncidenciasRequest extends FormRequest
         $rules = [
             'incidencia_descripcion' => 'nullable|string',
             'direccion_id' => 'nullable|integer|exists:direcciones,id',
-            'tipo_incidencia_id' => 'required|integer|exists:categorias_incidencia,id',
-            'sub_tipo_incidencia_id' => 'required|integer|exists:categorias_incidencia,id',
-            'cantidad_afectados_incidencia' => 'required|integer|min:0',
+            'tipo_incidencia_id' => ($this->isMethod('post') ? 'required' : 'sometimes|required') . '|integer|exists:categorias_incidencia,id',
+            'sub_tipo_incidencia_id' => ($this->isMethod('post') ? 'required' : 'sometimes|required') . '|integer|exists:categorias_incidencia,id',
+            'cantidad_afectados_incidencia' => 'nullable|integer|min:0',
             'institucion_id' => 'nullable|integer|exists:instituciones,id',
         ];
 

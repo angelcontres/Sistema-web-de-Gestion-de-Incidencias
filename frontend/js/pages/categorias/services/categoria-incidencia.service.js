@@ -7,25 +7,25 @@ export const CategoriaIncidenciaService = {
       queryParams.append('parent_id', params.parent_id === null ? '' : params.parent_id);
     }
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
-    return apiRequest(`/v1/categorias-incidencia${queryString}`);
+    return apiRequest(`/categorias-incidencia${queryString}`);
   },
   getById(id) {
-    return apiRequest(`/v1/categorias-incidencia/${id}`);
+    return apiRequest(`/categorias-incidencia/${id}`);
   },
   create(payload) {
-    return apiRequest('/v1/categorias-incidencia', {
+    return apiRequest('/categorias-incidencia', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
   },
   update(id, payload) {
-    return apiRequest(`/v1/categorias-incidencia/${id}`, {
+    return apiRequest(`/categorias-incidencia/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
   delete(id) {
-    return apiRequest(`/v1/categorias-incidencia/${id}`, {
+    return apiRequest(`/categorias-incidencia/${id}`, {
       method: 'DELETE',
     });
   },

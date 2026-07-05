@@ -35,12 +35,10 @@ class DatabaseSeeder extends Seeder
 
         // Seed catalogs
         $this->call(PrioridadSeeder::class);
-        $this->call(InstitucionSeeder::class);
         $this->call(EstadoIncidenciaSeeder::class);
         $this->call(UbicacionesSeeder::class);
         $this->call(InstitucionesSeeder::class);
         $this->call(ClasificacionesSeeder::class);
-        $this->call(PrioridadSeeder::class);
 
         // Assign the Admin role to the test user
         $adminRole = Role::where('nombre', 'Admin')->first();
@@ -85,6 +83,47 @@ class DatabaseSeeder extends Seeder
             if ($operatorRole) {
                 $opUser->roles()->sync([$operatorRole->id]);
             }
+        }
+
+        // Seed specific profiles requested by user:
+        // 1. ciudadano@example.com (Ciudadano)
+        $ciudadanoUser = User::create([
+            'name' => 'Ciudadano de Prueba',
+            'username' => 'ciudadano',
+            'email' => 'ciudadano@example.com',
+            'password' => Hash::make('password123'),
+            'activo' => true,
+        ]);
+        $ciudadanoRole = Role::where('nombre', 'Ciudadano')->first();
+        if ($ciudadanoRole) {
+            $ciudadanoUser->roles()->sync([$ciudadanoRole->id]);
+        }
+
+        // 2. institucion@example.com (Institucion, linked to PNE / id 1)
+        $institucionUser = User::create([
+            'name' => 'Institución de Prueba',
+            'username' => 'institucion',
+            'email' => 'institucion@example.com',
+            'password' => Hash::make('password123'),
+            'activo' => true,
+            'institucion_id' => 1, // Policía Nacional del Ecuador
+        ]);
+        $institucionRole = Role::where('nombre', 'Institucion')->first();
+        if ($institucionRole) {
+            $institucionUser->roles()->sync([$institucionRole->id]);
+        }
+
+        // 3. supervisor@example.com (Operador, as this role represents the supervisor)
+        $supervisorUser = User::create([
+            'name' => 'Supervisor de Prueba',
+            'username' => 'supervisor',
+            'email' => 'supervisor@example.com',
+            'password' => Hash::make('password123'),
+            'activo' => true,
+            'pais_id' => 3, // Ecuador (since they supervise EC)
+        ]);
+        if ($operatorRole) {
+            $supervisorUser->roles()->sync([$operatorRole->id]);
         }
     }
 }

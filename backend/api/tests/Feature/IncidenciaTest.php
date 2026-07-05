@@ -12,12 +12,12 @@ use App\Models\Institucion;
 use App\Models\EstadoIncidencia;
 use App\Models\CategoriaIncidencia;
 use App\Models\Incidencia;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class IncidenciaTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private User $admin;
     private Pais $pais;
@@ -39,17 +39,15 @@ class IncidenciaTest extends TestCase
 
         $this->admin = $this->createAdminUser();
 
-        $this->pais = Pais::create([
-            'nombre' => 'Ecuador',
-            'codigo_iso' => 'EC',
-            'activo' => true
-        ]);
+        $this->pais = Pais::firstOrCreate(
+            ['codigo_iso' => 'EC'],
+            ['nombre' => 'Ecuador', 'activo' => true]
+        );
 
-        $this->territorio = Territorio::create([
-            'pais_id' => $this->pais->id,
-            'nombre' => 'Pichincha',
-            'tipo' => 'Provincia',
-        ]);
+        $this->territorio = Territorio::firstOrCreate(
+            ['nombre' => 'Pichincha', 'pais_id' => $this->pais->id],
+            ['tipo' => 'Provincia']
+        );
 
         $this->direccion = Direccion::create([
             'territorio_id' => $this->territorio->id,
@@ -58,30 +56,33 @@ class IncidenciaTest extends TestCase
         ]);
 
         // Seed prioridades
-        $this->critica = Prioridad::create(['id' => 1, 'nombre' => 'Crítica', 'color_hex' => '#FF0000']);
-        $this->alta = Prioridad::create(['id' => 2, 'nombre' => 'Alta', 'color_hex' => '#FF8C00']);
-        $this->media = Prioridad::create(['id' => 3, 'nombre' => 'Media', 'color_hex' => '#FFD700']);
-        $this->baja = Prioridad::create(['id' => 4, 'nombre' => 'Baja', 'color_hex' => '#008000']);
+        $this->critica = Prioridad::firstOrCreate(['id' => 1], ['nombre' => 'Crítica', 'color_hex' => '#FF0000']);
+        $this->alta = Prioridad::firstOrCreate(['id' => 2], ['nombre' => 'Alta', 'color_hex' => '#FF8C00']);
+        $this->media = Prioridad::firstOrCreate(['id' => 3], ['nombre' => 'Media', 'color_hex' => '#FFD700']);
+        $this->baja = Prioridad::firstOrCreate(['id' => 4], ['nombre' => 'Baja', 'color_hex' => '#008000']);
 
         // Seed instituciones
-        $this->bomberos = Institucion::create(['nombre' => 'Bomberos', 'siglas' => 'BOMBEROS', 'activo' => true]);
-        $this->policia = Institucion::create(['nombre' => 'Policía', 'siglas' => 'POLICIA', 'activo' => true]);
+        $this->bomberos = Institucion::firstOrCreate(['nombre' => 'Bomberos'], ['siglas' => 'BOMBEROS', 'activo' => true]);
+        $this->policia = Institucion::firstOrCreate(['nombre' => 'Policía'], ['siglas' => 'POLICIA', 'activo' => true]);
 
         // Seed estados
-        $this->estadoRevision = EstadoIncidencia::create(['id' => 2, 'nombre' => 'En Revisión']);
+        $this->estadoRevision = EstadoIncidencia::firstOrCreate(['id' => 2], ['nombre' => 'En Revisión']);
 
         // Seed categorias
-        $this->categoriaPadre = CategoriaIncidencia::create([
-            'nombre' => 'Medio Ambiente y Movilidad',
-            'activo' => true,
-        ]);
+        $this->categoriaPadre = CategoriaIncidencia::firstOrCreate(
+            ['nombre' => 'Medio Ambiente y Movilidad'],
+            ['activo' => true]
+        );
 
-        $this->subcategoriaAlta = CategoriaIncidencia::create([
-            'parent_id' => $this->categoriaPadre->id,
-            'prioridad_id' => $this->alta->id,
-            'nombre' => 'Tránsito y movilidad',
-            'activo' => true,
-        ]);
+        $this->subcategoriaAlta = CategoriaIncidencia::firstOrCreate(
+            ['nombre' => 'Tránsito y movilidad'],
+            [
+                'parent_id' => $this->categoriaPadre->id,
+                'prioridad_id' => $this->alta->id,
+                'institucion_id' => $this->policia->id,
+                'activo' => true
+            ]
+        );
     }
 
     public function test_can_create_incidencia_recalculates_priority_normal()
@@ -99,7 +100,8 @@ class IncidenciaTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.prioridad_id', $this->alta->id) // Remains Alta
-            ->assertJsonPath('data.estado_id', 2); // Default En Revisión
+            ->assertJsonPath('data.estado_id', 2) // Default Pendiente
+            ->assertJsonPath('data.direccion.territorio.pais.nombre', 'Ecuador');
     }
 
     public function test_can_create_incidencia_recalculates_priority_critical_when_affected_over_threshold()
@@ -184,9 +186,12 @@ class IncidenciaTest extends TestCase
             'version' => 1,
         ]);
 
-        // Create an Institution user for Policia
+        // Fetch or create an Institution user for Policia
         $userPolicia = User::factory()->create(['institucion_id' => $this->policia->id]);
-        $institucionRole = Role::create(['nombre' => 'Institucion', 'descripcion' => 'Rol de Institución']);
+        $institucionRole = Role::firstOrCreate(
+            ['nombre' => 'Institucion'],
+            ['descripcion' => 'Rol de Institución', 'created_by' => $this->admin->id]
+        );
         $userPolicia->roles()->sync([$institucionRole->id]);
 
         // Fetch index with userPolicia -> should see only Policia incident
@@ -202,5 +207,44 @@ class IncidenciaTest extends TestCase
         // Access Bomberos incident -> 403 Forbidden
         $responseShowForbidden = $this->actingAs($userPolicia)->getJson("/api/v1/incidencias/{$incidenciaBomberos->id}");
         $responseShowForbidden->assertStatus(403);
+    }
+
+    public function test_ciudadano_can_create_incidencia()
+    {
+        $ciudadanoUser = User::factory()->create();
+        $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano']);
+        $ciudadanoUser->roles()->sync([$ciudadanoRole->id]);
+
+        $permisoVer = \App\Models\Permiso::firstOrCreate(['nombre' => 'Ver Incidencia'], ['accion' => 'READ', 'recurso' => 'incidencias']);
+        $permisoCrear = \App\Models\Permiso::firstOrCreate(['nombre' => 'Crear Incidencia'], ['accion' => 'CREATE', 'recurso' => 'incidencias']);
+        $ciudadanoRole->permisos()->sync([$permisoVer->id, $permisoCrear->id]);
+
+        $payload = [
+            'incidencia_descripcion' => 'Bache crítico reportado por ciudadano',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'cantidad_afectados_incidencia' => 3,
+        ];
+
+        $response = $this->actingAs($ciudadanoUser)->postJson('/api/v1/incidencias', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.estado_id', 2) // Pendiente
+            ->assertJsonPath('data.cliente_id', $ciudadanoUser->id)
+            ->assertJsonPath('data.direccion.territorio.pais.nombre', 'Ecuador');
+    }
+
+    public function test_ciudadano_can_access_catalogos()
+    {
+        $ciudadanoUser = User::factory()->create();
+        $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano']);
+        $ciudadanoUser->roles()->sync([$ciudadanoRole->id]);
+
+        $responsePaises = $this->actingAs($ciudadanoUser)->getJson('/api/v1/catalogos/paises');
+        $responsePaises->assertStatus(200);
+
+        $responseCategorias = $this->actingAs($ciudadanoUser)->getJson('/api/v1/catalogos/categorias-incidencia');
+        $responseCategorias->assertStatus(200);
     }
 }
