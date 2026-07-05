@@ -18,7 +18,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
 
     // Cargar catálogo de categorías para autocompletar instituciones
     try {
-      this.categorias = await CatalogoService.getCategoriasIncidencia() || [];
+      this.categorias = (await CatalogoService.getCategoriasIncidencia()) || [];
     } catch (e) {
       console.warn('Error loading subcategories:', e);
     }
@@ -36,26 +36,34 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
             header: 'Clasificación',
             render: (inc) => {
               const tipo = inc.tipo ? inc.tipo.nombre : '-';
-              const subTipo = inc.sub_tipo ? inc.sub_tipo.nombre : (inc.subTipo ? inc.subTipo.nombre : '-');
+              const subTipo = inc.sub_tipo
+                ? inc.sub_tipo.nombre
+                : inc.subTipo
+                  ? inc.subTipo.nombre
+                  : '-';
               return `<div class="fw-semibold text-dark">${tipo}</div><div class="text-muted small">${subTipo}</div>`;
-            }
+            },
           },
           {
             header: 'Descripción',
-            render: (inc) => `<div class="text-truncate" style="max-width: 200px;" title="${inc.incidencia_descripcion || ''}">${inc.incidencia_descripcion || 'Sin descripción.'}</div>`
+            render: (inc) =>
+              `<div class="text-truncate" style="max-width: 200px;" title="${inc.incidencia_descripcion || ''}">${inc.incidencia_descripcion || 'Sin descripción.'}</div>`,
           },
           {
             header: 'Ubicación / Dirección',
             render: (inc) => {
               const detalle = inc.direccion ? inc.direccion.detalle : 'Sin dirección.';
-              const pais = (inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais) ? inc.direccion.territorio.pais.nombre : '';
+              const pais =
+                inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
+                  ? inc.direccion.territorio.pais.nombre
+                  : '';
               return `<div>${detalle}</div><div class="text-muted small">${pais}</div>`;
-            }
+            },
           },
           {
             header: 'Afectados',
             key: 'cantidad_afectados_incidencia',
-            class: 'text-center fw-bold'
+            class: 'text-center fw-bold',
           },
           {
             header: 'Prioridad',
@@ -67,7 +75,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
                 </span>`;
               }
               return '-';
-            }
+            },
           },
           {
             header: 'Estado',
@@ -83,11 +91,14 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
                 </span>`;
               }
               return '-';
-            }
+            },
           },
           {
             header: 'Atendido por',
-            render: (inc) => inc.institucion ? `<span class="fw-medium text-secondary">${inc.institucion.nombre}</span>` : '<span class="text-muted small">No asignado</span>'
+            render: (inc) =>
+              inc.institucion
+                ? `<span class="fw-medium text-secondary">${inc.institucion.nombre}</span>`
+                : '<span class="text-muted small">No asignado</span>',
           },
           {
             header: 'Acciones',
@@ -95,11 +106,13 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
             render: (inc) => {
               // Add a "Despachar" action button in the list if the state is 'En Revisión' (3)
               const showDespachar = inc.estado_id === 3;
-              const despacharBtn = showDespachar ? `
+              const despacharBtn = showDespachar
+                ? `
                 <button type="button" class="btn btn-sm btn-success-soft text-success me-1 px-2.5 py-1 rounded-pill fw-semibold" data-action="despachar" title="Despachar a institución">
                   <i class="bi bi-send-fill me-1"></i>Despachar
                 </button>
-              ` : '';
+              `
+                : '';
               return `
                 <div class="d-flex align-items-center justify-content-center">
                   ${despacharBtn}
@@ -108,7 +121,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
                   </button>
                 </div>
               `;
-            }
+            },
           },
         ],
       });
@@ -135,9 +148,9 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       });
 
       // Tab Filtering listeners
-      tabs.forEach(tab => {
+      tabs.forEach((tab) => {
         tab.addEventListener('click', (e) => {
-          tabs.forEach(t => {
+          tabs.forEach((t) => {
             t.classList.remove('active', 'text-primary');
             t.classList.add('text-secondary');
           });
@@ -159,12 +172,12 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
     if (!tblDatos) return;
 
     tblDatos.load(async () => {
-      const allIncidents = await IncidenciaService.getAll() || [];
+      const allIncidents = (await IncidenciaService.getAll()) || [];
       if (this.currentEstadoFilter === 'all') {
         return allIncidents;
       }
       const filterId = parseInt(this.currentEstadoFilter);
-      return allIncidents.filter(inc => inc.estado_id === filterId);
+      return allIncidents.filter((inc) => inc.estado_id === filterId);
     });
   }
 
@@ -180,7 +193,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       // Auto-assign institution if not set
       let finalInstitucionId = current.institucion_id;
       if (!finalInstitucionId && current.sub_tipo_incidencia_id) {
-        const subcat = this.categorias.find(c => c.id == current.sub_tipo_incidencia_id);
+        const subcat = this.categorias.find((c) => c.id == current.sub_tipo_incidencia_id);
         if (subcat && subcat.institucion_id) {
           finalInstitucionId = subcat.institucion_id;
         }
@@ -195,7 +208,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
         cantidad_afectados_incidencia: current.cantidad_afectados_incidencia,
         institucion_id: finalInstitucionId,
         estado_id: 4, // En Proceso
-        version: current.version
+        version: current.version,
       };
 
       await IncidenciaService.update(inc.id, payload);

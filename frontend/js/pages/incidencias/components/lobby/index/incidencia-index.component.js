@@ -4,7 +4,7 @@ import { AuthService } from '../../../../../core/auth.service.js';
 
 export class IncidenciaIndexComponent extends BaseComponent {
   constructor() {
-    super('js/pages/incidencias/components/index/incidencia-index.component.html');
+    super('js/pages/incidencias/components/lobby/index/incidencia-index.component.html');
   }
 
   async onInit() {

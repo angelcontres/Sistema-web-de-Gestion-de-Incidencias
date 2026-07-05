@@ -17,6 +17,7 @@ const routes = {
   '#/incidencias/despacho': 'app-incidencia-supervisor-index',
   '#/instituciones': 'app-institucion-index',
   '#/public': 'app-public',
+  '#/configuracion': 'app-menu-lobby',
 };
 
 /**

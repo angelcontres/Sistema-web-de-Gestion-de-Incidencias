@@ -8,7 +8,7 @@ import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../../shared/constants.js';
 
 export class IncidenciaFormComponent extends BaseComponent {
   constructor() {
-    super('js/pages/incidencias/components/form/incidencia-form.component.html');
+    super('js/pages/incidencias/components/lobby/form/incidencia-form.component.html');
     this.map = null;
     this.marker = null;
     this.coords = null;

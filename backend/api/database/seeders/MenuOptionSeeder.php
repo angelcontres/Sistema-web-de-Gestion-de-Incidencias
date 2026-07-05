@@ -25,7 +25,7 @@ class MenuOptionSeeder extends Seeder
 
         $config = OpcionMenu::create([
             'nombre' => 'Configuración',
-            'ruta' => '#',
+            'ruta' => '#/configuracion',
             'icono' => 'bi bi-gear-fill',
             'padre_id' => null,
             'created_by' => $user->id,
@@ -105,7 +105,7 @@ class MenuOptionSeeder extends Seeder
 
         OpcionMenu::create([
             'nombre' => 'Registro',
-            'ruta' => '#/incidencias/registro',
+            'ruta' => '#/incidencias/form',
             'icono' => 'bi bi-pencil-square',
             'padre_id' => $incidencia->id,
             'created_by' => $user->id,
