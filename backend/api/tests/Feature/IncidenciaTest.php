@@ -9,16 +9,17 @@ use App\Models\Incidencia;
 use App\Models\Institucion;
 use App\Models\Pais;
 use App\Models\Permiso;
+use App\Models\OpcionMenu;
 use App\Models\Prioridad;
 use App\Models\Role;
 use App\Models\Territorio;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class IncidenciaTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     private User $admin;
 
@@ -39,6 +40,8 @@ class IncidenciaTest extends TestCase
     private Institucion $bomberos;
 
     private Institucion $policia;
+
+    private EstadoIncidencia $estadoPendiente;
 
     private EstadoIncidencia $estadoRevision;
 
@@ -79,6 +82,7 @@ class IncidenciaTest extends TestCase
         $this->policia = Institucion::firstOrCreate(['nombre' => 'Policía'], ['siglas' => 'POLICIA', 'activo' => true]);
 
         // Seed estados
+        $this->estadoPendiente = EstadoIncidencia::firstOrCreate(['id' => 1], ['nombre' => 'Pendiente']);
         $this->estadoRevision = EstadoIncidencia::firstOrCreate(['id' => 2], ['nombre' => 'En Revisión']);
 
         // Seed categorias
@@ -145,6 +149,10 @@ class IncidenciaTest extends TestCase
             'cantidad_afectados_incidencia' => 1,
             'estado_id' => $this->estadoRevision->id,
             'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'institucion_id' => $this->policia->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
         ]);
 
         // Try updating with incorrect version
@@ -186,6 +194,9 @@ class IncidenciaTest extends TestCase
             'institucion_id' => $this->policia->id,
             'estado_id' => $this->estadoRevision->id,
             'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
         ]);
 
         $incidenciaBomberos = Incidencia::create([
@@ -197,6 +208,9 @@ class IncidenciaTest extends TestCase
             'institucion_id' => $this->bomberos->id,
             'estado_id' => $this->estadoRevision->id,
             'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
         ]);
 
         // Fetch or create an Institution user for Policia
@@ -206,6 +220,10 @@ class IncidenciaTest extends TestCase
             ['descripcion' => 'Rol de Institución', 'created_by' => $this->admin->id]
         );
         $userPolicia->roles()->sync([$institucionRole->id]);
+
+        $opcion = OpcionMenu::firstOrCreate(['nombre' => 'Incidencias', 'ruta' => '/incidencias', 'created_by' => $this->admin->id]);
+        $permisoVer = Permiso::firstOrCreate(['nombre' => 'Ver Incidencia'], ['accion' => 'READ', 'recurso' => 'incidencias', 'opcion_menu_id' => $opcion->id]);
+        $institucionRole->permisos()->sync([$permisoVer->id]);
 
         // Fetch index with userPolicia -> should see only Policia incident
         $response = $this->actingAs($userPolicia)->getJson('/api/v1/incidencias');
@@ -225,11 +243,12 @@ class IncidenciaTest extends TestCase
     public function test_ciudadano_can_create_incidencia()
     {
         $ciudadanoUser = User::factory()->create();
-        $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano']);
+        $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano', 'created_by' => $this->admin->id]);
         $ciudadanoUser->roles()->sync([$ciudadanoRole->id]);
 
-        $permisoVer = Permiso::firstOrCreate(['nombre' => 'Ver Incidencia'], ['accion' => 'READ', 'recurso' => 'incidencias']);
-        $permisoCrear = Permiso::firstOrCreate(['nombre' => 'Crear Incidencia'], ['accion' => 'CREATE', 'recurso' => 'incidencias']);
+        $opcion = OpcionMenu::firstOrCreate(['nombre' => 'Incidencias', 'ruta' => '/incidencias', 'created_by' => $this->admin->id]);
+        $permisoVer = Permiso::firstOrCreate(['nombre' => 'Ver Incidencia'], ['accion' => 'READ', 'recurso' => 'incidencias', 'opcion_menu_id' => $opcion->id]);
+        $permisoCrear = Permiso::firstOrCreate(['nombre' => 'Crear Incidencia'], ['accion' => 'CREATE', 'recurso' => 'incidencias', 'opcion_menu_id' => $opcion->id]);
         $ciudadanoRole->permisos()->sync([$permisoVer->id, $permisoCrear->id]);
 
         $payload = [
@@ -251,7 +270,7 @@ class IncidenciaTest extends TestCase
     public function test_ciudadano_can_access_catalogos()
     {
         $ciudadanoUser = User::factory()->create();
-        $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano']);
+        $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano', 'created_by' => $this->admin->id]);
         $ciudadanoUser->roles()->sync([$ciudadanoRole->id]);
 
         $responsePaises = $this->actingAs($ciudadanoUser)->getJson('/api/v1/catalogos/paises');
@@ -259,5 +278,211 @@ class IncidenciaTest extends TestCase
 
         $responseCategorias = $this->actingAs($ciudadanoUser)->getJson('/api/v1/catalogos/categorias-incidencia');
         $responseCategorias->assertStatus(200);
+    }
+
+    public function test_can_soft_delete_incidencia()
+    {
+        $incidencia = Incidencia::create([
+            'incidencia_descripcion' => 'Prueba de eliminación',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'prioridad_id' => $this->alta->id,
+            'cantidad_afectados_incidencia' => 1,
+            'estado_id' => $this->estadoRevision->id,
+            'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'institucion_id' => $this->policia->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/v1/incidencias/{$incidencia->id}");
+
+        $response->assertStatus(200)
+                 ->assertJsonPath('message', 'Incidencia eliminada con éxito');
+
+        $this->assertSoftDeleted('reporte_incidencias', [
+            'id' => $incidencia->id,
+        ]);
+
+        // Verify deleted_by is populated
+        $deletedIncidencia = Incidencia::withTrashed()->find($incidencia->id);
+        $this->assertEquals($this->admin->id, $deletedIncidencia->deleted_by);
+    }
+
+    public function test_can_change_incidencia_status()
+    {
+        $incidencia = Incidencia::create([
+            'incidencia_descripcion' => 'Prueba de cambio de estado',
+            'direccion_id' => $this->direccion->id,
+            'cliente_id' => $this->admin->id,
+            'institucion_id' => $this->policia->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'prioridad_id' => $this->alta->id,
+            'cantidad_afectados_incidencia' => 1,
+            'estado_id' => 2, // En Revisión
+            'version' => 1,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
+        ]);
+
+        $nuevoEstado = EstadoIncidencia::firstOrCreate(['id' => 3], ['nombre' => 'Resuelto']);
+
+        $payload = [
+            'estado_id' => $nuevoEstado->id,
+            'version' => 1,
+        ];
+
+        $response = $this->actingAs($this->admin)->putJson("/api/v1/incidencias/{$incidencia->id}", $payload);
+
+        $response->assertStatus(200)
+                 ->assertJsonPath('data.estado_id', $nuevoEstado->id);
+
+        $this->assertDatabaseHas('reporte_incidencias', [
+            'id' => $incidencia->id,
+            'estado_id' => $nuevoEstado->id,
+        ]);
+    }
+
+    public function test_can_filter_incidencias_by_estado()
+    {
+        $estadoPendiente = EstadoIncidencia::firstOrCreate(['id' => 1], ['nombre' => 'Pendiente']);
+
+        $incidencia1 = Incidencia::create([
+            'incidencia_descripcion' => 'Incidencia 1',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'estado_id' => $estadoPendiente->id,
+            'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'institucion_id' => $this->policia->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
+        ]);
+
+        $incidencia2 = Incidencia::create([
+            'incidencia_descripcion' => 'Incidencia 2',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'estado_id' => $this->estadoRevision->id,
+            'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'institucion_id' => $this->policia->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson("/api/v1/incidencias?estado_id={$estadoPendiente->id}");
+
+        $response->assertStatus(200);
+        $data = $response->json();
+
+        // Assert we get the one with estadoPendiente
+        $containsIncidencia1 = collect($data)->contains('id', $incidencia1->id);
+        $containsIncidencia2 = collect($data)->contains('id', $incidencia2->id);
+
+        $this->assertTrue($containsIncidencia1);
+        $this->assertFalse($containsIncidencia2);
+    }
+
+    public function test_can_filter_incidencias_by_tipo()
+    {
+        $otroTipo = CategoriaIncidencia::firstOrCreate(['id' => 99], ['nombre' => 'Otro Tipo', 'activo' => true]);
+
+        $incidencia1 = Incidencia::create([
+            'incidencia_descripcion' => 'Incidencia Tipo 1',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'estado_id' => $this->estadoRevision->id,
+            'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'institucion_id' => $this->policia->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
+        ]);
+
+        $incidencia2 = Incidencia::create([
+            'incidencia_descripcion' => 'Incidencia Tipo 2',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $otroTipo->id,
+            'estado_id' => $this->estadoRevision->id,
+            'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'institucion_id' => $this->policia->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson("/api/v1/incidencias?tipo_incidencia_id={$otroTipo->id}");
+
+        $response->assertStatus(200);
+        $data = $response->json();
+
+        $containsIncidencia1 = collect($data)->contains('id', $incidencia1->id);
+        $containsIncidencia2 = collect($data)->contains('id', $incidencia2->id);
+
+        $this->assertFalse($containsIncidencia1);
+        $this->assertTrue($containsIncidencia2);
+    }
+    // CP-V-01: Latitud fuera de rango
+    public function test_validates_latitud_out_of_range()
+    {
+        $payload = [
+            'territorio_id' => $this->territorio->id,
+            'detalle' => 'Calle Falsa 123',
+            'latitud' => 95.0, // Fuera de rango (-90 a 90)
+            'longitud' => -80.0,
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/direcciones', $payload);
+
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['latitud']);
+    }
+
+    // CP-V-02: Longitud fuera de rango
+    public function test_validates_longitud_out_of_range()
+    {
+        $payload = [
+            'territorio_id' => $this->territorio->id,
+            'detalle' => 'Calle Falsa 123',
+            'latitud' => -2.2,
+            'longitud' => 200.0, // Fuera de rango (-180 a 180)
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/direcciones', $payload);
+
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['longitud']);
+    }
+
+    // CP-V-03: Campos obligatorios vacíos
+    public function test_validates_required_fields_on_incidencia()
+    {
+        $payload = [
+            // Falta tipo_incidencia_id y sub_tipo_incidencia_id
+            'incidencia_descripcion' => 'Descripción',
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
+    }
+
+    // CP-V-05: Tipo/Subtipo inválido (no existe)
+    public function test_validates_tipo_and_subtipo_exist()
+    {
+        $payload = [
+            'tipo_incidencia_id' => 9999, // Inexistente
+            'sub_tipo_incidencia_id' => 9999, // Inexistente
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
     }
 }

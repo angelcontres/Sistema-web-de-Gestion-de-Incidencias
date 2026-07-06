@@ -53,6 +53,14 @@ class IncidenciaController extends Controller
             }
         }
 
+        if ($request->has('estado_id')) {
+            $query->where('estado_id', $request->estado_id);
+        }
+
+        if ($request->has('tipo_incidencia_id')) {
+            $query->where('tipo_incidencia_id', $request->tipo_incidencia_id);
+        }
+
         return response()->json($query->orderBy('id', 'desc')->get(), 200);
     }
 
