@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'username', 'email', 'password', 'activo', 'pais_id'])]
+#[Fillable(['name', 'username', 'email', 'password', 'activo', 'pais_id', 'institucion_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -29,6 +29,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'pais_id' => 'integer',
+            'institucion_id' => 'integer',
         ];
     }
 
@@ -46,6 +48,14 @@ class User extends Authenticatable
     public function pais()
     {
         return $this->belongsTo(Pais::class, 'pais_id');
+    }
+
+    /**
+     * Relación: La institución a la que pertenece el usuario (si es de rol Institución).
+     */
+    public function institucion()
+    {
+        return $this->belongsTo(Institucion::class, 'institucion_id');
     }
 
     /**

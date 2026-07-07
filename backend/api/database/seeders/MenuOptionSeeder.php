@@ -25,7 +25,7 @@ class MenuOptionSeeder extends Seeder
 
         $config = OpcionMenu::create([
             'nombre' => 'Configuración',
-            'ruta' => '#',
+            'ruta' => '#/configuracion',
             'icono' => 'bi bi-gear-fill',
             'padre_id' => null,
             'created_by' => $user->id,
@@ -68,6 +68,10 @@ class MenuOptionSeeder extends Seeder
             'ruta' => '#/sqa-dashboard',
             'icono' => 'bi bi-graph-up',
             'padre_id' => null,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
             'nombre' => 'Ubicaciones',
             'ruta' => '#/ubicaciones',
             'icono' => 'bi bi-geo-alt-fill',
@@ -88,6 +92,30 @@ class MenuOptionSeeder extends Seeder
             'ruta' => '#/categorias',
             'icono' => 'bi bi-tags-fill',
             'padre_id' => $config->id,
+            'created_by' => $user->id,
+        ]);
+
+        $incidencia = OpcionMenu::create([
+            'nombre' => 'Incidencias',
+            'ruta' => '#/incidencias',
+            'icono' => 'bi bi-exclamation-triangle-fill',
+            'padre_id' => null,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Registro',
+            'ruta' => '#/incidencias/form',
+            'icono' => 'bi bi-pencil-square',
+            'padre_id' => $incidencia->id,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Despacho',
+            'ruta' => '#/incidencias/despacho',
+            'icono' => 'bi bi-send-check-fill',
+            'padre_id' => $incidencia->id,
             'created_by' => $user->id,
         ]);
     }

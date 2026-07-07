@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CategoriaIncidencia;
 use App\Models\Direccion;
+use App\Models\Institucion;
 use App\Models\Pais;
 use App\Models\Territorio;
 use Illuminate\Http\JsonResponse;
@@ -86,5 +87,15 @@ class CatalogoController extends Controller
         $categorias = $query->orderBy('nombre')->get();
 
         return response()->json($categorias);
+    }
+
+    /**
+     * Obtener listado de instituciones activas.
+     */
+    public function instituciones(): JsonResponse
+    {
+        $instituciones = Institucion::where('activo', true)->orderBy('nombre')->get();
+
+        return response()->json($instituciones);
     }
 }

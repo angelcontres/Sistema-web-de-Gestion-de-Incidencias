@@ -1,12 +1,14 @@
 erDiagram
 usuarios {
 int id PK
+varchar name
 varchar username UK
 varchar email UK
 varchar password
 boolean activo
+int pais_id FK
 timestamp created_at
-int created_by
+int created_by FK
 timestamp updated_at
 int updated_by
 timestamp deleted_at
@@ -19,29 +21,30 @@ int deleted_by
         varchar descripcion
         int padre_id FK
         timestamp created_at
-        int created_by
+        int created_by FK
         timestamp updated_at
-        int updated_by
+        int updated_by FK
         timestamp deleted_at
-        int deleted_by
+        int deleted_by FK
     }
 
-    usuarios_roles {
-        int usuario_id PK, FK
+    roles_users {
+        int user_id PK, FK
         int rol_id PK, FK
     }
 
     permisos {
         int id PK
         varchar nombre UK
-        varchar descripcion
+        varchar accion
+        varchar recurso
         int opcion_menu_id FK
         timestamp created_at
-        int created_by
+        int created_by FK
         timestamp updated_at
-        int updated_by
+        int updated_by FK
         timestamp deleted_at
-        int deleted_by
+        int deleted_by FK
     }
 
     roles_permisos {
@@ -53,20 +56,20 @@ int deleted_by
         int id PK
         varchar nombre
         varchar icono
-        varchar ruta_angular
+        varchar ruta
         int padre_id FK
         timestamp created_at
-        int created_by
+        int created_by FK
         timestamp updated_at
-        int updated_by
+        int updated_by FK
         timestamp deleted_at
-        int deleted_by
+        int deleted_by FK
     }
 
     paises {
         int id PK
-        varchar nombre
-        varchar codigo_iso
+        varchar nombre UK
+        varchar codigo_iso UK
         boolean activo
         timestamp created_at
         int created_by
@@ -76,6 +79,7 @@ int deleted_by
         int deleted_by
     }
 
+    %% Recursiva, provincia, cantón, parroquia
     territorios {
         int id PK
         int pais_id FK
@@ -100,7 +104,6 @@ int deleted_by
         decimal latitud
         decimal longitud
         boolean activo
-        int parroquia_id FK
         timestamp created_at
         int created_by
         timestamp updated_at
@@ -144,21 +147,14 @@ int deleted_by
         int deleted_by
     }
 
-    tipo_incidencia {
-        int id PK
-        varchar nombre
-        timestamp created_at
-        int created_by
-        timestamp updated_at
-        int updated_by
-        timestamp deleted_at
-        int deleted_by
-    }
-
-    sub_tipo_incidencia {
-        int id PK
-        int tipo_incidencia_id FK
-        varchar nombre
+    %% Recursiva Clasificación de Incidencias (Categoria y subcategoria)
+    categoria_incidencia {
+        int parent_id PK
+        int institucion_id FK
+        int prioridad_id FK
+        varchar nombre UK
+        text descripcion
+        boolean activo
         timestamp created_at
         int created_by
         timestamp updated_at
@@ -174,9 +170,21 @@ int deleted_by
         int cliente_id FK
         int estado_id FK
         int institucion_id FK
-        int prioridad_id FK
         int tipo_incidencia_id FK
         int sub_tipo_incidencia_id FK
+        int cantidad_afectados_incidencia
+        timestamp created_at
+        int created_by
+        timestamp updated_at
+        int updated_by
+        timestamp deleted_at
+        int deleted_by
+    }
+
+    user_reporte_incidencia {
+        int id PK
+        int user_id FK
+        int incident_id FK
         timestamp created_at
         int created_by
         timestamp updated_at
@@ -206,8 +214,8 @@ int deleted_by
     }
 
     %% Relaciones del Módulo de Seguridad y Accesos
-    usuarios ||--o{ usuarios_roles : "tiene"
-    roles ||--o{ usuarios_roles : "se asigna a"
+    usuarios ||--o{ roles_users : "tiene"
+    roles ||--o{ roles_users : "se asigna a"
     roles |o--o| roles : "hereda de (padre_id)"
 
     roles ||--o{ roles_permisos : "contiene"
@@ -217,20 +225,23 @@ int deleted_by
     opciones_menu |o--o| opciones_menu : "tiene submenus (padre_id)"
 
     %% Relaciones Geográficas y Direcciones
-    provincias ||--o{ cantones : "se divide en"
-    cantones ||--o{ parroquias : "se divide en"
-    parroquias ||--o{ direcciones : "pertenece a"
+    paises ||--o{ territorios : "contiene"
+    territorios |o--o| territorios : "se subdivide en (parent_id)"
+    territorios ||--o{ direcciones : "pertenece a"
 
     %% Relaciones de Clasificación de Incidencias
-    tipo_incidencia ||--o{ sub_tipo_incidencia : "se divide en"
-    sub_tipo_incidencia ||--o{ reporte_incidencias : "subclasifica"
+    prioridades ||--o{ categoria_incidencia : "se asigna a"
+    categoria_incidencia |o--o| categoria_incidencia : "subclasifica (parent_id)"
+    categoria_incidencia ||--o{ reporte_incidencia : "clasifica"
 
     %% Relaciones del Reporte de Incidencias
     direcciones ||--o{ reporte_incidencias : "ocurre en"
     usuarios ||--o{ reporte_incidencias : "reportado por (cliente_id)"
     estados_incidencia ||--o{ reporte_incidencias : "estado actual"
     instituciones ||--o{ reporte_incidencias : "atendido por"
-    prioridades ||--o{ reporte_incidencias : "nivel de urgencia"
+
+    usuarios ||--o{ reporte_incidencias_users : "asignado a"
+    reporte_incidencias ||--o{ reporte_incidencias_users : "usuarios involucrados"
 
     %% Trazabilidad e Historial
     reporte_incidencias ||--o{ historial_incidencias : "registra historial"

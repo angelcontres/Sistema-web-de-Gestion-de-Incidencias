@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
 
-#[Fillable(['nombre', 'descripcion', 'padre_id', 'created_by', 'update_by', 'deleted_by'])]
+#[Fillable(['nombre', 'descripcion', 'padre_id', 'created_by', 'updated_by', 'deleted_by'])]
 class Role extends Model
 {
     use HasFactory, SoftDeletes;
@@ -24,7 +24,7 @@ class Role extends Model
         return [
             'padre_id' => 'integer',
             'created_by' => 'integer',
-            'update_by' => 'integer',
+            'updated_by' => 'integer',
             'deleted_by' => 'integer',
         ];
     }
@@ -43,7 +43,7 @@ class Role extends Model
      */
     public function RoleEditor(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'update_by');
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     /*+

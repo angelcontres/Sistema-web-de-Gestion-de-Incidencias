@@ -80,7 +80,7 @@ main#app {
   height: 100% !important;
   overflow-y: auto !important; /* Only this scrolls */
   padding: 2.5rem !important;
-  margin: 0 !important;
+  margin: 0 auto !important;
 }
 
 /* Page transitions */
@@ -174,7 +174,7 @@ app-sidebar {
 app-sidebar nav {
   background-color: var(--secondary-color) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
 /* Desktop Full-Height Layout (Conventional Standard) */
@@ -185,7 +185,15 @@ app-sidebar nav {
     z-index: 900 !important;
     display: block;
     margin: 0 !important;
-    width: auto !important;
+    width: 260px !important;
+    min-width: 260px !important;
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+  }
+
+  app-sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
   }
   
   app-sidebar nav {
@@ -198,11 +206,12 @@ app-sidebar nav {
     padding: 1.5rem 1rem !important;
     box-shadow: 4px 0 24px rgba(9, 9, 11, 0.03) !important;
     overflow-y: auto;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(0);
   }
 
-  /* Collapse rule: if child nav has .d-none, collapse the host container */
-  app-sidebar:has(nav.d-none) {
-    display: none !important;
+  app-sidebar.collapsed nav {
+    transform: translateX(-260px);
   }
 
   /* Navbar spans 100% width at the top (Conventional) */
@@ -550,6 +559,17 @@ main#app {
     border-radius: var(--radius-lg) !important;
     box-shadow: 0 16px 40px rgba(9, 9, 11, 0.35) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s;
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  app-sidebar.collapsed nav {
+    transform: translateX(-300px) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   main#app {

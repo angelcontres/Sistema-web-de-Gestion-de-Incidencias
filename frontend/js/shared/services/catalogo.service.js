@@ -1,4 +1,4 @@
-import { apiRequest } from '../core/api.js';
+import { apiRequest } from '../../core/api.js';
 
 /**
  * Servicio para interactuar con los catálogos del sistema (Georreferenciación y Clasificación).
@@ -9,7 +9,7 @@ export const CatalogoService = {
    * @returns {Promise<Array>} Lista de países
    */
   async getPaises() {
-    return apiRequest('/v1/catalogos/paises');
+    return apiRequest('/catalogos/paises');
   },
 
   /**
@@ -28,7 +28,7 @@ export const CatalogoService = {
     }
 
     const queryString = params.toString();
-    const endpoint = `/v1/catalogos/territorios${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/catalogos/territorios${queryString ? `?${queryString}` : ''}`;
     return apiRequest(endpoint);
   },
 
@@ -44,7 +44,7 @@ export const CatalogoService = {
     }
 
     const queryString = params.toString();
-    const endpoint = `/v1/catalogos/direcciones${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/catalogos/direcciones${queryString ? `?${queryString}` : ''}`;
     return apiRequest(endpoint);
   },
 
@@ -64,7 +64,15 @@ export const CatalogoService = {
     }
 
     const queryString = params.toString();
-    const endpoint = `/v1/catalogos/categorias-incidencia${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/catalogos/categorias-incidencia${queryString ? `?${queryString}` : ''}`;
     return apiRequest(endpoint);
-  }
+  },
+
+  /**
+   * Obtiene la lista de instituciones activas.
+   * @returns {Promise<Array>} Lista de instituciones
+   */
+  async getInstituciones() {
+    return apiRequest('/catalogos/instituciones');
+  },
 };

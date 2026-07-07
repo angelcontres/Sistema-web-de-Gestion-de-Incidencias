@@ -12,8 +12,12 @@ const routes = {
   '#/usuarios/form': 'app-user-form',
   '#/ubicaciones': 'app-ubicaciones-index',
   '#/categorias': 'app-categorias-index',
+  '#/incidencias': 'app-incidencia-index',
+  '#/incidencias/form': 'app-incidencia-form',
+  '#/incidencias/despacho': 'app-incidencia-supervisor-index',
   '#/instituciones': 'app-institucion-index',
   '#/public': 'app-public',
+  '#/configuracion': 'app-menu-lobby',
 };
 
 /**
@@ -33,6 +37,16 @@ function navigate() {
     if (hash === '#/login') {
       window.location.hash = '#/';
       return;
+    }
+
+    // Redirect Operador/Supervisor from general incidents page to their own dispatcher dashboard
+    if (hash === '#/incidencias') {
+      const user = AuthService.getCurrentUser();
+      const isSupervisor = user && user.roles && user.roles.some(r => r.nombre === 'Operador');
+      if (isSupervisor) {
+        window.location.hash = '#/incidencias/despacho';
+        return;
+      }
     }
 
     // RBAC: Block non-admins from accessing configuration routes
@@ -56,6 +70,11 @@ function navigate() {
       return;
     }
 
+    // Protect #/incidencias based on 'Ver Incidencia' permission
+    if ((basePath === '#/incidencias' || basePath === '#/incidencias/despacho') && !AuthService.hasPermission('Ver Incidencia')) {
+      window.location.hash = '#/';
+      return;
+    }
     // Protect #/instituciones based on 'Ver Institución' permission (si existiese)
     if (basePath === '#/instituciones' && !AuthService.hasPermission('Ver Institución')) {
       // Asumimos que tienen un permiso equivalente, o simplemente lo dejamos libre para usuarios logueados si no hay permiso específico aún.

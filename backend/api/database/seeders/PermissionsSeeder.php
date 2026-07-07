@@ -24,7 +24,9 @@ class PermissionsSeeder extends Seeder
             'SQA' => 'SQA',
             'Ubicaciones' => 'Ubicación',
             'Categorías de Incidencias' => 'Categoría de Incidencia',
+            'Incidencias' => 'Incidencia',
             'Instituciones' => 'Institución',
+            'Despacho de Incidencias' => 'Despacho de Incidencia',
         ];
 
         $acciones = [
@@ -42,7 +44,9 @@ class PermissionsSeeder extends Seeder
             'SQA' => 'sqa',
             'Ubicaciones' => 'ubicaciones',
             'Categorías de Incidencias' => 'categorias_incidencia',
+            'Incidencias' => 'incidencias',
             'Instituciones' => 'instituciones',
+            'Despacho de Incidencias' => 'despacho_de_incidencias',
         ];
 
         foreach ($opciones as $opcionPlural => $opcionSingular) {

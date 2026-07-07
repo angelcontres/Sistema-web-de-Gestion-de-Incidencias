@@ -68,14 +68,42 @@ export const AuthService = {
     }
   },
 
-  hasPermission(permissionName) {
+  hasPermission(action, resource = null) {
     if (this.isAdmin()) return true;
 
     const user = this.getCurrentUser();
     if (!user || !Array.isArray(user.permisos)) return false;
 
+    if (resource) {
+      const actionMap = {
+        'CREATE': 'Crear',
+        'READ': 'Ver',
+        'UPDATE': 'Actualizar',
+        'DELETE': 'Eliminar'
+      };
+      const resourceMap = {
+        'roles': 'Rol',
+        'permisos': 'Permiso',
+        'opciones_menu': 'Opción de Menú',
+        'usuarios': 'Usuario',
+        'categorias_incidencia': 'Categoría de Incidencia',
+        'incidencias': 'Incidencia',
+        'instituciones': 'Institución',
+        'sqa': 'SQA',
+        'ubicaciones': 'Ubicación'
+      };
+
+      const spanishAction = actionMap[action.toUpperCase()] || action;
+      const spanishResource = resourceMap[resource.toLowerCase()] || resource;
+      const permissionName = `${spanishAction} ${spanishResource}`;
+
+      return user.permisos.some(
+        (p) => p && typeof p === 'string' && p.toLowerCase() === permissionName.toLowerCase()
+      );
+    }
+
     return user.permisos.some(
-      (p) => p && typeof p === 'string' && p.toLowerCase() === permissionName.toLowerCase()
+      (p) => p && typeof p === 'string' && p.toLowerCase() === action.toLowerCase()
     );
   },
 

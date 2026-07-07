@@ -30,6 +30,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $seguridad->id,
+            'prioridad_id' => 1, // Crítica
             'institucion_id' => $pne?->id,
             'nombre' => 'Delitos contra las personas',
             'descripcion' => 'Homicidios, agresiones físicas, peleas callejeras y violencia doméstica.',
@@ -38,6 +39,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $seguridad->id,
+            'prioridad_id' => 2, // Alta
             'institucion_id' => $pne?->id,
             'nombre' => 'Delitos contra la propiedad',
             'descripcion' => 'Robos a viviendas, asaltos en la vía pública, robo de vehículos y hurtos.',
@@ -46,6 +48,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $seguridad->id,
+            'prioridad_id' => 3, // Media
             'institucion_id' => $pne?->id,
             'nombre' => 'Alteración del orden público',
             'descripcion' => 'Consumo de drogas/alcohol en calles, vandalismo, grafitis y riñas vecinales.',
@@ -54,6 +57,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $seguridad->id,
+            'prioridad_id' => 4, // Baja
             'institucion_id' => $pne?->id,
             'nombre' => 'Actividad sospechosa',
             'descripcion' => 'Vehículos abandonados o personas merodeando de forma inusual.',
@@ -70,6 +74,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $infraestructura->id,
+            'prioridad_id' => 3, // Media
             'institucion_id' => $epmmop?->id,
             'nombre' => 'Pavimento y aceras',
             'descripcion' => 'Baches, grietas en el asfalto, baldosas rotas y falta de rampas de accesibilidad.',
@@ -78,6 +83,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $infraestructura->id,
+            'prioridad_id' => 4, // Baja
             'institucion_id' => $epmmop?->id,
             'nombre' => 'Mobiliario urbano',
             'descripcion' => 'Bancos rotos, papeleras dañadas, bolardos caídos y vallas rotas.',
@@ -86,6 +92,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $infraestructura->id,
+            'prioridad_id' => 2, // Alta (Puede causar accidentes)
             'institucion_id' => $epmmop?->id,
             'nombre' => 'Obras y señalización',
             'descripcion' => 'Escombros abandonados, zanjas sin tapar y falta de señalización de peligro.',
@@ -102,6 +109,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $servicios->id,
+            'prioridad_id' => 3, // Media
             'institucion_id' => $eeq?->id,
             'nombre' => 'Alumbrado público',
             'descripcion' => 'Farolas apagadas, luces intermitentes, sectores oscuros o cables eléctricos expuestos.',
@@ -110,6 +118,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $servicios->id,
+            'prioridad_id' => 1, // Crítica (Afectación masiva)
             'institucion_id' => $epmaps?->id,
             'nombre' => 'Agua y alcantarillado',
             'descripcion' => 'Fugas de agua potable, tuberías rotas, alcantarillas tapadas o inundaciones.',
@@ -118,6 +127,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $servicios->id,
+            'prioridad_id' => 2, // Alta (Riesgo sanitario)
             'institucion_id' => $emgirs?->id,
             'nombre' => 'Gestión de residuos',
             'descripcion' => 'Contenedores de basura desbordados, rotos o acumulación de desechos en la calle.',
@@ -134,6 +144,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $medioAmbiente->id,
+            'prioridad_id' => 3, // Media
             'institucion_id' => $dma?->id,
             'nombre' => 'Parques y áreas verdes',
             'descripcion' => 'Árboles caídos, ramas con riesgo de desprendimiento y falta de mantenimiento en jardines.',
@@ -142,6 +153,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $medioAmbiente->id,
+            'prioridad_id' => 1, // Crítica (Salud pública)
             'institucion_id' => $dma?->id,
             'nombre' => 'Plagas y salud ambiental',
             'descripcion' => 'Presencia de roedores, insectos, acumulación de animales callejeros o malos olores.',
@@ -150,6 +162,7 @@ class ClasificacionesSeeder extends Seeder
 
         CategoriaIncidencia::create([
             'parent_id' => $medioAmbiente->id,
+            'prioridad_id' => 2, // Alta (Riesgo vial)
             'institucion_id' => $cte?->id,
             'nombre' => 'Tránsito y movilidad',
             'descripcion' => 'Semáforos averiados, señales de tráfico destruidas y coches mal estacionados que bloquean accesos.',

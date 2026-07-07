@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('categorias_incidencia', function (Blueprint $table) {
             $table->id();
             $table->foreignId('parent_id')->nullable()->constrained('categorias_incidencia')->cascadeOnDelete();
+            $table->foreignId('prioridad_id')->nullable()->constrained('prioridades')->nullOnDelete();
             $table->string('nombre');
             $table->string('descripcion')->nullable();
             $table->boolean('activo')->default(true);

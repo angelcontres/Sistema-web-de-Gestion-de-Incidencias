@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['parent_id', 'institucion_id', 'nombre', 'descripcion', 'activo'])]
+#[Fillable(['parent_id', 'prioridad_id', 'institucion_id', 'nombre', 'descripcion', 'activo'])]
 class CategoriaIncidencia extends Model
 {
     use HasFactory;
@@ -19,6 +19,7 @@ class CategoriaIncidencia extends Model
     {
         return [
             'parent_id' => 'integer',
+            'prioridad_id' => 'integer',
             'institucion_id' => 'integer',
             'activo' => 'boolean',
         ];

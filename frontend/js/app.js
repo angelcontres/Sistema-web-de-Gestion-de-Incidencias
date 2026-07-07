@@ -7,6 +7,7 @@
 import './components/navbar/navbar.component.js';
 import './components/stats-card.js'; // Reusable small card component
 import './components/sidebar/sidebar.component.js';
+import './components/menu-lobby/menu-lobby.component.js';
 
 // Import Pages (Features)
 import './pages/dashboard/dashboard.component.js';
@@ -23,6 +24,9 @@ import './pages/sqa-dashboard/sqa-dashboard.component.js';
 import './pages/permissions/components/form/permission-form.component.js';
 import './pages/ubicaciones/components/index/ubicaciones-index.component.js';
 import './pages/categorias/components/index/categorias-index.component.js';
+import './pages/incidencias/components/lobby/index/incidencia-index.component.js';
+import './pages/incidencias/components/lobby/form/incidencia-form.component.js';
+import './pages/incidencias/components/supervisor/incidencia-supervisor-index.component.js';
 import './pages/instituciones/components/index/institucion-index.component.js';
 import './pages/instituciones/components/form/institucion-form.component.js';
 import './shared/components/app-data-table/app-data-table.component.js';
