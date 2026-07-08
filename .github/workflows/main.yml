@@ -19,14 +19,25 @@ jobs:
     - name: Instalar dependencias de PHP (Composer) dentro del contenedor
       run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
 
-    - name: Clonar el archivo de entorno (.env) dentro del contenedor
-      run: docker exec sistema_laravel cp .env.example .env
+    - name: Configurar entorno (.env) para PostgreSQL
+      run: |
+        docker exec sistema_laravel cp .env.example .env
+        docker exec sistema_laravel sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/' .env
+        docker exec sistema_laravel sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=postgres/' .env
+        docker exec sistema_laravel sed -i 's/# DB_PORT=3306/DB_PORT=5432/' .env
+        docker exec sistema_laravel sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=gestion_incidencias/' .env
+        docker exec sistema_laravel sed -i 's/# DB_USERNAME=root/DB_USERNAME=angeltux/' .env
+        docker exec sistema_laravel sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password_segura_upse/' .env
 
     - name: Generar clave de seguridad de Laravel
       run: docker exec sistema_laravel php artisan key:generate
 
     - name: Esperar a que la base de datos esté lista
-      run: sleep 5
+      run: |
+        until docker exec sistema_postgres pg_isready -U angeltux; do
+          echo "Esperando a postgres..."
+          sleep 2
+        done
 
     - name: Ejecutar migraciones de Laravel dentro del contenedor
       run: docker exec sistema_laravel php artisan migrate --force

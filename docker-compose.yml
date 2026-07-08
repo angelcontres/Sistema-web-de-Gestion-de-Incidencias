@@ -6,7 +6,8 @@ services:
     image: nginx:alpine
     container_name: sistema_nginx
     ports:
-      - "80:80"
+      - "3005:80"
+      - "8001:80"
     volumes:
       # Mapea todo el proyecto para que Nginx acceda a frontend/ y backend/
       - ./:/var/www/html
@@ -31,7 +32,7 @@ services:
 
   # Base de Datos (PostgreSQL) [Asignatura: Base de Datos / Data Center]
   postgres:
-    image: postgres:15-alpine
+    image: postgis/postgis:17-3.4-alpine
     container_name: sistema_postgres
     restart: always
     environment:
@@ -39,7 +40,7 @@ services:
       POSTGRES_USER: angeltux
       POSTGRES_PASSWORD: password_segura_upse
     ports:
-      - "5432:5432"
+      - "5436:5432"
     volumes:
       # Persistencia obligatoria para asegurar los puntos de Data Center
       - postgres_data:/var/lib/postgresql/data
