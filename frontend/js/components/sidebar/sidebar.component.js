@@ -178,7 +178,7 @@ export class SideBarComponent extends BaseComponent {
 
     // Prevent navigation when clicking the toggle arrow
     const toggleBtns = container.querySelectorAll('.sidebar-toggle-btn');
-    toggleBtns.forEach(btn => {
+    toggleBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();

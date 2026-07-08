@@ -132,4 +132,9 @@ class Incidencia extends Model
     {
         return $this->hasMany(HistorialIncidencia::class, 'incidencia_id');
     }
+
+    public function recursos()
+    {
+        return $this->hasMany(RecursoIncidencia::class, 'incidencia_id');
+    }
 }

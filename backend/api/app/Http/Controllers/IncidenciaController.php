@@ -9,6 +9,8 @@ use App\Models\Direccion;
 use App\Services\IncidentGroupingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class IncidenciaController extends Controller
 {
@@ -43,6 +45,7 @@ class IncidenciaController extends Controller
             'prioridad',
             'operadores',
             'reportantes',
+            'recursos',
         ]);
 
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
@@ -165,6 +168,34 @@ class IncidenciaController extends Controller
             ]);
         }
 
+        if ($request->has('recursos')) {
+            $disk = env('FILESYSTEM_DISK', 'public');
+
+            foreach ($request->input('recursos') as $base64Image) {
+                // Procesar el formato Base64 (ej: "data:image/webp;base64,UklGRg...")
+                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                    $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+                    $extension = strtolower($type[1]);
+                } else {
+                    $extension = 'webp';
+                }
+                $imageDecoded = base64_decode($base64Image);
+                if ($imageDecoded === false) {
+                    continue; // Omitir si el base64 no es válido
+                }
+                // Generar nombre de archivo único
+                $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
+                // Subir al almacenamiento (S3 o Local según el .env)
+                Storage::disk($disk)->put($fileName, $imageDecoded);
+                // Registrar en la BD (guardamos la ruta relativa)
+                $incidencia->recursos()->create([
+                    'url' => $fileName,
+                    'tipo' => 'imagen'
+                ]);
+            }
+
+        }
+
         return response()->json([
             'message' => 'Incidencia creada con éxito',
             'data' => $incidencia->load([
@@ -177,6 +208,7 @@ class IncidenciaController extends Controller
                 'prioridad',
                 'operadores',
                 'reportantes',
+                'recursos',
             ]),
         ], 201);
     }
@@ -196,6 +228,7 @@ class IncidenciaController extends Controller
             'prioridad',
             'operadores',
             'reportantes',
+            'recursos',
         ])->findOrFail($id);
 
         $user = auth()->user();
@@ -243,6 +276,33 @@ class IncidenciaController extends Controller
             'updated_by' => $user ? $user->id : null,
         ]);
 
+        if ($request->has('recursos')) {
+            $disk = env('FILESYSTEM_DISK', 'public');
+
+            foreach ($request->input('recursos') as $base64Image) {
+                // Procesar el formato Base64 (ej: "data:image/webp;base64,UklGRg...")
+                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                    $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+                    $extension = strtolower($type[1]);
+                } else {
+                    $extension = 'webp';
+                }
+                $imageDecoded = base64_decode($base64Image);
+                if ($imageDecoded === false) {
+                    continue; // Omitir si el base64 no es válido
+                }
+                // Generar nombre de archivo único
+                $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
+                // Subir al almacenamiento (S3 o Local según el .env)
+                Storage::disk($disk)->put($fileName, $imageDecoded);
+                // Registrar en la BD (guardamos la ruta relativa)
+                $incidencia->recursos()->create([
+                    'url' => $fileName,
+                    'tipo' => 'imagen'
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Incidencia actualizada con éxito',
             'data' => $incidencia->load([
@@ -255,6 +315,7 @@ class IncidenciaController extends Controller
                 'prioridad',
                 'operadores',
                 'reportantes',
+                'recursos',
             ]),
         ], 200);
     }

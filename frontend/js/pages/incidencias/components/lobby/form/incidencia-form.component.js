@@ -1034,6 +1034,16 @@ export class IncidenciaFormComponent extends BaseComponent {
 
       this.actualizarIndicadorMinimalista();
 
+      if (inc.recursos && inc.recursos.length > 0) {
+        this.recursosFiles = inc.recursos.map((r) => ({
+          id: r.id,
+          name: r.url.substring(r.url.lastIndexOf('/') + 1),
+          base64: r.url,
+          existing: true,
+        }));
+        this.renderThumbnails();
+      }
+
       // Check if user is of role Institucion
       const user = AuthService.getCurrentUser();
       const isInstitucion =
@@ -1198,6 +1208,9 @@ export class IncidenciaFormComponent extends BaseComponent {
           : null,
         estado_id: parseInt(this.estadoSelect.value) || 2,
         version: parseInt(this.versionInput.value) || 1,
+        recursos: this.recursosFiles
+          .filter((f) => !f.id)
+          .map((f) => f.base64),
       };
 
       if (id) {
