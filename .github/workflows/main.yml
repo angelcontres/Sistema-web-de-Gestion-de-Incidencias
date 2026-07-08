@@ -7,11 +7,23 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    # 1. Apagar los contenedores anteriores para liberar los descriptores de archivos compartidos
+    - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
+      run: |
+        if [ -f "docker-compose.yml" ]; then
+          docker compose down
+        fi
+
+    # 2. El truco de Docker: Usamos busybox (que corre como root interno) para fulminar la carpeta vendor anterior
+    - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
+      run: |
+        if [ -d "backend/api/vendor" ]; then
+          docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
+        fi
+
+    # 3. Ahora el checkout puede limpiar y clonar el nuevo código sin problemas de permisos
     - name: Copiar el código a la VAIO
       uses: actions/checkout@v4
-
-    - name: Apagar contenedores anteriores (Limpieza)
-      run: docker compose down
 
     - name: Construir y levantar contenedores en segundo plano
       run: docker compose up -d --build --pull always
