@@ -2,6 +2,8 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { UIHelper } from '../../../../shared/utils/ui-helper.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 import { COUNTRY_LEVELS } from '../../../../shared/constants.js';
 
 export class UbicacionesTerritoriosComponent extends BaseComponent {
@@ -496,11 +498,19 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
   }
 
   async eliminarTerritorio(id, nombre, columnaNivel) {
-    if (!confirm(`¿Está seguro de que desea eliminar el territorio "${nombre}"? Se comprobará que no tenga sub-elementos o direcciones asociadas.`)) return;
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar Territorio',
+      `¿Está seguro de que desea eliminar el territorio "${nombre}"?<br>Se comprobará que no tenga sub-elementos o direcciones asociadas.`,
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    
+    if (!isConfirmed) return;
 
     try {
       await UbicacionesService.deleteTerritorio(id);
-      UIHelper.mostrarAlerta(this, 'success', `Territorio "${nombre}" eliminado con éxito.`);
+      ToastService.success(`Territorio "${nombre}" eliminado con éxito.`);
       
       if (columnaNivel === 1) {
         this.selectedNivel1Id = null;
@@ -519,7 +529,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       }));
     } catch (error) {
       console.error('Error al eliminar territorio:', error);
-      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
+      ToastService.error(`No se pudo eliminar: ${error.message}`);
     }
   }
 

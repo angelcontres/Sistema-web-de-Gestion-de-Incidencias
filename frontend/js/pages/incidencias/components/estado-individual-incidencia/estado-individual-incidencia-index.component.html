@@ -1,0 +1,79 @@
+<div class="row h-100 g-4">
+  
+  <!-- PANEL IZQUIERDO: Chat y Comentarios -->
+  <div class="col-lg-7 d-flex flex-column h-100">
+    <div class="card border-0 shadow-sm rounded-4 flex-grow-1 d-flex flex-column" style="max-height: 80vh;">
+      <div class="card-header bg-white border-bottom py-3 rounded-top-4">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-chat-dots text-primary me-2"></i>Historial y Comentarios</h5>
+      </div>
+      
+      <!-- Contenedor del chat con scroll -->
+      <div class="card-body p-4 d-flex flex-column gap-3 overflow-auto chat-container" id="chat-container" style="background-color: #f8f9fa;">
+        
+        <div class="text-center d-none" id="loading-more">
+          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          <span class="small text-muted ms-2">Cargando anteriores...</span>
+        </div>
+
+        <div id="comments-list" class="d-flex flex-column gap-3">
+          <!-- Los comentarios se insertan aquí -->
+        </div>
+
+      </div>
+
+      <!-- Formulario de nuevo comentario -->
+      <div class="card-footer bg-white border-top p-3 rounded-bottom-4">
+        <form id="form-comentario">
+          <div class="input-group">
+            <textarea id="nuevo-comentario" class="form-control" rows="2" placeholder="Escribe un comentario..." required maxlength="200" style="resize: none;"></textarea>
+            <button class="btn btn-primary px-4" type="submit" id="btn-enviar-comentario">
+              <i class="bi bi-send-fill"></i>
+            </button>
+          </div>
+          <div class="form-text text-end small"><span id="chat-char-count">0</span>/200</div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL DERECHO: Detalles de la Incidencia -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-white border-bottom py-3 rounded-top-4">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle text-info me-2"></i>Detalle de Incidencia</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="text-muted fw-bold">ID: <span id="lbl-id" class="text-dark"></span></span>
+          <span id="lbl-prioridad"></span>
+        </div>
+        
+        <h5 class="fw-bold mb-3" id="lbl-descripcion"></h5>
+        
+        <div class="mb-3">
+          <div class="small text-muted text-uppercase fw-bold mb-1">Estado Actual</div>
+          <div id="lbl-estado"></div>
+        </div>
+
+        <div class="mb-3">
+          <div class="small text-muted text-uppercase fw-bold mb-1">Ubicación</div>
+          <div class="d-flex align-items-center">
+            <i class="bi bi-geo-alt text-danger me-2"></i>
+            <span id="lbl-direccion" class="fw-medium"></span>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="small text-muted text-uppercase fw-bold mb-1">Afectados</div>
+          <div class="fw-medium"><i class="bi bi-people me-2 text-secondary"></i><span id="lbl-afectados"></span> personas</div>
+        </div>
+
+        <div class="mb-0">
+          <div class="small text-muted text-uppercase fw-bold mb-1">Institución Asignada</div>
+          <div class="fw-medium"><i class="bi bi-building me-2 text-secondary"></i><span id="lbl-institucion"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -2,6 +2,8 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { UIHelper } from '../../../../shared/utils/ui-helper.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class UbicacionesPaisesComponent extends BaseComponent {
   constructor() {
@@ -173,15 +175,23 @@ export class UbicacionesPaisesComponent extends BaseComponent {
   }
 
   async eliminarPais(id, nombre) {
-    if (!confirm(`¿Está seguro de que desea eliminar el país "${nombre}"?`)) return;
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar País',
+      `¿Está seguro de que desea eliminar el país "${nombre}"?`,
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    
+    if (!isConfirmed) return;
 
     try {
       await UbicacionesService.deletePais(id);
-      UIHelper.mostrarAlerta(this, 'success', `País "${nombre}" eliminado con éxito.`);
+      ToastService.success(`País "${nombre}" eliminado con éxito.`);
       await this.cargarPaises();
     } catch (error) {
       console.error('Error al eliminar país:', error);
-      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
+      ToastService.error(`No se pudo eliminar: ${error.message}`);
     }
   }
 }

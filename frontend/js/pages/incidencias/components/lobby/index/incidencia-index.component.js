@@ -1,6 +1,8 @@
 import { BaseComponent } from '../../../../../core/base-component.js';
 import { IncidenciaService } from '../../../services/incidencia.service.js';
 import { AuthService } from '../../../../../core/auth.service.js';
+import { ModalService } from '../../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../../shared/services/toast.service.js';
 
 export class IncidenciaIndexComponent extends BaseComponent {
   constructor() {
@@ -129,17 +131,24 @@ export class IncidenciaIndexComponent extends BaseComponent {
   }
 
   async eliminarIncidencia(id) {
-    if (confirm(`¿Estás seguro de que deseas eliminar la incidencia #${id}?`)) {
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar Incidencia',
+      `¿Estás seguro de que deseas eliminar la incidencia #${id}?`,
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    if (isConfirmed) {
       try {
         await IncidenciaService.delete(id);
-        this.mostrarAlertaExito(`Incidencia #${id} eliminada con éxito.`);
+        ToastService.success(`Incidencia #${id} eliminada con éxito.`);
         const tblDatos = this.querySelector('#tbl-datos-incidencias');
         if (tblDatos) {
           await tblDatos.load(IncidenciaService.getAll);
         }
       } catch (error) {
         console.error('Error al eliminar incidencia:', error);
-        this.mostrarAlertaError(`Error al eliminar: ${error.message}`);
+        ToastService.error(`Error al eliminar: ${error.message}`);
       }
     }
   }

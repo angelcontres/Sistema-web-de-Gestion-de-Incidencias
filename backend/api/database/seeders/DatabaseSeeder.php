@@ -49,31 +49,31 @@ class DatabaseSeeder extends Seeder
             $roleService->syncRolesToUser($user, [$adminRole->id]);
         }
 
-        // Create Operator users for each country
-        $operatorsData = [
+        // Create Supervisor users for each country
+        $supervisorsData = [
             [
-                'name' => 'Operador Chile',
-                'username' => 'operador_chile',
-                'email' => 'operador.chile@example.com',
+                'name' => 'Supervisor Chile',
+                'username' => 'supervisor_chile',
+                'email' => 'supervisor.chile@example.com',
                 'pais_id' => 1,
             ],
             [
-                'name' => 'Operador Colombia',
-                'username' => 'operador_colombia',
-                'email' => 'operador.colombia@example.com',
+                'name' => 'Supervisor Colombia',
+                'username' => 'supervisor_colombia',
+                'email' => 'supervisor.colombia@example.com',
                 'pais_id' => 2,
             ],
             [
-                'name' => 'Operador Ecuador',
-                'username' => 'operador_ecuador',
-                'email' => 'operador.ecuador@example.com',
+                'name' => 'Supervisor Ecuador',
+                'username' => 'supervisor_ecuador',
+                'email' => 'supervisor.ecuador@example.com',
                 'pais_id' => 3,
             ],
         ];
 
-        $operatorRole = Role::where('nombre', 'Operador')->first();
+        $supervisorRole = Role::where('nombre', 'Supervisor')->first();
 
-        foreach ($operatorsData as $data) {
+        foreach ($supervisorsData as $data) {
             $opUser = User::create([
                 'name' => $data['name'],
                 'username' => $data['username'],
@@ -83,8 +83,8 @@ class DatabaseSeeder extends Seeder
                 'pais_id' => $data['pais_id'],
             ]);
 
-            if ($operatorRole) {
-                $roleService->syncRolesToUser($opUser, [$operatorRole->id]);
+            if ($supervisorRole) {
+                $roleService->syncRolesToUser($opUser, [$supervisorRole->id]);
             }
         }
 
@@ -116,7 +116,7 @@ class DatabaseSeeder extends Seeder
             $roleService->syncRolesToUser($institucionUser, [$institucionRole->id]);
         }
 
-        // 3. supervisor@example.com (Operador, as this role represents the supervisor)
+        // 3. supervisor@example.com (Supervisor)
         $supervisorUser = User::create([
             'name' => 'Supervisor General',
             'username' => 'supervisor_general',
@@ -125,8 +125,8 @@ class DatabaseSeeder extends Seeder
             'activo' => true,
             'pais_id' => 3, // Ecuador (since they supervise EC)
         ]);
-        if ($operatorRole) {
-            $roleService->syncRolesToUser($supervisorUser, [$operatorRole->id]);
+        if ($supervisorRole) {
+            $roleService->syncRolesToUser($supervisorUser, [$supervisorRole->id]);
         }
     }
 }

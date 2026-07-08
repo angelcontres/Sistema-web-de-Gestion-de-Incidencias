@@ -3,7 +3,9 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
       <h2 class="fw-extrabold text-dark mb-1" id="dashboardGreeting">Bienvenido</h2>
-      <p class="text-secondary mb-0" id="dashboardSubtitle">El sistema está listo para atender incidencias.</p>
+      <p class="text-secondary mb-0" id="dashboardSubtitle">
+        El sistema está listo para atender incidencias.
+      </p>
     </div>
     <div class="bg-white border rounded-3 px-3 py-2 shadow-sm d-flex align-items-center gap-2">
       <i class="bi bi-clock-fill text-primary"></i>
@@ -22,11 +24,19 @@
   <div class="row g-4 mb-4">
     <!-- Incidencias Activas -->
     <div class="col-md-3">
-      <div class="card border-0 border-start border-4 border-danger shadow-sm rounded-4 stat-card-hover bg-white" style="border-left-width: 5px !important;">
+      <div
+        class="card border-0 border-start border-4 border-danger shadow-sm rounded-4 stat-card-hover bg-white"
+        style="border-left-width: 5px !important"
+      >
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-secondary small fw-bold text-uppercase mb-1" style="letter-spacing: 0.05em;">Activas / En Curso</p>
+              <p
+                class="text-secondary small fw-bold text-uppercase mb-1"
+                style="letter-spacing: 0.05em"
+              >
+                Activas / En Curso
+              </p>
               <h3 class="stat-value text-dark m-0" id="kpi-activas">0</h3>
             </div>
             <div class="bg-danger-soft rounded-3 p-2 text-danger">
@@ -35,7 +45,10 @@
           </div>
           <div class="mt-3 text-muted small d-flex align-items-center gap-1">
             <i class="bi bi-graph-up-arrow text-danger"></i>
-            <span><strong class="text-danger" id="kpi-nuevas-activas">+0 nuevas</strong> en las últimas 2 horas</span>
+            <span
+              ><strong class="text-danger" id="kpi-nuevas-activas">+0 nuevas</strong> en las últimas
+              2 horas</span
+            >
           </div>
         </div>
       </div>
@@ -43,11 +56,19 @@
 
     <!-- Pendientes de Asignación -->
     <div class="col-md-3">
-      <div class="card border-0 border-start border-4 border-warning shadow-sm rounded-4 stat-card-hover bg-white" style="border-left-width: 5px !important;">
+      <div
+        class="card border-0 border-start border-4 border-warning shadow-sm rounded-4 stat-card-hover bg-white"
+        style="border-left-width: 5px !important"
+      >
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-secondary small fw-bold text-uppercase mb-1" style="letter-spacing: 0.05em;">Sin Asignar</p>
+              <p
+                class="text-secondary small fw-bold text-uppercase mb-1"
+                style="letter-spacing: 0.05em"
+              >
+                Sin Asignar
+              </p>
               <h3 class="stat-value text-dark m-0" id="kpi-sin-asignar">0</h3>
             </div>
             <div class="bg-warning-soft rounded-3 p-2 text-warning">
@@ -64,11 +85,19 @@
 
     <!-- Resueltas Hoy -->
     <div class="col-md-3">
-      <div class="card border-0 border-start border-4 border-success shadow-sm rounded-4 stat-card-hover bg-white" style="border-left-width: 5px !important;">
+      <div
+        class="card border-0 border-start border-4 border-success shadow-sm rounded-4 stat-card-hover bg-white"
+        style="border-left-width: 5px !important"
+      >
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-secondary small fw-bold text-uppercase mb-1" style="letter-spacing: 0.05em;">Resueltas Hoy</p>
+              <p
+                class="text-secondary small fw-bold text-uppercase mb-1"
+                style="letter-spacing: 0.05em"
+              >
+                Resueltas Hoy
+              </p>
               <h3 class="stat-value text-dark m-0" id="kpi-resueltas-hoy">0</h3>
             </div>
             <div class="bg-success-soft rounded-3 p-2 text-success">
@@ -85,11 +114,19 @@
 
     <!-- Tiempo de Respuesta -->
     <div class="col-md-3">
-      <div class="card border-0 border-start border-4 border-primary shadow-sm rounded-4 stat-card-hover bg-white" style="border-left-width: 5px !important;">
+      <div
+        class="card border-0 border-start border-4 border-primary shadow-sm rounded-4 stat-card-hover bg-white"
+        style="border-left-width: 5px !important"
+      >
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-secondary small fw-bold text-uppercase mb-1" style="letter-spacing: 0.05em;">Tiempo de Respuesta</p>
+              <p
+                class="text-secondary small fw-bold text-uppercase mb-1"
+                style="letter-spacing: 0.05em"
+              >
+                Tiempo de Respuesta
+              </p>
               <h3 class="stat-value text-dark m-0" id="kpi-tiempo-respuesta">-</h3>
             </div>
             <div class="bg-primary-soft rounded-3 p-2 text-primary">
@@ -111,25 +148,39 @@
     <div class="col-lg-8">
       <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-map text-primary me-2"></i> Mapa de Reportes en Vivo</h5>
-          <span class="badge bg-danger-soft px-2.5 py-1.5 rounded-pill animate-pulse small fw-bold d-flex align-items-center gap-1.5">
-            <span class="spinner-grow spinner-grow-sm text-danger" style="width: 8px; height: 8px;" role="status"></span> Live
+          <h5 class="fw-bold text-dark mb-0">
+            <i class="bi bi-map text-primary me-2"></i> Mapa de Reportes en Vivo
+          </h5>
+          <span
+            class="badge bg-danger-soft px-2.5 py-1.5 rounded-pill animate-pulse small fw-bold d-flex align-items-center gap-1.5"
+          >
+            <span
+              class="spinner-grow spinner-grow-sm text-danger"
+              style="width: 8px; height: 8px"
+              role="status"
+            ></span>
+            Live
           </span>
         </div>
-        <div id="dashboardMap" class="border shadow-inner" style="height: 380px; border-radius: 12px; z-index: 1;"></div>
+        <div
+          id="dashboardMap"
+          class="border shadow-inner"
+          style="height: 380px; border-radius: 12px; z-index: 1"
+        ></div>
       </div>
     </div>
 
     <!-- Distribución de Categorías -->
     <div class="col-lg-4">
       <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white d-flex flex-column">
-        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart text-primary me-2"></i> Servicios más utilizados</h5>
-        <div class="flex-grow-1 d-flex flex-column justify-content-around gap-3" id="dashboardTopServices">
+        <h5 class="fw-bold text-dark mb-3">
+          <i class="bi bi-pie-chart text-primary me-2"></i> Servicios más utilizados
+        </h5>
+        <div
+          class="flex-grow-1 d-flex flex-column justify-content-around gap-3"
+          id="dashboardTopServices"
+        >
           <!-- Se inyecta dinámicamente -->
-        </div>
-
-        <div class="mt-4 pt-3 border-top d-flex gap-2">
-          <a href="#/categorias" class="btn btn-light btn-sm w-100 fw-bold"><i class="bi bi-tag-fill me-1"></i> Configurar Categorías</a>
         </div>
       </div>
     </div>
@@ -139,11 +190,17 @@
   <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
       <div>
-        <h5 class="fw-bold text-dark mb-1"><i class="bi bi-list-task text-primary me-2"></i> Reportes de Incidencias Recientes</h5>
-        <p class="text-muted small mb-0">Últimos casos reportados por los ciudadanos y operadores.</p>
+        <h5 class="fw-bold text-dark mb-1">
+          <i class="bi bi-list-task text-primary me-2"></i> Reportes de Incidencias Recientes
+        </h5>
+        <p class="text-muted small mb-0">
+          Últimos casos reportados por los ciudadanos y operadores.
+        </p>
       </div>
       <div class="d-flex gap-2">
-        <a href="#/ubicaciones" class="btn btn-primary btn-sm fw-bold px-3"><i class="bi bi-plus-lg me-1"></i> Nueva Dirección</a>
+        <a href="#/ubicaciones" class="btn btn-primary btn-sm fw-bold px-3"
+          ><i class="bi bi-plus-lg me-1"></i> Nueva Dirección</a
+        >
       </div>
     </div>
 

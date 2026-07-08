@@ -16,15 +16,18 @@ class IncidenciaController extends Controller
     {
         $user = auth()->user();
 
-        // Automatic state transition: when Supervisor (Operador role) queries list, Pendiente (2) -> En Revisión (3)
-        if ($user && $user->roles()->where('nombre', 'Operador')->exists()) {
+        // Automatic state transition: when Supervisor queries list, Pendiente (2) -> En Revisión (3)
+        if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
             $transitionQuery = Incidencia::where('estado_id', 2);
             if ($user->pais_id) {
                 $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
                     $q->where('pais_id', $user->pais_id);
                 });
             }
-            $transitionQuery->update(['estado_id' => 3]);
+            $incidenciasTransition = $transitionQuery->get();
+            foreach ($incidenciasTransition as $inc) {
+                $inc->update(['estado_id' => 3]);
+            }
         }
 
         $query = Incidencia::with([
@@ -39,7 +42,7 @@ class IncidenciaController extends Controller
         ]);
 
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
-            if ($user->roles()->where('nombre', 'Operador')->exists()) {
+            if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
                 if ($user->pais_id) {
                     $query->whereHas('direccion.territorio', function ($q) use ($user) {
                         $q->where('pais_id', $user->pais_id);
@@ -238,6 +241,51 @@ class IncidenciaController extends Controller
     }
 
     /**
+     * Get the history/comments of the incident (paginated).
+     */
+    public function getHistorial($id)
+    {
+        $incidencia = Incidencia::findOrFail($id);
+        $user = auth()->user();
+
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate(10);
+        return response()->json($historial, 200);
+    }
+
+    /**
+     * Add a comment without changing the state.
+     */
+    public function addComment(Request $request, $id)
+    {
+        $request->validate([
+            'comentario' => 'required|string|max:200',
+        ]);
+
+        $incidencia = Incidencia::findOrFail($id);
+        $user = auth()->user();
+
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $historial = \App\Models\HistorialIncidencia::create([
+            'incidencia_id' => $incidencia->id,
+            'estado_id' => $incidencia->estado_id, // Keep current state
+            'usuario_id' => $user ? $user->id : null,
+            'comentario' => $request->input('comentario'),
+        ]);
+
+        return response()->json([
+            'message' => 'Comentario agregado con éxito',
+            'data' => $historial->load(['usuario', 'estado'])
+        ], 201);
+    }
+
+    /**
      * Checks if the user has access to read or write the incident.
      */
     private function checkAccess($user, $incidencia): bool
@@ -246,7 +294,7 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        if ($user->roles()->where('nombre', 'Operador')->exists()) {
+        if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
             if ($user->pais_id && $incidencia->direccion && $incidencia->direccion->territorio && $incidencia->direccion->territorio->pais_id != $user->pais_id) {
                 return false;
             }
@@ -262,6 +310,7 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        return false;
+        // Citizens can view their own reported incidences
+        return $incidencia->cliente_id === $user->id;
     }
 }

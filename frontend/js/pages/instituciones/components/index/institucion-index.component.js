@@ -2,6 +2,8 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { InstitucionService } from '../../services/institucion.service.js';
 import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class InstitucionIndexComponent extends BaseComponent {
   constructor() {
@@ -103,11 +105,19 @@ export class InstitucionIndexComponent extends BaseComponent {
   }
 
   async eliminarInstitucion(id, nombre) {
-    if (!confirm(`¿Está seguro de que desea eliminar la institución "${nombre}"?`)) return;
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar Institución',
+      `¿Está seguro de que desea eliminar la institución "${nombre}"?`,
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    
+    if (!isConfirmed) return;
 
     try {
       await InstitucionService.delete(id);
-      UIHelper.mostrarAlerta(this, 'success', `Institución "${nombre}" eliminada con éxito.`);
+      ToastService.success(`Institución "${nombre}" eliminada con éxito.`);
       const tblDatos = this.querySelector('#tbl-datos-instituciones');
       if (tblDatos) {
         const searchInput = this.querySelector('#searchInput');
@@ -116,7 +126,7 @@ export class InstitucionIndexComponent extends BaseComponent {
       }
     } catch (error) {
       console.error('Error al eliminar institución:', error);
-      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
+      ToastService.error(`No se pudo eliminar: ${error.message}`);
     }
   }
 }

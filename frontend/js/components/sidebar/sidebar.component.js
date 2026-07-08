@@ -78,7 +78,9 @@ export class SideBarComponent extends BaseComponent {
       }
 
       const response = await apiRequest('/me/menu', { method: 'GET' });
-      const menuTree = this.buildMenuTree(response.data || response);
+      const menuList = response.data || response;
+      localStorage.setItem('user_menu', JSON.stringify(menuList));
+      const menuTree = this.buildMenuTree(menuList);
 
       this.renderMenuItems(menuTree);
       this.menuLoaded = true;

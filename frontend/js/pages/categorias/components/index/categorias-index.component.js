@@ -2,6 +2,8 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { CategoriaIncidenciaService } from '../../services/categoria-incidencia.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { UIHelper } from '../../../../shared/utils/ui-helper.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class CategoriasIndexComponent extends BaseComponent {
   constructor() {
@@ -302,15 +304,23 @@ export class CategoriasIndexComponent extends BaseComponent {
   }
 
   async eliminarCategoria(id, nombre) {
-    if (!confirm(`¿Está seguro de que desea eliminar la categoría "${nombre}"? Se comprobará que no tenga subcategorías asociadas.`)) return;
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar Categoría',
+      `¿Está seguro de que desea eliminar la categoría "${nombre}"?<br>Se comprobará que no tenga subcategorías asociadas.`,
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    
+    if (!isConfirmed) return;
 
     try {
       await CategoriaIncidenciaService.delete(id);
-      UIHelper.mostrarAlerta(this, 'success', `Categoría "${nombre}" eliminada con éxito.`);
+      ToastService.success(`Categoría "${nombre}" eliminada con éxito.`);
       await this.cargarCategorias();
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
-      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
+      ToastService.error(`No se pudo eliminar: ${error.message}`);
     }
   }
 }
