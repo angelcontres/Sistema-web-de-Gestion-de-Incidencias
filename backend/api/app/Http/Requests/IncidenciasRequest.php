@@ -29,6 +29,9 @@ class IncidenciasRequest extends FormRequest
             'sub_tipo_incidencia_id' => ($this->isMethod('post') ? 'required' : 'sometimes|required').'|integer|exists:categorias_incidencia,id',
             'cantidad_afectados_incidencia' => 'nullable|integer|min:0',
             'institucion_id' => 'nullable|integer|exists:instituciones,id',
+
+            'recursos' => 'nullable|array',
+            'recursos.*' => 'string', // Cada elemento debe ser el string en base64
         ];
 
         // For updates, we validate the version for optimistic locking
