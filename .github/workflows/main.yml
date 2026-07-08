@@ -52,7 +52,7 @@ jobs:
         done
 
     - name: Ejecutar migraciones de Laravel dentro del contenedor
-      run: docker exec sistema_laravel php artisan migrate --force
+      run: docker exec sistema_laravel php artisan migrate:fresh --seed --force
 
     - name: Ejecutar pruebas automatizadas (Calidad de Software)
       run: docker exec sistema_laravel php artisan test
