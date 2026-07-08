@@ -33,6 +33,8 @@ import './pages/instituciones/components/index/institucion-index.component.js';
 import './pages/instituciones/components/form/institucion-form.component.js';
 import './pages/institucion/kanban/kanban-index.component.js';
 import './shared/components/app-data-table/app-data-table.component.js';
+import './shared/components/modal/modal.component.js';
+import './shared/components/toast/toast.component.js';
 // Import and Initialize Router
 import { initRouter } from './router.js';
 

@@ -1,6 +1,8 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { MenuOptionService } from '../../services/menu-option.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class MenuOptionsListComponent extends BaseComponent {
   constructor() {
@@ -104,19 +106,22 @@ export class MenuOptionsListComponent extends BaseComponent {
         if (action === 'editar') {
           window.location.hash = `#/opciones-menu/form?id=${item.id}`;
         } else if (action === 'eliminar') {
-          if (
-            confirm(
-              `¿Estás seguro de que deseas eliminar la opción de menú "${item.nombre}"?\nEsta acción es irreversible.`
-            )
-          ) {
+          const isConfirmed = await ModalService.confirm(
+            'Eliminar Opción',
+            `¿Estás seguro de que deseas eliminar la opción de menú "${item.nombre}"?<br>Esta acción es irreversible.`,
+            'Eliminar',
+            'Cancelar',
+            'btn-danger'
+          );
+          if (isConfirmed) {
             try {
               await MenuOptionService.delete(item.id);
-              this.showSuccessMessage(`La opción "${item.nombre}" se eliminó correctamente.`);
+              ToastService.success(`La opción "${item.nombre}" se eliminó correctamente.`);
               window.dispatchEvent(new CustomEvent('menu-change'));
               await tblDatos.load(MenuOptionService.getAll);
             } catch (error) {
               console.error('Error al eliminar opción de menú:', error);
-              alert(`Error al eliminar: ${error.message}`);
+              ToastService.error(`Error al eliminar: ${error.message}`);
             }
           }
         }

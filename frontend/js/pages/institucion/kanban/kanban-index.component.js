@@ -1,6 +1,8 @@
 import { BaseComponent } from '../../../core/base-component.js';
 import { IncidenciaService } from '../../incidencias/services/incidencia.service.js';
 import { AuthService } from '../../../core/auth.service.js';
+import { ToastService } from '../../../shared/services/toast.service.js';
+import { PermissionsEnum } from '../../../core/permissions.enum.js';
 
 export class KanbanIndexComponent extends BaseComponent {
   constructor() {
@@ -89,7 +91,7 @@ export class KanbanIndexComponent extends BaseComponent {
     div.className = 'card border-0 shadow-sm rounded-3 mb-3';
 
     let btnHtml = '';
-    if (isProceso && AuthService.hasPermission('Actualizar Incidencia')) {
+    if (isProceso && AuthService.hasPermission(PermissionsEnum.UPDATE_KANBAN)) {
       btnHtml = `<button class="btn btn-sm btn-success w-100 rounded-pill mt-3 btn-resolver" data-id="${incidencia.id}" data-version="${incidencia.version}"><i class="bi bi-check2-circle me-1"></i> Resolver</button>`;
     }
 
@@ -143,7 +145,7 @@ export class KanbanIndexComponent extends BaseComponent {
     const comentario = this.querySelector('#resolver-comentario').value.trim();
 
     if (!comentario) {
-      alert('Debes ingresar un comentario de resolución.');
+      ToastService.warning('Debes ingresar un comentario de resolución.');
       return;
     }
 
@@ -160,7 +162,7 @@ export class KanbanIndexComponent extends BaseComponent {
         comentario_estado: comentario,
       });
 
-      this.mostrarAlertaExito('Incidencia marcada como resuelta.');
+      ToastService.success('Incidencia marcada como resuelta.');
 
       const modalEl = this.querySelector('#modalResolver');
       const modal = bootstrap.Modal.getInstance(modalEl);
@@ -168,7 +170,7 @@ export class KanbanIndexComponent extends BaseComponent {
 
       await this.cargarIncidencias();
     } catch (error) {
-      this.mostrarAlertaError('Error al resolver: ' + error.message);
+      ToastService.error('Error al resolver: ' + error.message);
     } finally {
       const btnConfirmar = this.querySelector('#btn-confirmar-resolver');
       if (btnConfirmar) {

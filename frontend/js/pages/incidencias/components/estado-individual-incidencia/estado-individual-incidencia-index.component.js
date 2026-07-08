@@ -1,6 +1,7 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { IncidenciaService } from '../../services/incidencia.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   constructor() {
@@ -21,7 +22,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     this.incidenciaId = urlParams.get('id');
 
     if (!this.incidenciaId) {
-      alert('ID de incidencia no proporcionado.');
+      ToastService.error('ID de incidencia no proporcionado.');
       window.location.hash = '#/tramites/historial';
       return;
     }
@@ -31,11 +32,11 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     await this.cargarHistorial(1);
     this.scrollToBottom();
 
-    // Hide comment form if user is Operador (Operador can only view, not comment)
+    // Hide comment form if user is Supervisor (Supervisor can only view, not comment)
     if (
       this.currentUser &&
       this.currentUser.roles &&
-      this.currentUser.roles.some((r) => r.nombre === 'Operador')
+      this.currentUser.roles.some((r) => r.nombre === 'Supervisor')
     ) {
       const formContainer = this.querySelector('.card-footer');
       if (formContainer) {
@@ -219,7 +220,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
 
     if (!comentario) return;
     if (comentario.length > 200) {
-      alert('El comentario no puede exceder los 200 caracteres.');
+      ToastService.warning('El comentario no puede exceder los 200 caracteres.');
       return;
     }
 
@@ -239,7 +240,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       this.scrollToBottom();
     } catch (error) {
       console.error('Error enviando comentario:', error);
-      alert('No se pudo enviar el comentario.');
+      ToastService.error('No se pudo enviar el comentario.');
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="bi bi-send-fill"></i>';

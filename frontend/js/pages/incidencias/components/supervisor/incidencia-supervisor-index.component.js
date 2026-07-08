@@ -1,5 +1,7 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { IncidenciaService } from '../../services/incidencia.service.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   constructor() {
@@ -252,6 +254,16 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   async despacharIncidencia() {
     if (!this.incidenciaSeleccionada) return;
 
+    const isConfirmed = await ModalService.confirm(
+      'Despachar Incidencia',
+      `¿Está seguro de que desea despachar la incidencia #${this.incidenciaSeleccionada.id}?`,
+      'Despachar',
+      'Cancelar',
+      'btn-primary'
+    );
+    
+    if (!isConfirmed) return;
+
     const btn = this.querySelector('#btn-despachar-incidencia');
     btn.disabled = true;
     btn.innerHTML =
@@ -269,11 +281,10 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       this.modal.hide();
       await this.cargarDatos(); // Recargar datos para refrescar la lista y el mapa
 
-      // Mostrar toast de exito (si tuvieras una utilidad global)
-      alert('Incidencia despachada con éxito.');
+      ToastService.success('Incidencia despachada con éxito.');
     } catch (error) {
       console.error('Error al despachar la incidencia:', error);
-      alert('Error al despachar la incidencia. Puede que alguien más la haya modificado.');
+      ToastService.error('Error al despachar la incidencia. Puede que alguien más la haya modificado.');
       btn.disabled = false;
       btn.innerHTML = '<i class="bi bi-send-check-fill me-2"></i>Despachar';
     }

@@ -2,6 +2,8 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { UIHelper } from '../../../../shared/utils/ui-helper.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 import { MAP_CONFIG } from '../../../../shared/constants.js';
 import './direccion-form.component.js';
 
@@ -333,15 +335,23 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   }
 
   async eliminarDireccion(id) {
-    if (!confirm('¿Está seguro de que desea eliminar esta dirección?')) return;
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar Dirección',
+      '¿Está seguro de que desea eliminar esta dirección?',
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    
+    if (!isConfirmed) return;
 
     try {
       await UbicacionesService.deleteDireccion(id);
-      UIHelper.mostrarAlerta(this, 'success', 'Dirección eliminada con éxito.');
+      ToastService.success('Dirección eliminada con éxito.');
       await this.cargarDirecciones();
     } catch (error) {
       console.error('Error al eliminar dirección:', error);
-      UIHelper.mostrarAlerta(this, 'error', `No se pudo eliminar: ${error.message}`);
+      ToastService.error(`No se pudo eliminar: ${error.message}`);
     }
   }
 }
