@@ -34,9 +34,9 @@ class RoleSeeder extends Seeder
 
         $roleService->syncRolesToUser($user, [$adminRole->id]);
 
-        $operadorRole = Role::create([
-            'nombre' => 'Operador',
-            'descripcion' => 'EL que opera XDDD',
+        $supervisorRole = Role::create([
+            'nombre' => 'Supervisor',
+            'descripcion' => 'Supervisor que gestiona y despacha incidencias.',
             'padre_id' => null,
             'created_by' => $user->id,
         ]);
@@ -59,49 +59,52 @@ class RoleSeeder extends Seeder
         $allPermissionsIds = Permiso::pluck('id')->toArray();
         $permissionService->syncPermissionsToRole($adminRole, $allPermissionsIds);
 
-        // Assign specific permissions to the Operador role
-        $operadorPermissions = Permiso::where(function ($q) {
-            $q->whereIn('recurso', ['paises', 'territorios', 'direcciones', 'categorias_incidencia'])
-              ->where('accion', 'READ');
-        })->orWhere(function ($q) {
-            $q->whereIn('recurso', ['incidencias', 'despacho_de_incidencias'])
-              ->whereIn('accion', ['READ', 'UPDATE']);
-        })->pluck('id')->toArray();
-        $permissionService->syncPermissionsToRole($operadorRole, $operadorPermissions);
+        // Assign specific permissions to the Supervisor role using Enums
+        $permissionService->grantPermissionsToRole($supervisorRole, [
+            \App\Enums\PermissionsEnum::READ_PAISES,
+            \App\Enums\PermissionsEnum::READ_TERRITORIOS,
+            \App\Enums\PermissionsEnum::READ_DIRECCIONES,
+            \App\Enums\PermissionsEnum::READ_CATEGORIAS_INCIDENCIA,
+            \App\Enums\PermissionsEnum::READ_INCIDENCIAS,
+            \App\Enums\PermissionsEnum::UPDATE_INCIDENCIAS,
+            \App\Enums\PermissionsEnum::READ_DESPACHO_INCIDENCIAS,
+            \App\Enums\PermissionsEnum::UPDATE_DESPACHO_INCIDENCIAS,
+            \App\Enums\PermissionsEnum::READ_HISTORIAL,
+        ]);
 
-        // Assign specific permissions to the Institucion role
         $institucionRole = Role::where('nombre', 'Institucion')->first();
         if ($institucionRole) {
-            $institucionPermissions = Permiso::where(function ($q) {
-                $q->whereIn('recurso', ['incidencias'])
-                  ->whereIn('accion', ['READ', 'UPDATE']);
-            })->orWhere(function ($q) {
-                $q->where('recurso', 'direcciones')
-                  ->where('accion', 'READ');
-            })->orWhere(function ($q) {
-                $q->where('recurso', 'kanban'); // CRUD for kanban
-            })->pluck('id')->toArray();
-            $permissionService->syncPermissionsToRole($institucionRole, $institucionPermissions);
+            $permissionService->grantPermissionsToRole($institucionRole, [
+                \App\Enums\PermissionsEnum::READ_PAISES,
+                \App\Enums\PermissionsEnum::READ_TERRITORIOS,
+                \App\Enums\PermissionsEnum::READ_DIRECCIONES,
+                \App\Enums\PermissionsEnum::READ_KANBAN,
+                \App\Enums\PermissionsEnum::CREATE_KANBAN,
+                \App\Enums\PermissionsEnum::UPDATE_KANBAN,
+                \App\Enums\PermissionsEnum::DELETE_KANBAN,
+            ]);
         }
 
-        // Assign specific permissions to the Ciudadano role
+        // Assign specific permissions to the Ciudadano role using Enums
         $ciudadanoRole = Role::where('nombre', 'Ciudadano')->first();
         if ($ciudadanoRole) {
-            $ciudadanoPermissions = Permiso::whereIn('recurso', ['incidencias', 'direcciones'])
-                ->whereIn('accion', ['READ', 'CREATE'])
-                ->pluck('id')
-                ->toArray();
-            $permissionService->syncPermissionsToRole($ciudadanoRole, $ciudadanoPermissions);
+            $permissionService->grantPermissionsToRole($ciudadanoRole, [
+                \App\Enums\PermissionsEnum::READ_INCIDENCIAS,
+                \App\Enums\PermissionsEnum::CREATE_INCIDENCIAS,
+                \App\Enums\PermissionsEnum::READ_DIRECCIONES,
+                \App\Enums\PermissionsEnum::CREATE_DIRECCIONES,
+                \App\Enums\PermissionsEnum::READ_HISTORIAL,
+            ]);
         }
 
         // Verificamos en consola
         $adminPermisosCount = $adminRole->permisos()->count();
-        $operadorPermisosCount = $operadorRole->permisos()->count();
+        $supervisorPermisosCount = $supervisorRole->permisos()->count();
 
         echo "--- RESULTADO DEL TEST DE PERMISOS ---\n";
 
         echo 'Permisos de Admin (Deberían ser '.count($allPermissionsIds).'): '.$adminPermisosCount."\n";
-        echo 'Permisos de Operador (Deberían ser '.count($operadorPermissions).'): '.$operadorPermisosCount."\n";
+        echo 'Permisos de Supervisor (Deberían ser 9): '.$supervisorPermisosCount."\n";
         echo "--------------------------------------\n";
     }
 }

@@ -16,8 +16,8 @@ class IncidenciaController extends Controller
     {
         $user = auth()->user();
 
-        // Automatic state transition: when Supervisor (Operador role) queries list, Pendiente (2) -> En Revisión (3)
-        if ($user && $user->roles()->where('nombre', 'Operador')->exists()) {
+        // Automatic state transition: when Supervisor queries list, Pendiente (2) -> En Revisión (3)
+        if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
             $transitionQuery = Incidencia::where('estado_id', 2);
             if ($user->pais_id) {
                 $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
@@ -42,7 +42,7 @@ class IncidenciaController extends Controller
         ]);
 
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
-            if ($user->roles()->where('nombre', 'Operador')->exists()) {
+            if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
                 if ($user->pais_id) {
                     $query->whereHas('direccion.territorio', function ($q) use ($user) {
                         $q->where('pais_id', $user->pais_id);
@@ -294,7 +294,7 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        if ($user->roles()->where('nombre', 'Operador')->exists()) {
+        if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
             if ($user->pais_id && $incidencia->direccion && $incidencia->direccion->territorio && $incidencia->direccion->territorio->pais_id != $user->pais_id) {
                 return false;
             }
@@ -310,6 +310,7 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        return false;
+        // Citizens can view their own reported incidences
+        return $incidencia->cliente_id === $user->id;
     }
 }

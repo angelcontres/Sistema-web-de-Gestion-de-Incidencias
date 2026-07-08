@@ -25,11 +25,8 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        \App\Models\Incidencia::observe(\App\Observers\IncidenciaObserver::class);
+        //
     }
 }
