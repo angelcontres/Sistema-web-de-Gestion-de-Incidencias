@@ -1,7 +1,8 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UserService } from '../../services/user.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
-
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 export class UserIndexComponent extends BaseComponent {
   constructor() {
     super('js/pages/user/components/index/user-index.component.html');
@@ -91,21 +92,25 @@ export class UserIndexComponent extends BaseComponent {
    * Elimina un usuario por ID
    */
   async eliminarUsuario(id, name) {
-    if (
-      confirm(
-        `¿Estás seguro de que deseas eliminar el usuario "${name}"?\nEsta acción lo removerá del sistema.`
-      )
-    ) {
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar Usuario',
+      `¿Estás seguro de que deseas eliminar el usuario "${name}"?<br>Esta acción lo removerá del sistema.`,
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    
+    if (isConfirmed) {
       try {
         await UserService.delete(id);
-        this.mostrarAlertaExito(`Usuario "${name}" eliminado con éxito.`);
+        ToastService.success(`Usuario "${name}" eliminado con éxito.`);
         const tblDatos = this.querySelector('#tbl-datos-usuarios');
         if (tblDatos) {
           await tblDatos.load(UserService.getAll);
         }
       } catch (error) {
         console.error('Error al eliminar usuario:', error);
-        alert(`Error al eliminar: ${error.message}`);
+        ToastService.error(`Error al eliminar: ${error.message}`);
       }
     }
   }

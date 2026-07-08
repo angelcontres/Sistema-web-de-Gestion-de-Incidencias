@@ -1,58 +1,84 @@
-<div class="page-fade-in">
-  <!-- Cabecera de Página -->
-  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
-    <div>
-      <h1 class="h3 fw-bold text-dark mb-1">Módulo de Despacho de Incidencias</h1>
-      <p class="text-muted small mb-0">
-        Supervisa las incidencias asignadas a tu país de atención y desvíalas a las instituciones de auxilio correspondientes.
-      </p>
+<div class="row g-3 h-100 p-3">
+  <!-- Panel de Alertas Izquierdo -->
+  <div class="col-md-4 col-lg-3 d-flex flex-column h-100">
+    <div class="card border-0 shadow-sm rounded-4 flex-grow-1 overflow-hidden">
+      <div class="card-header bg-white border-bottom py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-bell text-danger me-2"></i>Alertas</h5>
+        <span class="badge bg-danger rounded-pill" id="badge-alertas">0</span>
+      </div>
+      <div class="card-body p-0 position-relative overflow-auto" style="height: 100%;">
+        <div class="list-group list-group-flush" id="alertas-container">
+          <!-- Alertas list -->
+        </div>
+        <div class="text-center text-muted p-5 spinner-list d-none">
+          <div class="spinner-border text-primary mb-2" role="status"></div>
+          <div>Cargando...</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Alertas de éxito y error -->
-  <div id="successAlert" class="alert alert-success d-none mb-3" role="alert">
-    <div class="d-flex align-items-center gap-2">
-      <i class="bi bi-check-circle-fill"></i>
-      <span id="successMessage"></span>
+  <!-- Panel Principal Derecho -->
+  <div class="col-md-8 col-lg-9 d-flex flex-column h-100 gap-3">
+    <!-- Mapa -->
+    <div class="card border-0 shadow-sm rounded-4 flex-grow-1" style="min-height: 400px;">
+      <div class="card-body p-0 rounded-4 overflow-hidden position-relative" id="map" style="z-index: 1;">
+      </div>
+    </div>
+
+    <!-- Gráfico y KPIs -->
+    <div class="card border-0 shadow-sm rounded-4" style="height: 250px;">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Incidencias por País</h6>
+        <div style="height: 170px;">
+          <canvas id="chart-incidencias-pais"></canvas>
+        </div>
+      </div>
     </div>
   </div>
+</div>
 
-  <div id="errorAlert" class="alert alert-danger d-none mb-3" role="alert">
-    <div class="d-flex align-items-center gap-2">
-      <i class="bi bi-exclamation-triangle-fill"></i>
-      <span id="errorMessage"></span>
-    </div>
-  </div>
-
-  <!-- Navegación por Pestañas (Filtros por Estado) -->
-  <div class="card border rounded-3 mb-4 shadow-sm">
-    <div class="card-header bg-white border-bottom-0 pt-3 pb-0 px-4">
-      <ul class="nav nav-tabs card-header-tabs border-bottom-0" id="supervisorTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active fw-semibold text-primary" id="tab-revision" data-estado="3" type="button" role="tab">
-            <i class="bi bi-clipboard-pulse me-1"></i> En Revisión
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link fw-semibold text-secondary" id="tab-proceso" data-estado="4" type="button" role="tab">
-            <i class="bi bi-activity me-1"></i> En Proceso
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link fw-semibold text-secondary" id="tab-resuelto" data-estado="5" type="button" role="tab">
-            <i class="bi bi-check2-all me-1"></i> Resueltas
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link fw-semibold text-secondary" id="tab-todas" data-estado="all" type="button" role="tab">
-            <i class="bi bi-layers me-1"></i> Todas
-          </button>
-        </li>
-      </ul>
-    </div>
-    <div class="card-body p-0">
-      <!-- Tabla de Datos -->
-      <app-data-table id="tbl-datos-supervisor" title="Incidencias Asignadas" empty-text="No hay incidencias para mostrar en esta sección."></app-data-table>
+<!-- Modal de Detalle y Despacho -->
+<div class="modal fade" id="modal-detalle-incidencia" tabindex="-1" aria-labelledby="modalDetalleLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold" id="modalDetalleLabel">
+          <i class="bi bi-info-circle-fill text-primary me-2"></i>Detalle de Incidencia <span id="modal-incidencia-id"></span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex justify-content-between mb-3">
+          <span class="badge bg-secondary" id="modal-incidencia-estado"></span>
+          <span class="small text-muted" id="modal-incidencia-fecha"></span>
+        </div>
+        
+        <h6 class="fw-bold mb-1" id="modal-incidencia-tipo"></h6>
+        <p class="text-muted small mb-3" id="modal-incidencia-desc"></p>
+        
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <div class="small text-muted"><i class="bi bi-geo-alt-fill me-1"></i>Dirección</div>
+            <div class="fw-medium small" id="modal-incidencia-dir"></div>
+          </div>
+          <div class="col-6">
+            <div class="small text-muted"><i class="bi bi-exclamation-triangle-fill me-1"></i>Prioridad</div>
+            <div class="fw-medium small" id="modal-incidencia-prioridad"></div>
+          </div>
+        </div>
+        
+        <div class="p-3 bg-light rounded-3 small">
+          <div class="fw-bold mb-1">Afectados reportados:</div>
+          <div id="modal-incidencia-afectados"></div>
+        </div>
+      </div>
+      <div class="modal-footer border-top-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary rounded-pill px-4 d-flex align-items-center" id="btn-despachar-incidencia">
+          <i class="bi bi-send-check-fill me-2"></i>Despachar
+        </button>
+      </div>
     </div>
   </div>
 </div>

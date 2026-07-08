@@ -1,4 +1,5 @@
 import { AuthService } from './core/auth.service.js';
+import { PermissionsEnum } from './core/permissions.enum.js';
 
 const routes = {
   '#/login': 'app-login',
@@ -12,12 +13,18 @@ const routes = {
   '#/usuarios/form': 'app-user-form',
   '#/ubicaciones': 'app-ubicaciones-index',
   '#/categorias': 'app-categorias-index',
-  '#/incidencias': 'app-incidencia-index',
+  '#/incidencias': 'app-menu-lobby',
   '#/incidencias/form': 'app-incidencia-form',
+
   '#/incidencias/despacho': 'app-incidencia-supervisor-index',
   '#/instituciones': 'app-institucion-index',
+  '#/instituciones/kanban': 'app-kanban-institucion',
   '#/public': 'app-public',
   '#/configuracion': 'app-menu-lobby',
+
+  '#/tramites': 'app-menu-lobby',
+  '#/tramites/historial': 'app-historial-index',
+  '#/tramites/estado-individual': 'app-estado-individual-incidencia',
 };
 
 /**
@@ -42,7 +49,7 @@ function navigate() {
     // Redirect Operador/Supervisor from general incidents page to their own dispatcher dashboard
     if (hash === '#/incidencias') {
       const user = AuthService.getCurrentUser();
-      const isSupervisor = user && user.roles && user.roles.some(r => r.nombre === 'Operador');
+      const isSupervisor = user && user.roles && user.roles.some((r) => r.nombre === 'Supervisor');
       if (isSupervisor) {
         window.location.hash = '#/incidencias/despacho';
         return;
@@ -58,26 +65,47 @@ function navigate() {
       return;
     }
 
-    // Protect #/ubicaciones based on 'Ver Ubicación' permission
-    if (basePath === '#/ubicaciones' && !AuthService.hasPermission('Ver Ubicación')) {
+    // Protect #/ubicaciones based on 'Ver Ubicación' or any sub-resource (País, Territorio, Dirección) permission
+    if (
+      basePath === '#/ubicaciones' &&
+      !AuthService.hasPermission(PermissionsEnum.READ_UBICACIONES) &&
+      !AuthService.hasPermission(PermissionsEnum.READ_PAISES) &&
+      !AuthService.hasPermission(PermissionsEnum.READ_TERRITORIOS) &&
+      !AuthService.hasPermission(PermissionsEnum.READ_DIRECCIONES)
+    ) {
       window.location.hash = '#/';
       return;
     }
 
     // Protect #/categorias based on 'Ver Categoría de Incidencia' permission
-    if (basePath === '#/categorias' && !AuthService.hasPermission('Ver Categoría de Incidencia')) {
+    if (basePath === '#/categorias' && !AuthService.hasPermission(PermissionsEnum.READ_CATEGORIAS_INCIDENCIA)) {
       window.location.hash = '#/';
       return;
     }
 
     // Protect #/incidencias based on 'Ver Incidencia' permission
-    if ((basePath === '#/incidencias' || basePath === '#/incidencias/despacho') && !AuthService.hasPermission('Ver Incidencia')) {
+    if (
+      (basePath === '#/incidencias' || basePath === '#/incidencias/despacho') &&
+      !AuthService.hasPermission(PermissionsEnum.READ_INCIDENCIAS)
+    ) {
       window.location.hash = '#/';
       return;
     }
-    // Protect #/instituciones based on 'Ver Institución' permission (si existiese)
-    if (basePath === '#/instituciones' && !AuthService.hasPermission('Ver Institución')) {
-      // Asumimos que tienen un permiso equivalente, o simplemente lo dejamos libre para usuarios logueados si no hay permiso específico aún.
+
+    // Protect #/tramites based on 'Ver Incidencia' permission
+    if (basePath.startsWith('#/tramites') && !AuthService.hasPermission(PermissionsEnum.READ_INCIDENCIAS)) {
+      window.location.hash = '#/';
+      return;
+    }
+
+    // Protect #/instituciones/kanban based on Kanban permissions
+    if (basePath === '#/instituciones/kanban' && !AuthService.hasPermission(PermissionsEnum.READ_KANBAN)) {
+      window.location.hash = '#/';
+      return;
+    }
+
+    // Protect #/instituciones based on 'Ver Institución' permission
+    if (basePath === '#/instituciones' && !AuthService.hasPermission(PermissionsEnum.READ_INSTITUCIONES)) {
       window.location.hash = '#/';
       return;
     }

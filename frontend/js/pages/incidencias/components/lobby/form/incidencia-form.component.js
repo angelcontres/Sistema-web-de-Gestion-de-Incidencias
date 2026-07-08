@@ -1,8 +1,9 @@
 import { BaseComponent } from '../../../../../core/base-component.js';
 import { IncidenciaService } from '../../../services/incidencia.service.js';
-import { CategoriaIncidenciaService } from '../../../../categorias/services/categoria-incidencia.service.js';
 import { UbicacionesService } from '../../../../ubicaciones/services/ubicaciones.service.js';
 import { CatalogoService } from '../../../../../shared/services/catalogo.service.js';
+import { ModalService } from '../../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../../shared/services/toast.service.js';
 import { AuthService } from '../../../../../core/auth.service.js';
 import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../../shared/constants.js';
 
@@ -82,12 +83,12 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     // Verify permissions
     if (incidenciaId && !AuthService.hasPermission('Actualizar Incidencia')) {
-      alert('No tiene permiso para editar incidencias.');
+      ToastService.error('No tiene permiso para editar incidencias.');
       window.location.hash = '#/incidencias';
       return;
     }
     if (!incidenciaId && !AuthService.hasPermission('Crear Incidencia')) {
-      alert('No tiene permiso para registrar incidencias.');
+      ToastService.error('No tiene permiso para registrar incidencias.');
       window.location.hash = '#/incidencias';
       return;
     }
@@ -110,7 +111,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       user &&
       user.roles &&
       user.roles.every(
-        (r) => r.nombre !== 'Admin' && r.nombre !== 'Operador' && r.nombre !== 'Institucion'
+        (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
       );
     if (isCitizen) {
       this.querySelector('#sectionAsignacion')?.classList.add('d-none');
@@ -310,7 +311,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         user &&
         user.roles &&
         user.roles.every(
-          (r) => r.nombre !== 'Admin' && r.nombre !== 'Operador' && r.nombre !== 'Institucion'
+          (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
         );
 
       if (matchedDbDir) {
@@ -324,7 +325,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         this.actualizarIndicadorMinimalista();
 
         if (isCitizen) {
-          alert(`Ubicación seleccionada: ${matchedDbDir.detalle}`);
+          ToastService.info(`Ubicación seleccionada: ${matchedDbDir.detalle}`);
         }
       } else {
         this.selectedDireccionId = null;
@@ -389,12 +390,13 @@ export class IncidenciaFormComponent extends BaseComponent {
               address.quarter,
             ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
+            
+            // Load and show Nivel 3 if we matched Nivel 2
+            await this.cargarDropdownNivel3(paisId, opt2.value);
             if (n3Name) {
-              await this.cargarDropdownNivel3(paisId, opt2.value);
               const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
               if (opt3) {
                 this.dirNivel3Select.value = opt3.value;
-                this.querySelector('#colDirNivel3').classList.remove('d-none');
               }
             }
           }
@@ -427,20 +429,20 @@ export class IncidenciaFormComponent extends BaseComponent {
           if (opt2) {
             this.modalDirNivel2.value = opt2.value;
             this.colModalDirNivel2.classList.remove('d-none');
-
-            const possibleNivel3Names = [
+             const possibleNivel3Names = [
               address.parish,
               address.suburb,
               address.neighbourhood,
               address.quarter,
             ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
+            
+            // Load and show Nivel 3 in modal if we matched Nivel 2
+            await this.cargarModalDropdownNivel3(paisId, opt2.value);
             if (n3Name) {
-              await this.cargarModalDropdownNivel3(paisId, opt2.value);
               const opt3 = this.findOptionMatchingText(this.modalDirNivel3, n3Name);
               if (opt3) {
                 this.modalDirNivel3.value = opt3.value;
-                this.colModalDirNivel3.classList.remove('d-none');
               }
             }
           }
@@ -558,13 +560,13 @@ export class IncidenciaFormComponent extends BaseComponent {
     const finalTerritorioId =
       this.modalDirNivel3.value || this.modalDirNivel2.value || this.modalDirNivel1.value;
     if (!finalTerritorioId) {
-      alert(
+      ToastService.warning(
         'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
       );
       return;
     }
     if (!this.modalDirDetalle.value) {
-      alert('La dirección detallada es obligatoria.');
+      ToastService.warning('La dirección detallada es obligatoria.');
       return;
     }
 
@@ -592,10 +594,10 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.actualizarIndicadorMinimalista();
 
       this.modalInstance?.hide();
-      alert('Ubicación guardada con éxito.');
+      ToastService.success('Ubicación guardada con éxito.');
     } catch (e) {
       console.error(e);
-      alert('Error al guardar la ubicación en la base de datos.');
+      ToastService.error('Error al guardar la ubicación en la base de datos.');
     }
   }
 
@@ -647,20 +649,20 @@ export class IncidenciaFormComponent extends BaseComponent {
         const item = data[0];
         const lat = parseFloat(item.lat);
         const lng = parseFloat(item.lon);
-
+ 
         this.actualizarMarcador(lat, lng, false);
         this.map.setView([lat, lng], 14);
-
+ 
         // Populate fields
         this.dirDetalleInput.value = item.display_name;
         // Trigger autofill detail based on the coordinates
         await this.autofillDesdeCoordenadas(lat, lng);
       } else {
-        alert('No se encontraron resultados para la dirección buscada.');
+        ToastService.error('No se encontraron resultados para la dirección buscada.');
       }
     } catch (e) {
       console.error(e);
-      alert('Error al buscar dirección.');
+      ToastService.error('Error al buscar dirección.');
     } finally {
       if (mapLoader) mapLoader.classList.add('d-none');
     }
@@ -1006,7 +1008,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
     } catch (e) {
       console.error(e);
-      this.mostrarError('Error al cargar la incidencia para edición.');
+      ToastService.error('Error al cargar la incidencia para edición.');
     }
   }
 
@@ -1030,7 +1032,14 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   async confirmarResolucion(id) {
-    if (!confirm('¿Está seguro de que desea confirmar la resolución de esta incidencia?')) {
+    const isConfirmed = await ModalService.confirm(
+      'Confirmar Resolución',
+      '¿Está seguro de que desea confirmar la resolución de esta incidencia?',
+      'Confirmar',
+      'Cancelar',
+      'btn-success'
+    );
+    if (!isConfirmed) {
       return;
     }
 
@@ -1045,17 +1054,17 @@ export class IncidenciaFormComponent extends BaseComponent {
       const payload = {
         estado_id: 5, // Resuelto
         version: inc.version,
+        comentario_estado: 'Resolución confirmada por el solicitante/operador.',
       };
 
       await IncidenciaService.update(id, payload);
-      this.mostrarAlertaExito('Incidencia marcada como Resuelta con éxito.');
-      setTimeout(() => {
-        window.location.hash = '#/incidencias';
-      }, 1500);
+      ToastService.success('La resolución ha sido confirmada correctamente.');
+      window.location.hash = '#/incidencias';
     } catch (err) {
-      console.error(err);
-      this.mostrarError(err.message || 'Error al confirmar la resolución.');
+      console.error('Error al confirmar resolución:', err);
+      ToastService.error(err.message || 'Error al confirmar la resolución.');
       if (this.btnConfirmarResolucion) this.btnConfirmarResolucion.disabled = false;
+    } finally {
       if (spinner) spinner.classList.add('d-none');
     }
   }
@@ -1202,12 +1211,12 @@ export class IncidenciaFormComponent extends BaseComponent {
   processFiles(files) {
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith('image/')) {
-        alert('Solo se permiten archivos de imagen.');
+        ToastService.warning('Solo se permiten archivos de imagen.');
         return;
       }
-
+ 
       if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen no debe superar el límite de 5 MB.');
+        ToastService.warning('La imagen no debe superar el límite de 5 MB.');
         return;
       }
 

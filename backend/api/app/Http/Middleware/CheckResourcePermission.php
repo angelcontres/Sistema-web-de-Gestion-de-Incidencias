@@ -72,6 +72,18 @@ class CheckResourcePermission
                     $hasPermission = true;
                     break 2;
                 }
+
+                // If accessing incidencias, allow READ/UPDATE if the user has corresponding kanban permissions
+                if ($recurso === 'incidencias') {
+                    if ($accion === 'READ' && $permiso->accion === 'READ' && $permiso->recurso === 'kanban') {
+                        $hasPermission = true;
+                        break 2;
+                    }
+                    if ($accion === 'UPDATE' && $permiso->accion === 'UPDATE' && $permiso->recurso === 'kanban') {
+                        $hasPermission = true;
+                        break 2;
+                    }
+                }
             }
         }
 
