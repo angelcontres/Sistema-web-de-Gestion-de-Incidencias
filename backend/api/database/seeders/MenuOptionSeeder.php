@@ -49,7 +49,7 @@ class MenuOptionSeeder extends Seeder
 
         $tramites = OpcionMenu::create([
             'nombre' => 'Trámites',
-            'ruta' => '#/consultas',
+            'ruta' => '#/tramites',
             'icono' => 'bi bi-search',
             'padre_id' => null,
             'created_by' => $user->id,
@@ -57,16 +57,8 @@ class MenuOptionSeeder extends Seeder
 
         OpcionMenu::create([
             'nombre' => 'Historial de incidencias',
-            'ruta' => '#/consultas/historial',
+            'ruta' => '#/tramites/historial',
             'icono' => 'bi bi-clock-history',
-            'padre_id' => $tramites->id,
-            'created_by' => $user->id,
-        ]);
-
-        OpcionMenu::create([
-            'nombre' => 'Estado individual de incidencia',
-            'ruta' => '#/consultas/estado-individual',
-            'icono' => 'bi bi-file-earmark',
             'padre_id' => $tramites->id,
             'created_by' => $user->id,
         ]);
@@ -140,6 +132,14 @@ class MenuOptionSeeder extends Seeder
             'ruta' => '#/categorias',
             'icono' => 'bi bi-tags-fill',
             'padre_id' => $config->id,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Tablero Kanban',
+            'ruta' => '#/instituciones/kanban',
+            'icono' => 'bi bi-kanban-fill',
+            'padre_id' => null,
             'created_by' => $user->id,
         ]);
     }

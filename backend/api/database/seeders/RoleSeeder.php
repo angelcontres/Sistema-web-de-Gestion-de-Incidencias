@@ -60,24 +60,27 @@ class RoleSeeder extends Seeder
         $permissionService->syncPermissionsToRole($adminRole, $allPermissionsIds);
 
         // Assign specific permissions to the Operador role
-        $operadorPermissions = Permiso::whereIn('recurso', ['ubicaciones', 'paises', 'territorios', 'direcciones', 'categorias_incidencia', 'incidencias', 'despacho_de_incidencias'])
-            ->where(function ($query) {
-                // Operators can only view countries and categories (READ), not modify them
-                $query->where(function ($q) {
-                    $q->whereIn('recurso', ['paises', 'categorias_incidencia'])->where('accion', 'READ');
-                })
-                // Operators have full CRUD for the main menu, territories, addresses, incidents, and dispatch
-                    ->orWhereIn('recurso', ['ubicaciones', 'territorios', 'direcciones', 'incidencias', 'despacho_de_incidencias']);
-            })
-            ->pluck('id')
-            ->toArray();
-
+        $operadorPermissions = Permiso::where(function ($q) {
+            $q->whereIn('recurso', ['paises', 'territorios', 'direcciones', 'categorias_incidencia'])
+              ->where('accion', 'READ');
+        })->orWhere(function ($q) {
+            $q->whereIn('recurso', ['incidencias', 'despacho_de_incidencias'])
+              ->whereIn('accion', ['READ', 'UPDATE']);
+        })->pluck('id')->toArray();
         $permissionService->syncPermissionsToRole($operadorRole, $operadorPermissions);
 
         // Assign specific permissions to the Institucion role
         $institucionRole = Role::where('nombre', 'Institucion')->first();
         if ($institucionRole) {
-            $institucionPermissions = Permiso::whereIn('recurso', ['incidencias', 'direcciones'])->pluck('id')->toArray();
+            $institucionPermissions = Permiso::where(function ($q) {
+                $q->whereIn('recurso', ['incidencias'])
+                  ->whereIn('accion', ['READ', 'UPDATE']);
+            })->orWhere(function ($q) {
+                $q->where('recurso', 'direcciones')
+                  ->where('accion', 'READ');
+            })->orWhere(function ($q) {
+                $q->where('recurso', 'kanban'); // CRUD for kanban
+            })->pluck('id')->toArray();
             $permissionService->syncPermissionsToRole($institucionRole, $institucionPermissions);
         }
 

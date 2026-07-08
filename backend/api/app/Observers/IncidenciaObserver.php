@@ -19,7 +19,8 @@ class IncidenciaObserver
      */
     public function updated(Incidencia $incidencia): void
     {
-        if ($incidencia->isDirty('estado_id')) {
+        if ($incidencia->wasChanged('estado_id')) {
+            // Check if there is a custom comment sent via request (like in Kanban resolve)
             $comentario = request()->input('comentario_estado', 'Cambio de estado');
             $this->registrarHistorial($incidencia, $comentario);
         }

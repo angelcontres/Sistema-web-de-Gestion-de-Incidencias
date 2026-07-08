@@ -24,7 +24,10 @@ class IncidenciaController extends Controller
                     $q->where('pais_id', $user->pais_id);
                 });
             }
-            $transitionQuery->update(['estado_id' => 3]);
+            $incidenciasTransition = $transitionQuery->get();
+            foreach ($incidenciasTransition as $inc) {
+                $inc->update(['estado_id' => 3]);
+            }
         }
 
         $query = Incidencia::with([
@@ -235,6 +238,51 @@ class IncidenciaController extends Controller
         }
 
         return $basePriorityId;
+    }
+
+    /**
+     * Get the history/comments of the incident (paginated).
+     */
+    public function getHistorial($id)
+    {
+        $incidencia = Incidencia::findOrFail($id);
+        $user = auth()->user();
+
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate(10);
+        return response()->json($historial, 200);
+    }
+
+    /**
+     * Add a comment without changing the state.
+     */
+    public function addComment(Request $request, $id)
+    {
+        $request->validate([
+            'comentario' => 'required|string|max:200',
+        ]);
+
+        $incidencia = Incidencia::findOrFail($id);
+        $user = auth()->user();
+
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $historial = \App\Models\HistorialIncidencia::create([
+            'incidencia_id' => $incidencia->id,
+            'estado_id' => $incidencia->estado_id, // Keep current state
+            'usuario_id' => $user ? $user->id : null,
+            'comentario' => $request->input('comentario'),
+        ]);
+
+        return response()->json([
+            'message' => 'Comentario agregado con éxito',
+            'data' => $historial->load(['usuario', 'estado'])
+        ], 201);
     }
 
     /**

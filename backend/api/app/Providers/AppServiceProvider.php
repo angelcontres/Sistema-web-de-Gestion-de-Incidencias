@@ -30,6 +30,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \App\Models\Incidencia::observe(\App\Observers\IncidenciaObserver::class);
     }
 }

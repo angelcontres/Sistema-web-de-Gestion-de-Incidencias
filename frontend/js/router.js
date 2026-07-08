@@ -12,12 +12,18 @@ const routes = {
   '#/usuarios/form': 'app-user-form',
   '#/ubicaciones': 'app-ubicaciones-index',
   '#/categorias': 'app-categorias-index',
-  '#/incidencias': 'app-incidencia-index',
+  '#/incidencias': 'app-menu-lobby',
   '#/incidencias/form': 'app-incidencia-form',
+
   '#/incidencias/despacho': 'app-incidencia-supervisor-index',
   '#/instituciones': 'app-institucion-index',
+  '#/instituciones/kanban': 'app-kanban-institucion',
   '#/public': 'app-public',
   '#/configuracion': 'app-menu-lobby',
+
+  '#/tramites': 'app-menu-lobby',
+  '#/tramites/historial': 'app-historial-index',
+  '#/tramites/estado-individual': 'app-estado-individual-incidencia',
 };
 
 /**
@@ -42,7 +48,7 @@ function navigate() {
     // Redirect Operador/Supervisor from general incidents page to their own dispatcher dashboard
     if (hash === '#/incidencias') {
       const user = AuthService.getCurrentUser();
-      const isSupervisor = user && user.roles && user.roles.some(r => r.nombre === 'Operador');
+      const isSupervisor = user && user.roles && user.roles.some((r) => r.nombre === 'Operador');
       if (isSupervisor) {
         window.location.hash = '#/incidencias/despacho';
         return;
@@ -71,13 +77,28 @@ function navigate() {
     }
 
     // Protect #/incidencias based on 'Ver Incidencia' permission
-    if ((basePath === '#/incidencias' || basePath === '#/incidencias/despacho') && !AuthService.hasPermission('Ver Incidencia')) {
+    if (
+      (basePath === '#/incidencias' || basePath === '#/incidencias/despacho') &&
+      !AuthService.hasPermission('Ver Incidencia')
+    ) {
       window.location.hash = '#/';
       return;
     }
-    // Protect #/instituciones based on 'Ver Institución' permission (si existiese)
+
+    // Protect #/tramites based on 'Ver Incidencia' permission
+    if (basePath.startsWith('#/tramites') && !AuthService.hasPermission('Ver Incidencia')) {
+      window.location.hash = '#/';
+      return;
+    }
+
+    // Protect #/instituciones/kanban based on Kanban permissions
+    if (basePath === '#/instituciones/kanban' && !AuthService.hasPermission('Ver Kanban')) {
+      window.location.hash = '#/';
+      return;
+    }
+
+    // Protect #/instituciones based on 'Ver Institución' permission
     if (basePath === '#/instituciones' && !AuthService.hasPermission('Ver Institución')) {
-      // Asumimos que tienen un permiso equivalente, o simplemente lo dejamos libre para usuarios logueados si no hay permiso específico aún.
       window.location.hash = '#/';
       return;
     }
