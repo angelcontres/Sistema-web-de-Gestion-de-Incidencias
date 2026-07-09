@@ -26,7 +26,9 @@ class PermissionsSeeder extends Seeder
             'Categorías de Incidencias' => 'Categoría de Incidencia',
             'Incidencias' => 'Incidencia',
             'Instituciones' => 'Institución',
-            'Despacho de Incidencias' => 'Despacho de Incidencia',
+            'Despacho' => 'Despacho de Incidencia',
+            'Tablero Kanban' => 'Kanban',
+            'Historial de incidencias' => 'Historial',
         ];
 
         $acciones = [
@@ -46,7 +48,9 @@ class PermissionsSeeder extends Seeder
             'Categorías de Incidencias' => 'categorias_incidencia',
             'Incidencias' => 'incidencias',
             'Instituciones' => 'instituciones',
-            'Despacho de Incidencias' => 'despacho_de_incidencias',
+            'Despacho' => 'despacho_de_incidencias',
+            'Tablero Kanban' => 'kanban',
+            'Historial de incidencias' => 'historial_incidencias',
         ];
 
         foreach ($opciones as $opcionPlural => $opcionSingular) {
@@ -86,6 +90,14 @@ class PermissionsSeeder extends Seeder
                     ]);
                 }
             }
+        }
+
+        // Adjust menu option bindings for Incidencias permissions
+        $registroMenu = OpcionMenu::where('nombre', 'Registro')->first();
+        if ($registroMenu) {
+            Permiso::where('nombre', 'Crear Incidencia')->update([
+                'opcion_menu_id' => $registroMenu->id
+            ]);
         }
     }
 }

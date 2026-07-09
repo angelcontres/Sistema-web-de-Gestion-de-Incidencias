@@ -78,7 +78,9 @@ export class SideBarComponent extends BaseComponent {
       }
 
       const response = await apiRequest('/me/menu', { method: 'GET' });
-      const menuTree = this.buildMenuTree(response.data || response);
+      const menuList = response.data || response;
+      localStorage.setItem('user_menu', JSON.stringify(menuList));
+      const menuTree = this.buildMenuTree(menuList);
 
       this.renderMenuItems(menuTree);
       this.menuLoaded = true;
@@ -176,7 +178,7 @@ export class SideBarComponent extends BaseComponent {
 
     // Prevent navigation when clicking the toggle arrow
     const toggleBtns = container.querySelectorAll('.sidebar-toggle-btn');
-    toggleBtns.forEach(btn => {
+    toggleBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();

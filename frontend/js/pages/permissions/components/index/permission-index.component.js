@@ -1,6 +1,8 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { apiRequest } from '../../../../core/api.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class PermissionIndexComponent extends BaseComponent {
   constructor() {
@@ -94,12 +96,20 @@ export class PermissionIndexComponent extends BaseComponent {
     }
   }
 
-  eliminarPermiso(id, nombre) {
-    if (!confirm(`¿Está seguro de eliminar el permiso "${nombre}"?`)) return;
+  async eliminarPermiso(id, nombre) {
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar Permiso',
+      `¿Está seguro de eliminar el permiso "${nombre}"?`,
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    
+    if (!isConfirmed) return;
 
     apiRequest(`/permisos/${id}`, { method: 'DELETE' })
       .then(() => {
-        this.mostrarAlertaExito('Permiso eliminado correctamente.');
+        ToastService.success('Permiso eliminado correctamente.');
 
         const tblDatos = this.querySelector('#tbl-datos-permisos');
         if (tblDatos && tblDatos.load) {
@@ -108,7 +118,7 @@ export class PermissionIndexComponent extends BaseComponent {
       })
       .catch((err) => {
         console.error('Error al eliminar permiso:', err);
-        this.mostrarAlertaError(err.message || 'Error al eliminar el permiso.');
+        ToastService.error(`No se pudo eliminar el permiso: ${err.message}`);
       });
   }
 

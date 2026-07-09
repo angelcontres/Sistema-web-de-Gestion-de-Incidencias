@@ -7,11 +7,23 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    # 1. Apagar los contenedores anteriores para liberar los descriptores de archivos compartidos
+    - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
+      run: |
+        if [ -f "docker-compose.yml" ]; then
+          docker compose down
+        fi
+
+    # 2. El truco de Docker: Usamos busybox (que corre como root interno) para fulminar la carpeta vendor anterior
+    - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
+      run: |
+        if [ -d "backend/api/vendor" ]; then
+          docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
+        fi
+
+    # 3. Ahora el checkout puede limpiar y clonar el nuevo código sin problemas de permisos
     - name: Copiar el código a la VAIO
       uses: actions/checkout@v4
-
-    - name: Apagar contenedores anteriores (Limpieza)
-      run: docker compose down
 
     - name: Construir y levantar contenedores en segundo plano
       run: docker compose up -d --build --pull always
@@ -19,17 +31,28 @@ jobs:
     - name: Instalar dependencias de PHP (Composer) dentro del contenedor
       run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
 
-    - name: Clonar el archivo de entorno (.env) dentro del contenedor
-      run: docker exec sistema_laravel cp .env.example .env
+    - name: Configurar entorno (.env) para PostgreSQL
+      run: |
+        docker exec sistema_laravel cp .env.example .env
+        docker exec sistema_laravel sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/' .env
+        docker exec sistema_laravel sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=postgres/' .env
+        docker exec sistema_laravel sed -i 's/# DB_PORT=3306/DB_PORT=5432/' .env
+        docker exec sistema_laravel sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=gestion_incidencias/' .env
+        docker exec sistema_laravel sed -i 's/# DB_USERNAME=root/DB_USERNAME=angeltux/' .env
+        docker exec sistema_laravel sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password_segura_upse/' .env
 
     - name: Generar clave de seguridad de Laravel
       run: docker exec sistema_laravel php artisan key:generate
 
     - name: Esperar a que la base de datos esté lista
-      run: sleep 5
+      run: |
+        until docker exec sistema_postgres pg_isready -U angeltux; do
+          echo "Esperando a postgres..."
+          sleep 2
+        done
 
     - name: Ejecutar migraciones de Laravel dentro del contenedor
-      run: docker exec sistema_laravel php artisan migrate --force
+      run: docker exec sistema_laravel php artisan migrate:fresh --seed --force
 
     - name: Ejecutar pruebas automatizadas (Calidad de Software)
       run: docker exec sistema_laravel php artisan test

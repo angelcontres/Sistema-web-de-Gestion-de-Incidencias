@@ -53,6 +53,8 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::apiResource('v1/direcciones', DireccionController::class);
     Route::apiResource('v1/categorias-incidencia', CategoriaIncidenciaController::class);
     Route::apiResource('v1/incidencias', IncidenciaController::class);
+    Route::get('v1/incidencias/{id}/historial', [IncidenciaController::class, 'getHistorial']);
+    Route::post('v1/incidencias/{id}/comentarios', [IncidenciaController::class, 'addComment']);
 
     Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
     Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);

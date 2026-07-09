@@ -1,7 +1,9 @@
 import { apiRequest } from './api.js';
+import { PermissionsEnum } from './permissions.enum.js';
 
 export const AuthService = {
   async login(email, password) {
+    localStorage.removeItem('user_menu');
     const response = await apiRequest('/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
@@ -22,6 +24,7 @@ export const AuthService = {
     } finally {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
+      localStorage.removeItem('user_menu');
       window.dispatchEvent(new CustomEvent('auth-change'));
       window.location.hash = '#/login';
     }
@@ -75,31 +78,23 @@ export const AuthService = {
     if (!user || !Array.isArray(user.permisos)) return false;
 
     if (resource) {
-      const actionMap = {
-        'CREATE': 'Crear',
-        'READ': 'Ver',
-        'UPDATE': 'Actualizar',
-        'DELETE': 'Eliminar'
-      };
-      const resourceMap = {
-        'roles': 'Rol',
-        'permisos': 'Permiso',
-        'opciones_menu': 'Opción de Menú',
-        'usuarios': 'Usuario',
-        'categorias_incidencia': 'Categoría de Incidencia',
-        'incidencias': 'Incidencia',
-        'instituciones': 'Institución',
-        'sqa': 'SQA',
-        'ubicaciones': 'Ubicación'
-      };
-
-      const spanishAction = actionMap[action.toUpperCase()] || action;
-      const spanishResource = resourceMap[resource.toLowerCase()] || resource;
-      const permissionName = `${spanishAction} ${spanishResource}`;
-
+      const key = `${action.toUpperCase()}_${resource.toUpperCase()}`;
+      const permissionName = PermissionsEnum[key];
+      if (!permissionName) {
+        console.warn(`Permission key not found in PermissionsEnum: ${key}`);
+        return false;
+      }
       return user.permisos.some(
         (p) => p && typeof p === 'string' && p.toLowerCase() === permissionName.toLowerCase()
       );
+    }
+
+    // Direct permission string check
+    const isValid = Object.values(PermissionsEnum).some(
+      (val) => val.toLowerCase() === action.toLowerCase()
+    );
+    if (!isValid) {
+      console.warn(`Direct permission name not found in PermissionsEnum values: ${action}`);
     }
 
     return user.permisos.some(

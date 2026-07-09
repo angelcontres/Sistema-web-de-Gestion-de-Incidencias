@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\IncidenciaObserver;
 
+#[ObservedBy([IncidenciaObserver::class])]
 #[Fillable([
     'incidencia_descripcion',
     'direccion_id',
@@ -111,5 +114,18 @@ class Incidencia extends Model
     {
         return $this->belongsToMany(User::class, 'usuario_incidencia', 'reporte_incidencia_id', 'user_id')
             ->withTimestamps();
+    }
+
+    /**
+     * Relación: El historial de cambios de estado de la incidencia.
+     */
+    public function historial()
+    {
+        return $this->hasMany(HistorialIncidencia::class, 'incidencia_id');
+    }
+
+    public function recursos()
+    {
+        return $this->hasMany(RecursoIncidencia::class, 'incidencia_id');
     }
 }

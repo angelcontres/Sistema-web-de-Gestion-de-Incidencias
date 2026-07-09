@@ -6,6 +6,8 @@ use App\Http\Requests\IncidenciasRequest;
 use App\Models\CategoriaIncidencia;
 use App\Models\Incidencia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class IncidenciaController extends Controller
 {
@@ -16,15 +18,18 @@ class IncidenciaController extends Controller
     {
         $user = auth()->user();
 
-        // Automatic state transition: when Supervisor (Operador role) queries list, Pendiente (2) -> En Revisión (3)
-        if ($user && $user->roles()->where('nombre', 'Operador')->exists()) {
+        // Automatic state transition: when Supervisor queries list, Pendiente (2) -> En Revisión (3)
+        if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
             $transitionQuery = Incidencia::where('estado_id', 2);
             if ($user->pais_id) {
                 $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
                     $q->where('pais_id', $user->pais_id);
                 });
             }
-            $transitionQuery->update(['estado_id' => 3]);
+            $incidenciasTransition = $transitionQuery->get();
+            foreach ($incidenciasTransition as $inc) {
+                $inc->update(['estado_id' => 3]);
+            }
         }
 
         $query = Incidencia::with([
@@ -36,10 +41,11 @@ class IncidenciaController extends Controller
             'subTipo',
             'prioridad',
             'operadores',
+            'recursos',
         ]);
 
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
-            if ($user->roles()->where('nombre', 'Operador')->exists()) {
+            if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
                 if ($user->pais_id) {
                     $query->whereHas('direccion.territorio', function ($q) use ($user) {
                         $q->where('pais_id', $user->pais_id);
@@ -92,6 +98,33 @@ class IncidenciaController extends Controller
             'created_by' => $user ? $user->id : null,
         ]);
 
+        if ($request->has('recursos')) {
+            $disk = env('FILESYSTEM_DISK', 'public');
+
+            foreach ($request->input('recursos') as $base64Image) {
+                // Procesar el formato Base64 (ej: "data:image/webp;base64,UklGRg...")
+                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                    $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+                    $extension = strtolower($type[1]);
+                } else {
+                    $extension = 'webp';
+                }
+                $imageDecoded = base64_decode($base64Image);
+                if ($imageDecoded === false) {
+                    continue; // Omitir si el base64 no es válido
+                }
+                // Generar nombre de archivo único
+                $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
+                // Subir al almacenamiento (S3 o Local según el .env)
+                Storage::disk($disk)->put($fileName, $imageDecoded);
+                // Registrar en la BD (guardamos la ruta relativa)
+                $incidencia->recursos()->create([
+                    'url' => $fileName,
+                    'tipo' => 'imagen'
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Incidencia creada con éxito',
             'data' => $incidencia->load([
@@ -103,6 +136,7 @@ class IncidenciaController extends Controller
                 'subTipo',
                 'prioridad',
                 'operadores',
+                'recursos',
             ]),
         ], 201);
     }
@@ -121,6 +155,7 @@ class IncidenciaController extends Controller
             'subTipo',
             'prioridad',
             'operadores',
+            'recursos',
         ])->findOrFail($id);
 
         $user = auth()->user();
@@ -168,6 +203,33 @@ class IncidenciaController extends Controller
             'updated_by' => $user ? $user->id : null,
         ]);
 
+        if ($request->has('recursos')) {
+            $disk = env('FILESYSTEM_DISK', 'public');
+
+            foreach ($request->input('recursos') as $base64Image) {
+                // Procesar el formato Base64 (ej: "data:image/webp;base64,UklGRg...")
+                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                    $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+                    $extension = strtolower($type[1]);
+                } else {
+                    $extension = 'webp';
+                }
+                $imageDecoded = base64_decode($base64Image);
+                if ($imageDecoded === false) {
+                    continue; // Omitir si el base64 no es válido
+                }
+                // Generar nombre de archivo único
+                $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
+                // Subir al almacenamiento (S3 o Local según el .env)
+                Storage::disk($disk)->put($fileName, $imageDecoded);
+                // Registrar en la BD (guardamos la ruta relativa)
+                $incidencia->recursos()->create([
+                    'url' => $fileName,
+                    'tipo' => 'imagen'
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Incidencia actualizada con éxito',
             'data' => $incidencia->load([
@@ -179,6 +241,7 @@ class IncidenciaController extends Controller
                 'subTipo',
                 'prioridad',
                 'operadores',
+                'recursos',
             ]),
         ], 200);
     }
@@ -238,6 +301,51 @@ class IncidenciaController extends Controller
     }
 
     /**
+     * Get the history/comments of the incident (paginated).
+     */
+    public function getHistorial($id)
+    {
+        $incidencia = Incidencia::findOrFail($id);
+        $user = auth()->user();
+
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate(10);
+        return response()->json($historial, 200);
+    }
+
+    /**
+     * Add a comment without changing the state.
+     */
+    public function addComment(Request $request, $id)
+    {
+        $request->validate([
+            'comentario' => 'required|string|max:200',
+        ]);
+
+        $incidencia = Incidencia::findOrFail($id);
+        $user = auth()->user();
+
+        if ($user && ! $this->checkAccess($user, $incidencia)) {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $historial = \App\Models\HistorialIncidencia::create([
+            'incidencia_id' => $incidencia->id,
+            'estado_id' => $incidencia->estado_id, // Keep current state
+            'usuario_id' => $user ? $user->id : null,
+            'comentario' => $request->input('comentario'),
+        ]);
+
+        return response()->json([
+            'message' => 'Comentario agregado con éxito',
+            'data' => $historial->load(['usuario', 'estado'])
+        ], 201);
+    }
+
+    /**
      * Checks if the user has access to read or write the incident.
      */
     private function checkAccess($user, $incidencia): bool
@@ -246,7 +354,7 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        if ($user->roles()->where('nombre', 'Operador')->exists()) {
+        if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
             if ($user->pais_id && $incidencia->direccion && $incidencia->direccion->territorio && $incidencia->direccion->territorio->pais_id != $user->pais_id) {
                 return false;
             }
@@ -262,6 +370,7 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        return false;
+        // Citizens can view their own reported incidences
+        return $incidencia->cliente_id === $user->id;
     }
 }

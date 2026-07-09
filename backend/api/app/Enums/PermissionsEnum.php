@@ -81,4 +81,16 @@ enum PermissionsEnum: string
     case CREATE_DESPACHO_INCIDENCIAS = 'Crear Despacho de Incidencia';
     case UPDATE_DESPACHO_INCIDENCIAS = 'Actualizar Despacho de Incidencia';
     case DELETE_DESPACHO_INCIDENCIAS = 'Eliminar Despacho de Incidencia';
+
+    // Tablero Kanban
+    case READ_KANBAN = 'Ver Kanban';
+    case CREATE_KANBAN = 'Crear Kanban';
+    case UPDATE_KANBAN = 'Actualizar Kanban';
+    case DELETE_KANBAN = 'Eliminar Kanban';
+
+    // Historial
+    case READ_HISTORIAL = 'Ver Historial';
+    case CREATE_HISTORIAL = 'Crear Historial';
+    case UPDATE_HISTORIAL = 'Actualizar Historial';
+    case DELETE_HISTORIAL = 'Eliminar Historial';
 }

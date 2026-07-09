@@ -10,7 +10,7 @@ class PerformanceLog extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'metrics.performance_logs';
+    protected $table = 'performance_logs';
 
     protected $fillable = [
         'trp',

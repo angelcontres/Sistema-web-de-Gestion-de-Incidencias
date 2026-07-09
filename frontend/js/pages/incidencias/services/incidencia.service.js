@@ -24,4 +24,13 @@ export const IncidenciaService = {
       method: 'DELETE',
     });
   },
+  getHistorial(id, page = 1) {
+    return apiRequest(`/incidencias/${id}/historial?page=${page}`);
+  },
+  addComment(id, comentario) {
+    return apiRequest(`/incidencias/${id}/comentarios`, {
+      method: 'POST',
+      body: JSON.stringify({ comentario }),
+    });
+  },
 };

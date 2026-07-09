@@ -1,6 +1,8 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { apiRequest } from '../../../../core/api.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { ModalService } from '../../../../shared/services/modal.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class RoleIndexComponent extends BaseComponent {
   constructor() {
@@ -263,18 +265,21 @@ export class RoleIndexComponent extends BaseComponent {
    * Elimina un rol
    */
   async eliminarRol(id, nombre) {
-    if (
-      confirm(
-        `¿Estás seguro de que deseas eliminar el rol "${nombre}"?\nEsta acción es irreversible.`
-      )
-    ) {
+    const isConfirmed = await ModalService.confirm(
+      'Eliminar Rol',
+      `¿Estás seguro de que deseas eliminar el rol "${nombre}"?<br>Esta acción es irreversible.`,
+      'Eliminar',
+      'Cancelar',
+      'btn-danger'
+    );
+    if (isConfirmed) {
       try {
         await apiRequest(`/roles/${id}`, { method: 'DELETE' });
-        this.mostrarAlertaExito(`Rol "${nombre}" eliminado con éxito.`);
+        ToastService.success(`Rol "${nombre}" eliminado con éxito.`);
         await this.cargarRoles();
       } catch (error) {
         console.error('Error al eliminar rol:', error);
-        alert(`Error al eliminar: ${error.message}`);
+        ToastService.error(`Error al eliminar: ${error.message}`);
       }
     }
   }
