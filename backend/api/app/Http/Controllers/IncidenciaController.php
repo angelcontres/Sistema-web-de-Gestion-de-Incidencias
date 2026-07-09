@@ -34,6 +34,7 @@ class IncidenciaController extends Controller
 
         $query = Incidencia::with([
             'direccion.territorio.pais',
+            'direccion.territorio.parent',
             'cliente',
             'estado',
             'institucion',
@@ -129,6 +130,7 @@ class IncidenciaController extends Controller
             'message' => 'Incidencia creada con éxito',
             'data' => $incidencia->load([
                 'direccion.territorio.pais',
+                'direccion.territorio.parent',
                 'cliente',
                 'estado',
                 'institucion',
@@ -148,6 +150,7 @@ class IncidenciaController extends Controller
     {
         $incidencia = Incidencia::with([
             'direccion.territorio.pais',
+            'direccion.territorio.parent',
             'cliente',
             'estado',
             'institucion',
@@ -234,6 +237,7 @@ class IncidenciaController extends Controller
             'message' => 'Incidencia actualizada con éxito',
             'data' => $incidencia->load([
                 'direccion.territorio.pais',
+                'direccion.territorio.parent',
                 'cliente',
                 'estado',
                 'institucion',

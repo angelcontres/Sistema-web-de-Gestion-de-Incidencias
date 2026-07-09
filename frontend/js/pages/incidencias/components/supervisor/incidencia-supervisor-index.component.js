@@ -158,22 +158,27 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   }
 
   renderChart() {
-    const canvas = this.querySelector('#chart-incidencias-pais');
+    const canvas = this.querySelector('#chart-incidencias-provincia');
     if (!canvas || !window.Chart) return;
 
-    // Agrupar por país
-    const paisesMap = {};
+    // Agrupar por provincia (territorio padre)
+    const provinciasMap = {};
     this.incidencias.forEach((inc) => {
-      const paisNombre =
-        inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
-          ? inc.direccion.territorio.pais.nombre
-          : 'Desconocido';
-      if (!paisesMap[paisNombre]) paisesMap[paisNombre] = 0;
-      paisesMap[paisNombre]++;
+      let provinciaNombre = 'Desconocido';
+      if (inc.direccion && inc.direccion.territorio) {
+        if (inc.direccion.territorio.parent) {
+          provinciaNombre = inc.direccion.territorio.parent.nombre;
+        } else {
+          // Si no tiene padre, el territorio mismo podría ser la provincia
+          provinciaNombre = inc.direccion.territorio.nombre;
+        }
+      }
+      if (!provinciasMap[provinciaNombre]) provinciasMap[provinciaNombre] = 0;
+      provinciasMap[provinciaNombre]++;
     });
 
-    const labels = Object.keys(paisesMap);
-    const data = Object.values(paisesMap);
+    const labels = Object.keys(provinciasMap);
+    const data = Object.values(provinciasMap);
 
     if (this.chart) {
       this.chart.destroy();
@@ -261,7 +266,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-primary'
     );
-    
+
     if (!isConfirmed) return;
 
     const btn = this.querySelector('#btn-despachar-incidencia');
@@ -284,7 +289,9 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       ToastService.success('Incidencia despachada con éxito.');
     } catch (error) {
       console.error('Error al despachar la incidencia:', error);
-      ToastService.error('Error al despachar la incidencia. Puede que alguien más la haya modificado.');
+      ToastService.error(
+        'Error al despachar la incidencia. Puede que alguien más la haya modificado.'
+      );
       btn.disabled = false;
       btn.innerHTML = '<i class="bi bi-send-check-fill me-2"></i>Despachar';
     }
