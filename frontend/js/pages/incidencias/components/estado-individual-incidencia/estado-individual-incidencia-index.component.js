@@ -136,15 +136,21 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
         let html = '';
         if (reportantes.length <= 3) {
           html = `<ul class="list-unstyled mb-0">` +
-            reportantes.map(r => `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}</li>`).join('') +
+            reportantes.map(r => {
+              const creadorText = r.id === inc.cliente_id ? ' <span class="text-muted small fst-italic">(creador)</span>' : '';
+              return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+            }).join('') +
             `</ul>`;
         } else {
           const visible = reportantes.slice(0, 3);
           const others = reportantes.slice(3);
-          const othersNames = others.map(r => r.name).join(', ');
+          const othersNames = others.map(r => r.id === inc.cliente_id ? `${r.name} (creador)` : r.name).join(', ');
 
           html = `<ul class="list-unstyled mb-0">` +
-            visible.map(r => `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}</li>`).join('') +
+            visible.map(r => {
+              const creadorText = r.id === inc.cliente_id ? ' <span class="text-muted small fst-italic">(creador)</span>' : '';
+              return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+            }).join('') +
             `</ul>` +
             `<div class="mt-1 text-primary cursor-pointer d-inline-block" style="cursor: pointer;"
                   data-bs-toggle="tooltip" 

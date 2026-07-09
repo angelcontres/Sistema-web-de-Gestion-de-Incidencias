@@ -32,11 +32,11 @@ class IncidentGroupingService
 
         // Haversine formula in kilometers:
         // 6371 * acos(cos(radians(lat1)) * cos(radians(lat2)) * cos(radians(lng2) - radians(lng1)) + sin(radians(lat1)) * sin(radians(lat2)))
-        return Incidencia::select('reporte_incidencias.*')
+        $result = Incidencia::select('reporte_incidencias.*')
             ->join('direcciones', 'reporte_incidencias.direccion_id', '=', 'direcciones.id')
             ->where('reporte_incidencias.tipo_incidencia_id', $tipoId)
             ->where('reporte_incidencias.sub_tipo_incidencia_id', $subTipoId)
-            ->where('reporte_incidencias.estado_id', 2) // Only "En Revisión"
+            ->whereIn('reporte_incidencias.estado_id', [2, 3, 4]) // Pendiente, En Revisión, En Proceso
             ->whereNull('reporte_incidencias.deleted_at')
             ->selectRaw(
                 '(6371 * acos(
@@ -50,8 +50,10 @@ class IncidentGroupingService
                 cos(radians(?)) * cos(radians(direcciones.latitud)) * 
                 cos(radians(direcciones.longitud) - radians(?)) + 
                 sin(radians(?)) * sin(radians(direcciones.latitud))
-            )) <= ?', [$lat, $lng, $lat, $radiusKm])
+            )) <= CAST(? AS REAL)', [$lat, $lng, $lat, $radiusKm])
             ->orderBy('distance', 'asc')
             ->first();
+
+        return $result;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\IncidenciasRequest;
 use App\Models\CategoriaIncidencia;
 use App\Models\Incidencia;
+use App\Models\HistorialIncidencia;
 use App\Models\Direccion;
 use App\Services\IncidentGroupingService;
 use Illuminate\Support\Facades\DB;
@@ -58,8 +59,13 @@ class IncidenciaController extends Controller
             } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
                 $query->where('institucion_id', $user->institucion_id);
             } else {
-                // If they are regular citizens, they can only see their own reports
-                $query->where('cliente_id', $user->id);
+                // If they are regular citizens, they can only see their own reports (or ones they are attached to)
+                $query->where(function($q) use ($user) {
+                    $q->where('cliente_id', $user->id)
+                      ->orWhereHas('reportantes', function($q2) use ($user) {
+                          $q2->where('user_id', $user->id);
+                      });
+                });
             }
         }
 
@@ -102,7 +108,7 @@ class IncidenciaController extends Controller
                     );
                     $similar->save();
 
-                    // Associate user
+                    // Associate user and save description
                     if ($user) {
                         $exists = DB::table('usuario_incidencia')
                             ->where('user_id', $user->id)
@@ -113,6 +119,14 @@ class IncidenciaController extends Controller
                                 'created_by' => $user->id
                             ]);
                         }
+
+                        // Save the new description in the history
+                        HistorialIncidencia::create([
+                            'incidencia_id' => $similar->id,
+                            'estado_id' => $similar->estado_id,
+                            'usuario_id' => $user->id,
+                            'comentario' => 'Reporte ciudadano coincidente adjuntado: ' . $request->incidencia_descripcion
+                        ]);
                     }
 
                     // Delete the newly created address if it is not used elsewhere
@@ -444,7 +458,11 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        // Citizens can view their own reported incidences
-        return $incidencia->cliente_id === $user->id;
+        // Citizens can view their own reported incidences (either as creator or as an attached reportante)
+        if ($incidencia->cliente_id === $user->id) {
+            return true;
+        }
+
+        return $incidencia->reportantes()->where('usuario_incidencia.user_id', $user->id)->exists();
     }
 }
