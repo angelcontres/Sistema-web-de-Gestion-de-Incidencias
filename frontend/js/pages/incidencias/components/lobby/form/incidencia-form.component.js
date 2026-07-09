@@ -792,17 +792,16 @@ export class IncidenciaFormComponent extends BaseComponent {
 
       // 4. Populate state dropdown
       const estados = [
-        { id: 1, nombre: 'Borrador' },
-        { id: 2, nombre: 'Pendiente' },
-        { id: 3, nombre: 'En Revisión' },
-        { id: 4, nombre: 'En Proceso' },
-        { id: 5, nombre: 'Resuelto' },
-        { id: 6, nombre: 'Rechazado' },
+        { id: 1, nombre: 'Pendiente' },
+        { id: 2, nombre: 'En Revisión' },
+        { id: 3, nombre: 'En Proceso' },
+        { id: 4, nombre: 'Resuelto' },
+        { id: 5, nombre: 'Rechazado' },
       ];
       this.estadoSelect.innerHTML = estados
         .map((e) => `<option value="${e.id}">${e.nombre}</option>`)
         .join('');
-      this.estadoSelect.value = 2; // Default Pendiente
+      this.estadoSelect.value = 1; // Default Pendiente
     } catch (e) {
       console.error('Error loading initial catalog dropdowns:', e);
     }
@@ -1032,7 +1031,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.cantidadAfectadosInput.value = inc.cantidad_afectados_incidencia || 0;
       this.descripcionInput.value = inc.incidencia_descripcion || '';
       this.institucionSelect.value = inc.institucion_id || '';
-      this.estadoSelect.value = inc.estado_id || 2;
+      this.estadoSelect.value = inc.estado_id || 1;
 
       this.calcularPrioridadDinamica();
 
@@ -1097,8 +1096,8 @@ export class IncidenciaFormComponent extends BaseComponent {
         user && user.roles && user.roles.some((r) => r.nombre === 'Institucion');
       if (isInstitucion) {
         this.disableFormFields();
-        // If state is 'En Proceso' (4), show confirm button
-        if (inc.estado_id === 4) {
+        // If state is 'En Proceso' (3), show confirm button
+        if (inc.estado_id === 3) {
           if (this.btnConfirmarResolucion) {
             this.btnConfirmarResolucion.classList.remove('d-none');
             this.btnConfirmarResolucion.disabled = false;
@@ -1157,7 +1156,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       const inc = await IncidenciaService.getById(id);
 
       const payload = {
-        estado_id: 5, // Resuelto
+        estado_id: 4, // Resuelto
         version: inc.version,
         comentario_estado: 'Resolución confirmada por el solicitante/operador.',
       };
@@ -1255,7 +1254,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         institucion_id: this.institucionSelect.value
           ? parseInt(this.institucionSelect.value)
           : null,
-        estado_id: parseInt(this.estadoSelect.value) || 2,
+        estado_id: parseInt(this.estadoSelect.value) || 1,
         version: parseInt(this.versionInput.value) || 1,
         recursos: this.recursosFiles.filter((f) => !f.id).map((f) => f.base64),
       };

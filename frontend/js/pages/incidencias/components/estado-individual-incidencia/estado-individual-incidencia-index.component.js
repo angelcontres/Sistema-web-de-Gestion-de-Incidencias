@@ -2,6 +2,7 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { IncidenciaService } from '../../services/incidencia.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
+import { getBadgeClass } from '../../../../shared/utils/badge-states.js';
 
 export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   constructor() {
@@ -91,9 +92,36 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   }
 
   renderDetalles(inc) {
-    this.querySelector('#lbl-id').textContent = inc.id;
-    this.querySelector('#lbl-descripcion').textContent =
+    this.querySelector('#lbl-descripcion-header').textContent =
       inc.incidencia_descripcion || 'Sin descripción';
+
+    const createdAt = new Date(inc.created_at);
+    const now = new Date();
+    const diffMs = now - createdAt;
+    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+
+    let timeAgo = '';
+    if (diffHrs >= 24) {
+      timeAgo = `hace ${Math.floor(diffHrs / 24)} días`;
+    } else if (diffHrs > 0) {
+      timeAgo = `hace ${diffHrs} hora${diffHrs > 1 ? 's' : ''}`;
+    } else if (diffMins > 0) {
+      timeAgo = `hace ${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+    } else {
+      timeAgo = 'hace unos instantes';
+    }
+
+    const formatOpts = {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    };
+    const dateFormatted = createdAt.toLocaleString('es-ES', formatOpts);
+
+    this.querySelector('#lbl-fecha-registro').innerHTML = `Registrado ${timeAgo} (<span class="fw-bold text-dark">${dateFormatted}</span>)`;
     this.querySelector('#lbl-direccion').textContent = inc.direccion
       ? inc.direccion.detalle
       : 'Sin dirección';
@@ -111,18 +139,15 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     }
 
     if (inc.estado) {
-      let badgeClass = 'secondary';
-      if (inc.estado.nombre === 'Aprobado') badgeClass = 'success';
-      else if (inc.estado.nombre === 'Rechazado') badgeClass = 'danger';
-      else if (inc.estado.nombre === 'En Revisión') badgeClass = 'warning';
-      else if (inc.estado.nombre === 'En Proceso') badgeClass = 'primary';
-      else if (inc.estado.nombre === 'Resuelto') badgeClass = 'success';
+      const badgeClass = getBadgeClass(inc.estado.nombre);
 
       this.querySelector('#lbl-estado').innerHTML = `
         <span class="badge bg-${badgeClass} rounded-pill px-3 py-2 fw-semibold">
           ${inc.estado.nombre}
         </span>`;
     }
+
+    this.renderTimeline(inc);
 
     // Render reportantes vinculados
     const reportantesContainer = this.querySelector('#container-reportantes');
@@ -132,37 +157,48 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       const reportantes = inc.reportantes || [];
       if (reportantes.length > 0) {
         reportantesContainer.classList.remove('d-none');
-        
+
         let html = '';
         if (reportantes.length <= 3) {
-          html = `<ul class="list-unstyled mb-0">` +
-            reportantes.map(r => {
-              const creadorText = r.id === inc.cliente_id ? ' <span class="text-muted small fst-italic">(creador)</span>' : '';
-              return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
-            }).join('') +
+          html =
+            `<ul class="list-unstyled mb-0">` +
+            reportantes
+              .map((r) => {
+                const creadorText =
+                  r.id === inc.cliente_id
+                    ? ' <span class="text-muted small fst-italic">(creador)</span>'
+                    : '';
+                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+              })
+              .join('') +
             `</ul>`;
         } else {
           const visible = reportantes.slice(0, 3);
           const others = reportantes.slice(3);
-          const othersNames = others.map(r => r.id === inc.cliente_id ? `${r.name} (creador)` : r.name).join(', ');
+          const othersNames = others
+            .map((r) => (r.id === inc.cliente_id ? `${r.name} (creador)` : r.name))
+            .join(', ');
 
-          html = `<ul class="list-unstyled mb-0">` +
-            visible.map(r => {
-              const creadorText = r.id === inc.cliente_id ? ' <span class="text-muted small fst-italic">(creador)</span>' : '';
-              return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
-            }).join('') +
+          html =
+            `<ul class="list-unstyled mb-0">` +
+            visible
+              .map((r) => {
+                const creadorText =
+                  r.id === inc.cliente_id
+                    ? ' <span class="text-muted small fst-italic">(creador)</span>'
+                    : '';
+                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+              })
+              .join('') +
             `</ul>` +
-            `<div class="mt-1 text-primary cursor-pointer d-inline-block" style="cursor: pointer;"
-                  data-bs-toggle="tooltip" 
-                  data-bs-placement="right" 
-                  title="${othersNames}">
-              <i class="bi bi-plus-circle me-1"></i>... y ${others.length} más (ver otros)
-            </div>`;
+            `<div class="small text-muted mt-2" title="${othersNames}">+ ${others.length} reportante(s) adicional(es)</div>`;
         }
         reportantesList.innerHTML = html;
 
         setTimeout(() => {
-          const tooltipTriggerList = [].slice.call(this.querySelectorAll('[data-bs-toggle="tooltip"]'));
+          const tooltipTriggerList = [].slice.call(
+            this.querySelectorAll('[data-bs-toggle="tooltip"]')
+          );
           tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
           });
@@ -179,13 +215,13 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     if (containerAdjuntos && msgNoAdjuntos) {
       if (inc.recursos && inc.recursos.length > 0) {
         msgNoAdjuntos.classList.add('d-none');
-        
+
         let adjuntosHtml = '';
-        inc.recursos.forEach(recurso => {
+        inc.recursos.forEach((recurso) => {
           const fileName = recurso.url.substring(recurso.url.lastIndexOf('/') + 1) || 'adjunto';
           const isImage = fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i);
           const icon = isImage ? 'bi-image' : 'bi-file-earmark-text';
-          
+
           adjuntosHtml += `
             <a href="${recurso.url}" target="_blank" class="text-decoration-none text-dark">
               <div class="border rounded p-3 text-center bg-light" style="width: 120px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
@@ -195,19 +231,75 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
             </a>
           `;
         });
-        
-        Array.from(containerAdjuntos.children).forEach(child => {
+
+        Array.from(containerAdjuntos.children).forEach((child) => {
           if (child.id !== 'no-adjuntos-msg') child.remove();
         });
-        
+
         containerAdjuntos.insertAdjacentHTML('beforeend', adjuntosHtml);
       } else {
         msgNoAdjuntos.classList.remove('d-none');
-        Array.from(containerAdjuntos.children).forEach(child => {
+        Array.from(containerAdjuntos.children).forEach((child) => {
           if (child.id !== 'no-adjuntos-msg') child.remove();
         });
       }
     }
+  }
+
+  renderTimeline(inc) {
+    const timelineContainer = this.querySelector('#timeline-container');
+    if (!timelineContainer) return;
+
+    const isRechazado = inc.estado_id === 5;
+    const steps = [
+      { id: 1, label: 'Pendiente' },
+      { id: 2, label: 'En Revisión' },
+      { id: 3, label: 'En Proceso' },
+      { id: isRechazado ? 5 : 4, label: isRechazado ? 'Rechazado' : 'Resuelto' },
+    ];
+
+    let html = '';
+    let foundCurrent = false;
+
+    steps.forEach((step, index) => {
+      const isCurrent = step.id === inc.estado_id;
+      const isPast = !foundCurrent && !isCurrent;
+
+      if (isCurrent) foundCurrent = true;
+
+      let circleClass = 'bg-white border-secondary border-opacity-50';
+      let iconClass = 'd-none';
+      let textClass = 'text-muted';
+
+      if (isCurrent) {
+        circleClass = 'bg-primary-soft border-primary';
+        iconClass = 'bi bi-record-circle text-primary';
+        textClass = 'fw-bold text-dark';
+      } else if (isPast) {
+        circleClass = 'bg-primary text-white border-primary';
+        iconClass = 'bi bi-check text-white';
+        textClass = 'text-dark';
+      }
+
+      const isLast = index === steps.length - 1;
+      const lineHtml = isLast
+        ? ''
+        : `<div class="position-absolute" style="left: 11px; top: 24px; bottom: -8px; width: 2px; background-color: ${isPast ? 'var(--primary-color, #7c3aed)' : '#e9ecef'}; z-index: 0;"></div>`;
+
+      html += `
+        <div class="position-relative mb-3 d-flex align-items-center" style="min-height: 32px;">
+          ${lineHtml}
+          <div class="rounded-circle border d-flex align-items-center justify-content-center position-relative z-1 ${circleClass}" style="width: 24px; height: 24px;">
+            <i class="${iconClass}" style="font-size: 14px;"></i>
+          </div>
+          <div class="ms-3 ${textClass}">
+            ${step.label}
+          </div>
+        </div>
+      `;
+    });
+
+    timelineContainer.innerHTML = html;
   }
 
   async cargarHistorial(page) {
@@ -262,8 +354,8 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     const div = document.createElement('div');
 
     const alignClass = isMine ? 'align-self-end' : 'align-self-start';
-    const bgClass = isMine ? 'bg-primary text-white' : 'bg-white text-dark border shadow-sm';
-    const timeClass = isMine ? 'text-white-50' : 'text-muted';
+    const bgClass = isMine ? 'text-dark border shadow-sm' : 'bg-white text-dark border shadow-sm';
+    const timeClass = 'text-muted';
 
     const autorNombre = item.usuario ? item.usuario.name : 'Sistema';
     const comentario = item.comentario || 'Cambio de estado';
@@ -278,7 +370,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     // Badge for state change if applicable
     let estadoBadge = '';
     if (item.estado && comentario === 'Cambio de estado') {
-      estadoBadge = `<div class="mt-1"><span class="badge bg-secondary small">${item.estado.nombre}</span></div>`;
+      estadoBadge = `<div class="mt-1"><span class="text-dark small fw-bold">${item.estado.nombre}</span></div>`;
     }
 
     div.className = `d-flex flex-column ${alignClass} mb-2`;
@@ -288,7 +380,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       <div class="small fw-bold mb-1 ${isMine ? 'text-end text-primary' : 'text-secondary'}">
         ${autorNombre}
       </div>
-      <div class="${bgClass} rounded-4 p-3" style="border-bottom-${isMine ? 'right' : 'left'}-radius: 0;">
+      <div class="${bgClass} rounded-4 p-3" style="border-bottom-${isMine ? 'right' : 'left'}-radius: 0; ${isMine ? 'background-color: #e9ecef; border-color: #dee2e6 !important;' : ''}">
         <div class="mb-0" style="word-wrap: break-word;">${comentario}</div>
         ${estadoBadge}
         <div class="mt-2 text-end small ${timeClass}" style="font-size: 0.75rem;">

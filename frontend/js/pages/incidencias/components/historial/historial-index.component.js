@@ -1,5 +1,10 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { IncidenciaService } from '../../services/incidencia.service.js';
+import {
+  getBadgeClass,
+  getSoftClass,
+  getTextColorClass,
+} from '../../../../shared/utils/badge-states.js';
 
 export class HistorialIndexComponent extends BaseComponent {
   constructor() {
@@ -22,7 +27,11 @@ export class HistorialIndexComponent extends BaseComponent {
             header: 'Clasificación',
             render: (inc) => {
               const tipo = inc.tipo ? inc.tipo.nombre : '-';
-              const subTipo = inc.subTipo ? inc.subTipo.nombre : (inc.sub_tipo ? inc.sub_tipo.nombre : '-');
+              const subTipo = inc.subTipo
+                ? inc.subTipo.nombre
+                : inc.sub_tipo
+                  ? inc.sub_tipo.nombre
+                  : '-';
               return `<div class="fw-semibold text-dark">${tipo}</div><div class="text-muted small">${subTipo}</div>`;
             },
           },
@@ -35,10 +44,12 @@ export class HistorialIndexComponent extends BaseComponent {
             header: 'Ubicación',
             render: (inc) => {
               const detalle = inc.direccion ? inc.direccion.detalle : 'Sin dirección.';
-              const pais = inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
-                            ? inc.direccion.territorio.pais.nombre : '';
+              const pais =
+                inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
+                  ? inc.direccion.territorio.pais.nombre
+                  : '';
               return `<div>${detalle}</div><div class="text-muted small">${pais}</div>`;
-            }
+            },
           },
           {
             header: 'Prioridad',
@@ -56,13 +67,8 @@ export class HistorialIndexComponent extends BaseComponent {
             header: 'Estado',
             render: (inc) => {
               if (inc.estado) {
-                let badgeClass = 'secondary';
-                if (inc.estado.nombre === 'Aprobado') badgeClass = 'success';
-                else if (inc.estado.nombre === 'Rechazado') badgeClass = 'danger';
-                else if (inc.estado.nombre === 'En Revisión') badgeClass = 'warning';
-                else if (inc.estado.nombre === 'En Proceso') badgeClass = 'primary';
-                else if (inc.estado.nombre === 'Resuelto') badgeClass = 'success';
-                return `<span class="badge bg-${badgeClass}-soft text-${badgeClass} rounded-pill px-2.5 py-1 small fw-semibold">
+                const softClass = getSoftClass(inc.estado);
+                return `<span class="badge border ${softClass} rounded-pill px-2.5 py-1 small fw-semibold">
                   ${inc.estado.nombre}
                 </span>`;
               }
@@ -76,8 +82,8 @@ export class HistorialIndexComponent extends BaseComponent {
               return `<button class="btn btn-link text-primary p-0 border-0" data-action="detalle" title="Ver Detalle Cronológico">
                 <i class="bi bi-search fs-5"></i>
               </button>`;
-            }
-          }
+            },
+          },
         ],
       });
 
