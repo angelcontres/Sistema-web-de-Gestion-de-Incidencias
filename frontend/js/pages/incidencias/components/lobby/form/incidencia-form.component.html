@@ -110,11 +110,16 @@
             <div class="border-top pt-4 mb-4">
               <h5 class="fw-bold text-dark mb-3"><i class="bi bi-geo-alt me-2 text-primary"></i>Ubicación Geográfica</h5>
               
-              <!-- Buscador de Dirección y Botón Reverse Geocode -->
-              <div class="input-group mb-3">
-                <input type="text" id="direccionSearch" class="form-control rounded-start-2 border-secondary-subtle" placeholder="Busque una dirección o coordenadas (ej: Av. 9 de Octubre, Guayaquil)..." />
-                <button type="button" id="btnBuscarDireccion" class="btn btn-primary fw-semibold px-4 rounded-end-2">
-                  <i class="bi bi-search me-1"></i> Buscar
+              <!-- Buscador de Dirección, Geolocalización y Botón Reverse Geocode -->
+              <div class="d-flex flex-column flex-md-row gap-2 mb-3">
+                <div class="input-group flex-grow-1">
+                  <input type="text" id="direccionSearch" class="form-control rounded-start-2 border-secondary-subtle" placeholder="Busque una dirección o coordenadas (ej: Av. 9 de Octubre, Guayaquil)..." />
+                  <button type="button" id="btnBuscarDireccion" class="btn btn-primary fw-semibold px-4 rounded-end-2">
+                    <i class="bi bi-search me-1"></i> Buscar
+                  </button>
+                </div>
+                <button type="button" id="btnObtenerUbicacion" class="btn btn-success fw-semibold px-3 rounded-2 d-flex align-items-center justify-content-center gap-1">
+                  <i class="bi bi-geo-fill"></i> Obtener mi ubicación
                 </button>
               </div>
 
@@ -189,6 +194,7 @@
                       <label for="dirLng" class="form-label fw-semibold text-dark small">Longitud</label>
                       <input type="text" id="dirLng" class="form-control rounded-2 border-secondary-subtle bg-light text-muted" readonly />
                     </div>
+                    <input type="hidden" id="dirPrecisionGps" value="" />
                   </div>
                 </div>
               </div>

@@ -66,8 +66,19 @@ export class DashboardComponent extends BaseComponent {
     if (!container) return;
     
     try {
-      const response = await apiRequest('/me/menu', { method: 'GET' });
-      const menuList = response.data || response;
+      let menuList = null;
+      try {
+        const menuStr = localStorage.getItem('user_menu');
+        if (menuStr) {
+          menuList = JSON.parse(menuStr);
+        }
+      } catch (e) {}
+
+      if (!menuList || menuList.length === 0) {
+        const response = await apiRequest('/me/menu', { method: 'GET' });
+        menuList = response.data || response;
+        localStorage.setItem('user_menu', JSON.stringify(menuList));
+      }
       
       // Filtrar solo los menús de nivel superior
       const rootMenus = menuList.filter(item => !item.padre_id);

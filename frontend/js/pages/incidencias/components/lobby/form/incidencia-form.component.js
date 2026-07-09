@@ -42,6 +42,8 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.dirLatInput = this.querySelector('#dirLat');
     this.dirLngInput = this.querySelector('#dirLng');
     this.btnBuscarDireccion = this.querySelector('#btnBuscarDireccion');
+    this.btnObtenerUbicacion = this.querySelector('#btnObtenerUbicacion');
+    this.dirPrecisionGpsInput = this.querySelector('#dirPrecisionGps');
     this.direccionSearchInput = this.querySelector('#direccionSearch');
     this.btnSubmit = this.querySelector('#btnSubmit');
     this.btnConfirmarResolucion = this.querySelector('#btnConfirmarResolucion');
@@ -185,6 +187,9 @@ export class IncidenciaFormComponent extends BaseComponent {
       });
     }
 
+    if (this.btnObtenerUbicacion) {
+      this.btnObtenerUbicacion.addEventListener('click', () => this.obtenerUbicacionActual());
+    }
     this.btnBuscarDireccion.addEventListener('click', () => this.buscarDireccionText());
     this.direccionSearchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
@@ -215,6 +220,49 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.map.remove();
       this.map = null;
     }
+  }
+
+  obtenerUbicacionActual() {
+    if (!navigator.geolocation) {
+      ToastService.error('Su navegador no soporta la Geolocalización.');
+      return;
+    }
+
+    const mapLoader = this.querySelector('#mapLoader');
+    if (mapLoader) mapLoader.classList.remove('d-none');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        if (this.dirPrecisionGpsInput) {
+          this.dirPrecisionGpsInput.value = accuracy.toFixed(2);
+        }
+        this.actualizarMarcador(latitude, longitude, false);
+        if (this.map) {
+          this.map.setView([latitude, longitude], 16);
+        }
+        await this.autofillDesdeCoordenadas(latitude, longitude);
+        if (mapLoader) mapLoader.classList.add('d-none');
+        ToastService.success(`Ubicación obtenida con éxito (Precisión: ${accuracy.toFixed(1)}m).`);
+      },
+      (error) => {
+        if (mapLoader) mapLoader.classList.add('d-none');
+        let msg = 'Error al obtener la geolocalización.';
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = 'Permiso denegado por el usuario para obtener geolocalización.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          msg = 'La ubicación no está disponible.';
+        } else if (error.code === error.TIMEOUT) {
+          msg = 'Tiempo de espera agotado al obtener la ubicación.';
+        }
+        ToastService.error(msg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
   }
 
   // --- MAP LOGIC ---
@@ -1121,6 +1169,7 @@ export class IncidenciaFormComponent extends BaseComponent {
           codigo_postal: this.dirCodigoPostalInput.value || null,
           latitud: this.coords.lat,
           longitud: this.coords.lng,
+          precision_gps: this.dirPrecisionGpsInput?.value ? parseFloat(this.dirPrecisionGpsInput.value) : null,
           activo: true,
         };
 

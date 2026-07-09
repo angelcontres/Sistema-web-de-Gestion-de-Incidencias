@@ -135,9 +135,6 @@ export function initRouter() {
   // Listen for hash changes
   window.addEventListener('hashchange', navigate);
 
-  // Handle initial page load
-  window.addEventListener('load', navigate);
-
   // Refresh user profile details if authenticated on load
   if (AuthService.isAuthenticated()) {
     AuthService.refreshUser().catch((err) => {

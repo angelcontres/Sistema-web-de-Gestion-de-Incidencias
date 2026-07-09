@@ -123,6 +123,54 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
           ${inc.estado.nombre}
         </span>`;
     }
+
+    // Render reportantes vinculados
+    const reportantesContainer = this.querySelector('#container-reportantes');
+    const reportantesList = this.querySelector('#list-reportantes');
+
+    if (reportantesContainer && reportantesList) {
+      const reportantes = inc.reportantes || [];
+      if (reportantes.length > 0) {
+        reportantesContainer.classList.remove('d-none');
+        
+        let html = '';
+        if (reportantes.length <= 3) {
+          html = `<ul class="list-unstyled mb-0">` +
+            reportantes.map(r => {
+              const creadorText = r.id === inc.cliente_id ? ' <span class="text-muted small fst-italic">(creador)</span>' : '';
+              return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+            }).join('') +
+            `</ul>`;
+        } else {
+          const visible = reportantes.slice(0, 3);
+          const others = reportantes.slice(3);
+          const othersNames = others.map(r => r.id === inc.cliente_id ? `${r.name} (creador)` : r.name).join(', ');
+
+          html = `<ul class="list-unstyled mb-0">` +
+            visible.map(r => {
+              const creadorText = r.id === inc.cliente_id ? ' <span class="text-muted small fst-italic">(creador)</span>' : '';
+              return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+            }).join('') +
+            `</ul>` +
+            `<div class="mt-1 text-primary cursor-pointer d-inline-block" style="cursor: pointer;"
+                  data-bs-toggle="tooltip" 
+                  data-bs-placement="right" 
+                  title="${othersNames}">
+              <i class="bi bi-plus-circle me-1"></i>... y ${others.length} más (ver otros)
+            </div>`;
+        }
+        reportantesList.innerHTML = html;
+
+        setTimeout(() => {
+          const tooltipTriggerList = [].slice.call(this.querySelectorAll('[data-bs-toggle="tooltip"]'));
+          tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+          });
+        }, 100);
+      } else {
+        reportantesContainer.classList.add('d-none');
+      }
+    }
   }
 
   async cargarHistorial(page) {
