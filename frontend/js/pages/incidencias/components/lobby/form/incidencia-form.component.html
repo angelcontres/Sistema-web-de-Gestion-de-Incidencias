@@ -1,11 +1,18 @@
 <div class="page-fade-in">
   <!-- Cabecera -->
-  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+  <div
+    class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4"
+  >
     <div>
       <h1 class="h3 fw-bold text-dark mb-1" id="formTitle">Registrar Incidencia</h1>
-      <p class="text-muted small mb-0">Complete la información de clasificación, descripción, geolocalización y recursos asociados.</p>
+      <p class="text-muted small mb-0">
+        Complete la información de clasificación, descripción, geolocalización y recursos asociados.
+      </p>
     </div>
-    <a href="#/incidencias" class="btn btn-outline-secondary fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2">
+    <a
+      href="#/incidencias"
+      class="btn btn-outline-secondary fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2"
+    >
       <i class="bi bi-arrow-left"></i> Volver al listado
     </a>
   </div>
@@ -27,98 +34,171 @@
 
   <!-- Tarjeta Principal con Tabs -->
   <div class="card shadow-sm border-0 rounded-3 mb-5">
-    <div class="card-header bg-white border-0 pt-3 pb-0">
-      <ul class="nav nav-tabs card-header-tabs border-bottom" id="incidenciaTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active fw-semibold text-dark px-4 py-2.5 border-0 rounded-top-3" id="datos-tab" data-bs-toggle="tab" data-bs-target="#datos-pane" type="button" role="tab" aria-controls="datos-pane" aria-selected="true">
-            <i class="bi bi-card-text me-2"></i>Datos y Geolocalización
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link fw-semibold text-secondary px-4 py-2.5 border-0 rounded-top-3" id="recursos-tab" data-bs-toggle="tab" data-bs-target="#recursos-pane" type="button" role="tab" aria-controls="recursos-pane" aria-selected="false">
-            <i class="bi bi-images me-2"></i>Recursos / Multimedia
-          </button>
-        </li>
-      </ul>
+    <div class="card-header bg-white border-0 pb-0">
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-end"
+      >
+        <ul
+          class="nav nav-tabs card-header-tabs border-bottom flex-grow-1"
+          id="incidenciaTabs"
+          role="tablist"
+        >
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active fw-semibold text-dark px-4 py-2.5 border-0 rounded-top-3"
+              id="datos-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#datos-pane"
+              type="button"
+              role="tab"
+              aria-controls="datos-pane"
+              aria-selected="true"
+            >
+              <i class="bi bi-card-text me-2"></i>Datos y Geolocalización
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link fw-semibold text-secondary px-4 py-2.5 border-0 rounded-top-3"
+              id="recursos-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#recursos-pane"
+              type="button"
+              role="tab"
+              aria-controls="recursos-pane"
+              aria-selected="false"
+            >
+              <i class="bi bi-images me-2"></i>Recursos / Multimedia
+            </button>
+          </li>
+        </ul>
+        <div class="d-flex justify-content-center justify-content-md-end">
+          <div
+            class="p-2 px-3 rounded-3 bg-light border border-secondary-subtle d-flex align-items-center gap-2 text-center justify-content-center"
+          >
+            <span class="text-muted small fw-medium">Prioridad:</span>
+            <span id="prioridadDisplay">-</span>
+          </div>
+        </div>
+      </div>
     </div>
-    
+
     <div class="card-body p-4">
       <form id="incidenciaForm" novalidate>
         <input type="hidden" id="incidenciaId" value="" />
         <input type="hidden" id="incidenciaVersion" value="1" />
 
         <div class="tab-content" id="incidenciaTabsContent">
-          
           <!-- PESTAÑA 1: DATOS Y GEOLOCALIZACIÓN -->
-          <div class="tab-pane fade show active" id="datos-pane" role="tabpanel" aria-labelledby="datos-tab" tabindex="0">
-            
+          <div
+            class="tab-pane fade show active"
+            id="datos-pane"
+            role="tabpanel"
+            aria-labelledby="datos-tab"
+            tabindex="0"
+          >
             <!-- Clasificación -->
             <div class="row g-3 mb-4">
               <input type="hidden" id="cantidadAfectados" value="0" />
               <div class="col-md-6">
-                <label for="tipoSelect" class="form-label fw-semibold text-dark small">Categoría Principal <span class="text-danger">*</span></label>
-                <select id="tipoSelect" class="form-select rounded-2 border-secondary-subtle" required>
+                <label for="tipoSelect" class="form-label fw-semibold text-dark small"
+                  >Categoría Principal <span class="text-danger">*</span></label
+                >
+                <select
+                  id="tipoSelect"
+                  class="form-select rounded-2 border-secondary-subtle"
+                  required
+                >
                   <option value="">-- Seleccione --</option>
                 </select>
                 <div class="invalid-feedback">Por favor seleccione una categoría principal.</div>
               </div>
-              
+
               <div class="col-md-6">
-                <label for="subTipoSelect" class="form-label fw-semibold text-dark small">Subcategoría <span class="text-danger">*</span></label>
-                <select id="subTipoSelect" class="form-select rounded-2 border-secondary-subtle" required disabled>
+                <label for="subTipoSelect" class="form-label fw-semibold text-dark small"
+                  >Subcategoría <span class="text-danger">*</span></label
+                >
+                <select
+                  id="subTipoSelect"
+                  class="form-select rounded-2 border-secondary-subtle"
+                  required
+                  disabled
+                >
                   <option value="">-- Seleccione categoría primero --</option>
                 </select>
                 <div class="invalid-feedback">Por favor seleccione una subcategoría.</div>
               </div>
             </div>
 
-            <!-- Prioridad Calculada Dinámica y Descripción -->
             <div class="row g-3 mb-4">
-              <div class="col-md-4">
-                <div class="h-100 p-3 rounded-3 bg-light border border-secondary-subtle d-flex flex-column justify-content-center align-items-center text-center">
-                  <div class="text-muted small fw-medium mb-1">Prioridad del Incidente</div>
-                  <div id="prioridadDisplay" class="fw-bold fs-5 text-secondary">-</div>
-                  <div class="text-muted small mt-1" style="font-size: 0.75rem;">(Definida por la subcategoría)</div>
-                </div>
-              </div>
-              
-              <div class="col-md-8">
-                <label for="descripcion" class="form-label fw-semibold text-dark small">Descripción del Incidente <span class="text-danger">*</span></label>
-                <textarea id="descripcion" class="form-control rounded-2 border-secondary-subtle" rows="3" required placeholder="Detalle qué sucedió de forma clara y concisa..."></textarea>
+              <div class="col-md-6">
+                <label for="descripcion" class="form-label fw-semibold text-dark small"
+                  >Descripción del Incidente <span class="text-danger">*</span></label
+                >
+                <textarea
+                  id="descripcion"
+                  class="form-control rounded-2 border-secondary-subtle"
+                  rows="3"
+                  required
+                  placeholder="Detalle qué sucedió de forma clara y concisa..."
+                ></textarea>
                 <div class="invalid-feedback">La descripción es obligatoria.</div>
               </div>
-            </div>
-
-            <!-- Asignación de Institución y Estado (Solo para operadores/administradores) -->
-            <div class="row g-3 mb-4 border-top pt-4" id="sectionAsignacion">
-              <div class="col-md-6" id="divInstitucion">
-                <label for="institucionSelect" class="form-label fw-semibold text-dark small">Institución Asignada</label>
-                <select id="institucionSelect" class="form-select rounded-2 border-secondary-subtle">
-                  <option value="">-- Ninguna --</option>
+              <div class="col-md-6" id="colEstado">
+                <label for="estadoSelect" class="form-label fw-semibold text-dark small"
+                  >Estado de la Incidencia <span class="text-danger">*</span></label
+                >
+                <select
+                  id="estadoSelect"
+                  class="form-select rounded-2 border-secondary-subtle"
+                  required
+                >
+                  <option value="">-- Seleccione --</option>
                 </select>
               </div>
 
-              <div class="col-md-6" id="colEstado">
-                <label for="estadoSelect" class="form-label fw-semibold text-dark small">Estado de la Incidencia <span class="text-danger">*</span></label>
-                <select id="estadoSelect" class="form-select rounded-2 border-secondary-subtle" required>
-                  <option value="">-- Seleccione --</option>
+              <!-- Asignación de Institución y Estado (Solo para operadores/administradores) -->
+              <div class="col-md-6" id="divInstitucion">
+                <label for="institucionSelect" class="form-label fw-semibold text-dark small"
+                  >Institución Asignada</label
+                >
+                <select
+                  id="institucionSelect"
+                  class="form-select rounded-2 border-secondary-subtle"
+                >
+                  <option value="">-- Ninguna --</option>
                 </select>
               </div>
             </div>
 
             <!-- Geolocalización y Dirección -->
             <div class="border-top pt-4 mb-4">
-              <h5 class="fw-bold text-dark mb-3"><i class="bi bi-geo-alt me-2 text-primary"></i>Ubicación Geográfica</h5>
-              
+              <h5 class="fw-bold text-dark mb-3">
+                <i class="bi bi-geo-alt me-2 text-primary"></i>Ubicación Geográfica
+              </h5>
+
               <!-- Buscador de Dirección, Geolocalización y Botón Reverse Geocode -->
               <div class="d-flex flex-column flex-md-row gap-2 mb-3">
                 <div class="input-group flex-grow-1">
-                  <input type="text" id="direccionSearch" class="form-control rounded-start-2 border-secondary-subtle" placeholder="Busque una dirección o coordenadas (ej: Av. 9 de Octubre, Guayaquil)..." />
-                  <button type="button" id="btnBuscarDireccion" class="btn btn-primary fw-semibold px-4 rounded-end-2">
+                  <input
+                    type="text"
+                    id="direccionSearch"
+                    class="form-control rounded-start-2 border-secondary-subtle"
+                    placeholder="Busque una dirección o coordenadas (ej: Av. 9 de Octubre, Guayaquil)..."
+                  />
+                  <button
+                    type="button"
+                    id="btnBuscarDireccion"
+                    class="btn btn-primary fw-semibold px-4 rounded-end-2"
+                  >
                     <i class="bi bi-search me-1"></i> Buscar
                   </button>
                 </div>
-                <button type="button" id="btnObtenerUbicacion" class="btn btn-success fw-semibold px-3 rounded-2 d-flex align-items-center justify-content-center gap-1">
+                <button
+                  type="button"
+                  id="btnObtenerUbicacion"
+                  class="btn btn-success fw-semibold px-3 rounded-2 d-flex align-items-center justify-content-center gap-1"
+                >
                   <i class="bi bi-geo-fill"></i> Obtener mi ubicación
                 </button>
               </div>
@@ -126,38 +206,74 @@
               <!-- Fila con Mapa y Campos de Detalle -->
               <div class="row g-3">
                 <div class="col-lg-7" id="colMapaContainer">
-                  <div class="rounded-3 border overflow-hidden position-relative" style="height: 350px;">
-                    <div id="incidenciaMapa" class="w-100 h-100 bg-light" style="z-index: 1;"></div>
-                    <div id="mapLoader" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex justify-content-center align-items-center d-none" style="z-index: 2;">
+                  <div
+                    class="rounded-3 border overflow-hidden position-relative"
+                    style="height: 350px"
+                  >
+                    <div id="incidenciaMapa" class="w-100 h-100 bg-light" style="z-index: 1"></div>
+                    <div
+                      id="mapLoader"
+                      class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex justify-content-center align-items-center d-none"
+                      style="z-index: 2"
+                    >
                       <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Buscando...</span>
                       </div>
                     </div>
                   </div>
-                  <span class="text-muted small mt-1.5 d-block"><i class="bi bi-info-circle me-1"></i>Haga clic en el mapa o arrastre el marcador para fijar la ubicación exacta.</span>
+                  <span class="text-muted small mt-1.5 d-block"
+                    ><i class="bi bi-info-circle me-1"></i>Haga clic en el mapa o arrastre el
+                    marcador para fijar la ubicación exacta.</span
+                  >
                   <!-- Indicador minimalista de ubicación -->
-                  <div id="infoUbicacionMinimalista" class="mt-2 p-2 bg-light rounded border border-light-subtle text-dark-emphasis small d-none">
+                  <div
+                    id="infoUbicacionMinimalista"
+                    class="mt-2 p-2 bg-light rounded border border-light-subtle text-dark-emphasis small d-none"
+                  >
                     <i class="bi bi-geo-alt-fill text-primary me-1"></i>
-                    <span id="txtInfoUbicacion" class="fw-medium">Ubicación seleccionada: Ninguna</span>
+                    <span id="txtInfoUbicacion" class="fw-medium"
+                      >Ubicación seleccionada: Ninguna</span
+                    >
                   </div>
                 </div>
 
                 <div class="col-lg-5" id="detallesDireccionContainer">
                   <div class="row g-2">
                     <div class="col-12">
-                      <label for="dirDetalle" class="form-label fw-semibold text-dark small">Dirección Detallada <span class="text-danger">*</span></label>
-                      <input type="text" id="dirDetalle" class="form-control rounded-2 border-secondary-subtle" required placeholder="Calle, número, intersección" />
+                      <label for="dirDetalle" class="form-label fw-semibold text-dark small"
+                        >Dirección Detallada <span class="text-danger">*</span></label
+                      >
+                      <input
+                        type="text"
+                        id="dirDetalle"
+                        class="form-control rounded-2 border-secondary-subtle"
+                        required
+                        placeholder="Calle, número, intersección"
+                      />
                       <div class="invalid-feedback">La dirección detallada es obligatoria.</div>
-                    </div>
-                    
-                    <div class="col-6">
-                      <label for="dirCodigoPostal" class="form-label fw-semibold text-dark small">Código Postal</label>
-                      <input type="text" id="dirCodigoPostal" class="form-control rounded-2 border-secondary-subtle" placeholder="123456" />
                     </div>
 
                     <div class="col-6">
-                      <label for="dirPais" class="form-label fw-semibold text-dark small">País <span class="text-danger">*</span></label>
-                      <select id="dirPais" class="form-select rounded-2 border-secondary-subtle" required>
+                      <label for="dirCodigoPostal" class="form-label fw-semibold text-dark small"
+                        >Código Postal</label
+                      >
+                      <input
+                        type="text"
+                        id="dirCodigoPostal"
+                        class="form-control rounded-2 border-secondary-subtle"
+                        placeholder="123456"
+                      />
+                    </div>
+
+                    <div class="col-6">
+                      <label for="dirPais" class="form-label fw-semibold text-dark small"
+                        >País <span class="text-danger">*</span></label
+                      >
+                      <select
+                        id="dirPais"
+                        class="form-select rounded-2 border-secondary-subtle"
+                        required
+                      >
                         <option value="">-- Seleccione --</option>
                       </select>
                       <div class="invalid-feedback">El país es obligatorio.</div>
@@ -165,59 +281,138 @@
 
                     <!-- Cascading Dropdowns para Territorio -->
                     <div class="col-12 d-none" id="colDirNivel1">
-                      <label id="lblDirNivel1" for="dirNivel1" class="form-label fw-semibold text-dark small">Provincia <span class="text-danger">*</span></label>
-                      <select id="dirNivel1" class="form-select rounded-2 border-secondary-subtle" disabled>
+                      <label
+                        id="lblDirNivel1"
+                        for="dirNivel1"
+                        class="form-label fw-semibold text-dark small"
+                        >Provincia <span class="text-danger">*</span></label
+                      >
+                      <select
+                        id="dirNivel1"
+                        class="form-select rounded-2 border-secondary-subtle"
+                        disabled
+                      >
                         <option value="">-- Seleccione --</option>
                       </select>
                     </div>
 
                     <div class="col-12 d-none" id="colDirNivel2">
-                      <label id="lblDirNivel2" for="dirNivel2" class="form-label fw-semibold text-dark small">Cantón <span class="text-danger">*</span></label>
-                      <select id="dirNivel2" class="form-select rounded-2 border-secondary-subtle" disabled>
+                      <label
+                        id="lblDirNivel2"
+                        for="dirNivel2"
+                        class="form-label fw-semibold text-dark small"
+                        >Cantón <span class="text-danger">*</span></label
+                      >
+                      <select
+                        id="dirNivel2"
+                        class="form-select rounded-2 border-secondary-subtle"
+                        disabled
+                      >
                         <option value="">-- Seleccione --</option>
                       </select>
                     </div>
 
                     <div class="col-12 d-none" id="colDirNivel3">
-                      <label id="lblDirNivel3" for="dirNivel3" class="form-label fw-semibold text-dark small">Parroquia <span class="text-danger">*</span></label>
-                      <select id="dirNivel3" class="form-select rounded-2 border-secondary-subtle" disabled>
+                      <label
+                        id="lblDirNivel3"
+                        for="dirNivel3"
+                        class="form-label fw-semibold text-dark small"
+                        >Parroquia <span class="text-danger">*</span></label
+                      >
+                      <select
+                        id="dirNivel3"
+                        class="form-select rounded-2 border-secondary-subtle"
+                        disabled
+                      >
                         <option value="">-- Seleccione --</option>
                       </select>
                     </div>
 
                     <div class="col-6">
-                      <label for="dirLat" class="form-label fw-semibold text-dark small">Latitud</label>
-                      <input type="text" id="dirLat" class="form-control rounded-2 border-secondary-subtle bg-light text-muted" readonly />
+                      <label for="dirLat" class="form-label fw-semibold text-dark small"
+                        >Latitud</label
+                      >
+                      <input
+                        type="text"
+                        id="dirLat"
+                        class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
+                        readonly
+                      />
                     </div>
-                    
+
                     <div class="col-6">
-                      <label for="dirLng" class="form-label fw-semibold text-dark small">Longitud</label>
-                      <input type="text" id="dirLng" class="form-control rounded-2 border-secondary-subtle bg-light text-muted" readonly />
+                      <label for="dirLng" class="form-label fw-semibold text-dark small"
+                        >Longitud</label
+                      >
+                      <input
+                        type="text"
+                        id="dirLng"
+                        class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
+                        readonly
+                      />
                     </div>
                     <input type="hidden" id="dirPrecisionGps" value="" />
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
-          
+
           <!-- PESTAÑA 2: RECURSOS / MULTIMEDIA -->
-          <div class="tab-pane fade" id="recursos-pane" role="tabpanel" aria-labelledby="recursos-tab" tabindex="0">
-            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-images me-2 text-primary"></i>Adjuntar Fotos / Capturas</h5>
-            <p class="text-muted small">Suba imágenes descriptivas del suceso (máximo 5MB por archivo). Las fotos se comprimirán automáticamente a formato webp.</p>
-            
+          <div
+            class="tab-pane fade"
+            id="recursos-pane"
+            role="tabpanel"
+            aria-labelledby="recursos-tab"
+            tabindex="0"
+          >
+            <h5 class="fw-bold text-dark mb-3">
+              <i class="bi bi-images me-2 text-primary"></i>Adjuntar Fotos / Capturas
+            </h5>
+            <p class="text-muted small">Subir imágenes descriptivas que evidencien el suceso.</p>
+
             <!-- Zona de Carga Drag and Drop -->
-            <div id="dropzoneContainer" class="p-5 border border-dashed rounded-3 bg-light text-center cursor-pointer mb-4 d-flex flex-column align-items-center justify-content-center">
+            <div class="d-flex justify-content-end align-items-center">
+              <label for="cantMaximaArchivos" class="small text-muted me-1">
+                Cantidad máxima de archivos:
+              </label>
+              <input
+                type="number"
+                id="cantMaximaArchivos"
+                class="form-control form-control-sm border-0 bg-transparent text-primary fw-bold p-0 text-center"
+                value="5"
+                style="
+                  width: 40px;
+                  border-bottom: 1px dashed #6c757d !important;
+                  border-radius: 0;
+                  background-image: none !important;
+                "
+              />
+            </div>
+
+            <div
+              id="dropzoneContainer"
+              class="p-5 border border-dashed rounded-3 bg-light text-center cursor-pointer mb-4 d-flex flex-column align-items-center justify-content-center"
+            >
               <i class="bi bi-cloud-arrow-up text-primary fs-1 mb-2"></i>
               <h6 class="fw-bold text-dark mb-1">Arrastre archivos de imagen aquí</h6>
-              <p class="text-muted small mb-3">O haga clic para explorar sus archivos locales (formatos JPG, PNG, WEBP)</p>
+              <p class="text-muted small mb-3">
+                O haga clic para explorar sus archivos locales (formatos JPG, PNG, WEBP)
+              </p>
               <input type="file" id="fileInput" class="d-none" multiple accept="image/*" />
-              <button type="button" class="btn btn-outline-primary btn-sm fw-semibold rounded-2 px-3">Seleccionar Imágenes</button>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm fw-semibold rounded-2 px-3"
+              >
+                Seleccionar Imágenes
+              </button>
             </div>
 
             <!-- Listado de Archivos Adjuntos / Previsualizaciones -->
-            <div id="thumbnailsContainer" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3 mb-4">
+            <div
+              id="thumbnailsContainer"
+              class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3 mb-4"
+            >
               <!-- Thumbnail templates will be rendered dynamically here -->
             </div>
 
@@ -226,23 +421,41 @@
               <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-database-check text-info fs-5"></i>
                 <div class="small">
-                  <span class="fw-semibold">Cimientos de Almacenamiento Listos:</span> Las imágenes se comprimirán de manera automática en el frontend a formato <code class="text-dark">.webp</code> y se enviarán en base64 para su almacenamiento y sincronización vía <code class="text-dark">rustfs</code> (con interfaz cliente S3 de alto rendimiento).
+                  <span class="fw-semibold">Compresión de imágenes:</span> Por favor, suba imágenes
+                  con un máximo de 5MB
                 </div>
               </div>
             </div>
-
           </div>
-
         </div>
 
         <!-- Botones de Acción del Formulario -->
-        <div class="card-footer bg-white border-0 pt-3 pb-0 d-flex flex-column-reverse flex-sm-row justify-content-sm-end align-items-stretch align-items-sm-center gap-3 border-top mt-4">
-          <a href="#/incidencias" class="btn btn-light fw-semibold px-4 py-2 rounded-2 w-100 w-sm-auto text-center">Cancelar</a>
-          <button type="button" id="btnConfirmarResolucion" class="btn btn-success fw-semibold px-4 py-2 rounded-2 w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2 d-none">
+        <div
+          class="card-footer bg-white border-0 pt-3 pb-0 d-flex flex-column-reverse flex-sm-row justify-content-sm-end align-items-stretch align-items-sm-center gap-3 border-top mt-4"
+        >
+          <a
+            href="#/incidencias"
+            class="btn btn-light fw-semibold px-4 py-2 rounded-2 w-100 w-sm-auto text-center"
+            >Cancelar</a
+          >
+          <button
+            type="button"
+            id="btnConfirmarResolucion"
+            class="btn btn-success fw-semibold px-4 py-2 rounded-2 w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2 d-none"
+          >
             <i class="bi bi-check-circle"></i> Confirmar Resolución
           </button>
-          <button type="submit" id="btnSubmit" class="btn btn-primary fw-semibold px-5 py-2 rounded-2 w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
-            <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          <button
+            type="submit"
+            id="btnSubmit"
+            class="btn btn-primary fw-semibold px-5 py-2 rounded-2 w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2"
+          >
+            <span
+              id="loadingSpinner"
+              class="spinner-border spinner-border-sm d-none"
+              role="status"
+              aria-hidden="true"
+            ></span>
             <span id="btnText">Guardar Incidencia</span>
           </button>
         </div>
@@ -252,7 +465,14 @@
 </div>
 
 <!-- Modal para registrar nueva dirección -->
-<div class="modal fade" id="modalRegistrarDireccion" tabindex="-1" aria-labelledby="modalRegistrarDireccionLabel" aria-hidden="true" style="z-index: 1060;">
+<div
+  class="modal fade"
+  id="modalRegistrarDireccion"
+  tabindex="-1"
+  aria-labelledby="modalRegistrarDireccionLabel"
+  aria-hidden="true"
+  style="z-index: 1060"
+>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-3">
       <div class="modal-header border-bottom-0 pb-0">
@@ -263,24 +483,46 @@
       </div>
       <div class="modal-body pt-3">
         <div class="alert alert-info py-2 px-3 small border-0 rounded-2 mb-3">
-          <i class="bi bi-info-circle-fill me-1.5"></i> La ubicación que seleccionó no está registrada. Por favor complete los detalles para guardarla.
+          <i class="bi bi-info-circle-fill me-1.5"></i> La ubicación que seleccionó no está
+          registrada. Por favor complete los detalles para guardarla.
         </div>
         <form id="formModalDireccion" class="needs-validation" novalidate>
           <div class="row g-2">
             <div class="col-12">
-              <label for="modalDirDetalle" class="form-label fw-semibold text-dark small">Dirección Detallada <span class="text-danger">*</span></label>
-              <input type="text" id="modalDirDetalle" class="form-control rounded-2 border-secondary-subtle" required placeholder="Calle, número, intersección" />
+              <label for="modalDirDetalle" class="form-label fw-semibold text-dark small"
+                >Dirección Detallada <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                id="modalDirDetalle"
+                class="form-control rounded-2 border-secondary-subtle"
+                required
+                placeholder="Calle, número, intersección"
+              />
               <div class="invalid-feedback">La dirección detallada es obligatoria.</div>
-            </div>
-            
-            <div class="col-6">
-              <label for="modalDirCodigoPostal" class="form-label fw-semibold text-dark small">Código Postal</label>
-              <input type="text" id="modalDirCodigoPostal" class="form-control rounded-2 border-secondary-subtle" placeholder="123456" />
             </div>
 
             <div class="col-6">
-              <label for="modalDirPais" class="form-label fw-semibold text-dark small">País <span class="text-danger">*</span></label>
-              <select id="modalDirPais" class="form-select rounded-2 border-secondary-subtle" required>
+              <label for="modalDirCodigoPostal" class="form-label fw-semibold text-dark small"
+                >Código Postal</label
+              >
+              <input
+                type="text"
+                id="modalDirCodigoPostal"
+                class="form-control rounded-2 border-secondary-subtle"
+                placeholder="123456"
+              />
+            </div>
+
+            <div class="col-6">
+              <label for="modalDirPais" class="form-label fw-semibold text-dark small"
+                >País <span class="text-danger">*</span></label
+              >
+              <select
+                id="modalDirPais"
+                class="form-select rounded-2 border-secondary-subtle"
+                required
+              >
                 <option value="">-- Seleccione --</option>
               </select>
               <div class="invalid-feedback">El país es obligatorio.</div>
@@ -288,44 +530,97 @@
 
             <!-- Cascading Dropdowns para Territorio en Modal -->
             <div class="col-12 d-none" id="colModalDirNivel1">
-              <label id="lblModalDirNivel1" for="modalDirNivel1" class="form-label fw-semibold text-dark small">Provincia <span class="text-danger">*</span></label>
-              <select id="modalDirNivel1" class="form-select rounded-2 border-secondary-subtle" disabled>
+              <label
+                id="lblModalDirNivel1"
+                for="modalDirNivel1"
+                class="form-label fw-semibold text-dark small"
+                >Provincia <span class="text-danger">*</span></label
+              >
+              <select
+                id="modalDirNivel1"
+                class="form-select rounded-2 border-secondary-subtle"
+                disabled
+              >
                 <option value="">-- Seleccione --</option>
               </select>
               <div class="invalid-feedback">La provincia es obligatoria.</div>
             </div>
 
             <div class="col-12 d-none" id="colModalDirNivel2">
-              <label id="lblModalDirNivel2" for="modalDirNivel2" class="form-label fw-semibold text-dark small">Cantón <span class="text-danger">*</span></label>
-              <select id="modalDirNivel2" class="form-select rounded-2 border-secondary-subtle" disabled>
+              <label
+                id="lblModalDirNivel2"
+                for="modalDirNivel2"
+                class="form-label fw-semibold text-dark small"
+                >Cantón <span class="text-danger">*</span></label
+              >
+              <select
+                id="modalDirNivel2"
+                class="form-select rounded-2 border-secondary-subtle"
+                disabled
+              >
                 <option value="">-- Seleccione --</option>
               </select>
               <div class="invalid-feedback">El cantón es obligatorio.</div>
             </div>
 
             <div class="col-12 d-none" id="colModalDirNivel3">
-              <label id="lblModalDirNivel3" for="modalDirNivel3" class="form-label fw-semibold text-dark small">Parroquia <span class="text-danger">*</span></label>
-              <select id="modalDirNivel3" class="form-select rounded-2 border-secondary-subtle" disabled>
+              <label
+                id="lblModalDirNivel3"
+                for="modalDirNivel3"
+                class="form-label fw-semibold text-dark small"
+                >Parroquia <span class="text-danger">*</span></label
+              >
+              <select
+                id="modalDirNivel3"
+                class="form-select rounded-2 border-secondary-subtle"
+                disabled
+              >
                 <option value="">-- Seleccione --</option>
               </select>
               <div class="invalid-feedback">La parroquia es obligatoria.</div>
             </div>
 
             <div class="col-6">
-              <label for="modalDirLat" class="form-label fw-semibold text-dark small">Latitud</label>
-              <input type="text" id="modalDirLat" class="form-control rounded-2 border-secondary-subtle bg-light text-muted" readonly />
+              <label for="modalDirLat" class="form-label fw-semibold text-dark small"
+                >Latitud</label
+              >
+              <input
+                type="text"
+                id="modalDirLat"
+                class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
+                readonly
+              />
             </div>
-            
+
             <div class="col-6">
-              <label for="modalDirLng" class="form-label fw-semibold text-dark small">Longitud</label>
-              <input type="text" id="modalDirLng" class="form-control rounded-2 border-secondary-subtle bg-light text-muted" readonly />
+              <label for="modalDirLng" class="form-label fw-semibold text-dark small"
+                >Longitud</label
+              >
+              <input
+                type="text"
+                id="modalDirLng"
+                class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
+                readonly
+              />
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer border-top-0 pt-0">
-        <button type="button" class="btn btn-light fw-semibold rounded-2 px-3" id="btnCancelarModal">Cancelar</button>
-        <button type="button" class="btn btn-primary fw-semibold rounded-2 px-4" id="btnGuardarModalDireccion">Guardar Ubicación</button>
+        <button
+          type="button"
+          class="btn btn-light fw-semibold rounded-2 px-3"
+          id="btnCancelarModal"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary fw-semibold rounded-2 px-4"
+          id="btnGuardarModalDireccion"
+        >
+          Guardar Ubicación
+        </button>
       </div>
     </div>
   </div>

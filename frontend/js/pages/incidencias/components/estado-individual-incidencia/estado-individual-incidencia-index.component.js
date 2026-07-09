@@ -171,6 +171,43 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
         reportantesContainer.classList.add('d-none');
       }
     }
+
+    // Render adjuntos
+    const containerAdjuntos = this.querySelector('#container-adjuntos');
+    const msgNoAdjuntos = this.querySelector('#no-adjuntos-msg');
+
+    if (containerAdjuntos && msgNoAdjuntos) {
+      if (inc.recursos && inc.recursos.length > 0) {
+        msgNoAdjuntos.classList.add('d-none');
+        
+        let adjuntosHtml = '';
+        inc.recursos.forEach(recurso => {
+          const fileName = recurso.url.substring(recurso.url.lastIndexOf('/') + 1) || 'adjunto';
+          const isImage = fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+          const icon = isImage ? 'bi-image' : 'bi-file-earmark-text';
+          
+          adjuntosHtml += `
+            <a href="${recurso.url}" target="_blank" class="text-decoration-none text-dark">
+              <div class="border rounded p-3 text-center bg-light" style="width: 120px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
+                <i class="bi ${icon} text-muted mb-2" style="font-size: 2rem;"></i>
+                <div class="small text-truncate" title="${fileName}">${fileName}</div>
+              </div>
+            </a>
+          `;
+        });
+        
+        Array.from(containerAdjuntos.children).forEach(child => {
+          if (child.id !== 'no-adjuntos-msg') child.remove();
+        });
+        
+        containerAdjuntos.insertAdjacentHTML('beforeend', adjuntosHtml);
+      } else {
+        msgNoAdjuntos.classList.remove('d-none');
+        Array.from(containerAdjuntos.children).forEach(child => {
+          if (child.id !== 'no-adjuntos-msg') child.remove();
+        });
+      }
+    }
   }
 
   async cargarHistorial(page) {

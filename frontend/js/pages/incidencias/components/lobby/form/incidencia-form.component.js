@@ -5,6 +5,7 @@ import { CatalogoService } from '../../../../../shared/services/catalogo.service
 import { ModalService } from '../../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../../shared/services/toast.service.js';
 import { AuthService } from '../../../../../core/auth.service.js';
+import { PermissionsEnum } from '../../../../../core/permissions.enum.js';
 import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../../shared/constants.js';
 
 export class IncidenciaFormComponent extends BaseComponent {
@@ -95,18 +96,32 @@ export class IncidenciaFormComponent extends BaseComponent {
       return;
     }
 
-    // Role-based visibility
+    // Role & Permission based field visibility and behavior
     const user = AuthService.getCurrentUser();
     const isAdmin = AuthService.isAdmin();
 
-    // Hide Institution select if not Admin
-    if (!isAdmin && this.divInstitucion) {
-      this.divInstitucion.classList.add('d-none');
-      // If it is hidden, expand the state select to full width (col-md-12)
-      const colEstado = this.querySelector('#colEstado');
-      if (colEstado) {
-        colEstado.className = 'col-md-12';
+    // Check if the user has permissions to modify the incident status/assignment
+    const canManageIncidencia =
+      isAdmin ||
+      AuthService.hasPermission(PermissionsEnum.UPDATE_INCIDENCIAS) ||
+      AuthService.hasPermission(PermissionsEnum.UPDATE_DESPACHO_INCIDENCIAS);
+
+    // Hide State selector (colEstado) if user cannot manage/update incidents
+    const colEstado = this.querySelector('#colEstado');
+    if (colEstado) {
+      if (canManageIncidencia) {
+        colEstado.classList.remove('d-none');
+      } else {
+        colEstado.classList.add('d-none');
       }
+    }
+
+    // Institution select must be visible, but disabled for users without update permissions (e.g. Citizens)
+    if (this.divInstitucion) {
+      this.divInstitucion.classList.remove('d-none');
+    }
+    if (this.institucionSelect) {
+      this.institucionSelect.disabled = !canManageIncidencia;
     }
 
     const isCitizen =
@@ -116,7 +131,6 @@ export class IncidenciaFormComponent extends BaseComponent {
         (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
       );
     if (isCitizen) {
-      this.querySelector('#sectionAsignacion')?.classList.add('d-none');
       const detContainer = this.querySelector('#detallesDireccionContainer');
       if (detContainer) detContainer.classList.add('d-none');
 
@@ -208,6 +222,36 @@ export class IncidenciaFormComponent extends BaseComponent {
     // Load initial dropdown data
     await this.cargarCatalogosIniciales();
 
+    // Display maximum files limit
+    const cantMaximaArchivosEl = this.querySelector('#cantMaximaArchivos');
+    const maxFiles = user?.max_files || 5;
+    if (cantMaximaArchivosEl) {
+      cantMaximaArchivosEl.value = maxFiles;
+      if (isAdmin) {
+        cantMaximaArchivosEl.removeAttribute('readonly');
+        cantMaximaArchivosEl.style.setProperty('border-bottom', '1px dashed #6c757d', 'important');
+        cantMaximaArchivosEl.style.pointerEvents = 'auto';
+
+        cantMaximaArchivosEl.addEventListener('change', (e) => {
+          const val = parseInt(e.target.value) || 5;
+          if (val < 1) {
+            ToastService.warning('El límite debe ser al menos 1.');
+            e.target.value = 1;
+            return;
+          }
+          user.max_files = val;
+          localStorage.setItem('user', JSON.stringify(user));
+          ToastService.success(`Límite de subida modificado a: ${val}`);
+        });
+      } else {
+        cantMaximaArchivosEl.setAttribute('readonly', 'true');
+        cantMaximaArchivosEl.style.setProperty('border-bottom', 'none', 'important');
+        cantMaximaArchivosEl.style.pointerEvents = 'none';
+        cantMaximaArchivosEl.classList.remove('text-primary');
+        cantMaximaArchivosEl.classList.add('text-dark');
+      }
+    }
+
     if (incidenciaId) {
       await this.cargarDatosEdicion(incidenciaId);
     } else {
@@ -260,7 +304,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 0
+        maximumAge: 0,
       }
     );
   }
@@ -438,7 +482,7 @@ export class IncidenciaFormComponent extends BaseComponent {
               address.quarter,
             ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
-            
+
             // Load and show Nivel 3 if we matched Nivel 2
             await this.cargarDropdownNivel3(paisId, opt2.value);
             if (n3Name) {
@@ -477,14 +521,14 @@ export class IncidenciaFormComponent extends BaseComponent {
           if (opt2) {
             this.modalDirNivel2.value = opt2.value;
             this.colModalDirNivel2.classList.remove('d-none');
-             const possibleNivel3Names = [
+            const possibleNivel3Names = [
               address.parish,
               address.suburb,
               address.neighbourhood,
               address.quarter,
             ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
-            
+
             // Load and show Nivel 3 in modal if we matched Nivel 2
             await this.cargarModalDropdownNivel3(paisId, opt2.value);
             if (n3Name) {
@@ -697,10 +741,10 @@ export class IncidenciaFormComponent extends BaseComponent {
         const item = data[0];
         const lat = parseFloat(item.lat);
         const lng = parseFloat(item.lon);
- 
+
         this.actualizarMarcador(lat, lng, false);
         this.map.setView([lat, lng], 14);
- 
+
         // Populate fields
         this.dirDetalleInput.value = item.display_name;
         // Trigger autofill detail based on the coordinates
@@ -797,17 +841,20 @@ export class IncidenciaFormComponent extends BaseComponent {
     const subTipoId = this.subTipoSelect.value;
     const afectados = parseInt(this.cantidadAfectadosInput.value) || 0;
 
-    if (!subTipoId) {
+    const resetDisplay = () => {
       this.prioridadDisplay.textContent = '-';
       this.prioridadDisplay.style.color = '';
-      this.prioridadDisplay.className = 'fw-bold fs-5 text-secondary';
+      this.prioridadDisplay.className = 'fw-bold fs-6 text-secondary';
+    };
+
+    if (!subTipoId) {
+      resetDisplay();
       return;
     }
 
     const subcat = this.categorias.find((c) => c.id == subTipoId);
     if (!subcat || !subcat.prioridad_id) {
-      this.prioridadDisplay.textContent = '-';
-      this.prioridadDisplay.style.color = '';
+      resetDisplay();
       return;
     }
 
@@ -843,7 +890,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     this.prioridadDisplay.textContent = label;
     this.prioridadDisplay.style.color = color;
-    this.prioridadDisplay.className = `fw-bold fs-5 badge bg-${badgeClass}-soft text-${badgeClass} px-3 py-1.5`;
+    this.prioridadDisplay.className = `fw-bold fs-6 badge bg-${badgeClass}-soft text-${badgeClass} px-3 py-1`;
   }
 
   actualizarEtiquetasNiveles(paisId) {
@@ -1133,7 +1180,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     if (!this.form.checkValidity()) {
       this.form.classList.add('was-validated');
-      this.mostrarError('Por favor complete los campos obligatorios del formulario.');
+      ToastService.error('Por favor complete los campos obligatorios del formulario.');
       return;
     }
 
@@ -1141,7 +1188,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     // Validate that we have coordinates and detailed address
     if (!this.coords) {
-      this.mostrarError('Debe marcar la ubicación en el mapa.');
+      ToastService.error('Debe marcar la ubicación en el mapa.');
       return;
     }
 
@@ -1151,7 +1198,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       const finalTerritorioId =
         this.dirNivel3Select.value || this.dirNivel2Select.value || this.dirNivel1Select.value;
       if (!finalTerritorioId) {
-        this.mostrarError(
+        ToastService.error(
           'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
         );
         return;
@@ -1169,7 +1216,9 @@ export class IncidenciaFormComponent extends BaseComponent {
           codigo_postal: this.dirCodigoPostalInput.value || null,
           latitud: this.coords.lat,
           longitud: this.coords.lng,
-          precision_gps: this.dirPrecisionGpsInput?.value ? parseFloat(this.dirPrecisionGpsInput.value) : null,
+          precision_gps: this.dirPrecisionGpsInput?.value
+            ? parseFloat(this.dirPrecisionGpsInput.value)
+            : null,
           activo: true,
         };
 
@@ -1184,7 +1233,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         }
       } catch (err) {
         console.error(err);
-        this.mostrarError('Error al guardar la dirección.');
+        ToastService.error('Error al guardar la dirección.');
         this.btnSubmit.disabled = false;
         this.querySelector('#loadingSpinner').classList.add('d-none');
         return;
@@ -1208,17 +1257,15 @@ export class IncidenciaFormComponent extends BaseComponent {
           : null,
         estado_id: parseInt(this.estadoSelect.value) || 2,
         version: parseInt(this.versionInput.value) || 1,
-        recursos: this.recursosFiles
-          .filter((f) => !f.id)
-          .map((f) => f.base64),
+        recursos: this.recursosFiles.filter((f) => !f.id).map((f) => f.base64),
       };
 
       if (id) {
         await IncidenciaService.update(id, incPayload);
-        this.mostrarAlertaExito('Incidencia actualizada con éxito.');
+        ToastService.success('Incidencia actualizada con éxito.');
       } else {
         await IncidenciaService.create(incPayload);
-        this.mostrarAlertaExito('Incidencia registrada con éxito.');
+        ToastService.success('Incidencia registrada con éxito.');
       }
 
       setTimeout(() => {
@@ -1226,7 +1273,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       }, 1500);
     } catch (err) {
       console.error(err);
-      this.mostrarError(err.message || 'Error al procesar la incidencia.');
+      ToastService.error(err.message || 'Error al procesar la incidencia.');
       this.btnSubmit.disabled = false;
       this.querySelector('#loadingSpinner').classList.add('d-none');
     }
@@ -1270,18 +1317,42 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.processFiles(files);
   }
 
-  processFiles(files) {
-    Array.from(files).forEach((file) => {
+  async processFiles(files) {
+    const validFiles = Array.from(files).filter((file) => {
       if (!file.type.startsWith('image/')) {
         ToastService.warning('Solo se permiten archivos de imagen.');
-        return;
+        return false;
       }
- 
       if (file.size > 5 * 1024 * 1024) {
         ToastService.warning('La imagen no debe superar el límite de 5 MB.');
-        return;
+        return false;
       }
+      return true;
+    });
 
+    if (validFiles.length === 0) return;
+
+    const currentUser = AuthService.getCurrentUser();
+    const maxFiles = currentUser?.max_files || 5;
+
+    if (this.recursosFiles.length + validFiles.length > maxFiles) {
+      ToastService.warning(
+        `No puede subir más de ${maxFiles} archivos en total. (Límite configurado: ${maxFiles})`
+      );
+      return;
+    }
+
+    const isConfirmed = await ModalService.confirm(
+      'Confirmar Subida de Imágenes',
+      '¿Está seguro de que desea adjuntar estas imágenes a la incidencia? Por favor, verifique que cumplan con las normas.',
+      'Adjuntar',
+      'Cancelar',
+      'btn-primary'
+    );
+
+    if (!isConfirmed) return;
+
+    validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
@@ -1328,27 +1399,6 @@ export class IncidenciaFormComponent extends BaseComponent {
 
       this.thumbnailsContainer.appendChild(col);
     });
-  }
-
-  // --- ALERTS AND FEEDBACK ---
-  mostrarAlertaExito(message) {
-    const successAlert = this.querySelector('#formSuccessAlert');
-    const successMessage = this.querySelector('#formSuccessMessage');
-    if (successAlert && successMessage) {
-      successMessage.textContent = message;
-      successAlert.classList.remove('d-none');
-      successAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }
-
-  mostrarError(message) {
-    const errorAlert = this.querySelector('#formErrorAlert');
-    const errorMessage = this.querySelector('#formErrorMessage');
-    if (errorAlert && errorMessage) {
-      errorMessage.textContent = message;
-      errorAlert.classList.remove('d-none');
-      errorAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
   }
 
   limpiarErrores() {
