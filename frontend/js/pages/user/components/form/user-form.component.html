@@ -123,6 +123,17 @@
             </div>
           </div>
 
+          <!-- Institución (Solo visible si el rol es Institucion) -->
+          <div class="mb-3 d-none" id="institucionContainer">
+            <label for="institucion_id" class="form-label fw-semibold text-secondary small"
+              >Institución *</label
+            >
+            <select class="form-select bg-light" id="institucion_id" required>
+              <option value="">Seleccione una institución...</option>
+            </select>
+            <div class="invalid-feedback">Debe seleccionar una institución.</div>
+          </div>
+
           <!-- Estado Activo -->
           <div class="form-check form-switch mb-4">
             <input class="form-check-input" type="checkbox" id="activo" checked />
