@@ -125,14 +125,12 @@ class IncidenciaController extends Controller
                             'incidencia_id' => $similar->id,
                             'estado_id' => $similar->estado_id,
                             'usuario_id' => $user->id,
-                            'comentario' => 'Reporte ciudadano coincidente adjuntado: ' . $request->incidencia_descripcion
+                            'comentario' => '[VINCULADO] ' . $request->incidencia_descripcion
                         ]);
                     }
 
                     // Delete the newly created address if it is not used elsewhere
-                    $isReferenced = Incidencia::where('direccion_id', $direccion->id)
-                        ->where('id', '!=', $similar->id)
-                        ->exists();
+                    $isReferenced = Incidencia::where('direccion_id', $direccion->id)->exists();
                     if (!$isReferenced) {
                         $direccion->delete();
                     }

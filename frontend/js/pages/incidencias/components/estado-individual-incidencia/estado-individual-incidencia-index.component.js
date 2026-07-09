@@ -358,8 +358,14 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     const timeClass = 'text-muted';
 
     const autorNombre = item.usuario ? item.usuario.name : 'Sistema';
-    const comentario = item.comentario || 'Cambio de estado';
+    let comentario = item.comentario || 'Cambio de estado';
     const fecha = new Date(item.created_at).toLocaleString();
+
+    if (comentario.startsWith('[VINCULADO] ')) {
+      comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(12);
+    } else if (comentario.startsWith('Reporte ciudadano coincidente adjuntado: ')) {
+      comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(41);
+    }
 
     // UI logic for "(Editado)" - Assuming created_at and updated_at differ
     let editadoHtml = '';
