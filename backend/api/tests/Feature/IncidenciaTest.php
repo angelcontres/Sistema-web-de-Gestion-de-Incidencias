@@ -118,7 +118,7 @@ class IncidenciaTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.prioridad_id', $this->alta->id) // Remains Alta
-            ->assertJsonPath('data.estado_id', 2) // Default Pendiente
+            ->assertJsonPath('data.estado_id', 1) // Default Pendiente
             ->assertJsonPath('data.direccion.territorio.pais.nombre', 'Ecuador');
     }
 
@@ -263,7 +263,7 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($ciudadanoUser)->postJson('/api/v1/incidencias', $payload);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.estado_id', 2) // Pendiente
+            ->assertJsonPath('data.estado_id', 1) // Pendiente
             ->assertJsonPath('data.cliente_id', $ciudadanoUser->id)
             ->assertJsonPath('data.direccion.territorio.pais.nombre', 'Ecuador');
     }
@@ -535,7 +535,7 @@ class IncidenciaTest extends TestCase
 
         // Verificar base de datos
         $this->assertEquals(2, $incidenciaOriginal->fresh()->cantidad_afectados_incidencia);
-        
+
         // Verificar que la dirección duplicada fue eliminada
         $this->assertNull(Direccion::find($direccionCercana->id));
     }
@@ -599,7 +599,7 @@ class IncidenciaTest extends TestCase
 
         // Crear rol Ciudadano y sus permisos correspondientes para que pase el middleware CheckResourcePermission
         $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Rol de ciudadanos', 'created_by' => $ciudadano1->id]);
-        
+
         $opcion = OpcionMenu::firstOrCreate(
             ['nombre' => 'Incidencias'],
             ['ruta' => '/incidencias', 'created_by' => $ciudadano1->id]
@@ -609,14 +609,14 @@ class IncidenciaTest extends TestCase
             ['accion' => 'READ', 'recurso' => 'incidencias'],
             ['nombre' => 'Consultar incidencias', 'descripcion' => 'Permiso para consultar incidencias', 'opcion_menu_id' => $opcion->id, 'created_by' => $ciudadano1->id]
         );
-        
+
         $permisoReadHist = Permiso::firstOrCreate(
             ['accion' => 'READ', 'recurso' => 'historial'],
             ['nombre' => 'Consultar historial', 'descripcion' => 'Permiso para consultar historial', 'opcion_menu_id' => $opcion->id, 'created_by' => $ciudadano1->id]
         );
 
         $ciudadanoRole->permisos()->sync([$permisoReadInc->id, $permisoReadHist->id]);
-        
+
         $ciudadano1->roles()->sync([$ciudadanoRole->id]);
         $ciudadano2->roles()->sync([$ciudadanoRole->id]);
 
