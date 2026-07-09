@@ -145,14 +145,92 @@ class DatabaseSeeder extends Seeder
         $institucionUser = User::create([
             'name' => 'Policia Nacional (Prueba)',
             'username' => 'policia_prueba',
-            'email' => 'institucion@example.com',
-            'password' => Hash::make('password123'),
+            'email' => 'policianacional@example.com',
+            'password' => Hash::make('policianacional123'),
             'activo' => true,
             'institucion_id' => 1, // Policía Nacional del Ecuador
         ]);
         $institucionRole = Role::where('nombre', 'Institucion')->first();
         if ($institucionRole) {
             $roleService->syncRolesToUser($institucionUser, [$institucionRole->id]);
+        }
+
+        // EPMMOP / id 2
+        $epmmopUser = User::create([
+            'name' => 'EPMMOP (Prueba)',
+            'username' => 'epmmop_prueba',
+            'email' => 'epmmop@example.com',
+            'password' => Hash::make('epmmop123'),
+            'activo' => true,
+            'institucion_id' => 2,
+        ]);
+        if ($institucionRole) {
+            $roleService->syncRolesToUser($epmmopUser, [$institucionRole->id]);
+        }
+
+        // EEQ / id 3
+        $eeqUser = User::create([
+            'name' => 'EEQ (Prueba)',
+            'username' => 'eeq_prueba',
+            'email' => 'eeq@example.com',
+            'password' => Hash::make('eeq123'),
+            'activo' => true,
+            'institucion_id' => 3,
+        ]);
+        if ($institucionRole) {
+            $roleService->syncRolesToUser($eeqUser, [$institucionRole->id]);
+        }
+
+        // EPMAPS / id 4
+        $epmapsUser = User::create([
+            'name' => 'EPMAPS (Prueba)',
+            'username' => 'epmaps_prueba',
+            'email' => 'epmaps@example.com',
+            'password' => Hash::make('epmaps123'),
+            'activo' => true,
+            'institucion_id' => 4,
+        ]);
+        if ($institucionRole) {
+            $roleService->syncRolesToUser($epmapsUser, [$institucionRole->id]);
+        }
+
+        // EMGIRS / id 5
+        $emgirsUser = User::create([
+            'name' => 'EMGIRS (Prueba)',
+            'username' => 'emgirs_prueba',
+            'email' => 'emgirs@example.com',
+            'password' => Hash::make('emgirs123'),
+            'activo' => true,
+            'institucion_id' => 5,
+        ]);
+        if ($institucionRole) {
+            $roleService->syncRolesToUser($emgirsUser, [$institucionRole->id]);
+        }
+
+        // DMA / id 6
+        $dmaUser = User::create([
+            'name' => 'DMA (Prueba)',
+            'username' => 'dma_prueba',
+            'email' => 'dma@example.com',
+            'password' => Hash::make('dma123'),
+            'activo' => true,
+            'institucion_id' => 6,
+        ]);
+        if ($institucionRole) {
+            $roleService->syncRolesToUser($dmaUser, [$institucionRole->id]);
+        }
+
+        // CTE / id 7
+        $cteUser = User::create([
+            'name' => 'CTE (Prueba)',
+            'username' => 'cte_prueba',
+            'email' => 'cte@example.com',
+            'password' => Hash::make('cte123'),
+            'activo' => true,
+            'institucion_id' => 7,
+        ]);
+        if ($institucionRole) {
+            $roleService->syncRolesToUser($cteUser, [$institucionRole->id]);
         }
 
         // 3. supervisor@example.com (Supervisor)
