@@ -114,7 +114,6 @@ class IncidenciaTest extends TestCase
             'tipo_incidencia_id' => $this->categoriaPadre->id,
             'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
             'cantidad_afectados_incidencia' => 2, // < 10 affected
-            'institucion_id' => $this->policia->id,
         ];
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
@@ -136,7 +135,6 @@ class IncidenciaTest extends TestCase
             'tipo_incidencia_id' => $this->categoriaPadre->id,
             'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
             'cantidad_afectados_incidencia' => 15, // >= 10 affected
-            'institucion_id' => $this->policia->id,
         ];
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
@@ -700,5 +698,38 @@ class IncidenciaTest extends TestCase
         // Ciudadano 2 intenta ver el historial/comentarios
         $responseHistorial = $this->actingAs($ciudadano2)->getJson("/api/v1/incidencias/{$incidencia->id}/historial");
         $responseHistorial->assertStatus(200);
+    }
+
+    /**
+     * @group HU-05
+     * Feature: Asignar responsables (instituciones)
+     *   Scenario: La institución se asigna automáticamente a la incidencia según la subcategoría
+     *   Given ciudadano autenticado o gestor
+     *   When crea una nueva incidencia con una subcategoría
+     *   Then el sistema determina la institución responsable para esa subcategoría
+     *   And la asocia automáticamente a la incidencia sin necesidad de mandarla en el payload
+     */
+    public function test_system_automatically_assigns_institution_based_on_subcategory()
+    {
+        $payload = [
+            'incidencia_descripcion' => 'Bache gigante sin institución en payload',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'cantidad_afectados_incidencia' => 1,
+            // NOTA: No enviamos institucion_id en el payload
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+
+        $response->assertStatus(201);
+        
+        // Verificamos que se haya asignado automáticamente la institución de la subcategoría
+        $response->assertJsonPath('data.institucion_id', $this->subcategoriaAlta->institucion_id);
+        
+        $this->assertDatabaseHas('reporte_incidencias', [
+            'incidencia_descripcion' => 'Bache gigante sin institución en payload',
+            'institucion_id' => $this->subcategoriaAlta->institucion_id,
+        ]);
     }
 }
