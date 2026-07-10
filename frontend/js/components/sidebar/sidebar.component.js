@@ -77,9 +77,20 @@ export class SideBarComponent extends BaseComponent {
         `;
       }
 
-      const response = await apiRequest('/me/menu', { method: 'GET' });
-      const menuList = response.data || response;
-      localStorage.setItem('user_menu', JSON.stringify(menuList));
+      let menuList = null;
+      try {
+        const menuStr = localStorage.getItem('user_menu');
+        if (menuStr) {
+          menuList = JSON.parse(menuStr);
+        }
+      } catch (e) {}
+
+      if (!menuList || menuList.length === 0) {
+        const response = await apiRequest('/me/menu', { method: 'GET' });
+        menuList = response.data || response;
+        localStorage.setItem('user_menu', JSON.stringify(menuList));
+      }
+
       const menuTree = this.buildMenuTree(menuList);
 
       this.renderMenuItems(menuTree);

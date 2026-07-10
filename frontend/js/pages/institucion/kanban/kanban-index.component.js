@@ -62,8 +62,8 @@ export class KanbanIndexComponent extends BaseComponent {
     colProceso.innerHTML = '';
     colResuelto.innerHTML = '';
 
-    const enProceso = this.incidencias.filter((i) => i.estado_id === 4); // En Proceso
-    const resueltas = this.incidencias.filter((i) => i.estado_id === 5); // Resuelto
+    const enProceso = this.incidencias.filter((i) => i.estado_id === 3); // En Proceso
+    const resueltas = this.incidencias.filter((i) => i.estado_id === 4); // Resuelto
 
     countProceso.textContent = enProceso.length;
     countResuelto.textContent = resueltas.length;
@@ -157,7 +157,7 @@ export class KanbanIndexComponent extends BaseComponent {
       btnConfirmar.disabled = true;
 
       await IncidenciaService.update(id, {
-        estado_id: 5, // Resuelto
+        estado_id: 4, // Resuelto
         version: version,
         comentario_estado: comentario,
       });

@@ -102,7 +102,46 @@ class DatabaseSeeder extends Seeder
             $roleService->syncRolesToUser($ciudadanoUser, [$ciudadanoRole->id]);
         }
 
-        // 2. policianacional@example.com (Institucion, linked to PNE / id 1)
+        // Crear usuario llamado Carlos Patiño
+        $carlosUser = User::create([
+            'name' => 'Carlos Patiño',
+            'username' => 'carlospatino1',
+            'email' => 'carlos@example.com',
+            'password' => Hash::make('carlos123'),
+            'activo' => true,
+        ]);
+        $carlosUserRole = Role::where('nombre', 'Ciudadano')->first();
+        if ($carlosUserRole) {
+            $roleService->syncRolesToUser($carlosUser, [$carlosUserRole->id]);
+        }
+
+        //Crear usuario llamado Angel Villón
+        $angelUser = User::create([
+            'name' => 'Angel Villón',
+            'username' => 'angelvillon1',
+            'email' => 'angel@example.com',
+            'password' => Hash::make('angel123'),
+            'activo' => true,
+        ]);
+        $angelUserRole = Role::where('nombre', 'Ciudadano')->first();
+        if ($angelUserRole) {
+            $roleService->syncRolesToUser($angelUser, [$angelUserRole->id]);
+        }
+
+        //Crear usuario llamado Paulo Orrala
+        $pauloUser = User::create([
+            'name' => 'Paulo Orrala',
+            'username' => 'pauloorrala1',
+            'email' => 'paulo@example.com',
+            'password' => Hash::make('paulo123'),
+            'activo' => true,
+        ]);
+        $pauloUserRole = Role::where('nombre', 'Ciudadano')->first();
+        if ($pauloUserRole) {
+            $roleService->syncRolesToUser($pauloUser, [$pauloUserRole->id]);
+        }
+
+        // 2. institucion@example.com (Institucion, linked to PNE / id 1)
         $institucionUser = User::create([
             'name' => 'Policia Nacional (Prueba)',
             'username' => 'policia_prueba',

@@ -15,6 +15,7 @@ use App\Models\Role;
 use App\Models\Territorio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Services\IncidentGroupingService;
 use Tests\TestCase;
 
 class IncidenciaTest extends TestCase
@@ -117,7 +118,7 @@ class IncidenciaTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.prioridad_id', $this->alta->id) // Remains Alta
-            ->assertJsonPath('data.estado_id', 2) // Default Pendiente
+            ->assertJsonPath('data.estado_id', 1) // Default Pendiente
             ->assertJsonPath('data.direccion.territorio.pais.nombre', 'Ecuador');
     }
 
@@ -262,7 +263,7 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($ciudadanoUser)->postJson('/api/v1/incidencias', $payload);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.estado_id', 2) // Pendiente
+            ->assertJsonPath('data.estado_id', 1) // Pendiente
             ->assertJsonPath('data.cliente_id', $ciudadanoUser->id)
             ->assertJsonPath('data.direccion.territorio.pais.nombre', 'Ecuador');
     }
@@ -484,5 +485,173 @@ class IncidenciaTest extends TestCase
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
+    }
+
+    // CP-G-01: Agrupamiento de incidencias y aumento de afectados dentro del umbral
+    public function test_incidents_within_threshold_group_and_increment_affected_count()
+    {
+        $direccionOriginal = Direccion::create([
+            'territorio_id' => $this->territorio->id,
+            'detalle' => 'Direccion Original',
+            'latitud' => -2.200000,
+            'longitud' => -79.900000,
+            'activo' => true,
+        ]);
+
+        $incidenciaOriginal = Incidencia::create([
+            'incidencia_descripcion' => 'Incidencia Original',
+            'direccion_id' => $direccionOriginal->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'estado_id' => $this->estadoRevision->id, // "En Revisión" = 2
+            'cantidad_afectados_incidencia' => 1,
+            'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'created_by' => $this->admin->id,
+        ]);
+
+        // Crear una nueva dirección a ~11 metros (dentro de los 50 metros)
+        // Usamos -2.2001, que es aproximadamente 11 metros de distancia
+        $direccionCercana = Direccion::create([
+            'territorio_id' => $this->territorio->id,
+            'detalle' => 'Direccion Cercana',
+            'latitud' => -2.200100,
+            'longitud' => -79.900000,
+            'activo' => true,
+        ]);
+
+        $payload = [
+            'direccion_id' => $direccionCercana->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'incidencia_descripcion' => 'Incidencia duplicada cercana',
+            'cantidad_afectados_incidencia' => 1,
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+
+        $response->assertStatus(200); // Retorna 200 al agrupar
+        $response->assertJsonPath('data.id', $incidenciaOriginal->id);
+
+        // Verificar base de datos
+        $this->assertEquals(2, $incidenciaOriginal->fresh()->cantidad_afectados_incidencia);
+
+        // Verificar que la dirección duplicada fue eliminada
+        $this->assertNull(Direccion::find($direccionCercana->id));
+    }
+
+    public function test_incidents_outside_threshold_do_not_group()
+    {
+        $direccionOriginal = Direccion::create([
+            'territorio_id' => $this->territorio->id,
+            'detalle' => 'Direccion Original',
+            'latitud' => -2.200000,
+            'longitud' => -79.900000,
+            'activo' => true,
+        ]);
+
+        $incidenciaOriginal = Incidencia::create([
+            'incidencia_descripcion' => 'Incidencia Original',
+            'direccion_id' => $direccionOriginal->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'estado_id' => $this->estadoRevision->id,
+            'cantidad_afectados_incidencia' => 1,
+            'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'created_by' => $this->admin->id,
+        ]);
+
+        // Crear dirección a ~1.1 km de distancia
+        $direccionLejana = Direccion::create([
+            'territorio_id' => $this->territorio->id,
+            'detalle' => 'Direccion Lejana',
+            'latitud' => -2.210000,
+            'longitud' => -79.900000,
+            'activo' => true,
+        ]);
+
+        $payload = [
+            'direccion_id' => $direccionLejana->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'incidencia_descripcion' => 'Nueva incidencia lejana',
+            'cantidad_afectados_incidencia' => 1,
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+
+        $response->assertStatus(201); // Crea una nueva
+
+        // Verificar base de datos
+        $this->assertEquals(1, $incidenciaOriginal->fresh()->cantidad_afectados_incidencia);
+        $this->assertNotNull(Direccion::find($direccionLejana->id));
+        $this->assertDatabaseHas('reporte_incidencias', [
+            'direccion_id' => $direccionLejana->id,
+            'incidencia_descripcion' => 'Nueva incidencia lejana'
+        ]);
+    }
+
+    public function test_citizen_can_view_grouped_incident_where_they_are_reportante()
+    {
+        $ciudadano1 = User::factory()->create();
+        $ciudadano2 = User::factory()->create();
+
+        // Crear rol Ciudadano y sus permisos correspondientes para que pase el middleware CheckResourcePermission
+        $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Rol de ciudadanos', 'created_by' => $ciudadano1->id]);
+
+        $opcion = OpcionMenu::firstOrCreate(
+            ['nombre' => 'Incidencias'],
+            ['ruta' => '/incidencias', 'created_by' => $ciudadano1->id]
+        );
+
+        $permisoReadInc = Permiso::firstOrCreate(
+            ['accion' => 'READ', 'recurso' => 'incidencias'],
+            ['nombre' => 'Consultar incidencias', 'descripcion' => 'Permiso para consultar incidencias', 'opcion_menu_id' => $opcion->id, 'created_by' => $ciudadano1->id]
+        );
+
+        $permisoReadHist = Permiso::firstOrCreate(
+            ['accion' => 'READ', 'recurso' => 'historial'],
+            ['nombre' => 'Consultar historial', 'descripcion' => 'Permiso para consultar historial', 'opcion_menu_id' => $opcion->id, 'created_by' => $ciudadano1->id]
+        );
+
+        $ciudadanoRole->permisos()->sync([$permisoReadInc->id, $permisoReadHist->id]);
+
+        $ciudadano1->roles()->sync([$ciudadanoRole->id]);
+        $ciudadano2->roles()->sync([$ciudadanoRole->id]);
+
+        $direccion = Direccion::create([
+            'territorio_id' => $this->territorio->id,
+            'detalle' => 'Av. Amazonas',
+            'activo' => true,
+        ]);
+
+        // Creado por Ciudadano 1
+        $incidencia = Incidencia::create([
+            'incidencia_descripcion' => 'Bache gigante',
+            'direccion_id' => $direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'estado_id' => $this->estadoRevision->id,
+            'cantidad_afectados_incidencia' => 1,
+            'version' => 1,
+            'cliente_id' => $ciudadano1->id,
+            'created_by' => $ciudadano1->id,
+        ]);
+
+        $incidencia->reportantes()->attach($ciudadano1->id, ['created_by' => $ciudadano1->id]);
+
+        // Asociar Ciudadano 2 como reportante (agrupado)
+        $incidencia->reportantes()->attach($ciudadano2->id, ['created_by' => $ciudadano2->id]);
+
+        // Ciudadano 2 intenta ver la incidencia
+        $response = $this->actingAs($ciudadano2)->getJson("/api/v1/incidencias/{$incidencia->id}");
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('id', $incidencia->id);
+
+        // Ciudadano 2 intenta ver el historial/comentarios
+        $responseHistorial = $this->actingAs($ciudadano2)->getJson("/api/v1/incidencias/{$incidencia->id}/historial");
+        $responseHistorial->assertStatus(200);
     }
 }

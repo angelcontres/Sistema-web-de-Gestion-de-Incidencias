@@ -1,6 +1,7 @@
 import { BaseComponent } from '../../core/base-component.js';
 import { apiRequest } from '../../core/api.js';
 import { AuthService } from '../../core/auth.service.js';
+import { getSoftClass } from '../../shared/utils/badge-states.js';
 
 export class DashboardComponent extends BaseComponent {
   constructor() {
@@ -66,8 +67,19 @@ export class DashboardComponent extends BaseComponent {
     if (!container) return;
     
     try {
-      const response = await apiRequest('/me/menu', { method: 'GET' });
-      const menuList = response.data || response;
+      let menuList = null;
+      try {
+        const menuStr = localStorage.getItem('user_menu');
+        if (menuStr) {
+          menuList = JSON.parse(menuStr);
+        }
+      } catch (e) {}
+
+      if (!menuList || menuList.length === 0) {
+        const response = await apiRequest('/me/menu', { method: 'GET' });
+        menuList = response.data || response;
+        localStorage.setItem('user_menu', JSON.stringify(menuList));
+      }
       
       // Filtrar solo los menús de nivel superior
       const rootMenus = menuList.filter(item => !item.padre_id);
@@ -202,12 +214,7 @@ export class DashboardComponent extends BaseComponent {
     }
 
     container.innerHTML = incidents.map(inc => {
-      let estadoClass = "bg-secondary-soft text-secondary border-secondary border-opacity-25";
-      if (inc.estado === 'Pendiente') estadoClass = "bg-warning-soft text-warning border-warning border-opacity-25";
-      else if (inc.estado === 'En Revisión') estadoClass = "bg-info-soft text-info border-info border-opacity-25";
-      else if (inc.estado === 'En Proceso') estadoClass = "bg-primary-soft text-primary border-primary border-opacity-25";
-      else if (inc.estado === 'Resuelto' || inc.estado === 'Resuelta') estadoClass = "bg-success-soft text-success border-success border-opacity-25";
-      else if (inc.estado === 'Rechazado') estadoClass = "bg-danger-soft text-danger border-danger border-opacity-25";
+      const estadoClass = getSoftClass(inc.estado);
       
       return `
         <tr data-id="${inc.id}" style="cursor: pointer;">

@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\IncidenciasRequest;
 use App\Models\CategoriaIncidencia;
 use App\Models\Incidencia;
+use App\Models\HistorialIncidencia;
+use App\Models\Direccion;
+use App\Services\IncidentGroupingService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -18,9 +22,9 @@ class IncidenciaController extends Controller
     {
         $user = auth()->user();
 
-        // Automatic state transition: when Supervisor queries list, Pendiente (2) -> En Revisión (3)
+        // Automatic state transition: when Supervisor queries list, Pendiente (1) -> En Revisión (2)
         if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
-            $transitionQuery = Incidencia::where('estado_id', 2);
+            $transitionQuery = Incidencia::where('estado_id', 1);
             if ($user->pais_id) {
                 $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
                     $q->where('pais_id', $user->pais_id);
@@ -28,7 +32,7 @@ class IncidenciaController extends Controller
             }
             $incidenciasTransition = $transitionQuery->get();
             foreach ($incidenciasTransition as $inc) {
-                $inc->update(['estado_id' => 3]);
+                $inc->update(['estado_id' => 2]);
             }
         }
 
@@ -41,6 +45,7 @@ class IncidenciaController extends Controller
             'subTipo',
             'prioridad',
             'operadores',
+            'reportantes',
             'recursos',
         ]);
 
@@ -54,8 +59,13 @@ class IncidenciaController extends Controller
             } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
                 $query->where('institucion_id', $user->institucion_id);
             } else {
-                // If they are regular citizens, they can only see their own reports
-                $query->where('cliente_id', $user->id);
+                // If they are regular citizens, they can only see their own reports (or ones they are attached to)
+                $query->where(function($q) use ($user) {
+                    $q->where('cliente_id', $user->id)
+                      ->orWhereHas('reportantes', function($q2) use ($user) {
+                          $q2->where('user_id', $user->id);
+                      });
+                });
             }
         }
 
@@ -76,9 +86,75 @@ class IncidenciaController extends Controller
     public function store(IncidenciasRequest $request)
     {
         $user = auth()->user();
+        $direccionId = $request->direccion_id;
 
-        // Calculate initial priority based on subcategory and affected count
-        $afectados = (int) $request->input('cantidad_afectados_incidencia', 0);
+        if ($direccionId) {
+            $direccion = Direccion::find($direccionId);
+            if ($direccion) {
+                $groupingService = app(IncidentGroupingService::class);
+                $similar = $groupingService->findSimilarIncident(
+                    (int) $request->tipo_incidencia_id,
+                    (int) $request->sub_tipo_incidencia_id,
+                    (float) $direccion->latitud,
+                    (float) $direccion->longitud
+                );
+
+                if ($similar) {
+                    // Increment affected count
+                    $similar->cantidad_afectados_incidencia += 1;
+                    $similar->prioridad_id = $this->calculatePriority(
+                        $similar->sub_tipo_incidencia_id,
+                        $similar->cantidad_afectados_incidencia
+                    );
+                    $similar->save();
+
+                    // Associate user and save description
+                    if ($user) {
+                        $exists = DB::table('usuario_incidencia')
+                            ->where('user_id', $user->id)
+                            ->where('reporte_incidencia_id', $similar->id)
+                            ->exists();
+                        if (!$exists) {
+                            $similar->reportantes()->attach($user->id, [
+                                'created_by' => $user->id
+                            ]);
+                        }
+
+                        // Save the new description in the history
+                        HistorialIncidencia::create([
+                            'incidencia_id' => $similar->id,
+                            'estado_id' => $similar->estado_id,
+                            'usuario_id' => $user->id,
+                            'comentario' => '[VINCULADO] ' . $request->incidencia_descripcion
+                        ]);
+                    }
+
+                    // Delete the newly created address if it is not used elsewhere
+                    $isReferenced = Incidencia::where('direccion_id', $direccion->id)->exists();
+                    if (!$isReferenced) {
+                        $direccion->delete();
+                    }
+
+                    return response()->json([
+                        'message' => 'Incidencia agrupada con éxito con reporte similar existente.',
+                        'data' => $similar->load([
+                            'direccion.territorio.pais',
+                            'cliente',
+                            'estado',
+                            'institucion',
+                            'tipo',
+                            'subTipo',
+                            'prioridad',
+                            'operadores',
+                            'reportantes',
+                        ]),
+                    ], 200);
+                }
+            }
+        }
+
+        // If no similar incident found, create a new one
+        $afectados = max((int) $request->input('cantidad_afectados_incidencia', 1), 1);
         $prioridadId = $this->calculatePriority(
             $request->sub_tipo_incidencia_id,
             $afectados
@@ -86,9 +162,9 @@ class IncidenciaController extends Controller
 
         $incidencia = Incidencia::create([
             'incidencia_descripcion' => $request->incidencia_descripcion,
-            'direccion_id' => $request->direccion_id,
+            'direccion_id' => $direccionId,
             'cliente_id' => $user ? $user->id : null,
-            'estado_id' => $request->input('estado_id', 2), // Default: En Revisión (2)
+            'estado_id' => $request->input('estado_id', 1), // Default: Pendiente (1)
             'institucion_id' => $request->institucion_id,
             'tipo_incidencia_id' => $request->tipo_incidencia_id,
             'sub_tipo_incidencia_id' => $request->sub_tipo_incidencia_id,
@@ -97,6 +173,12 @@ class IncidenciaController extends Controller
             'version' => 1,
             'created_by' => $user ? $user->id : null,
         ]);
+
+        if ($user) {
+            $incidencia->reportantes()->attach($user->id, [
+                'created_by' => $user->id
+            ]);
+        }
 
         if ($request->has('recursos')) {
             $disk = env('FILESYSTEM_DISK', 'public');
@@ -123,6 +205,7 @@ class IncidenciaController extends Controller
                     'tipo' => 'imagen'
                 ]);
             }
+
         }
 
         return response()->json([
@@ -136,6 +219,7 @@ class IncidenciaController extends Controller
                 'subTipo',
                 'prioridad',
                 'operadores',
+                'reportantes',
                 'recursos',
             ]),
         ], 201);
@@ -155,6 +239,7 @@ class IncidenciaController extends Controller
             'subTipo',
             'prioridad',
             'operadores',
+            'reportantes',
             'recursos',
         ])->findOrFail($id);
 
@@ -241,6 +326,7 @@ class IncidenciaController extends Controller
                 'subTipo',
                 'prioridad',
                 'operadores',
+                'reportantes',
                 'recursos',
             ]),
         ], 200);
@@ -370,7 +456,11 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        // Citizens can view their own reported incidences
-        return $incidencia->cliente_id === $user->id;
+        // Citizens can view their own reported incidences (either as creator or as an attached reportante)
+        if ($incidencia->cliente_id === $user->id) {
+            return true;
+        }
+
+        return $incidencia->reportantes()->where('usuario_incidencia.user_id', $user->id)->exists();
     }
 }
