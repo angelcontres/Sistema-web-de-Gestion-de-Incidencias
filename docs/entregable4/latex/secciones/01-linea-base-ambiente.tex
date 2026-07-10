@@ -1,0 +1,23 @@
+\section{Línea Base del Ambiente}
+\label{sec:linea_base_ambiente}
+
+Detalle de las versiones de hardware, software e infraestructura de red utilizadas durante la ejecución de las pruebas.
+
+\begin{table}[H]
+    \centering
+    \caption{Detalle del ambiente de hardware y software utilizado para la ejecución de las pruebas}
+    \label{tab:detalle_ambiente}
+    \begin{tabularx}{\textwidth}{l X}
+        \toprule
+        \textbf{Componente} & \textbf{Versión / Configuración} \\
+        \midrule
+        Sistema Operativo (Host) & Windows 10, Fedora Linux \\
+        Entorno de Contenedores & Docker 3.8, Docker Compose \\
+        Backend API & PHP 8.2, Laravel 13, API REST \\
+        Base de Datos & PostgreSQL 15-alpine, también se utiliza SQLite para pruebas funcionales rápidas \\
+        Frontend & Bootstrap 5, JS Vanilla como Fetch API \\
+        Navegador de Pruebas & Edge, Google Chrome, Brave \\
+        Herramientas Adicionales & psql, DevTools del navegador \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
