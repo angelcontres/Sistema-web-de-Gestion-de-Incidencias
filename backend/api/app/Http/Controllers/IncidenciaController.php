@@ -22,9 +22,9 @@ class IncidenciaController extends Controller
     {
         $user = auth()->user();
 
-        // Automatic state transition: when Supervisor queries list, Pendiente (2) -> En Revisión (3)
+        // Automatic state transition: when Supervisor queries list, Pendiente (1) -> En Revisión (2)
         if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
-            $transitionQuery = Incidencia::where('estado_id', 2);
+            $transitionQuery = Incidencia::where('estado_id', 1);
             if ($user->pais_id) {
                 $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
                     $q->where('pais_id', $user->pais_id);
@@ -32,12 +32,13 @@ class IncidenciaController extends Controller
             }
             $incidenciasTransition = $transitionQuery->get();
             foreach ($incidenciasTransition as $inc) {
-                $inc->update(['estado_id' => 3]);
+                $inc->update(['estado_id' => 2]);
             }
         }
 
         $query = Incidencia::with([
             'direccion.territorio.pais',
+            'direccion.territorio.parent',
             'cliente',
             'estado',
             'institucion',
@@ -125,14 +126,12 @@ class IncidenciaController extends Controller
                             'incidencia_id' => $similar->id,
                             'estado_id' => $similar->estado_id,
                             'usuario_id' => $user->id,
-                            'comentario' => 'Reporte ciudadano coincidente adjuntado: ' . $request->incidencia_descripcion
+                            'comentario' => '[VINCULADO] ' . $request->incidencia_descripcion
                         ]);
                     }
 
                     // Delete the newly created address if it is not used elsewhere
-                    $isReferenced = Incidencia::where('direccion_id', $direccion->id)
-                        ->where('id', '!=', $similar->id)
-                        ->exists();
+                    $isReferenced = Incidencia::where('direccion_id', $direccion->id)->exists();
                     if (!$isReferenced) {
                         $direccion->delete();
                     }
@@ -166,7 +165,7 @@ class IncidenciaController extends Controller
             'incidencia_descripcion' => $request->incidencia_descripcion,
             'direccion_id' => $direccionId,
             'cliente_id' => $user ? $user->id : null,
-            'estado_id' => $request->input('estado_id', 2), // Default: En Revisión (2)
+            'estado_id' => $request->input('estado_id', 1), // Default: Pendiente (1)
             'institucion_id' => $request->institucion_id,
             'tipo_incidencia_id' => $request->tipo_incidencia_id,
             'sub_tipo_incidencia_id' => $request->sub_tipo_incidencia_id,
@@ -214,6 +213,7 @@ class IncidenciaController extends Controller
             'message' => 'Incidencia creada con éxito',
             'data' => $incidencia->load([
                 'direccion.territorio.pais',
+                'direccion.territorio.parent',
                 'cliente',
                 'estado',
                 'institucion',
@@ -234,6 +234,7 @@ class IncidenciaController extends Controller
     {
         $incidencia = Incidencia::with([
             'direccion.territorio.pais',
+            'direccion.territorio.parent',
             'cliente',
             'estado',
             'institucion',
@@ -321,6 +322,7 @@ class IncidenciaController extends Controller
             'message' => 'Incidencia actualizada con éxito',
             'data' => $incidencia->load([
                 'direccion.territorio.pais',
+                'direccion.territorio.parent',
                 'cliente',
                 'estado',
                 'institucion',

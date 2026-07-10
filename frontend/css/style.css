@@ -128,11 +128,7 @@ main#app {
   z-index: 1000;
   position: sticky;
   top: 0;
-  height: var(--navbar-height) !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  display: flex;
-  align-items: center;
+  min-height: var(--navbar-height);
 }
 
 .custom-navbar .navbar-brand {
@@ -536,6 +532,44 @@ main#app {
 }
 
 /* ==========================================
+   PREMIUM DARK DROPDOWN
+   ========================================== */
+.custom-dropdown {
+  background-color: rgba(9, 9, 11, 0.95) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.5rem 0 !important;
+}
+
+.custom-dropdown .dropdown-item {
+  color: rgba(255, 255, 255, 0.75) !important;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem !important;
+}
+
+.custom-dropdown .dropdown-item:hover,
+.custom-dropdown .dropdown-item:focus {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+.custom-dropdown .dropdown-item.text-danger {
+  color: var(--danger-color) !important;
+}
+
+.custom-dropdown .dropdown-item.text-danger:hover {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.custom-dropdown .dropdown-divider {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 0.5rem 0 !important;
+}
+
+/* ==========================================
    RESPONSIVE LAYOUT OVERRIDES (OFF-CANVAS SIDEBAR)
    ========================================== */
 @media (max-width: 991.98px) {
@@ -577,6 +611,20 @@ main#app {
     padding-right: 1.25rem;
     margin-top: 1.5rem !important;
     margin-bottom: 1.5rem !important;
+  }
+
+  /* Overlay the navbar collapse menu on mobile to avoid breaking the viewport layout */
+  .custom-navbar .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: rgba(9, 9, 11, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: var(--shadow-lg);
   }
 }
 

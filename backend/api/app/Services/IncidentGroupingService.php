@@ -36,19 +36,19 @@ class IncidentGroupingService
             ->join('direcciones', 'reporte_incidencias.direccion_id', '=', 'direcciones.id')
             ->where('reporte_incidencias.tipo_incidencia_id', $tipoId)
             ->where('reporte_incidencias.sub_tipo_incidencia_id', $subTipoId)
-            ->whereIn('reporte_incidencias.estado_id', [2, 3, 4]) // Pendiente, En Revisión, En Proceso
+            ->whereIn('reporte_incidencias.estado_id', [1, 2, 3]) // Pendiente, En Revisión, En Proceso
             ->whereNull('reporte_incidencias.deleted_at')
             ->selectRaw(
                 '(6371 * acos(
-                    cos(radians(?)) * cos(radians(direcciones.latitud)) * 
-                    cos(radians(direcciones.longitud) - radians(?)) + 
+                    cos(radians(?)) * cos(radians(direcciones.latitud)) *
+                    cos(radians(direcciones.longitud) - radians(?)) +
                     sin(radians(?)) * sin(radians(direcciones.latitud))
                 )) AS distance',
                 [$lat, $lng, $lat]
             )
             ->whereRaw('(6371 * acos(
-                cos(radians(?)) * cos(radians(direcciones.latitud)) * 
-                cos(radians(direcciones.longitud) - radians(?)) + 
+                cos(radians(?)) * cos(radians(direcciones.latitud)) *
+                cos(radians(direcciones.longitud) - radians(?)) +
                 sin(radians(?)) * sin(radians(direcciones.latitud))
             )) <= CAST(? AS REAL)', [$lat, $lng, $lat, $radiusKm])
             ->orderBy('distance', 'asc')

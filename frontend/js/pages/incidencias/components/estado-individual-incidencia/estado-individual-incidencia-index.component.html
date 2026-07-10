@@ -1,15 +1,58 @@
-<div class="row h-100 g-4">
-  
-  <!-- PANEL IZQUIERDO: Chat y Comentarios -->
-  <div class="col-lg-7 d-flex flex-column h-100">
-    <div class="card border-0 shadow-sm rounded-4 flex-grow-1 d-flex flex-column" style="max-height: 80vh;">
-      <div class="card-header bg-white border-bottom py-3 rounded-top-4">
-        <h5 class="mb-0 fw-bold"><i class="bi bi-chat-dots text-primary me-2"></i>Historial y Comentarios</h5>
+<div class="d-flex align-items-center mb-3 text-muted">
+  <a
+    href="javascript:history.back()"
+    class="text-decoration-none text-dark fw-medium d-flex align-items-center me-3 border-end pe-3"
+  >
+    <i class="bi bi-arrow-left me-2"></i> Volver al Listado
+  </a>
+</div>
+
+<!-- GLOBAL HEADER -->
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+  <div class="card-body p-4">
+    <div>
+      <!-- Title & Priority -->
+      <div class="d-flex align-items-center mb-2">
+        <h2 class="fw-bold text-dark mb-0 me-3" id="lbl-descripcion-header"></h2>
+        <span id="lbl-prioridad"></span>
       </div>
-      
+
+      <!-- Meta info -->
+      <div class="d-flex align-items-center text-muted small gap-3">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-clock me-1"></i>
+          <span id="lbl-fecha-registro"></span>
+        </div>
+        <div class="d-flex align-items-center">
+          <span class="me-2">Estado:</span>
+          <div id="lbl-estado"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row h-100 g-4">
+  <!-- PANEL IZQUIERDO: Chat y Comentarios y Adjuntos -->
+  <div class="col-lg-8 d-flex flex-column h-100">
+    <!-- Chat Card -->
+    <div
+      class="card border-0 shadow-sm rounded-4 d-flex flex-column mb-4"
+      style="max-height: 80vh; flex-shrink: 0; min-height: 50vh"
+    >
+      <div class="card-header bg-white border-bottom py-3 rounded-top-4">
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-chat-dots text-primary me-2"></i>Hilo de Seguimiento
+        </h5>
+      </div>
+
       <!-- Contenedor del chat con scroll -->
-      <div class="card-body p-4 d-flex flex-column gap-3 overflow-auto chat-container" id="chat-container" style="background-color: #f8f9fa;">
-        
+      <div
+        class="card-body p-4 d-flex flex-column gap-3 overflow-auto chat-container flex-grow-1"
+        id="chat-container"
+        style="background-color: #f8f9fa"
+      >
         <div class="text-center d-none" id="loading-more">
           <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
           <span class="small text-muted ms-2">Cargando anteriores...</span>
@@ -18,67 +61,101 @@
         <div id="comments-list" class="d-flex flex-column gap-3">
           <!-- Los comentarios se insertan aquí -->
         </div>
-
       </div>
 
       <!-- Formulario de nuevo comentario -->
       <div class="card-footer bg-white border-top p-3 rounded-bottom-4">
         <form id="form-comentario">
           <div class="input-group">
-            <textarea id="nuevo-comentario" class="form-control" rows="2" placeholder="Escribe un comentario..." required maxlength="200" style="resize: none;"></textarea>
+            <textarea
+              id="nuevo-comentario"
+              class="form-control"
+              rows="2"
+              placeholder="Escribe un comentario o actualización..."
+              required
+              maxlength="200"
+              style="resize: none"
+            ></textarea>
             <button class="btn btn-primary px-4" type="submit" id="btn-enviar-comentario">
-              <i class="bi bi-send-fill"></i>
+              <i class="bi bi-send-fill me-2 d-none d-sm-inline"></i>Enviar Nota
             </button>
           </div>
-          <div class="form-text text-end small"><span id="chat-char-count">0</span>/200</div>
+          <div class="d-flex justify-content-between mt-2">
+            <div class="form-text small m-0"><span id="chat-char-count">0</span>/200</div>
+          </div>
         </form>
+      </div>
+    </div>
+
+    <!-- TARJETA DE ADJUNTOS Y EVIDENCIAS -->
+    <div class="card border-0 shadow-sm rounded-4 flex-shrink-0">
+      <div class="card-header bg-white border-bottom py-3 rounded-top-4">
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-paperclip text-secondary me-2"></i>Adjuntos y Evidencias
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <div id="container-adjuntos" class="d-flex flex-wrap gap-3">
+          <div class="text-muted small w-100 text-center" id="no-adjuntos-msg">
+            No hay adjuntos disponibles.
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- PANEL DERECHO: Detalles de la Incidencia -->
-  <div class="col-lg-5">
+  <!-- PANEL DERECHO: Ciclo de vida y Detalles de la Incidencia -->
+  <div class="col-lg-4">
+    <!-- TARJETA CICLO DE VIDA -->
     <div class="card border-0 shadow-sm rounded-4 mb-4">
       <div class="card-header bg-white border-bottom py-3 rounded-top-4">
-        <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle text-info me-2"></i>Detalle de Incidencia</h5>
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-check-circle text-primary me-2"></i>Ciclo de Vida
+        </h5>
       </div>
       <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="text-muted fw-bold">ID: <span id="lbl-id" class="text-dark"></span></span>
-          <span id="lbl-prioridad"></span>
+        <div id="timeline-container" class="position-relative ms-2">
+          <!-- Timeline items inserted dynamically -->
         </div>
-        
-        <h5 class="fw-bold mb-3" id="lbl-descripcion"></h5>
-        
-        <div class="mb-3">
-          <div class="small text-muted text-uppercase fw-bold mb-1">Estado Actual</div>
-          <div id="lbl-estado"></div>
-        </div>
+      </div>
+    </div>
 
+    <!-- TARJETA DETALLE DE INCIDENCIA -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-white border-bottom py-3 rounded-top-4">
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-info-circle text-info me-2"></i>Detalle de Incidencia
+        </h5>
+      </div>
+      <div class="card-body p-4">
         <div class="mb-3">
-          <div class="small text-muted text-uppercase fw-bold mb-1">Ubicación</div>
           <div class="d-flex align-items-center">
             <i class="bi bi-geo-alt text-danger me-2"></i>
             <span id="lbl-direccion" class="fw-medium"></span>
           </div>
         </div>
 
-        <div class="mb-3">
-          <div class="small text-muted text-uppercase fw-bold mb-1">Afectados</div>
-          <div class="fw-medium"><i class="bi bi-people me-2 text-secondary"></i><span id="lbl-afectados"></span> personas</div>
-        </div>
-
-        <div class="mb-3 d-none" id="container-reportantes">
-          <div class="small text-muted text-uppercase fw-bold mb-1">Reportantes vinculados</div>
-          <div class="fw-medium ps-1" style="font-size: 0.9rem;" id="list-reportantes"></div>
-        </div>
-
         <div class="mb-0">
-          <div class="small text-muted text-uppercase fw-bold mb-1">Institución Asignada</div>
-          <div class="fw-medium"><i class="bi bi-building me-2 text-secondary"></i><span id="lbl-institucion"></span></div>
+          <div class="fw-medium">
+            <i class="bi bi-building me-2 text-secondary"></i><span id="lbl-institucion"></span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
+    <!-- TARJETA DE REPORTANTES -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 d-none" id="container-reportantes">
+      <div class="card-header bg-white border-bottom py-3 rounded-top-4">
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-people text-secondary me-2"></i>Reportantes Vinculados (<span
+            id="lbl-afectados"
+          ></span
+          >)
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <div id="list-reportantes" class="d-flex flex-wrap gap-3"></div>
+      </div>
+    </div>
+  </div>
 </div>

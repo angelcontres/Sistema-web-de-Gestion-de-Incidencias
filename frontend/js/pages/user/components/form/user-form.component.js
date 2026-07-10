@@ -2,6 +2,7 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { UserService } from '../../services/user.service.js';
 import { RoleService } from '../../../role/services/role.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { InstitucionService } from '../../../instituciones/services/institucion.service.js';
 
 export class UserFormComponent extends BaseComponent {
   constructor() {
@@ -16,6 +17,8 @@ export class UserFormComponent extends BaseComponent {
     this.emailInput = this.querySelector('#email');
     this.passwordInput = this.querySelector('#password');
     this.activoInput = this.querySelector('#activo');
+    this.institucionContainer = this.querySelector('#institucionContainer');
+    this.institucionSelect = this.querySelector('#institucion_id');
     this.rolesDisponiblesList = this.querySelector('#rolesDisponiblesList');
     this.rolesAsignadosList = this.querySelector('#rolesAsignadosList');
     this.formTitle = this.querySelector('#userModalLabel');
@@ -49,6 +52,8 @@ export class UserFormComponent extends BaseComponent {
 
     // Initialize data
     const init = async () => {
+      await this.cargarInstituciones();
+
       if (userId) {
         document.title = 'Editar Usuario';
         if (this.formTitle) this.formTitle.textContent = 'Editar Usuario';
@@ -97,6 +102,7 @@ export class UserFormComponent extends BaseComponent {
       if (element) {
         listEl.appendChild(element);
         this.updateEmptyStates();
+        this.checkInstitucionRole();
       }
     });
   }
@@ -151,6 +157,7 @@ export class UserFormComponent extends BaseComponent {
         item.style.userSelect = 'none';
         item.setAttribute('draggable', 'true');
         item.setAttribute('data-role-id', role.id);
+        item.setAttribute('data-role-name', role.nombre);
         
         item.innerHTML = `
           <i class="bi bi-grip-vertical text-muted"></i>
@@ -174,9 +181,51 @@ export class UserFormComponent extends BaseComponent {
       });
 
       this.updateEmptyStates();
+      this.checkInstitucionRole();
     } catch (error) {
       console.error('Error al cargar catálogo de roles:', error);
       this.rolesDisponiblesList.innerHTML = '<span class="text-danger small">Error al cargar roles.</span>';
+    }
+  }
+
+  async cargarInstituciones() {
+    try {
+      const response = await InstitucionService.getAll();
+      const instituciones = response.data || response || [];
+      const list = Array.isArray(instituciones) ? instituciones : instituciones.data || [];
+      
+      list.forEach(inst => {
+        const option = document.createElement('option');
+        option.value = inst.id;
+        option.textContent = inst.nombre;
+        if (this.institucionSelect) {
+          this.institucionSelect.appendChild(option);
+        }
+      });
+    } catch (error) {
+      console.error('Error al cargar instituciones:', error);
+    }
+  }
+
+  checkInstitucionRole() {
+    if (!this.rolesAsignadosList || !this.institucionContainer || !this.institucionSelect) return;
+    
+    let isInstitucion = false;
+    const assignedItems = this.rolesAsignadosList.querySelectorAll('.role-draggable-item');
+    assignedItems.forEach(item => {
+      const roleName = item.getAttribute('data-role-name');
+      if (roleName && roleName.toLowerCase() === 'institucion') {
+        isInstitucion = true;
+      }
+    });
+
+    if (isInstitucion) {
+      this.institucionContainer.classList.remove('d-none');
+      this.institucionSelect.required = true;
+    } else {
+      this.institucionContainer.classList.add('d-none');
+      this.institucionSelect.required = false;
+      this.institucionSelect.value = '';
     }
   }
 
@@ -190,6 +239,10 @@ export class UserFormComponent extends BaseComponent {
         if (this.nameInput) this.nameInput.value = user.name || '';
         if (this.emailInput) this.emailInput.value = user.email || '';
         if (this.activoInput) this.activoInput.checked = !!user.activo;
+        
+        if (this.institucionSelect && user.institucion_id) {
+          this.institucionSelect.value = user.institucion_id;
+        }
 
         const userRoleIds = (user.roles || []).map((r) => r.id);
         await this.cargarRolesCheckboxes(userRoleIds);
@@ -220,6 +273,8 @@ export class UserFormComponent extends BaseComponent {
     const email = this.emailInput.value.trim();
     const password = this.passwordInput.value;
     const activo = this.activoInput.checked;
+    
+    const institucion_id = this.institucionSelect && !this.institucionContainer.classList.contains('d-none') ? this.institucionSelect.value : null;
 
     const assignedItems = this.rolesAsignadosList.querySelectorAll('[data-role-id]');
     const roles = Array.from(assignedItems).map((item) => parseInt(item.getAttribute('data-role-id')));
@@ -231,6 +286,10 @@ export class UserFormComponent extends BaseComponent {
       activo,
       roles,
     };
+    
+    if (institucion_id) {
+      payload.institucion_id = parseInt(institucion_id);
+    }
 
     if (password) {
       payload.password = password;

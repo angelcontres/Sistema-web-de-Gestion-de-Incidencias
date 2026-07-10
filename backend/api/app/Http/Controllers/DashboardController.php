@@ -37,7 +37,7 @@ class DashboardController extends Controller
 
         $sinAsignar = Incidencia::whereNull('institucion_id')->count();
 
-        $resueltasHoy = Incidencia::where('estado_id', 3)
+        $resueltasHoy = Incidencia::where('estado_id', 4)
             ->whereDate('updated_at', $today)
             ->count();
 
@@ -95,7 +95,7 @@ class DashboardController extends Controller
                     'categoria' => $incidencia->tipo ? $incidencia->tipo->nombre : '-',
                     'ubicacion' => $incidencia->direccion ? $incidencia->direccion->detalle : 'Sin dirección',
                     'prioridad' => 'Media',
-                    'estado' => $incidencia->estado ? $incidencia->estado->nombre : 'Borrador',
+                    'estado' => $incidencia->estado ? $incidencia->estado->nombre : 'Pendiente',
                     'reportado' => $incidencia->created_at->diffForHumans(),
                 ];
             });
