@@ -60,9 +60,28 @@ services:
     networks:
       - sistema_net
 
+  # Grafana para visualización y analítica interna (Puerto 3010 libre)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sistema_grafana
+    restart: always
+    ports:
+      - "3010:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - postgres
+    networks:
+      - sistema_net
+
 networks:
   sistema_net:
     driver: bridge
 
 volumes:
   postgres_data:
+  grafana_data:
+
