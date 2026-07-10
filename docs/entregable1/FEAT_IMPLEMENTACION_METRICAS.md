@@ -5,182 +5,148 @@ Este documento detalla el plan de implementación técnica para las métricas e 
 ---
 
 ## 1. Métrica: Tasa de Éxito de Pruebas (TEP)
-*Mide la estabilidad y correcto comportamiento del software a través del porcentaje de pruebas unitarias/integración aprobadas.*
 
-### Base de Datos
-* Crear migración para la tabla `sqa_metrics_history`:
-  * `id` (Primary Key, autoincrementable)
-  * `tep` (decimal, 5, 2) - Porcentaje de éxito de las pruebas (ej: 95.50)
-  * `pruebas_aprobadas` (integer) - Cantidad de pruebas exitosas
-  * `pruebas_fallidas` (integer) - Cantidad de pruebas fallidas
-  * `pruebas_omitidas` (integer) - Cantidad de pruebas omitidas
-  * `total_pruebas` (integer) - Sumatoria total de las pruebas ejecutadas
-  * `fecha_ejecucion` (timestamp) - Marca de tiempo cuando se ejecutó la suite de pruebas
-  * Campos de auditoría estándar: `created_at`, `updated_at`, `deleted_at` (Soft Delete)
+_Mide la estabilidad y correcto comportamiento del software a través del porcentaje de pruebas unitarias/integración aprobadas._
 
-### Backend
-* Crear el modelo `SqaMetricsHistory` en Laravel.
-* Crear las rutas de la API en `routes/api.php` protegidas mediante token de autenticación:
-  * `POST /api/sqa/metrics-history` (Para registrar resultados desde la pipeline CI/CD)
-  * `GET /api/sqa/metrics-history` (Para consulta en el Dashboard)
-* Crear `StoreSqaMetricsHistoryRequest` para validar la creación:
-  * `tep`: `required|numeric|between:0,100`
-  * `pruebas_aprobadas`: `required|integer|min:0`
-  * `pruebas_fallidas`: `required|integer|min:0`
-  * `pruebas_omitidas`: `required|integer|min:0`
-  * `total_pruebas`: `required|integer|min:0`
-  * `fecha_ejecucion`: `required|date_format:Y-m-d H:i:s`
-* Crear `SqaMetricsHistoryController` para procesar el guardado y consulta de datos.
+### Enfoque de Automatización (Sin Base de Datos)
 
-### Frontend
-* Integrar componente visual tipo "Badge" dinámico en la cabecera del panel administrativo que muestre el estado general del build actual y el porcentaje TEP.
-* Crear un gráfico de líneas temporales (ej. con Chart.js o Recharts) que muestre la evolución histórica de la Tasa de éxito de pruebas.
+No es necesario crear una tabla en la base de datos transaccional de PostgreSQL para esta métrica. Al ser una métrica de Aseguramiento de Calidad (SQA), su registro operativo debe vivir fuera del _core_ del negocio, utilizando un enfoque de artefactos en formato JSON que Grafana pueda leer directamente.
 
-### Flujo de implementación (TEP)
-* **Cuantificación:** PHPUnit exporta un reporte en formato JUnit XML mediante `php artisan test --log-junit tests/results.xml` al finalizar las pruebas unitarias y de integración.
-* **Persistencia:** Un script en la pipeline lee el XML, extrae los contadores (total de pruebas, aprobadas, fallidas, omitidas), calcula la tasa porcentual (`tep`) y envía los datos mediante una petición HTTP `POST` a `/api/sqa/metrics-history`, donde el modelo `SqaMetricsHistory` los guarda.
+### Flujo de Implementación (TEP)
+
+- **Cuantificación:** PHPUnit exporta un reporte en formato estructurado (JUnit XML) mediante `php artisan test --log-junit tests/results.xml` al finalizar las pruebas unitarias y de integración.
+- **Procesamiento:** Un script automatizado en la pipeline de CI/CD (o un comando local de Artisan) parsea el XML, cuenta el total de pruebas aprobadas, fallidas y omitidas, calcula la tasa porcentual (`tep`), y vuelca el resultado en un archivo estático: `backend/tests/metrics-stg/tep.json-YYYY-MM-DD.json`.
+- **Visualización (Grafana):** Grafana consume el archivo `tep-YYYY-MM-DD.json` mediante el plugin gratuito **JSON API Data Source**. Se configura un panel de tipo **Gauge** (Tacómetro) que pinta el porcentaje de éxito (Verde > 90%, Amarillo > 80%, Rojo < 80%).
 
 ---
 
 ## 2. Métrica: Cobertura Funcional (CF)
-*Mide el porcentaje de Historias de Usuario (HU) del backlog validadas mediante pruebas de aceptación.*
 
-### Base de Datos
-* Crear migración para la tabla `sqa_functional_coverage`:
-  * `id` (Primary Key, autoincrementable)
-  * `cf` (decimal, 5, 2) - Porcentaje de cobertura funcional (ej: 100.00)
-  * `hus_validadas` (integer) - Cantidad de HUs con test de aceptación exitoso
-  * `total_hus` (integer) - Cantidad total de HUs en el backlog
-  * `fecha_medicion` (timestamp) - Fecha en que se tomó la métrica
-  * Campos de auditoría estándar: `created_at`, `updated_at`, `deleted_at`
+_Mide el porcentaje de Historias de Usuario (HU) de la especificación técnica (`docs/01_analisis/historias_usuario.md`) validadas mediante escenarios de aceptación estructurados en formato BDD/Gherkin._
 
-### Backend
-* Crear el modelo `SqaFunctionalCoverage` en Laravel.
-* Crear endpoint `GET /api/sqa/functional-coverage` para retornar el último estado e historial de cobertura.
-* Crear un comando de consola de Artisan (`app/Console/Commands/SyncFunctionalCoverage.php`) que:
-  * Consulte mediante GraphQL la API de Linear App para obtener las historias de usuario y su estado.
-  * Verifique los casos de prueba ejecutados y su cobertura analítica.
-  * Calcule y registre los valores de Cobertura Funcional de forma automática.
-* Crear `StoreSqaFunctionalCoverageRequest` (en caso de actualización externa vía endpoint):
-  * `cf`: `required|numeric|between:0,100`
-  * `hus_validadas`: `required|integer|min:0`
-  * `total_hus`: `required|integer|min:0`
-  * `fecha_medicion`: `required|date_format:Y-m-d H:i:s`
+### Enfoque BDD (Behavior-Driven Development) y Gherkin
 
-### Frontend
-* Crear un gráfico de tipo pastel (Pie/Donut Chart) en el Dashboard de Calidad que ilustre la proporción de historias de usuario validadas vs. las no validadas/pendientes.
+En lugar de persistir esta métrica en una base de datos operativa (lo cual agrega sobrecarga innecesaria al modelo relacional de producción), se utiliza un enfoque de trazabilidad directa basado en desarrollo guiado por comportamiento:
 
-### Flujo de implementación (CF)
-* **Cuantificación:** Se consumen las APIs GraphQL de **Linear App** para obtener la lista de Historias de Usuario (HUs) del Sprint. Luego, se cruzan con el total de pruebas de aceptación implementadas en el código que posean anotaciones de cobertura funcional (ej: `@covers HU-01`).
-* **Persistencia:** Una tarea programada en Laravel Task Scheduler (`app/Console/Kernel.php`) realiza la consulta, calcula el porcentaje (`cf`) y crea un registro usando `SqaFunctionalCoverage::create(...)`.
+1. **Especificación:** Cada Historia de Usuario descrita en `historias_usuario.md` se mapea a uno o más escenarios de prueba en formato Gherkin (`Given-When-Then`) guardados como características (`.feature`) o documentados en los bloques de test de aceptación.
+2. **Automatización:** Se escriben pruebas de aceptación correspondientes en PHPUnit/Pest.
+3. **Métrica:** La Cobertura Funcional se calcula cruzando las HUs del documento de análisis que tienen sus escenarios BDD completamente aprobados frente al total de HUs declaradas.
+
+### Guía de Redacción Técnica (Ejemplos Gherkin)
+
+#### HU-01: Registro de incidencia (Aprobado)
+
+```gherkin
+Feature: Registro de incidencia
+  Como ciudadano o empleado
+  Quiero registrar una incidencia con ubicación y prioridad
+  Para que sea atendida por las autoridades
+
+  Scenario: Registro exitoso con datos válidos
+    Given que soy un ciudadano autenticado en el sistema
+    And selecciono una ubicación válida en el mapa (latitud: -2.2, longitud: -80.9)
+    And elijo la categoría "Falla Eléctrica" y prioridad "Alta"
+    When envío el formulario con una descripción de 50 caracteres
+    Then el sistema debe responder HTTP 201 (Creado)
+    And la incidencia debe guardarse con el estado "Pendiente" automáticamente
+
+  Scenario: Rechazo por campos obligatorios vacíos (Validación)
+    Given que soy un ciudadano autenticado
+    When intento registrar una incidencia sin especificar el tipo ni la descripción
+    Then el sistema debe responder HTTP 422 (Unprocessable Entity)
+    And el JSON de respuesta debe detallar los errores de validación
+```
+
+#### HU-06: Comentar en una incidencia (Aprobado)
+
+```gherkin
+Feature: Comentar en una incidencia
+  Como usuario registrado
+  Quiero agregar comentarios a una incidencia
+  Para aportar seguimiento o evidencias
+
+  Scenario: Agregar comentario válido
+    Given que soy un usuario autenticado
+    And existe una incidencia activa en la base de datos
+    When publico un comentario con texto "Inspección de zona realizada"
+    Then el sistema debe responder HTTP 201
+    And el comentario debe asociarse cronológicamente al historial de la incidencia
+
+  Scenario: Rechazo por superar longitud máxima
+    Given que soy un usuario autenticado
+    When intento publicar un comentario que supera los 200 caracteres
+    Then el sistema debe responder HTTP 422 (Excede longitud máxima)
+```
+
+### Flujo de Implementación y Cuantificación (CF)
+
+- **Cuantificación:** Se listan las 12 HUs de `docs/01_analisis/historias_usuario.md`. Al ejecutar la suite de pruebas unitarias y de integración en Laravel:
+  - Se evalúa cuáles HUs tienen la totalidad de sus escenarios Gherkin automatizados e implementados en código con estado exitoso.
+  - Si una HU (como `HU-08: Recibir notificaciones`) tiene sus pruebas pendientes, se considera no cubierta (0% para esa historia).
+- **Cálculo:**
+  $$\text{CF} = \left( \frac{\text{HUs con BDD aprobados (9 de 12)}}{\text{Total HUs especificadas (12)}} \right) \times 100 = 75.0\%$$
+- **Visualización:** Esta métrica se expone directamente en el reporte de métricas del Entregable 5 y se grafica en Grafana mediante un widget estático (tipo Gauge) o procesando el reporte JSON/XML generado por el corredor de pruebas.
 
 ---
 
 ## 3. Métrica: Densidad de Defectos (DD)
-*Mide la cantidad de bugs detectados por cada caso de prueba ejecutado para controlar la madurez del código.*
 
-### Base de Datos
-* Crear migración para la tabla `sqa_defect_densities`:
-  * `id` (Primary Key, autoincrementable)
-  * `dd` (decimal, 5, 4) - Densidad de defectos calculada (ej: 0.0450)
-  * `bugs_alta_media` (integer) - Cantidad de bugs activos de severidad Alta o Media
-  * `casos_ejecutados` (integer) - Cantidad total de casos de prueba ejecutados en testing
-  * `fecha_calculo` (timestamp) - Fecha en la que se realizó el cálculo
-  * Campos de auditoría estándar: `created_at`, `updated_at`, `deleted_at`
+_Mide la cantidad de bugs detectados por cada caso de prueba ejecutado para controlar la madurez del código._
 
-### Backend
-* Crear el modelo `SqaDefectDensity` en Laravel.
-* Crear endpoint `GET /api/sqa/defect-density` para el consumo del dashboard.
-* Implementar tarea programada (cron) en `app/Console/Kernel.php` que se ejecute diariamente:
-  * Llama a la API de Linear App para contar los bugs activos con prioridad Alta/Media.
-  * Consulta el total de casos ejecutados en la tabla `sqa_metrics_history`.
-  * Realiza la división matemática, instancia el modelo y persiste los datos.
-* Crear `StoreSqaDefectDensityRequest` para validación:
-  * `dd`: `required|numeric|min:0`
-  * `bugs_alta_media`: `required|integer|min:0`
-  * `casos_ejecutados`: `required|integer|min:0`
-  * `fecha_calculo`: `required|date_format:Y-m-d H:i:s`
+### Enfoque de Automatización (Sin Base de Datos)
 
-### Frontend
-* Crear un gráfico de líneas temporales de tendencia (Trend Chart) en el panel administrativo, con una línea horizontal estática de referencia en `0.1` que marque el límite máximo aceptable de densidad de defectos.
+Al igual que las métricas anteriores, no requiere de una tabla de PostgreSQL. La Densidad de Defectos se extrae del cruce entre el gestor de incidentes del proyecto (ej: Linear App o GitHub Issues) y el total de pruebas ejecutadas de PHPUnit.
 
-### Flujo de implementación (DD)
-* **Cuantificación:** Se calcula dividiendo la cantidad de Bugs activos (abiertos en Linear App con prioridad Alta/Media) entre el histórico acumulado de casos de prueba ejecutados en testing (obtenido de `sqa_metrics_history`).
-* **Persistencia:** Laravel Task Scheduler corre diariamente un comando Artisan que realiza el cálculo del ratio y persiste los datos con `SqaDefectDensity::create(...)`.
+### Flujo de Implementación (DD)
+
+- **Cuantificación:** Un script automatizado o un comando de Artisan programado (`cron`) realiza una consulta a la API de Linear/GitHub para contar los bugs activos con etiqueta de prioridad Alta/Media. Luego, cruza este valor dividiéndolo para el total de casos del archivo `results.xml` de PHPUnit.
+- **Registro en Artefacto:** El script matemático vuelca el resultado en un archivo ligero de consumo web `public/metrics/defect_density.json`.
+- **Visualización (Grafana):** Mediante el **JSON API Data Source**, Grafana consume el archivo y proyecta un panel tipo **Stat** numérico o un gráfico de **Series Temporales**. Si el valor supera el límite paramétrico de `0.1` definido en el E1, el panel en Grafana se pintará automáticamente en color Rojo para alertar al equipo.
 
 ---
 
 ## 4. Métrica: Vulnerabilidades Críticas (OWASP) (VCO)
-*Controla y cuantifica las brechas de seguridad según los 5 vectores del estándar OWASP adoptados.*
 
-### Base de Datos
-* Crear migración para la tabla `sqa_security_findings`:
-  * `id` (Primary Key, autoincrementable)
-  * `vco` (integer) - Total de vulnerabilidades críticas/hallazgos OWASP
-  * `hallazgos_altos` (integer) - Cantidad de vulnerabilidades altas
-  * `hallazgos_medios` (integer) - Cantidad de vulnerabilidades medias
-  * `hallazgos_bajos` (integer) - Cantidad de vulnerabilidades bajas
-  * `detalle_hallazgos` (json) - Objeto JSON con el listado detallado de vulnerabilidades reportadas
-  * `fecha_auditoria` (timestamp) - Fecha en que se realizó el escaneo
-  * Campos de auditoría estándar: `created_at`, `updated_at`, `deleted_at`
+_Controla y cuantifica las brechas de seguridad según los 5 vectores del estándar OWASP adoptados._
 
-### Backend
-* Crear el modelo `SqaSecurityFinding` en Laravel.
-* Crear endpoint `POST /api/sqa/security-findings` (Protegido por API Key para la integración de la pipeline de Docker/Github Actions).
-* Crear endpoint `GET /api/sqa/security-findings` para el consumo del panel administrativo.
-* Crear `StoreSqaSecurityFindingRequest` para validar el reporte enviado por el escáner de seguridad:
-  * `vco`: `required|integer|min:0`
-  * `hallazgos_altos`: `required|integer|min:0`
-  * `hallazgos_medios`: `required|integer|min:0`
-  * `hallazgos_bajos`: `required|integer|min:0`
-  * `detalle_hallazgos`: `nullable|array`
-  * `fecha_auditoria`: `required|date_format:Y-m-d H:i:s`
+### Enfoque de Automatización (Sin Base de Datos)
 
-### Frontend
-* Implementar un widget de tipo semáforo o indicador de alerta visual:
-  * **Verde**: Si el indicador global `vco` es igual a `0`.
-  * **Amarillo**: Si `vco == 0` pero existen hallazgos medios o bajos.
-  * **Rojo**: Si `vco > 0` (muestra alerta parpadeante "Vulnerabilidad Crítica Detectada").
-* Diseñar un modal de desglose donde el administrador pueda ver los detalles técnicos del JSON y enlaces a las dependencias desactualizadas o afectadas.
+Las herramientas de análisis de seguridad estático y dinámico (SAST/DAST) funcionan perfectamente mediante _outputs_ de consola. No se justifica gastar recursos de una base de datos relacional para ello.
 
-### Flujo de implementación
-Las vulnerabilidades no se cuentan manualmente; se extraen de herramientas SAST/DAST integradas en la Pipeline de Integración Continua (CI/CD):
-1. **Ejecución del Escaneo:** Durante la fase de compilación en GitHub Actions, se ejecutan escaneos de dependencias con salida en formato JSON:
-   * **Backend (PHP):** `composer audit --format=json`
-   * **Frontend (JS):** `npm audit --json`
-2. **Parseo y Conteo (Cuantificación):** Un script automatizado en la pipeline lee los archivos JSON resultantes y cuenta las vulnerabilidades cuya propiedad `severity` sea `"critical"` o `"high"`. La suma de este conteo es el valor para la columna `vco`.
-3. **Registro en Base de Datos (Persistencia):** Al terminar la auditoría, el script de la pipeline realiza una petición HTTP `POST` a `/api/sqa/security-findings` enviando la información (el valor de `vco`, los desgloses y el JSON de detalles). El controlador de Laravel recibe la petición, la valida y guarda el registro con `SqaSecurityFinding::create($request->validated());`.
+### Flujo de Implementación
 
+1. **Ejecución del Escaneo:** Durante la fase de validación de seguridad (localmente o en CI/CD), se ejecutan los auditores de dependencias exportando su salida directamente a formato JSON:
+   - **Backend (PHP):** `composer audit --format=json > public/metrics/audit_backend.json`
+   - **Frontend (JS):** `npm audit --json > public/metrics/audit_frontend.json`
+2. **Visualización (Grafana):** Grafana se conecta mediante el plugin JSON a dichos archivos de auditoría, sumando dinámicamente las vulnerabilidades de severidad "critical" o "high" descubiertas por el analizador.
+3. Se diseña un panel tipo **Semáforo (State Timeline o Stat)** en Grafana: Si la suma de vulnerabilidades es `0`, se mantiene en Verde. Si hay `>0` hallazgos críticos, emite una alerta Roja parpadeante.
 
 ---
 
 ## 5. Métrica: Tiempo de Respuesta Promedio (TRP)
-*Monitorea el rendimiento temporal de la API REST del backend en Laravel y las consultas espaciales en PostgreSQL.*
+
+_Monitorea el rendimiento temporal de la API REST del backend en Laravel y las consultas espaciales en PostgreSQL._
+
+### Enfoque de Base de Datos (Única tabla necesaria)
+
+**SÍ** es indispensable almacenar esta métrica en la base de datos de PostgreSQL (mediante la tabla `performance_logs`). ¿Por qué? Porque a diferencia de las métricas anteriores (que provienen de auditorías de código estático y suites de pruebas), el Tiempo de Respuesta recopila el **comportamiento real en producción**. Mide telemetría dinámica derivada del tráfico vivo de usuarios.
 
 ### Base de Datos
-* Crear migración para la tabla `performance_logs`:
-  * `id` (Primary Key, autoincrementable)
-  * `trp` (integer) - Tiempo de respuesta de la petición en milisegundos (ej: 450)
-  * `endpoint` (string) - URI de la petición (ej: `/api/incidencias`)
-  * `metodo` (string, 10) - Método HTTP utilizado (GET, POST, PUT, DELETE, etc.)
-  * `logged_at` (timestamp) - Fecha y hora del registro del log
-  * Campos de auditoría estándar: `created_at`, `updated_at`, `deleted_at`
+
+- Se mantiene la migración de la tabla `performance_logs`:
+  - `trp` (integer) - Tiempo de respuesta en milisegundos.
+  - `endpoint` (string) - URI de la petición.
+  - `logged_at` (timestamp) - Fecha y hora.
 
 ### Backend
-* Crear el modelo `PerformanceLog` en Laravel.
-* Crear el middleware de rendimiento `MeasureResponseTime`:
-  * Registra el inicio de la petición con `microtime(true)`.
-  * Calcula los milisegundos tras despachar la respuesta.
-  * Si el tiempo de respuesta supera los 100 ms, envía un job asíncrono a la cola (`Queue Job`) para registrar la petición en la tabla `performance_logs` sin afectar la latencia del usuario final.
-* Crear endpoint `GET /api/sqa/performance-stats` que retorne el tiempo de respuesta promedio de las últimas 24 horas y el top 5 de endpoints más lentos.
-* *(Nota: Al recolectarse de manera interna a través de middleware, no se requiere FormRequest para la creación de registros).*
 
-### Frontend
-* Crear una gráfica de líneas en el Dashboard de Calidad que ilustre la latencia promedio de la API en el tiempo (por hora/día).
-* Mostrar una tabla con el top 5 de endpoints más lentos de la API REST para guiar los esfuerzos de refactorización y optimización de base de datos.
+- El middleware `MeasureResponseTime` calcula los milisegundos tras despachar la respuesta.
+- Si el tiempo supera el umbral esperado (ej. 100 ms), envía de forma asíncrona mediante Laravel Queues el registro a `performance_logs`.
 
-#### Flujo de implementación (TRP)
-* **Cuantificación:** Se mide en tiempo real mediante el Middleware de Laravel `MeasureResponseTime`, restando el tiempo de inicio de la petición (`LARAVEL_START`) del tiempo actual en milisegundos tras despacharse la respuesta.
-* **Persistencia:** Si el tiempo de respuesta supera los 100 ms, el middleware despacha un Queue Job asíncrono para insertar el registro en `performance_logs` sin afectar la latencia del usuario. El panel administrativo calcula los promedios y máximos directamente con consultas agregadas (`avg('trp')`).
+### Visualización (Grafana)
+
+- **Grafana se conecta de forma nativa a tu base de datos de PostgreSQL** (usando el PostgreSQL Data Source integrado).
+- Se crea una gráfica de líneas de Series Temporales (Time Series) ejecutando un simple `SELECT logged_at as time, trp as value FROM performance_logs`.
+- Grafana mostrará de forma instantánea y elegante la evolución de la velocidad de tu API a lo largo de las horas, incluyendo los picos de latencia, sin que tengas que programar ni un solo componente en HTML/Vue.
 
 ---
