@@ -70,8 +70,8 @@ class CalculateTep extends Command
             File::makeDirectory($outputDir, 0755, true);
         }
 
-        // Generar archivo JSON con la fecha actual
-        $date = date('Y-m-d');
+        // Generar archivo JSON con la fecha actual en la zona horaria de Ecuador (America/Guayaquil)
+        $date = now()->timezone('America/Guayaquil')->format('Y-m-d');
         $outputFile = "{$outputDir}/tep-{$date}.json";
 
         $data = [
@@ -81,7 +81,7 @@ class CalculateTep extends Command
             'pruebas_aprobadas' => $aprobadas,
             'pruebas_fallidas' => $fallas + $errores,
             'pruebas_omitidas' => $omitidas,
-            'fecha_procesamiento' => now()->toDateTimeString(),
+            'fecha_procesamiento' => now()->timezone('America/Guayaquil')->toDateTimeString(),
         ];
 
         File::put($outputFile, json_encode($data, JSON_PRETTY_PRINT));
