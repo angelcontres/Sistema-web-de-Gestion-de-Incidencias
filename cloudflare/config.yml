@@ -5,5 +5,5 @@ ingress:
   - hostname: alertcity.dihm-muertos.site
     service: http://nginx:80
   - hostname: grafana.dihm-muertos.site
-    service: http://grafana:3010
+    service: http://grafana:3000
   - service: http_status:404
