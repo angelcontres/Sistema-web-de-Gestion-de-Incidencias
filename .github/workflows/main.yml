@@ -14,12 +14,16 @@ jobs:
           docker compose down
         fi
 
-    # 2. El truco de Docker: Usamos busybox (que corre como root interno) para fulminar la carpeta vendor anterior
+    # 2. El truco de Docker: Usamos busybox (que corre como root interno) para fulminar la carpeta vendor y grafana anterior
     - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
       run: |
         if [ -d "backend/api/vendor" ]; then
           docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
         fi
+        if [ -d "grafana" ]; then
+          docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
+        fi
+
 
     # 3. Ahora el checkout puede limpiar y clonar el nuevo código sin problemas de permisos
     - name: Copiar el código a la VAIO
