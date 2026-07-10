@@ -161,12 +161,18 @@ class IncidenciaController extends Controller
             $afectados
         );
 
+        $institucionId = null;
+        if ($request->sub_tipo_incidencia_id) {
+            $subTipo = CategoriaIncidencia::find($request->sub_tipo_incidencia_id);
+            $institucionId = $subTipo ? $subTipo->institucion_id : null;
+        }
+
         $incidencia = Incidencia::create([
             'incidencia_descripcion' => $request->incidencia_descripcion,
             'direccion_id' => $direccionId,
             'cliente_id' => $user ? $user->id : null,
             'estado_id' => $request->input('estado_id', 1), // Default: Pendiente (1)
-            'institucion_id' => $request->institucion_id,
+            'institucion_id' => $institucionId ?? $request->institucion_id,
             'tipo_incidencia_id' => $request->tipo_incidencia_id,
             'sub_tipo_incidencia_id' => $request->sub_tipo_incidencia_id,
             'prioridad_id' => $prioridadId,
@@ -278,11 +284,19 @@ class IncidenciaController extends Controller
         $afectados = $request->input('cantidad_afectados_incidencia', $incidencia->cantidad_afectados_incidencia);
         $prioridadId = $this->calculatePriority($subTipoId, $afectados);
 
+        $institucionId = $incidencia->institucion_id;
+        if ($subTipoId) {
+            $subTipoObj = CategoriaIncidencia::find($subTipoId);
+            if ($subTipoObj && $subTipoObj->institucion_id) {
+                $institucionId = $subTipoObj->institucion_id;
+            }
+        }
+
         $incidencia->update([
             'incidencia_descripcion' => $request->input('incidencia_descripcion', $incidencia->incidencia_descripcion),
             'direccion_id' => $request->input('direccion_id', $incidencia->direccion_id),
             'estado_id' => $request->input('estado_id', $incidencia->estado_id),
-            'institucion_id' => $request->input('institucion_id', $incidencia->institucion_id),
+            'institucion_id' => $institucionId,
             'tipo_incidencia_id' => $request->input('tipo_incidencia_id', $incidencia->tipo_incidencia_id),
             'sub_tipo_incidencia_id' => $subTipoId,
             'prioridad_id' => $prioridadId,
