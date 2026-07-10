@@ -1,0 +1,12 @@
+\section{Criterios de Aceptación del Producto}
+
+El software debe cumplir estrictamente con los siguientes umbrales y condiciones en el entorno de \textit{staging}:
+
+\begin{enumerate}
+    \item \textbf{Validación Funcional Completa:} El $100\%$ de las Historias de Usuario obligatorias (HU-01 a HU-11) deben estar implementadas, operativas y verificadas sin inconsistencias de negocio.
+    \item \textbf{Aprobación de la Suite de Pruebas:} Se requiere una tasa de éxito de pruebas (TEP) igual o superior al $90\%$ en la suite general de pruebas funcionales e integración.
+    \item \textbf{Backlog Limpio de Defectos Críticos:} No debe existir ningún defecto abierto clasificado con impacto \textbf{Alto o Crítico} (que impida la georreferenciación, rompa el ciclo de estados de incidencias, o bloquee la base de datos).
+    \item \textbf{Cumplimiento de Seguridad OWASP:} Ausencia absoluta de vulnerabilidades críticas o explotables asociadas a los 5 vectores OWASP (A01, A02, A03, A05 y A06) en los reportes de auditoría final.
+    \item \textbf{Desempeño Temporal Aceptable:} El tiempo de carga promedio del mapa dinámico en el cliente y las respuestas REST de la API de Laravel deben situarse por debajo del umbral de \textbf{3 a 5 segundos} bajo simulación de carga operativa normal.
+    \item \textbf{Código e Infraestructura Limpia:} La suite de pruebas de integración continua (\texttt{php artisan test}) debe ejecutarse y aprobarse exitosamente dentro del flujo de GitHub Actions sin presentar advertencias o errores en la consola. La base de datos debe poder migrarse desde cero (\texttt{php artisan migrate --force}) de manera limpia.
+\end{enumerate}

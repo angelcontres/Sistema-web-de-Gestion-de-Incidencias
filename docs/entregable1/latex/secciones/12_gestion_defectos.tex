@@ -1,0 +1,111 @@
+\section{Proceso Formal de Gestión de Defectos}
+
+El ciclo de vida de los defectos funcionales, lógicos y de seguridad se gestionará bajo un flujo formalizado que garantice que ningún \textit{bug} crítico afecte la experiencia en producción.
+
+\subsection{Herramienta de Seguimiento}
+Se adoptará \textbf{Linear App} como la herramienta única de registro, asignación y auditoría de \textit{bugs}.
+
+\subsection{Campos Requeridos para el Registro de un Defecto}
+Cada vez que el equipo de Aseguramiento de Calidad (o el Gestor Operativo) identifique un comportamiento anómalo, abrirá una ``Issue'' en Linear App completando de manera mandatoria la siguiente plantilla estructural:
+
+\begin{itemize}
+    \item \textbf{Título del Error:} Breve y descriptivo, iniciando con la etiqueta de severidad (ej. \texttt{[BUG - ALTA] El historial de estados no muestra la autoría del cambio}). En Linear se pueden usar etiquetas de prioridad para indicar la prioridad del error (Alta, Media, Baja).
+    \item \textbf{Descripción del Comportamiento Actual:} Redacción textual del fallo y la inconsistencia detectada.
+    \item \textbf{Comportamiento Esperado:} Detalle del comportamiento correcto según las Historias de Usuario o criterios de aceptación del plan.
+    \item \textbf{Pasos Exactos para su Reproducción:} Lista numerada con las entradas, URLs, datos ingresados y clics realizados para recrear el error.
+    \item \textbf{Evidencias Adjuntas:} Capturas de pantalla, archivos de log del servidor Laravel (\texttt{storage/logs/laravel.log}) o capturas de la consola de desarrollador del navegador.
+    \item \textbf{Prioridad / Criticidad:} Clasificación formal en Crítica, Alta, Media o Baja.
+    \item \textbf{Responsable de la Corrección:} Asignación explícita de un desarrollador del equipo para resolverlo.
+    \item \textbf{Comunicación con el equipo:} El responsable de abrir la ``Issue'' deberá comunicar por los grupos de WhatsApp o Teams para notificar de la situación.
+\end{itemize}
+
+\subsection{Acuerdos de Nivel de Servicio (SLA) de Calidad}
+De acuerdo a la criticidad del defecto, el equipo acuerda los siguientes tiempos límite de respuesta (primera atención/asignación) y resolución (defecto corregido y verificado en \textit{staging}):
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X c c}
+\toprule
+\textbf{Nivel de Criticidad} & \textbf{Criterio Técnico de Clasificación} & \textbf{SLA Resp.} & \textbf{SLA Resol.} \\
+\midrule
+\textbf{Crítica (Critical)} & 
+Defecto que inhabilita completamente la operación del sistema sin \textit{workaround} posible (ej: caída de PostgreSQL, fallos en la autenticación general, errores 500 al guardar cualquier reporte). & 
+$< 2$ horas & 
+$< 8$ horas \\
+\midrule
+\textbf{Alta (High)} & 
+Defecto que degrada significativamente un módulo crítico, impidiendo su objetivo de negocio, pero el sistema sigue en marcha (ej: mapas Leaflet que no cargan marcadores, o transiciones de estado de incidencias que fallan). & 
+$< 4$ horas & 
+$< 24$ horas \\
+\midrule
+\textbf{Media (Medium)} & 
+Errores funcionales parciales o discrepancias en criterios de aceptación con \textit{workaround} operativo (ej: comentarios editables después de 30 minutos, problemas de paginación en listados). & 
+$< 12$ horas & 
+$< 72$ horas \\
+\midrule
+\textbf{Baja (Low)} & 
+Defectos cosméticos, de alineación visual en Bootstrap o textos y ortografía, que no alteran en absoluto la operatividad funcional de la plataforma. & 
+$< 24$ horas & 
+5 días hábiles \\
+\bottomrule
+\end{tabularx}
+\caption{Tiempos de respuesta y resolución según criticidad (SLA)}
+\label{tab:sla_defectos}
+\end{table}
+
+\subsection{Ejemplificación de Registro de Defecto (Linear App)}
+Para ilustrar la aplicación del estándar de reporte definido en la sección 12.2, se presenta a continuación el registro formal del defecto correspondiente a las inconsistencias detectadas en la pantalla de gestión:
+
+\begin{itemize}
+    \item \textbf{Título del Error:} \texttt{[BUG - ALTA] Inconsistencias visuales del listado y error de eliminación de incidencias recién creadas}
+    \item \textbf{Descripción del Comportamiento Actual:}
+    Al ingresar a la pantalla de Gestión de Incidencias (\texttt{http://localhost/html/vista.html}), se observan múltiples desviaciones estéticas y una falla funcional de criticidad alta:
+    \begin{enumerate}
+        \item \textit{Layout de filtros:} El panel superior de filtros se distribuye en dos filas, desperdiciando espacio vertical en la interfaz.
+        \item \textit{Ausencia de búsqueda:} El selector ``Todas las incidencias'' carece de un campo de búsqueda incremental/predictiva.
+        \item \textit{Desbordamiento de texto:} La columna ``Descripción'' muestra el texto completo de los reportes en lugar de limitarse a una sola línea, desordenando la altura de las filas.
+        \item \textit{Formato de fuentes:} El contenido de las columnas ``Reportado por'' y ``Ubicación'' se renderiza en negrita (fuente de peso \textit{bold}).
+        \item \textit{Disposición de columnas:} El orden visual de las columnas de la tabla no es el requerido.
+        \item \textit{Falta de responsividad:} En resoluciones de pantalla estándar de $1366\times768$ o superiores, la visualización de las 8 columnas genera un scroll horizontal innecesario.
+        \item \textit{Paginador estático:} Los botones del paginador y el indicador del total de registros tienen estilos Bootstrap inconsistentes y el selector numérico ``Mostrar X elementos'' no actualiza el listado.
+        \item \textit{Falla en eliminación:} Si un usuario crea una incidencia y, sin refrescar el navegador, intenta eliminarla desde el listado, el registro permanece visible en la pantalla. Al hacer clic por segunda vez sobre el botón ``Eliminar'', se genera un error HTTP genérico sin causa descrita. El registro solo desaparece del DOM si se fuerza una acción de edición y posterior cancelación.
+    \end{enumerate}
+    
+    \item \textbf{Comportamiento Esperado:}
+    La interfaz debe alinearse con los criterios de usabilidad del plan y el backend debe responder de manera semántica:
+    \begin{enumerate}
+        \item \textit{Layout de filtros:} Los filtros deben compactarse y alinearse en una única fila horizontal.
+        \item \textit{Búsqueda predictiva:} Incluir un cuadro de texto incremental que filtre dinámicamente por título o ID de la incidencia mediante llamadas asíncronas de Fetch API.
+        \item \textit{Truncamiento de texto:} La columna ``Descripción'' debe limitar su texto a una sola línea (utilizando truncamiento CSS con elipsis \texttt{...}), desplegando el contenido total únicamente al posicionar el cursor sobre la celda mediante un tooltip estándar de Bootstrap.
+        \item \textit{Formato de fuentes:} Las columnas ``Reportado por'' y ``Ubicación'' deben renderizarse con peso de fuente normal (\texttt{font-weight: normal}).
+        \item \textit{Orden de columnas:} El listado debe estructurarse estrictamente en la secuencia: \textit{Código, Título, Reportado por, Tipo, Prioridad, Descripción, Caracteres, Estado}.
+        \item \textit{Ajuste responsivo:} La tabla con las 8 columnas debe autoajustarse dinámicamente y ser completamente legible sin scroll horizontal en resoluciones iguales o superiores a $1366\times768$.
+        \item \textit{Paginador dinámico:} El paginador final debe calcular de manera dinámica las páginas en base al total de incidencias devueltas por la API, mostrar estilos estándar de Bootstrap y reaccionar al cambio del selector de cantidad de registros.
+        \item \textit{Flujo de eliminación seguro:} Al accionar el botón de eliminación sobre cualquier registro, se debe ejecutar una petición AJAX \texttt{DELETE} exitosa, remover inmediatamente la fila del DOM y, en caso de fallo relacional o de lógica en el servidor (ej: incidencia cerrada o con comentarios críticos vinculados), retornar un código de error HTTP estructurado y un mensaje informativo preciso en pantalla.
+    \end{enumerate}
+    
+    \item \textbf{Pasos Exactos para su Reproducción:}
+    \begin{enumerate}
+        \item Iniciar sesión en la aplicación con perfil de Gestor Operativo.
+        \item Acceder al listado general en \texttt{http://localhost/html/vista.html}.
+        \item Validar visualmente el desbordamiento de la columna ``Descripción'', el scroll horizontal a $1366\times768$ y la doble fila de filtros.
+        \item Ir al formulario e ingresar una nueva incidencia (``Incidencia de prueba de SQA'').
+        \item Retornar al listado y hacer clic inmediatamente en el botón ``Eliminar'' de la incidencia agregada.
+        \item Observar que la fila sigue visible en la tabla.
+        \item Hacer clic en ``Eliminar'' nuevamente y revisar el error 500 arrojado en la pestaña de red de la consola del navegador.
+    \end{enumerate}
+    
+    \item \textbf{Evidencias Adjuntas:}
+    \begin{itemize}
+        \item \textit{Log del Servidor Laravel:} Exception \texttt{QueryException} en PostgreSQL debido a violación de clave foránea en la tabla relacional al intentar ejecutar \texttt{DELETE} sin control de dependencias.
+        \item \textit{Captura de Consola:} \texttt{DELETE http://localhost/api/incidencias/99 500 (Internal Server Error)}.
+        \item \textit{Capturas de Pantalla UI:} Listado con scroll horizontal activo y distorsión de la altura de la fila por descripción larga.
+    \end{itemize}
+    \item \textbf{Prioridad / Criticidad:} Alta (degradación funcional en el CRUD de incidencias y discrepancias múltiples de usabilidad).
+    \item \textbf{Responsable de la Corrección:} Desarrollador Frontend (\texttt{@dev-front}) + Desarrollador Backend (\texttt{@dev-back}).
+    \item \textbf{Módulo Afectado:} Frontend (Gestión de Vistas) / Backend API (Endpoints de Incidencia).
+    \item \textbf{Sprint Asociado:} Sprint 3 --- Correcciones UI/UX y estabilidad.
+    \item \textbf{Estimación de Esfuerzo:} 6 horas de desarrollo y pruebas.
+    \item \textbf{Comunicación con el equipo:} Error registrado en Linear App y notificado al desarrollador backend a través del canal técnico de Teams para priorizar la verificación de integridad referencial.
+\end{itemize}

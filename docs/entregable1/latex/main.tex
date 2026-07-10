@@ -10,13 +10,12 @@
 \usepackage{amssymb}
 \usepackage{tabularx}
 \usepackage{booktabs}
-\usepackage{float}
-\usepackage{comment}
+% Desactivar expansión de fuentes para evitar errores con \texttt en pdfTeX/MiKTeX
 \usepackage[protrusion=true,expansion=false]{microtype}
 \usepackage[hidelinks]{hyperref}
-\usepackage{ltablex}
-\usepackage{xltabular}
 
+\usepackage{float}
+\usepackage{comment}
 
 % Configuración del interlineado
 \onehalfspacing
@@ -35,7 +34,7 @@
 
     {\large CARRERA DE SOFTWARE}\\[2cm]
 
-    {\Large \textbf{Entregable 4: Ejecución de Pruebas y Gestión de Defectos}}\\[2cm]
+    {\Large \textbf{PLAN DE GESTIÓN DE CALIDAD PARA UN SISTEMA DE GESTIÓN DE INCIDENCIAS}}\\[2cm]
 
     \begin{flushleft}
     \textbf{Asignatura:} Calidad de Software\\[0.3cm]
@@ -49,7 +48,7 @@
         \item Villón Panimboza Ángel Alejandro
     \end{itemize}
 
-    \textbf{Periodo Académico:} 2026-1\\[0.3cm]
+    \textbf{Periodo Académico:} 2026-I\\[0.3cm]
 
     \textbf{Paralelo:} 6/1
     \end{flushleft}
@@ -57,29 +56,26 @@
     \vfill
 
     {\large La Libertad, Ecuador}\\[0.2cm]
-    {\large 8 de Julio del 2026}
+    {\large Junio 2026}
 
 \end{titlepage}
 
-\newpage
 \tableofcontents
 \newpage
-\listoftables
-\newpage
-\listoffigures
-\newpage
 
-% --- subsecciones distribuidas ---
-\input{secciones/01-linea-base-ambiente}
-\newpage
-\input{secciones/02-bitacora-historial}
-\newpage
-\input{secciones/03-documentacion-evidencias}
-\newpage
-\input{secciones/04-bugs-ciclo-vida}
-\newpage
-\input{secciones/05-cuadro-estadistico}
-\newpage
-\input{secciones/06-analisis-trazabilidad-lecciones}
+% Inclusión de las secciones modulares
+\input{secciones/01_descripcion}
+\input{secciones/02_objetivos_calidad}
+% \input{secciones/03_glosario}
+\input{secciones/04_atributos_calidad}
+\input{secciones/05_estandares}
+\input{secciones/06_roles_responsabilidades}
+\input{secciones/07_riesgos}
+\input{secciones/08_actividades_aseguramiento}
+\input{secciones/09_metricas_indicadores}
+\input{secciones/10_criterios_aceptacion}
+% \input{secciones/11_gestion_configuracion}
+% \input{secciones/12_gestion_defectos}
+% \input{secciones/13_cronograma}
 
 \end{document}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.12)  8 JUL 2026 20:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.12)  9 JUL 2026 20:16
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -477,14 +477,14 @@ Package hyperref Info: Link coloring OFF on input line 24.
 \@outlinefile=\write4
 \openout4 = `entregable-4-pruebas-gestion-defectos.out'.
 
-<imagenes/Upse-logo.png, id=59, 248.42813pt x 281.55188pt>
-File: imagenes/Upse-logo.png Graphic file (type png)
-<use imagenes/Upse-logo.png>
-Package pdftex.def Info: imagenes/Upse-logo.png  used on input line 30.
+<../../05_assets/Upse-logo.png, id=59, 248.42813pt x 281.55188pt>
+File: ../../05_assets/Upse-logo.png Graphic file (type png)
+<use ../../05_assets/Upse-logo.png>
+Package pdftex.def Info: ../../05_assets/Upse-logo.png  used on input line 30.
 (pdftex.def)             Requested size: 113.81102pt x 128.987pt.
  [1
 
-{C:/Users/HP/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map} <./imagenes/Upse-logo.png>] (e:/Users\Carlos F. Patiño\Workspace\Sistema-web-de-Gestion-de-Incidencias\docs\entregable4\latex\build\entregable-4-pruebas-gestion-defectos.toc
+{C:/Users/HP/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map} <../../05_assets/Upse-logo.png>] (e:/Users\Carlos F. Patiño\Workspace\Sistema-web-de-Gestion-de-Incidencias\docs\entregable4\latex\build\entregable-4-pruebas-gestion-defectos.toc
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 LaTeX Font Info:    Trying to load font information for U+msa on input line 4.
@@ -1290,7 +1290,7 @@ Package rerunfilecheck Info: File `entregable-4-pruebas-gestion-defectos.out' ha
  ) 
 Here is how much of TeX's memory you used:
  14712 strings out of 467508
- 241414 string characters out of 5410217
+ 241463 string characters out of 5410217
  733409 words of memory out of 5000000
  43645 multiletter control sequences out of 15000+600000
  639114 words of font info for 68 fonts, out of 8000000 for 9000

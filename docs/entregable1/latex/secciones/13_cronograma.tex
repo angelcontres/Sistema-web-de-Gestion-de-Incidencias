@@ -1,0 +1,54 @@
+\section{Cronograma de Actividades de Calidad}
+
+El plan de calidad se ejecutará a lo largo de las iteraciones de desarrollo, estructurando las tareas de aseguramiento en base a los sprints definidos del proyecto (asumiendo 3 sprints de desarrollo de 2 semanas cada uno):
+
+\subsection*{Hito 1: Sprint 0 - Configuración de Infraestructura de Calidad (Semana 1)}
+\begin{itemize}
+    \item \textbf{Aseguramiento del Proceso:}
+    \begin{itemize}
+        \item Definición y socialización de la convención de commits y estructura GitFlow con el equipo.
+        \item Configuración inicial de los archivos de variables de entorno \texttt{.env.example} en backend y \texttt{docker-compose}.
+    \end{itemize}
+    \item \textbf{Aseguramiento de Calidad Técnica:}
+    \begin{itemize}
+        \item Configuración de los linters de JavaScript, CSS y PHP en los entornos locales de desarrollo.
+        \item Estructuración inicial de la base de datos de pruebas PostgreSQL en entornos Docker locales.
+        \item Escritura e integración de la pipeline automatizada CI/CD vía workflows en la carpeta \texttt{.github/workflows/} en la raíz del proyecto.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Hito 2: Sprint 1 - Aseguramiento de Funcionalidades Base (Semanas 2-3)}
+\begin{itemize}
+    \item \textbf{Foco Funcional:} Autenticación de usuarios, perfiles de roles (\texttt{admin}, \texttt{gestor}, \texttt{usuario}), pantallas de mantenimiento y módulo inicial de Registro de Incidencias con ubicación normalizada (\texttt{pais}, \texttt{provincia}, \texttt{ciudad}).
+    \item \textbf{Actividades de Calidad:}
+    \begin{itemize}
+        \item \textit{Diseño de Pruebas:} Especificación de casos de prueba detallados para el formulario de registro y la consistencia de coordenadas espaciales.
+        \item \textit{Walkthroughs de Código:} Revisión estructurada de los modelos relacionales de migración inicial en Laravel.
+        \item \textit{Ejecución:} Pruebas de integración frontend-backend manuales sobre endpoints de inicio de sesión y registro de incidencias.
+        \item \textit{Auditoría SCM:} Monitoreo del correcto uso de ramas \texttt{feature/hu-01} y \texttt{feature/hu-11} en Git.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Hito 3: Sprint 2 - Aseguramiento de Procesos e Integración Cartográfica (Semanas 4-5)}
+\begin{itemize}
+    \item \textbf{Foco Funcional:} Mapeo espacial interactivo Leaflet, historial automático de trazabilidad de estados, asignación múltiple de responsables y sección de comentarios.
+    \item \textbf{Actividades de Calidad:}
+    \begin{itemize}
+        \item \textit{Diseño de Pruebas:} Casos de prueba para las transiciones lógicas de estados de incidencia (HU-02) y la búsqueda espacial por radio (HU-07).
+        \item \textit{Análisis Estático Automático:} Primer análisis de mantenimiento y calidad con linters integrados en la pipeline CI.
+        \item \textit{Auditoría de Componentes:} Escaneo de dependencias npm y composer (\texttt{composer audit} en el backend para prevenir fallos de seguridad A06).
+        \item \textit{Ejecución:} Pruebas funcionales de extremo a extremo (E2E) simulando el flujo: \textit{Reportar Incidencia $\rightarrow$ Asignar Responsables $\rightarrow$ Cambiar Estado $\rightarrow$ Comentar Seguimiento}.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Hito 4: Sprint 3 - Pruebas de Estrés, Seguridad OWASP y Cierre (Semana 6)}
+\begin{itemize}
+    \item \textbf{Foco Funcional:} Dashboard de analíticas, exportación de reportes CSV/PDF, y notificaciones automáticas (in-app y email).
+    \item \textbf{Actividades de Calidad:}
+    \begin{itemize}
+        \item \textit{Pruebas de Carga y Estrés:} Ejecución de pruebas de carga mediante Artillery o JMeter sobre el endpoint de mapa y el dashboard para verificar el comportamiento bajo peticiones masivas (cumpliendo con la métrica de tiempo de respuesta $< 3$ segundos).
+        \item \textit{Auditoría de Seguridad:} Escaneo e inspección manual específica basada en las guías OWASP Top 10 mitigadas (A01, A02, A03, A05 y A06).
+        \item \textit{Pruebas de Regresión:} Ejecución completa de la suite de pruebas automatizadas locales y en CI (\texttt{php artisan test}) para certificar que las nuevas funciones no rompieron las iniciales.
+        \item \textit{Evaluación de Criterios de Aceptación:} Inspección final de cumplimiento de las 12 Historias de Usuario para emitir la recomendación formal de entrega del producto.
+    \end{itemize}
+\end{itemize}

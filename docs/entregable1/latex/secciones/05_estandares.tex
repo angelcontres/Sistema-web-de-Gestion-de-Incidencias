@@ -1,0 +1,32 @@
+\section{Estándares, Modelos y Guías de Referencia}
+
+Para normar y validar la ingeniería del software en el proyecto, se adoptan formalmente los siguientes estándares internacionales:
+
+\subsection{ISO/IEC 25010}
+Define los dos modelos de calidad principales para asegurar el comportamiento, usabilidad e impacto del sistema:
+\begin{itemize}
+\item \textbf{\texttt{Calidad del Producto}:} Ya especificado en la tabla anterior. Es el estándar rector empleado para estructurar, clasificar y evaluar de manera integral los atributos de calidad del producto de software, asegurando que las pruebas técnicas no se limiten únicamente a la funcionalidad básica, sino también al comportamiento sistémico del software (Usabilidad, Seguridad, Fiabilidad, Mantenibilidad, y Eficiencia de Desempeño).
+\item \textbf{\texttt{Calidad del Uso}:}
+    \begin{itemize}
+        \item \textbf{\texttt{Eficacia}:} Exactitud y completitud con la que los usuarios reportantes y gestores alcanzan sus metas de registrar, mapear y solucionar incidencias sin errores.
+        \item \textbf{\texttt{Eficiencia}:} Recursos empleados (tales como el tiempo de carga del mapa Leaflet, rendimiento del servidor y del cliente) en relación con la exactitud de los resultados logrados.
+        \item \textbf{\texttt{Ausencia de Riesgo}:} Nivel de protección del sistema contra daños económicos (ej. fallos críticos en la asignación de personal), daños a la seguridad de la información de los ciudadanos o a la operatividad institucional.
+        \item \textbf{\texttt{Cobertura del contexto}:} Grado en que el producto se puede usar con eficacia en contextos no especificados originalmente (ej. uso móvil en calle con redes móviles limitadas frente a ordenadores de escritorio).
+        \item \textbf{\texttt{Satisfacción}:} Grado en que se satisfacen las necesidades de los usuarios, evaluando la usabilidad percibida, agilidad de respuesta y agrado visual en la interfaz web.
+    \end{itemize}
+\end{itemize}
+
+\subsection{OWASP Top 10 (Mitigación Web)}
+Se define como guía obligatoria de seguridad para el desarrollo y auditoría del sistema web, evaluando y mitigando específicamente los siguientes 5 vectores de riesgo:
+
+\begin{itemize}
+    \item \textbf{\texttt{A01:2021-Broken Access Control} (Control de Acceso Quebrado):} Mitigado mediante la asignación explícita de roles en la base de datos y validación de permisos en el backend a través de Middlewares en las rutas de la API en Laravel (ej. evitar que un usuario normal altere asignaciones o acceda al dashboard administrativo).
+    
+    \item \textbf{\texttt{A02:2021-Identification and Authentication Failures} (Fallas en Identificación y Autenticación):} Mitigado a través de la implementación de autenticación robusta mediante tokens seguros de Laravel, hasheo criptográfico obligatorio de contraseñas de usuarios con algoritmos modernos (Bcrypt/Argon2) y protección contra fuerza bruta en los intentos de login.
+    
+    \item \textbf{\texttt{A03:2021-Injection} (Inyección de Datos/Código):} Mitigado mediante el uso del ORM Eloquent de Laravel, el cual por defecto implementa consultas preparadas parametrizadas en PostgreSQL, evitando la inyección de sentencias SQL maliciosas. Asimismo, se aplican validaciones estrictas y sanitización del HTML de entrada para evitar ataques de Cross-Site Scripting (XSS) en formularios y comentarios.
+    
+    \item \textbf{\texttt{A05:2021-Security Misconfiguration} (Configuración Incorrecta de Seguridad):} Controlado separando las configuraciones del entorno mediante archivos \texttt{.env} (excluidos del repositorio mediante \texttt{.gitignore}), inhabilitando el modo debug de Laravel en producción (\texttt{APP\_DEBUG=false}), restringiendo puertos no esenciales en Docker y configurando directivas de cabeceras seguras en Nginx.
+    
+    \item \textbf{\texttt{A06:2021-Vulnerable and Outdated Components} (Componentes Vulnerables y Desactualizados):} Gestionado mediante el uso de dependencias estables y actualizadas. En la fase de construcción de contenedores, se programará la auditoría de dependencias mediante comandos automáticos (\texttt{composer audit} en el backend PHP y auditorías periódicas de librerías JS frontend).
+\end{itemize}
