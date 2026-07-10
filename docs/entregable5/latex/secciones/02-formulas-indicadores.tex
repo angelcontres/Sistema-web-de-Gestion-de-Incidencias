@@ -1,0 +1,38 @@
+\section{Fórmulas e Indicadores de Calidad}
+\label{sec:formulas_indicadores}
+
+\subsection{Tasa de Éxito}
+\textbf{Objetivo:} Determinar el porcentaje de pruebas que pasaron exitosamente. \\
+\textbf{Fórmula:} $TE = \left( \frac{\text{Casos Aprobados}}{\text{Casos Ejecutados}} \right) \times 100$ \\
+\textbf{Resultado Numérico:} $TE = \left( \frac{22}{25} \right) \times 100 = 88\%$ \\
+\textbf{Interpretación:} El sistema posee un nivel base de aceptación del 88\%, quedándose ligeramente por debajo del umbral óptimo planificado (90\%) en el Plan de Calidad, debido a los 3 módulos funcionales pendientes.
+
+\subsection{Cobertura Funcional}
+\textbf{Objetivo:} Medir la cantidad de requerimientos funcionales y no funcionales que fueron exitosamente cubiertos sin fallos. \\
+\textbf{Fórmula:} $CF = \left( \frac{\text{Requerimientos con todos sus casos aprobados}}{\text{Total de Requerimientos}} \right) \times 100$ \\
+\textbf{Resultado Numérico:} En la matriz de trazabilidad, de 11 requerimientos (7 RF + 4 RNF), 8 tienen 100\% de aprobación en sus casos asociados. $CF = \left( \frac{8}{11} \right) \times 100 = 72.72\%$ \\
+\textbf{Interpretación:} Más del 70\% del sistema base está completamente estable, pero la cobertura se reduce drásticamente por las dependencias funcionales de las historias que poseen uno o más escenarios marcados como faltantes o fallidos.
+
+\subsection{Densidad de Defectos}
+\textbf{Objetivo:} Identificar la concentración de fallos críticos o medios descubiertos por número de pruebas. \\
+\textbf{Fórmula:} $DD = \frac{\text{Total de Bugs (Alta/Media)}}{\text{Casos Ejecutados}}$ \\
+\textbf{Resultado Numérico:} $DD = \frac{1}{25} = 0.04$ \\
+\textbf{Interpretación:} La codificación en el core es limpia y sólida. Al arrojar un valor de 0.04, se comprueba que por cada prueba ejecutada, la probabilidad de encontrar un error crítico es minúscula (muy por debajo del límite máximo de 0.1 establecido en el E1).
+
+\subsection{Porcentaje de Corrección}
+\textbf{Objetivo:} Evaluar la capacidad técnica del equipo de desarrollo para solventar defectos reportados tras las pruebas. \\
+\textbf{Fórmula:} $PC = \left( \frac{\text{Defectos Corregidos}}{\text{Defectos Reportados}} \right) \times 100$ \\
+\textbf{Resultado Numérico:} $PC = \left( \frac{1}{1} \right) \times 100 = 100\%$ \\
+\textbf{Interpretación:} El equipo de resolución demostró eficacia inmediata, resolviendo con éxito el único defecto oficial detectado (BUG-01, referido al API de mapas).
+
+\subsection{Distribución por Severidad}
+\textbf{Objetivo:} Cuantificar los defectos según su nivel de impacto en la operación del sistema. \\
+\textbf{Fórmula:} Conteo absoluto de bugs estratificados en categorías (Alta, Media, Baja). \\
+\textbf{Resultado Numérico:} Alta = 0, Media = 1, Baja = 0. \\
+\textbf{Interpretación:} El único defecto detectado tuvo impacto Medio, pues afectaba a una API de terceros (Leaflet) para georreferenciación parcial, pero sin causar cuelgues del servidor ni corrupción de datos en la base.
+
+\subsection{Índice de Estabilidad}
+\textbf{Objetivo:} Conocer la resiliencia y fiabilidad global de la plataforma, midiendo la ausencia de defectos críticos sobre el total de funcionalidades. \\
+\textbf{Fórmula:} $IE = \left( 1 - \frac{\text{Bugs Críticos + Bugs Medios}}{\text{Casos Diseñados}} \right) \times 100$ \\
+\textbf{Resultado Numérico:} $IE = \left( 1 - \frac{1}{25} \right) \times 100 = 96\%$ \\
+\textbf{Interpretación:} El sistema transaccional es sumamente estable. La inmensa mayoría de los casos fluyó correctamente sin producir bugs funcionales (los 3 casos no aprobados fueron simplemente por código ausente, no por rupturas operativas o bugs lógicos estructurales).
