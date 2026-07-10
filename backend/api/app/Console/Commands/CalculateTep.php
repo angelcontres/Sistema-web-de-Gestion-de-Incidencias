@@ -13,7 +13,7 @@ class CalculateTep extends Command
      *
      * @var string
      */
-    protected $signature = 'sqa:tep {--file=tests/raw-results/tests.xml}';
+    protected $signature = 'sqa:tep {--file=tests/results.xml}';
 
     /**
      * The console command description.
@@ -30,7 +30,7 @@ class CalculateTep extends Command
         $filePath = base_path($this->option('file'));
 
         if (!File::exists($filePath)) {
-            $this->error("No se encontró el reporte XML en: {$filePath}. Ejecuta primero: php artisan test --log-junit tests/raw-results/tests.xml");
+            $this->error("No se encontró el reporte XML en: {$filePath}. Ejecuta primero: php artisan test --log-junit tests/results.xml");
             return 1;
         }
 
