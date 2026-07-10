@@ -103,6 +103,9 @@ class IncidenciaTest extends TestCase
         );
     }
 
+    /**
+     * @group HU-01
+     */
     public function test_can_create_incidencia_recalculates_priority_normal()
     {
         $payload = [
@@ -111,7 +114,6 @@ class IncidenciaTest extends TestCase
             'tipo_incidencia_id' => $this->categoriaPadre->id,
             'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
             'cantidad_afectados_incidencia' => 2, // < 10 affected
-            'institucion_id' => $this->policia->id,
         ];
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
@@ -122,6 +124,9 @@ class IncidenciaTest extends TestCase
             ->assertJsonPath('data.direccion.territorio.pais.nombre', 'Ecuador');
     }
 
+    /**
+     * @group HU-01
+     */
     public function test_can_create_incidencia_recalculates_priority_critical_when_affected_over_threshold()
     {
         $payload = [
@@ -130,7 +135,6 @@ class IncidenciaTest extends TestCase
             'tipo_incidencia_id' => $this->categoriaPadre->id,
             'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
             'cantidad_afectados_incidencia' => 15, // >= 10 affected
-            'institucion_id' => $this->policia->id,
         ];
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
@@ -139,6 +143,9 @@ class IncidenciaTest extends TestCase
             ->assertJsonPath('data.prioridad_id', $this->critica->id); // Upgraded to Crítica
     }
 
+    /**
+     * @group HU-04
+     */
     public function test_can_update_incidencia_with_optimistic_locking()
     {
         $incidencia = Incidencia::create([
@@ -183,6 +190,9 @@ class IncidenciaTest extends TestCase
             ->assertJsonPath('data.incidencia_descripcion', 'Árbol caído corregido');
     }
 
+    /**
+     * @group HU-10
+     */
     public function test_role_based_visibility_for_institucion()
     {
         // Create two incidents for different institutions
@@ -241,6 +251,9 @@ class IncidenciaTest extends TestCase
         $responseShowForbidden->assertStatus(403);
     }
 
+    /**
+     * @group HU-01
+     */
     public function test_ciudadano_can_create_incidencia()
     {
         $ciudadanoUser = User::factory()->create();
@@ -268,6 +281,9 @@ class IncidenciaTest extends TestCase
             ->assertJsonPath('data.direccion.territorio.pais.nombre', 'Ecuador');
     }
 
+    /**
+     * @group HU-11
+     */
     public function test_ciudadano_can_access_catalogos()
     {
         $ciudadanoUser = User::factory()->create();
@@ -281,6 +297,9 @@ class IncidenciaTest extends TestCase
         $responseCategorias->assertStatus(200);
     }
 
+    /**
+     * @group HU-04
+     */
     public function test_can_soft_delete_incidencia()
     {
         $incidencia = Incidencia::create([
@@ -312,6 +331,9 @@ class IncidenciaTest extends TestCase
         $this->assertEquals($this->admin->id, $deletedIncidencia->deleted_by);
     }
 
+    /**
+     * @group HU-02
+     */
     public function test_can_change_incidencia_status()
     {
         $incidencia = Incidencia::create([
@@ -347,6 +369,9 @@ class IncidenciaTest extends TestCase
         ]);
     }
 
+    /**
+     * @group HU-03
+     */
     public function test_can_filter_incidencias_by_estado()
     {
         $estadoPendiente = EstadoIncidencia::firstOrCreate(['id' => 1], ['nombre' => 'Pendiente']);
@@ -388,6 +413,9 @@ class IncidenciaTest extends TestCase
         $this->assertFalse($containsIncidencia2);
     }
 
+    /**
+     * @group HU-03
+     */
     public function test_can_filter_incidencias_by_tipo()
     {
         $otroTipo = CategoriaIncidencia::firstOrCreate(['id' => 99], ['nombre' => 'Otro Tipo', 'activo' => true]);
@@ -427,7 +455,10 @@ class IncidenciaTest extends TestCase
         $this->assertFalse($containsIncidencia1);
         $this->assertTrue($containsIncidencia2);
     }
-    // CP-V-01: Latitud fuera de rango
+    /**
+     * CP-V-01: Latitud fuera de rango
+     * @group HU-01
+     */
     public function test_validates_latitud_out_of_range()
     {
         $payload = [
@@ -443,7 +474,10 @@ class IncidenciaTest extends TestCase
                  ->assertJsonValidationErrors(['latitud']);
     }
 
-    // CP-V-02: Longitud fuera de rango
+    /**
+     * CP-V-02: Longitud fuera de rango
+     * @group HU-01
+     */
     public function test_validates_longitud_out_of_range()
     {
         $payload = [
@@ -459,7 +493,10 @@ class IncidenciaTest extends TestCase
                  ->assertJsonValidationErrors(['longitud']);
     }
 
-    // CP-V-03: Campos obligatorios vacíos
+    /**
+     * CP-V-03: Campos obligatorios vacíos
+     * @group HU-01
+     */
     public function test_validates_required_fields_on_incidencia()
     {
         $payload = [
@@ -473,7 +510,10 @@ class IncidenciaTest extends TestCase
                  ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
     }
 
-    // CP-V-05: Tipo/Subtipo inválido (no existe)
+    /**
+     * CP-V-05: Tipo/Subtipo inválido (no existe)
+     * @group HU-01
+     */
     public function test_validates_tipo_and_subtipo_exist()
     {
         $payload = [
@@ -487,7 +527,10 @@ class IncidenciaTest extends TestCase
                  ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
     }
 
-    // CP-G-01: Agrupamiento de incidencias y aumento de afectados dentro del umbral
+    /**
+     * CP-G-01: Agrupamiento de incidencias y aumento de afectados dentro del umbral
+     * @group HU-01
+     */
     public function test_incidents_within_threshold_group_and_increment_affected_count()
     {
         $direccionOriginal = Direccion::create([
@@ -539,6 +582,9 @@ class IncidenciaTest extends TestCase
         $this->assertNull(Direccion::find($direccionCercana->id));
     }
 
+    /**
+     * @group HU-01
+     */
     public function test_incidents_outside_threshold_do_not_group()
     {
         $direccionOriginal = Direccion::create([
@@ -591,6 +637,9 @@ class IncidenciaTest extends TestCase
         ]);
     }
 
+    /**
+     * @group HU-01
+     */
     public function test_citizen_can_view_grouped_incident_where_they_are_reportante()
     {
         $ciudadano1 = User::factory()->create();
@@ -649,5 +698,38 @@ class IncidenciaTest extends TestCase
         // Ciudadano 2 intenta ver el historial/comentarios
         $responseHistorial = $this->actingAs($ciudadano2)->getJson("/api/v1/incidencias/{$incidencia->id}/historial");
         $responseHistorial->assertStatus(200);
+    }
+
+    /**
+     * @group HU-05
+     * Feature: Asignar responsables (instituciones)
+     *   Scenario: La institución se asigna automáticamente a la incidencia según la subcategoría
+     *   Given ciudadano autenticado o gestor
+     *   When crea una nueva incidencia con una subcategoría
+     *   Then el sistema determina la institución responsable para esa subcategoría
+     *   And la asocia automáticamente a la incidencia sin necesidad de mandarla en el payload
+     */
+    public function test_system_automatically_assigns_institution_based_on_subcategory()
+    {
+        $payload = [
+            'incidencia_descripcion' => 'Bache gigante sin institución en payload',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'cantidad_afectados_incidencia' => 1,
+            // NOTA: No enviamos institucion_id en el payload
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+
+        $response->assertStatus(201);
+        
+        // Verificamos que se haya asignado automáticamente la institución de la subcategoría
+        $response->assertJsonPath('data.institucion_id', $this->subcategoriaAlta->institucion_id);
+        
+        $this->assertDatabaseHas('reporte_incidencias', [
+            'incidencia_descripcion' => 'Bache gigante sin institución en payload',
+            'institucion_id' => $this->subcategoriaAlta->institucion_id,
+        ]);
     }
 }
