@@ -99,13 +99,15 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Detach roles to avoid foreign key constraint violations
-        $user->roles()->detach();
+       \DB::transaction(function () use ($user) {
+             // Detach roles to avoid foreign key constraint violations
+             $user->roles()->detach();
 
-        // Delete tokens to avoid orphan rows in personal_access_tokens
-        $user->tokens()->delete();
+             // Delete tokens to avoid orphan rows in personal_access_tokens
+             $user->tokens()->delete();
 
-        $user->delete();
+             $user->delete();
+       });
 
         return response()->json([
             'message' => 'Usuario eliminado con éxito',
