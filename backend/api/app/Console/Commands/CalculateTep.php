@@ -71,7 +71,7 @@ class CalculateTep extends Command
         }
 
         // Generar archivo JSON con la fecha actual en la zona horaria de Ecuador (America/Guayaquil)
-        $date = now()->timezone('America/Guayaquil')->format('Y-m-d');
+        $date = now()->timezone('America/Guayaquil')->format('Y-m-d-H-i');
         $outputFile = "{$outputDir}/tep-{$date}.json";
 
         $data = [
