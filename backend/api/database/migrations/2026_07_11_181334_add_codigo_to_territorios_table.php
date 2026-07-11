@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('territorios', function (Blueprint $table) {
             $table->string('codigo')->nullable()->after('parent_id');
+            $table->index(['pais_id', 'parent_id', 'codigo']);
         });
     }
 
@@ -22,6 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('territorios', function (Blueprint $table) {
+            $table->dropIndex(['pais_id', 'parent_id', 'codigo']);
             $table->dropColumn('codigo');
         });
     }

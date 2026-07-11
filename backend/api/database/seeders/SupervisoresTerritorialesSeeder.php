@@ -31,7 +31,7 @@ class SupervisoresTerritorialesSeeder extends Seeder
                 'email' => 'sierra@example.com',
                 'password' => 'sierra123',
                 'provincias' => [
-                    'Azuay', 'Bolivar', 'Bolívar', 'Cañar', 'Carchi', 'Chimborazo', 
+                    'Azuay', 'Bolivar', 'Bolívar', 'Cañar', 'Carchi', 'Chimborazo',
                     'Cotopaxi', 'Imbabura', 'Loja', 'Pichincha', 'Tungurahua'
                 ]
             ],
@@ -41,7 +41,7 @@ class SupervisoresTerritorialesSeeder extends Seeder
                 'email' => 'costa@example.com',
                 'password' => 'costa123',
                 'provincias' => [
-                    'Guayas', 'Manabi', 'Manabí', 'Esmeraldas', 'El Oro', 'Los Rios', 'Los Ríos', 
+                    'Guayas', 'Manabi', 'Manabí', 'Esmeraldas', 'El Oro', 'Los Rios', 'Los Ríos',
                     'Santa Elena', 'Santo Domingo De Los Tsachilas', 'Santo Domingo De Los Tsáchilas',
                     'Santo Domingo de los Tsáchilas', 'Santo Domingo de los Tsachilas'
                 ]
@@ -52,11 +52,16 @@ class SupervisoresTerritorialesSeeder extends Seeder
                 'email' => 'amazonia@example.com',
                 'password' => 'amazonia123',
                 'provincias' => [
-                    'Sucumbios', 'Sucumbíos', 'Napo', 'Orellana', 'Pastaza', 
+                    'Sucumbios', 'Sucumbíos', 'Napo', 'Orellana', 'Pastaza',
                     'Morona Santiago', 'Zamora Chinchipe'
                 ]
             ]
         ];
+
+        $ecuadorId = \App\Models\Pais::where('codigo_iso', 'EC')->value('id');
+        if (!$ecuadorId) {
+            return;
+        }
 
         foreach ($supervisores as $data) {
             // Crear o actualizar el usuario
@@ -67,7 +72,7 @@ class SupervisoresTerritorialesSeeder extends Seeder
                     'username' => $data['username'],
                     'password' => Hash::make($data['password']),
                     'activo' => true,
-                    'pais_id' => 3, // Ecuador
+                    'pais_id' => $ecuadorId, // Ecuador
                 ]
             );
 
@@ -76,7 +81,7 @@ class SupervisoresTerritorialesSeeder extends Seeder
 
             // Buscar las provincias en la BD y sincronizar
             $territoriosIds = Territorio::whereNull('parent_id') // Nivel Provincia
-                ->where('pais_id', 3) // Ecuador
+                ->where('pais_id', $ecuadorId) // Ecuador
                 ->whereIn('nombre', $data['provincias'])
                 ->pluck('id')
                 ->toArray();

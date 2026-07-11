@@ -25,21 +25,17 @@ class IncidenciaController extends Controller
 
         // Automatic state transition: when Supervisor queries list, Pendiente (1) -> En Revisión (2)
         if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
-            $transitionQuery = Incidencia::where('estado_id', 1);
             $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
             if (! empty($territorioIds)) {
+                $transitionQuery = Incidencia::where('estado_id', 1);
                 $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
                 $transitionQuery->whereHas('direccion', function ($q) use ($descendientesIds) {
                     $q->whereIn('territorio_id', $descendientesIds);
                 });
-            } elseif ($user->pais_id) {
-                $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
-                    $q->where('pais_id', $user->pais_id);
-                });
-            }
-            $incidenciasTransition = $transitionQuery->get();
-            foreach ($incidenciasTransition as $inc) {
-                $inc->update(['estado_id' => 2]);
+                $incidenciasTransition = $transitionQuery->get();
+                foreach ($incidenciasTransition as $inc) {
+                    $inc->update(['estado_id' => 2]);
+                }
             }
         }
 
@@ -65,10 +61,8 @@ class IncidenciaController extends Controller
                     $query->whereHas('direccion', function ($q) use ($descendientesIds) {
                         $q->whereIn('territorio_id', $descendientesIds);
                     });
-                } elseif ($user->pais_id) {
-                    $query->whereHas('direccion.territorio', function ($q) use ($user) {
-                        $q->where('pais_id', $user->pais_id);
-                    });
+                } else {
+                    $query->whereRaw('1 = 0');
                 }
             } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
                 $query->where('institucion_id', $user->institucion_id);
@@ -479,7 +473,7 @@ class IncidenciaController extends Controller
                 if (! $incidencia->direccion || ! in_array($incidencia->direccion->territorio_id, $descendientesIds)) {
                     return false;
                 }
-            } elseif ($user->pais_id && $incidencia->direccion && $incidencia->direccion->territorio && $incidencia->direccion->territorio->pais_id != $user->pais_id) {
+            } else {
                 return false;
             }
 
