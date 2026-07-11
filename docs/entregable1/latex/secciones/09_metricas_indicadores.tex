@@ -1,0 +1,96 @@
+\section{Métricas e Indicadores de Calidad}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{3.0cm} >{\centering\arraybackslash}p{4.6cm} X c}
+\toprule
+\textbf{Indicador / Métrica} & \textbf{Fórmula de Cálculo} & \textbf{Propósito Operativo} & \textbf{Valor Objetivo} \\
+\midrule
+\textbf{Tasa de éxito de pruebas (TEP)} & 
+$\text{TEP} =$ \newline $\left( \frac{\text{C. Aprobados}}{\text{C. Ejecutados}} \right) \times 100$ & 
+Mide el nivel de estabilidad y correcto comportamiento funcional frente a las pruebas planificadas. & 
+$\ge 90\%$ \\
+\midrule
+\textbf{Cobertura funcional (CF)} & 
+$\text{CF} =$ \newline $\left( \frac{\text{HUs Validadas}}{\text{Total HUs}} \right) \times 100$ & 
+Asegura que el alcance del software cumple con los requisitos e Historias de Usuario obligatorias. & 
+$100\%$ \\
+\midrule
+\textbf{Densidad de defectos (DD)} & 
+$\text{DD} =$ \newline $\frac{\text{Bugs Alta/Media}}{\text{C. Ejecutados}}$ & 
+Permite identificar la concentración de fallos por bloque funcional y la madurez de la codificación. & 
+$\le 0.1$ \\
+\midrule
+\textbf{Vulnerabilidades críticas (VCO)} & 
+$\text{VCO} =$ \newline $\text{Total Hallazgos OWASP}$ & 
+Cuantifica las brechas de seguridad identificadas según los 5 vectores del estándar OWASP adoptados. & 
+$0$ \\
+\midrule
+\textbf{Tiempo de respuesta promedio (TRP)} & 
+$\text{TRP} =$ \newline $\frac{\sum(\text{Tiempos Respuesta})}{\text{Total Transacciones}}$ & 
+Evalúa el rendimiento de los servicios del backend (Laravel) y consultas espaciales en PostgreSQL. & 
+$< 3\text{ s}$ \\
+\bottomrule
+\end{tabularx}
+\caption{Indicadores y métricas de calidad del producto}
+\label{tab:metricas_calidad}
+\end{table}
+
+\begin{comment}
+
+\subsection{Implementación, Almacenamiento y Visualización de las Métricas}
+
+Para asegurar que las métricas definidas se recolecten y exploten de manera efectiva durante el desarrollo y pruebas del proyecto, se establece la siguiente infraestructura técnica y de base de datos:
+
+\subsubsection{Tasa de Éxito de Pruebas (TEP)}
+\begin{itemize}
+    \item \textbf{Implementación:} Se calcula automáticamente al finalizar la ejecución de la suite de pruebas unitarias y de integración en el contenedor \texttt{sistema\_laravel} mediante la bandera de exportación JUnit de PHPUnit: \texttt{php artisan test --log-junit tests/results.xml}. Un script automatizado parsea el XML extrayendo los contadores de pruebas exitosas, fallidas y omitidas.
+    \item \textbf{Almacenamiento (PostgreSQL):} Los resultados agregados (porcentaje de éxito, total de pruebas y fecha) se envían vía POST a un endpoint interno de administración que los persiste en la tabla de control \texttt{sqa\_metrics\_history} en PostgreSQL.
+    \begin{itemize}
+        \item \textbf{Estado de la Tabla:} \textbf{[Pendiente]} \textit{No existe en la base de datos actual.} El desarrollador deberá crearla mediante una nueva migración de Laravel (ej. \texttt{database/migrations/xxxx\_create\_sqa\_metrics\_history\_table.php}) durante la fase de infraestructura (Sprint 0).
+    \end{itemize}
+    \item \textbf{Visualización:} Se genera una insignia (\textit{badge}) dinámica en el \texttt{README.md} del repositorio que indica el estado del build y la tasa de éxito de la última ejecución, y se despliega un gráfico histórico en el Dashboard de Calidad del administrador.
+\end{itemize}
+
+\subsubsection{Cobertura Funcional (CF)}
+\begin{itemize}
+    \item \textbf{Implementación:} Se calcula cruzando el listado de Historias de Usuario (HU) del backlog en \textbf{Linear App} con las pruebas que cuentan con anotaciones de cobertura funcional (ej. \texttt{@covers HU-01}). Un script en la pipeline de integración continua consulta Linear mediante GraphQL para validar cuáles historias están en estado ``Completado'' y cuentan con su test de aceptación asociado.
+    \item \textbf{Almacenamiento (PostgreSQL):} Los registros consolidados de cobertura se guardan en la tabla \texttt{sqa\_functional\_coverage} en la base de datos PostgreSQL.
+    \begin{itemize}
+        \item \textbf{Estado de la Tabla:} \textbf{[Pendiente]} \textit{No existe en la base de datos actual.} El desarrollador deberá crearla mediante una migración de Laravel durante el Sprint 1 (módulo de registro e inicios de sesión).
+    \end{itemize}
+    \item \textbf{Visualización:} Se muestra en el Dashboard del sistema un gráfico de tipo pastel (\textit{pie chart}) interactivo que ilustra la relación porcentual entre historias de usuario cubiertas con pruebas vs. total de historias del backlog.
+\end{itemize}
+
+\subsubsection{Densidad de Defectos (DD)}
+\begin{itemize}
+    \item \textbf{Implementación:} Se calcula de manera automática dividiendo el número de issues catalogadas como bugs activos (\texttt{[BUG]}) y prioridad Alta/Media en Linear App entre la sumatoria acumulada de casos de prueba ejecutados y registrados en los logs de testing.
+    \item \textbf{Almacenamiento (PostgreSQL):} El cálculo lo realiza una tarea cron diaria programada mediante el programador de tareas de Laravel (\textit{Laravel Task Scheduler}) y se almacena en la tabla relacional \texttt{sqa\_defect\_densities} en PostgreSQL.
+    \begin{itemize}
+        \item \textbf{Estado de la Tabla:} \textbf{[Pendiente]} \textit{No existe en la base de datos actual.} El desarrollador deberá crearla mediante una migración de Laravel durante el Sprint 2.
+    \end{itemize}
+    \item \textbf{Visualización:} Se proyecta un gráfico de líneas temporales (\textit{trend chart}) en el panel administrativo que permite monitorear la tendencia de reducción de defectos por Sprint (la meta de calidad es lograr una tendencia descendente hacia el cierre del Sprint 3).
+\end{itemize}
+
+\subsubsection{Vulnerabilidades Críticas (OWASP) (VCO)}
+\begin{itemize}
+    \item \textbf{Implementación:} Ejecución automática de escáneres de seguridad DAST/SAST. Se integra la herramienta \texttt{composer audit} en el backend y \texttt{npm audit} en el frontend dentro del proceso de build de los contenedores Docker. Adicionalmente, se configuran las alertas automáticas de Dependabot en GitHub para detectar vulnerabilidades en dependencias externas.
+    \item \textbf{Almacenamiento (PostgreSQL):} Los reportes estructurados de las herramientas se guardan en formato JSON en el directorio \texttt{docs/evidencias/seguridad/}. El contador global de hallazgos críticos se envía a la tabla \texttt{sqa\_security\_findings} en PostgreSQL.
+    \begin{itemize}
+        \item \textbf{Estado de la Tabla:} \textbf{[Pendiente]} \textit{No existe en la base de datos actual.} El desarrollador deberá crearla mediante una migración de Laravel durante el Sprint 0.
+    \end{itemize}
+    \item \textbf{Visualización:} Se expone como un indicador de estado tipo semáforo en el panel de control del administrador del sistema. Si el valor es mayor a 0, se muestra una alerta visual destacada y se bloquea la promoción automática a la rama de producción (\texttt{main}).
+\end{itemize}
+
+\subsubsection{Tiempo de Respuesta Promedio (TRP)}
+\begin{itemize}
+    \item \textbf{Implementación:} Se miden los milisegundos transcurridos desde que inicia la petición hasta que se despacha el Response (\texttt{microtime(true)}) mediante un Middleware de telemetría de rendimiento (\texttt{MeasureResponseTime}) que intercepta todas las peticiones entrantes de la API REST de Laravel. En el servidor Nginx se configura el log de accesos para imprimir la variable \texttt{\$upstream\_response\_time}.
+    \item \textbf{Almacenamiento (PostgreSQL):} El middleware de Laravel inserta asíncronamente los tiempos de respuesta que superen los 100 ms en la tabla de base de datos relacional \texttt{performance\_logs} en PostgreSQL, registrando el timestamp, endpoint solicitado y los milisegundos medidos.
+    \begin{itemize}
+        \item \textbf{Estado de la Tabla:} \textbf{[Pendiente]} \textit{No existe en la base de datos actual.} El desarrollador deberá crearla mediante una migración de Laravel (ej. \texttt{database/migrations/xxxx\_create\_performance\_logs\_table.php}) en el Sprint 2 (integración cartográfica y optimizaciones).
+    \end{itemize}
+    \item \textbf{Visualización:} Se visualiza a través de un gráfico de líneas dinámico en el Dashboard de Administración que muestra las variaciones de velocidad de la API en las últimas 24 horas y los picos de latencia del endpoint de georreferenciación en el mapa interactivo.
+\end{itemize}
+
+\end{comment}

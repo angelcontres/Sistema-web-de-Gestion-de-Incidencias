@@ -1,0 +1,82 @@
+{
+    "metric": "Cobertura Funcional (CF)",
+    "value": 58.33,
+    "total_hus": 12,
+    "hus_cubiertas": 7,
+    "hus_no_cubiertas": 5,
+    "detalle": [
+        {
+            "id": "HU-01",
+            "nombre": "Registro de incidencia",
+            "estado": "Cubierta y Aprobada",
+            "aprobada": true
+        },
+        {
+            "id": "HU-02",
+            "nombre": "Ver historial de cambios",
+            "estado": "Cubierta y Aprobada",
+            "aprobada": true
+        },
+        {
+            "id": "HU-03",
+            "nombre": "Listar y filtrar incidencias",
+            "estado": "Cubierta y Aprobada",
+            "aprobada": true
+        },
+        {
+            "id": "HU-04",
+            "nombre": "Editar y eliminar incidencia",
+            "estado": "Cubierta y Aprobada",
+            "aprobada": true
+        },
+        {
+            "id": "HU-05",
+            "nombre": "Asignar responsables",
+            "estado": "Cubierta y Aprobada",
+            "aprobada": true
+        },
+        {
+            "id": "HU-06",
+            "nombre": "Comentar en una incidencia",
+            "estado": "No Cubierta (Sin tests)",
+            "aprobada": false
+        },
+        {
+            "id": "HU-07",
+            "nombre": "Ver incidencias en mapa",
+            "estado": "No Cubierta (Sin tests)",
+            "aprobada": false
+        },
+        {
+            "id": "HU-08",
+            "nombre": "Recibir notificaciones",
+            "estado": "No Cubierta (Sin tests)",
+            "aprobada": false
+        },
+        {
+            "id": "HU-09",
+            "nombre": "Dashboard de m\u00e9tricas",
+            "estado": "No Cubierta (Sin tests)",
+            "aprobada": false
+        },
+        {
+            "id": "HU-10",
+            "nombre": "Exportar listados e informes",
+            "estado": "Cubierta y Aprobada",
+            "aprobada": true
+        },
+        {
+            "id": "HU-11",
+            "nombre": "Gesti\u00f3n de usuarios y roles",
+            "estado": "Cubierta y Aprobada",
+            "aprobada": true
+        },
+        {
+            "id": "HU-12",
+            "nombre": "Evidencias y pruebas funcionales",
+            "estado": "No Cubierta (Sin tests)",
+            "aprobada": false
+        }
+    ],
+    "fecha_procesamiento": "2026-07-10 22:22:07"
+}

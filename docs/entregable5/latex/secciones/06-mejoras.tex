@@ -1,0 +1,16 @@
+\section{Acciones de Mejora y Conclusiones}
+\label{sec:acciones_mejora}
+
+Tras el riguroso contraste cuantitativo, se proponen las siguientes rutas técnicas de mitigación inmediata y se emite el dictamen final sobre la viabilidad del software:
+
+\subsection{Propuestas de Ingeniería y Acciones Correctivas}
+\begin{enumerate}
+    \item \textbf{Refactorizar las Consultas de Filtros con Scopes de Eloquent:} Para levantar y aprobar rápidamente los casos CP-F-12 y CP-F-13, se recomienda aplicar el patrón de diseño ``Local Query Scopes'' en el modelo \texttt{Incidencia} de Laravel. Esto permitirá aplicar filtros WHERE anidados por tipo y estado sin acoplar ni sobrecargar los Controladores.
+    \item \textbf{Implementar un Sistema de Colas Asíncronas para CP-F-08:} Para habilitar el módulo de notificaciones sin alterar negativamente el excelente Tiempo de Respuesta Promedio (TRP), es un requerimiento técnico delegar el envío masivo de correos o notificaciones \textit{push} a procesos en segundo plano mediante \texttt{Laravel Queues} y el \textit{worker} de la aplicación, liberando el hilo principal del cliente.
+    \item \textbf{Robustecer el Manejo de Errores en Capas Frontend:} Siguiendo la lección dejada por el BUG-01, es preciso envolver las peticiones a la API de mapas (Leaflet) dentro de bloques \texttt{try-catch} y disparar modales transaccionales que habiliten al usuario final a suplir manualmente su ubicación cuando fallen las resoluciones geográficas externas, fortaleciendo la experiencia de usuario (UX).
+\end{enumerate}
+
+\subsection{Dictamen Técnico Final}
+El Sistema Web de Gestión de Incidencias ha demostrado una base transaccional inquebrantable, con una Densidad de Defectos casi nula y sin vulnerabilidades críticas expuestas a nivel de core. Matemáticamente, el núcleo pesado del sistema (Validaciones por servidor, Roles y Permisos, JWT y almacenamiento PostgreSQL) opera bajo altos estándares de eficacia.
+
+No obstante, rigiéndonos estrictamente bajo la lupa de la matriz de trazabilidad y la Tasa de Éxito empírica obtenida (88\%), \textbf{el software AÚN NO se encuentra listo para un pase a producción definitivo ("Go-Live") en esta fecha}. Para liberar la versión RC1 (Release Candidate 1) y pasar de hito, el equipo deberá ejecutar un \textit{hotfix} o esfuerzo de estabilización concentrado única y exclusivamente en levantar los 3 casos funcionales pendientes (Notificaciones y Filtros). Una vez integrados dichos micro-módulos, el sistema de software cruzará holgadamente la barrera del 90\% fijada en el Plan de Calidad del Entregable 1, habilitándose operativamente para un despliegue real seguro.

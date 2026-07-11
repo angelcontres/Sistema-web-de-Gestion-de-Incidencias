@@ -1,0 +1,81 @@
+\documentclass[11pt]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tabularx}
+\usepackage{booktabs}
+% Desactivar expansión de fuentes para evitar errores con \texttt en pdfTeX/MiKTeX
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\usepackage{float}
+\usepackage{comment}
+
+% Configuración del interlineado
+\onehalfspacing
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+
+    % Logo UPSE
+    \includegraphics[width=4cm]{../../05_assets/Upse-logo.png}\\[1cm]
+
+    {\Large \textbf{UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA}}\\[0.4cm]
+
+    {\large FACULTAD DE SISTEMAS Y TELECOMUNICACIONES}\\[0.2cm]
+
+    {\large CARRERA DE SOFTWARE}\\[2cm]
+
+    {\Large \textbf{PLAN DE GESTIÓN DE CALIDAD PARA UN SISTEMA DE GESTIÓN DE INCIDENCIAS}}\\[2cm]
+
+    \begin{flushleft}
+    \textbf{Asignatura:} Calidad de Software\\[0.3cm]
+
+    \textbf{Docente:} Ing. Anthony Pachay\\[0.8cm]
+
+    \textbf{Integrantes:}
+    \begin{itemize}
+        \item Orrala Arriaga Paulo Rafael
+        \item Patiño García Carlos Fernando
+        \item Villón Panimboza Ángel Alejandro
+    \end{itemize}
+
+    \textbf{Periodo Académico:} 2026-I\\[0.3cm]
+
+    \textbf{Paralelo:} 6/1
+    \end{flushleft}
+
+    \vfill
+
+    {\large La Libertad, Ecuador}\\[0.2cm]
+    {\large Junio 2026}
+
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% Inclusión de las secciones modulares
+\input{secciones/01_descripcion}
+\input{secciones/02_objetivos_calidad}
+% \input{secciones/03_glosario}
+\input{secciones/04_atributos_calidad}
+\input{secciones/05_estandares}
+\input{secciones/06_roles_responsabilidades}
+\input{secciones/07_riesgos}
+\input{secciones/08_actividades_aseguramiento}
+\input{secciones/09_metricas_indicadores}
+\input{secciones/10_criterios_aceptacion}
+% \input{secciones/11_gestion_configuracion}
+% \input{secciones/12_gestion_defectos}
+% \input{secciones/13_cronograma}
+
+\end{document}

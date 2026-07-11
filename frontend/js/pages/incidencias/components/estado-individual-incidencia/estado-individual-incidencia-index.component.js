@@ -121,7 +121,8 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     };
     const dateFormatted = createdAt.toLocaleString('es-ES', formatOpts);
 
-    this.querySelector('#lbl-fecha-registro').innerHTML = `Registrado ${timeAgo} (<span class="fw-bold text-dark">${dateFormatted}</span>)`;
+    this.querySelector('#lbl-fecha-registro').innerHTML =
+      `Registrado ${timeAgo} (<span class="fw-bold text-dark">${dateFormatted}</span>)`;
     this.querySelector('#lbl-direccion').textContent = inc.direccion
       ? inc.direccion.detalle
       : 'Sin dirección';

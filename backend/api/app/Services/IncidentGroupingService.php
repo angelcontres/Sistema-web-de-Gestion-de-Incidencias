@@ -40,15 +40,15 @@ class IncidentGroupingService
             ->whereNull('reporte_incidencias.deleted_at')
             ->selectRaw(
                 '(6371 * acos(
-                    cos(radians(?)) * cos(radians(direcciones.latitud)) * 
-                    cos(radians(direcciones.longitud) - radians(?)) + 
+                    cos(radians(?)) * cos(radians(direcciones.latitud)) *
+                    cos(radians(direcciones.longitud) - radians(?)) +
                     sin(radians(?)) * sin(radians(direcciones.latitud))
                 )) AS distance',
                 [$lat, $lng, $lat]
             )
             ->whereRaw('(6371 * acos(
-                cos(radians(?)) * cos(radians(direcciones.latitud)) * 
-                cos(radians(direcciones.longitud) - radians(?)) + 
+                cos(radians(?)) * cos(radians(direcciones.latitud)) *
+                cos(radians(direcciones.longitud) - radians(?)) +
                 sin(radians(?)) * sin(radians(direcciones.latitud))
             )) <= CAST(? AS REAL)', [$lat, $lng, $lat, $radiusKm])
             ->orderBy('distance', 'asc')
