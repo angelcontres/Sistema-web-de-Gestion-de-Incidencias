@@ -103,20 +103,20 @@ No es necesario contar las líneas de código a mano. Al usar un monorepo, es vi
 
 ### Rutas excluidas del conteo (no son código propio)
 
-| Ruta | Motivo de exclusión |
-|---|---|
-| `backend/api/vendor/` | Dependencias PHP instaladas por Composer |
-| `backend/api/storage/` | Logs, cache compilado y archivos generados por Laravel |
-| `backend/api/bootstrap/cache/` | Archivos de cache de bootstrap de Laravel |
-| `backend/api/public/storage/` | Symlink de storage público (generado por `php artisan storage:link`) |
+| Ruta                             | Motivo de exclusión                                                  |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `backend/api/vendor/`            | Dependencias PHP instaladas por Composer                             |
+| `backend/api/storage/`           | Logs, cache compilado y archivos generados por Laravel               |
+| `backend/api/bootstrap/cache/`   | Archivos de cache de bootstrap de Laravel                            |
+| `backend/api/public/storage/`    | Symlink de storage público (generado por `php artisan storage:link`) |
 | `backend/api/tests/metrics-stg/` | Archivos JSON de métricas generados automáticamente (tep.json, etc.) |
-| `.git/` | Datos del repositorio Git |
-| `.github/` | Configuración de GitHub Actions / workflows |
-| `.vscode/` | Configuración del editor VS Code |
-| `grafana/` | Configuración de provisioning de Grafana (no es código de la app) |
-| `cloudflare/` | Certificados y configuración de Cloudflare Tunnel |
-| `docs/` | Documentación del proyecto (Markdown, LaTeX) |
-| `frontend/docs/` | Documentación específica del frontend |
+| `.git/`                          | Datos del repositorio Git                                            |
+| `.github/`                       | Configuración de GitHub Actions / workflows                          |
+| `.vscode/`                       | Configuración del editor VS Code                                     |
+| `grafana/`                       | Configuración de provisioning de Grafana (no es código de la app)    |
+| `cloudflare/`                    | Certificados y configuración de Cloudflare Tunnel                    |
+| `docs/`                          | Documentación del proyecto (Markdown, LaTeX)                         |
+| `frontend/docs/`                 | Documentación específica del frontend                                |
 
 ### Comando cloc corregido
 
@@ -165,6 +165,7 @@ Las herramientas de análisis de seguridad estático y dinámico (SAST/DAST) fun
 1. **Ejecución del Escaneo:** Durante la fase de validación de seguridad (localmente o en CI/CD), se ejecutan los auditores de dependencias exportando su salida directamente a formato JSON:
    - **Backend (PHP):** `composer audit --format=json > public/metrics/audit_backend.json`
    - **Frontend (JS):** `npm audit --json > public/metrics/audit_frontend.json`
+     El frontend no utiliza dependencias externas como npm o nodejs. Entonces hay que ver una forma de auditar sin ese comando
 2. **Visualización (Grafana):** Grafana se conecta mediante el plugin JSON a dichos archivos de auditoría, sumando dinámicamente las vulnerabilidades de severidad "critical" o "high" descubiertas por el analizador.
 3. Se diseña un panel tipo **Semáforo (State Timeline o Stat)** en Grafana: Si la suma de vulnerabilidades es `0`, se mantiene en Verde. Si hay `>0` hallazgos críticos, emite una alerta Roja parpadeante.
 
