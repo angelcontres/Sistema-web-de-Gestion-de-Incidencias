@@ -135,7 +135,7 @@ class CalculateDd extends Command
             File::makeDirectory($outputDir, 0755, true);
         }
 
-        $date = now()->timezone('America/Guayaquil')->format('Y-m-d');
+        $date = now()->timezone('America/Guayaquil')->format('Y-m-d-H-i');
         $outputFile = "{$outputDir}dd-{$date}.json";
 
         $data = [

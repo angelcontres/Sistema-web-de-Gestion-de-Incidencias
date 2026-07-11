@@ -64,7 +64,8 @@ class CalculateCf extends Command
         foreach ($husDelSistema as $huId => $huName) {
             // Verificar si hay tests mapeados a esta HU
             if (!isset($testMappings[$huId]) || empty($testMappings[$huId])) {
-                $detalleHUs[$huId] = [
+                $detalleHUs[] = [
+                    'id' => $huId,
                     'nombre' => $huName,
                     'estado' => 'No Cubierta (Sin tests)',
                     'aprobada' => false,
@@ -94,13 +95,15 @@ class CalculateCf extends Command
 
             if ($huAprobada) {
                 $husCubiertas++;
-                $detalleHUs[$huId] = [
+                $detalleHUs[] = [
+                    'id' => $huId,
                     'nombre' => $huName,
                     'estado' => 'Cubierta y Aprobada',
                     'aprobada' => true,
                 ];
             } else {
-                $detalleHUs[$huId] = [
+                $detalleHUs[] = [
+                    'id' => $huId,
                     'nombre' => $huName,
                     'estado' => 'Falla (' . $motivoFallo . ')',
                     'aprobada' => false,
@@ -121,7 +124,8 @@ class CalculateCf extends Command
         $this->comment("==========================================");
 
         // Debug info para el log de la terminal
-        foreach ($detalleHUs as $id => $info) {
+        foreach ($detalleHUs as $info) {
+            $id = $info['id'];
             if ($info['aprobada']) {
                 $this->info("[✔] {$id}: {$info['estado']}");
             } else {
@@ -135,7 +139,7 @@ class CalculateCf extends Command
             File::makeDirectory($outputDir, 0755, true);
         }
 
-        $date = now()->timezone('America/Guayaquil')->format('Y-m-d');
+        $date = now()->timezone('America/Guayaquil')->format('Y-m-d-H-i');
         $outputFile = "{$outputDir}/cf-{$date}.json";
         
         $data = [
