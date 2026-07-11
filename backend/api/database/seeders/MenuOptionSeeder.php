@@ -147,7 +147,7 @@ class MenuOptionSeeder extends Seeder
             'nombre' => 'TRP',
             'ruta' => '#/trp-dashboard',
             'icono' => 'bi bi-graph-up',
-            'padre_id' => null,
+            'padre_id' => $administracion->id,
             'created_by' => $user->id,
         ]);
 
