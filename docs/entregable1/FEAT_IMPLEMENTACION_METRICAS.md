@@ -91,19 +91,66 @@ Feature: Comentar en una incidencia
 
 ## 3. Métrica: Densidad de Defectos (DD)
 
-_Mide la cantidad de bugs detectados por cada caso de prueba ejecutado para controlar la madurez del código._
-
-### Enfoque de Automatización (Sin Base de Datos)
-
-Al igual que las métricas anteriores, no requiere de una tabla de PostgreSQL. La Densidad de Defectos se extrae del cruce entre el gestor de incidentes del proyecto (ej: Linear App o GitHub Issues) y el total de pruebas ejecutadas de PHPUnit.
+_Mide cuántos defectos tiene el sistema en relación con su tamaño o esfuerzo de desarrollo._
 
 ### Flujo de Implementación (DD)
 
-- **Cuantificación:** Un script automatizado o un comando de Artisan programado (`cron`) realiza una consulta a la API de Linear/GitHub para contar los bugs activos con etiqueta de prioridad Alta/Media. Luego, cruza este valor dividiéndolo para el total de casos del archivo `results.xml` de PHPUnit.
-- **Registro en Artefacto:** El script matemático vuelca el resultado en un archivo ligero de consumo web `public/metrics/defect_density.json`.
-- **Visualización (Grafana):** Mediante el **JSON API Data Source**, Grafana consume el archivo y proyecta un panel tipo **Stat** numérico o un gráfico de **Series Temporales**. Si el valor supera el límite paramétrico de `0.1` definido en el E1, el panel en Grafana se pintará automáticamente en color Rojo para alertar al equipo.
+Se extraen los datos de forma retroactiva combinando el historial de commits y herramientas automatizadas de análisis estático.
+
+## 1. Cómo determinar el "Tamaño exacto en líneas de código"
+
+No es necesario contar las líneas de código a mano. Al usar un monorepo, es vital separar el código propio de las dependencias externas y archivos generados/configuración que no representan código escrito por el equipo.
+
+### Rutas excluidas del conteo (no son código propio)
+
+| Ruta | Motivo de exclusión |
+|---|---|
+| `backend/api/vendor/` | Dependencias PHP instaladas por Composer |
+| `backend/api/storage/` | Logs, cache compilado y archivos generados por Laravel |
+| `backend/api/bootstrap/cache/` | Archivos de cache de bootstrap de Laravel |
+| `backend/api/public/storage/` | Symlink de storage público (generado por `php artisan storage:link`) |
+| `backend/api/tests/metrics-stg/` | Archivos JSON de métricas generados automáticamente (tep.json, etc.) |
+| `.git/` | Datos del repositorio Git |
+| `.github/` | Configuración de GitHub Actions / workflows |
+| `.vscode/` | Configuración del editor VS Code |
+| `grafana/` | Configuración de provisioning de Grafana (no es código de la app) |
+| `cloudflare/` | Certificados y configuración de Cloudflare Tunnel |
+| `docs/` | Documentación del proyecto (Markdown, LaTeX) |
+| `frontend/docs/` | Documentación específica del frontend |
+
+### Comando cloc corregido
+
+```bash
+cloc . --exclude-dir=vendor,node_modules,storage,bootstrap/cache,public/storage,tests/metrics-stg,.git,.github,.vscode,grafana,cloudflare,docs
+```
+
+Esto dará el número neto de líneas separadas por PHP, HTML, JavaScript y SQL, sumando el total de KLOC real escrito por el equipo.
+
+- Revisar las estadísticas de GitHub: En la pestaña principal de tu repositorio en GitHub, en el costado derecho, verás la sección Languages. Aunque te da porcentajes (ej. PHP 60%, JavaScript 30%), si haces clic sobre la barra, te llevará a un desglose detallado del tamaño del repositorio.
+
+## 2. Cómo determinar los "Defectos" sin constancia en tickets
+
+Si los tickets no clasifican qué es un error y qué es una mejora, la verdad histórica está guardada en tu historial de Git. Puedes auditar los defectos de tres formas:
+
+- Auditoría de Commits por palabras clave: Los desarrolladores suelen dejar rastro de los errores cuando los solucionan. Puedes filtrar el historial de Git para contar cuántos commits se enfocaron en corregir fallos usando comandos en la terminal:
+
+git log --oneline --grep="fix" --grep="bug" --grep="corregido" --grep="error" --grep="hotfix" --count
+
+Este comando te devolverá un número entero con la cantidad de veces que se resolvió un defecto en el periodo de tiempo que elijas.
+
+- Análisis de Pull Requests (PRs) en GitHub: Si el equipo utiliza Pull Requests para integrar código a la rama principal (ej. main o develop), puedes ir a la sección de Pull Requests en GitHub, filtrar por las que ya están cerradas (is:pr is:merged) y buscar en su buscador interno términos como "fix" o "bug".
+- Mapear commits que modifican la base de datos (PostgreSQL): En Laravel, los errores críticos suelen requerir parches en la estructura de datos. Contar cuántas migraciones (database/migrations) se crearon exclusivamente para corregir inconsistencias o campos erróneos te dará el número de defectos críticos a nivel de persistencia.
 
 ---
+
+## Plan de acción para calcular:
+
+Para poner en marcha la fórmula con tus tecnologías actuales, sigue estos pasos:
+
+1.  Ejecuta el conteo: Usa cloc en tu monorepo y supongamos que excluyendo vendor obtienes 40,000 líneas de código limpio (es decir, 40 KLOC).
+2.  Filtra Git: Ejecuta el comando de git log de los últimos 3 meses y encuentra que hubo 80 commits destinados a resolver fallos.
+3.  Aplica la fórmula:
+    $$\text{Densidad de Defectos} = \frac{80 \text{ defectos}}{40 \text{ KLOC}} = 2 \text{ defectos por KLOC}$$
 
 ## 4. Métrica: Vulnerabilidades Críticas (OWASP) (VCO)
 

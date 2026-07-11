@@ -1,0 +1,38 @@
+{
+    "metric": "Densidad de Defectos (DD)",
+    "kloc": 20.725,
+    "total_lines": 20725,
+    "historical_data": [
+        {
+            "months": 1,
+            "defectos": 22,
+            "dd": 1.06
+        },
+        {
+            "months": 2,
+            "defectos": 24,
+            "dd": 1.16
+        },
+        {
+            "months": 3,
+            "defectos": 24,
+            "dd": 1.16
+        },
+        {
+            "months": 6,
+            "defectos": 24,
+            "dd": 1.16
+        },
+        {
+            "months": 12,
+            "defectos": 24,
+            "dd": 1.16
+        },
+        {
+            "months": 24,
+            "defectos": 24,
+            "dd": 1.16
+        }
+    ],
+    "fecha_procesamiento": "2026-07-10 20:21:25"
+}
