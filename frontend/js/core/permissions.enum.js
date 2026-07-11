@@ -23,11 +23,11 @@ export const PermissionsEnum = {
   UPDATE_OPCIONES_MENU: 'Actualizar Opción de Menú',
   DELETE_OPCIONES_MENU: 'Eliminar Opción de Menú',
 
-  // TRP
-  READ_TRP: 'Ver TRP',
-  CREATE_TRP: 'Crear TRP',
-  UPDATE_TRP: 'Actualizar TRP',
-  DELETE_TRP: 'Eliminar TRP',
+  // SQA
+  READ_SQA: 'Ver SQA',
+  CREATE_SQA: 'Crear SQA',
+  UPDATE_SQA: 'Actualizar SQA',
+  DELETE_SQA: 'Eliminar SQA',
 
   // Ubicaciones
   READ_UBICACIONES: 'Ver Ubicación',

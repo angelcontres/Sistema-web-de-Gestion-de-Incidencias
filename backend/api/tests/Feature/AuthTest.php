@@ -38,7 +38,7 @@ class AuthTest extends TestCase
     public function test_rejects_invalid_or_manipulated_token()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer invalid_and_manipulated_token_string',
+            'Authorization' => 'Bearer invalid_and_manipulated_token_string'
         ])->getJson('/api/v1/incidencias');
 
         $response->assertStatus(401);
@@ -56,7 +56,7 @@ class AuthTest extends TestCase
         $user->tokens()->delete();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$token,
+            'Authorization' => 'Bearer ' . $token
         ])->getJson('/api/v1/incidencias');
 
         $response->assertStatus(401);
@@ -79,7 +79,7 @@ class AuthTest extends TestCase
             'ruta' => '/roles',
             'orden' => 1,
             'activo' => true,
-            'created_by' => $admin->id,
+            'created_by' => $admin->id
         ]);
         $permisoAdmin = Permiso::firstOrCreate(['nombre' => 'Gestionar Roles', 'recurso' => 'roles', 'accion' => 'READ', 'opcion_menu_id' => $opcion->id]);
         $rolAdmin->permisos()->sync([$permisoAdmin->id]);

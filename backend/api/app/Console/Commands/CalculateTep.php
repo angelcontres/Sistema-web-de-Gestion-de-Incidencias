@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use SimpleXMLElement;
 use Illuminate\Support\Facades\File;
 
 class CalculateTep extends Command
@@ -28,18 +29,16 @@ class CalculateTep extends Command
     {
         $filePath = base_path($this->option('file'));
 
-        if (! File::exists($filePath)) {
+        if (!File::exists($filePath)) {
             $this->error("No se encontró el reporte XML en: {$filePath}. Ejecuta primero: php artisan test --log-junit tests/results.xml");
-
             return 1;
         }
 
         $this->info("Procesando reporte de pruebas: {$filePath}");
         $xml = simplexml_load_file($filePath);
 
-        if ($xml === false || ! isset($xml->testsuite[0])) {
-            $this->error('El archivo XML no tiene un formato válido de JUnit.');
-
+        if ($xml === false || !isset($xml->testsuite[0])) {
+            $this->error("El archivo XML no tiene un formato válido de JUnit.");
             return 1;
         }
 
@@ -57,17 +56,17 @@ class CalculateTep extends Command
         $tepFormatted = number_format($tep, 2);
 
         $this->comment("\n==========================================");
-        $this->comment(' RESULTADO DE TASA DE ÉXITO DE PRUEBAS (TEP)');
-        $this->comment('==========================================');
+        $this->comment(" RESULTADO DE TASA DE ÉXITO DE PRUEBAS (TEP)");
+        $this->comment("==========================================");
         $this->info("Pruebas Aprobadas: {$aprobadas} de {$totalPruebas}");
-        $this->info('Fallas/Errores: '.($fallas + $errores));
+        $this->info("Fallas/Errores: " . ($fallas + $errores));
         $this->info("Omitidas: {$omitidas}");
         $this->info("Tasa de Éxito (TEP): {$tepFormatted}%");
-        $this->comment('==========================================');
+        $this->comment("==========================================");
 
         // Crear directorio si no existe
         $outputDir = base_path('tests/metrics-stg/tep/');
-        if (! File::exists($outputDir)) {
+        if (!File::exists($outputDir)) {
             File::makeDirectory($outputDir, 0755, true);
         }
 

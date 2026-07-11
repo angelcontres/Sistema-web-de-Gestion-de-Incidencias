@@ -28,11 +28,11 @@ enum PermissionsEnum: string
     case UPDATE_OPCIONES_MENU = 'Actualizar Opción de Menú';
     case DELETE_OPCIONES_MENU = 'Eliminar Opción de Menú';
 
-    // TRP
-    case READ_TRP = 'Ver TRP';
-    case CREATE_TRP = 'Crear TRP';
-    case UPDATE_TRP = 'Actualizar TRP';
-    case DELETE_TRP = 'Eliminar TRP';
+    // SQA
+    case READ_SQA = 'Ver SQA';
+    case CREATE_SQA = 'Crear SQA';
+    case UPDATE_SQA = 'Actualizar SQA';
+    case DELETE_SQA = 'Eliminar SQA';
 
     // Ubicaciones
     case READ_UBICACIONES = 'Ver Ubicación';

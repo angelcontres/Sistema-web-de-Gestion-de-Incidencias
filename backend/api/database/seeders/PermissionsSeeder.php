@@ -21,7 +21,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'Rol',
             'Permisos' => 'Permiso',
             'Opciones de Menú' => 'Opción de Menú',
-            'TRP' => 'TRP',
+            'SQA' => 'SQA',
             'Ubicaciones' => 'Ubicación',
             'Categorías de Incidencias' => 'Categoría de Incidencia',
             'Incidencias' => 'Incidencia',
@@ -43,7 +43,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'roles',
             'Permisos' => 'permisos',
             'Opciones de Menú' => 'opciones_menu',
-            'TRP' => 'trp',
+            'SQA' => 'sqa',
             'Ubicaciones' => 'ubicaciones',
             'Categorías de Incidencias' => 'categorias_incidencia',
             'Incidencias' => 'incidencias',
@@ -96,7 +96,7 @@ class PermissionsSeeder extends Seeder
         $registroMenu = OpcionMenu::where('nombre', 'Registro')->first();
         if ($registroMenu) {
             Permiso::where('nombre', 'Crear Incidencia')->update([
-                'opcion_menu_id' => $registroMenu->id,
+                'opcion_menu_id' => $registroMenu->id
             ]);
         }
     }

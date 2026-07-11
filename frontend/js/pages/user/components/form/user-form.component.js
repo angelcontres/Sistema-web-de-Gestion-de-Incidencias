@@ -3,7 +3,6 @@ import { UserService } from '../../services/user.service.js';
 import { RoleService } from '../../../role/services/role.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { InstitucionService } from '../../../instituciones/services/institucion.service.js';
-import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
 
 export class UserFormComponent extends BaseComponent {
   constructor() {
@@ -20,8 +19,6 @@ export class UserFormComponent extends BaseComponent {
     this.activoInput = this.querySelector('#activo');
     this.institucionContainer = this.querySelector('#institucionContainer');
     this.institucionSelect = this.querySelector('#institucion_id');
-    this.territorioContainer = this.querySelector('#territorioContainer');
-    this.territoriosSelect = this.querySelector('#territorios_select');
     this.rolesDisponiblesList = this.querySelector('#rolesDisponiblesList');
     this.rolesAsignadosList = this.querySelector('#rolesAsignadosList');
     this.formTitle = this.querySelector('#userModalLabel');
@@ -56,7 +53,6 @@ export class UserFormComponent extends BaseComponent {
     // Initialize data
     const init = async () => {
       await this.cargarInstituciones();
-      await this.cargarTerritorios();
 
       if (userId) {
         document.title = 'Editar Usuario';
@@ -211,67 +207,25 @@ export class UserFormComponent extends BaseComponent {
     }
   }
 
-  async cargarTerritorios() {
-    try {
-      const response = await CatalogoService.getTerritorios(null, null);
-      const territorios = response.data || response || [];
-      const list = Array.isArray(territorios) ? territorios : territorios.data || [];
-
-      if (this.territoriosSelect) {
-        this.territoriosSelect.innerHTML = '';
-        list.forEach(territorio => {
-          const option = document.createElement('option');
-          option.value = territorio.id;
-          option.textContent = territorio.nombre;
-          this.territoriosSelect.appendChild(option);
-        });
-      }
-    } catch (error) {
-      console.error('Error al cargar territorios:', error);
-    }
-  }
-
   checkInstitucionRole() {
-    if (!this.rolesAsignadosList) return;
+    if (!this.rolesAsignadosList || !this.institucionContainer || !this.institucionSelect) return;
     
     let isInstitucion = false;
-    let isSupervisor = false;
-    
     const assignedItems = this.rolesAsignadosList.querySelectorAll('.role-draggable-item');
     assignedItems.forEach(item => {
       const roleName = item.getAttribute('data-role-name');
-      if (roleName) {
-        const nameLower = roleName.toLowerCase();
-        if (nameLower === 'institucion') {
-          isInstitucion = true;
-        } else if (nameLower === 'supervisor') {
-          isSupervisor = true;
-        }
+      if (roleName && roleName.toLowerCase() === 'institucion') {
+        isInstitucion = true;
       }
     });
 
-    // Institucion role toggle
-    if (this.institucionContainer && this.institucionSelect) {
-      if (isInstitucion) {
-        this.institucionContainer.classList.remove('d-none');
-        this.institucionSelect.required = true;
-      } else {
-        this.institucionContainer.classList.add('d-none');
-        this.institucionSelect.required = false;
-        this.institucionSelect.value = '';
-      }
-    }
-
-    // Supervisor role toggle
-    if (this.territorioContainer && this.territoriosSelect) {
-      if (isSupervisor) {
-        this.territorioContainer.classList.remove('d-none');
-        this.territoriosSelect.required = true;
-      } else {
-        this.territorioContainer.classList.add('d-none');
-        this.territoriosSelect.required = false;
-        Array.from(this.territoriosSelect.options).forEach(opt => opt.selected = false);
-      }
+    if (isInstitucion) {
+      this.institucionContainer.classList.remove('d-none');
+      this.institucionSelect.required = true;
+    } else {
+      this.institucionContainer.classList.add('d-none');
+      this.institucionSelect.required = false;
+      this.institucionSelect.value = '';
     }
   }
 
@@ -292,14 +246,6 @@ export class UserFormComponent extends BaseComponent {
 
         const userRoleIds = (user.roles || []).map((r) => r.id);
         await this.cargarRolesCheckboxes(userRoleIds);
-
-        // Pre-select territorios
-        if (this.territoriosSelect && user.territorios) {
-          const userTerritorioIds = user.territorios.map(t => String(t.id));
-          Array.from(this.territoriosSelect.options).forEach(opt => {
-            opt.selected = userTerritorioIds.includes(opt.value);
-          });
-        }
       }
     } catch (error) {
       console.error('Error al cargar datos del usuario para edición:', error);
@@ -333,19 +279,12 @@ export class UserFormComponent extends BaseComponent {
     const assignedItems = this.rolesAsignadosList.querySelectorAll('[data-role-id]');
     const roles = Array.from(assignedItems).map((item) => parseInt(item.getAttribute('data-role-id')));
 
-    // Get selected territories if supervisor container is visible
-    let territorios = [];
-    if (this.territoriosSelect && !this.territorioContainer.classList.contains('d-none')) {
-      territorios = Array.from(this.territoriosSelect.selectedOptions).map(opt => parseInt(opt.value));
-    }
-
     const payload = {
       username,
       name,
       email,
       activo,
       roles,
-      territorios,
     };
     
     if (institucion_id) {

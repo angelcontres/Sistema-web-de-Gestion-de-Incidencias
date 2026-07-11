@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use SimpleXMLElement;
+use Illuminate\Support\Str;
 
 class CalculateCf extends Command
 {
@@ -27,32 +28,29 @@ class CalculateCf extends Command
      */
     public function handle()
     {
-        $this->info('Iniciando cálculo de Cobertura Funcional (CF)...');
+        $this->info("Iniciando cálculo de Cobertura Funcional (CF)...");
 
         // 1. Extraer universo de HUs desde Markdown
         $husDelSistema = $this->extractHUsFromMarkdown();
         if (empty($husDelSistema)) {
-            $this->error('No se encontraron Historias de Usuario en el archivo docs/01_analisis/historias_usuario.md');
-
+            $this->error("No se encontraron Historias de Usuario en el archivo docs/01_analisis/historias_usuario.md");
             return 1;
         }
-        $this->info('Total de HUs definidas en el documento: '.count($husDelSistema));
+        $this->info("Total de HUs definidas en el documento: " . count($husDelSistema));
 
         // 2. Escanear tests para mapear @group HU-XX a métodos
         $testMappings = $this->extractTestMappings();
-
+        
         // 3. Leer reporte XML de PHPUnit
         $xmlPath = base_path($this->option('xml'));
-        if (! File::exists($xmlPath)) {
+        if (!File::exists($xmlPath)) {
             $this->error("No se encontró el reporte XML en: {$xmlPath}. Ejecuta: php artisan test --log-junit tests/results.xml");
-
             return 1;
         }
-
+        
         $xml = simplexml_load_file($xmlPath);
-        if ($xml === false || ! isset($xml->testsuite[0])) {
-            $this->error('Formato XML no válido.');
-
+        if ($xml === false || !isset($xml->testsuite[0])) {
+            $this->error("Formato XML no válido.");
             return 1;
         }
 
@@ -65,14 +63,13 @@ class CalculateCf extends Command
 
         foreach ($husDelSistema as $huId => $huName) {
             // Verificar si hay tests mapeados a esta HU
-            if (! isset($testMappings[$huId]) || empty($testMappings[$huId])) {
+            if (!isset($testMappings[$huId]) || empty($testMappings[$huId])) {
                 $detalleHUs[] = [
                     'id' => $huId,
                     'nombre' => $huName,
                     'estado' => 'No Cubierta (Sin tests)',
                     'aprobada' => false,
                 ];
-
                 continue;
             }
 
@@ -83,13 +80,13 @@ class CalculateCf extends Command
 
             foreach ($testsDeHu as $testName) {
                 // Si el test no está en los resultados (no se ejecutó) o no aprobó
-                if (! isset($testResults[$testName])) {
+                if (!isset($testResults[$testName])) {
                     $huAprobada = false;
                     $motivoFallo = "Test no ejecutado o no encontrado en XML: {$testName}";
                     break;
                 }
-
-                if (! $testResults[$testName]['passed']) {
+                
+                if (!$testResults[$testName]['passed']) {
                     $huAprobada = false;
                     $motivoFallo = "Test falló: {$testName}";
                     break;
@@ -108,7 +105,7 @@ class CalculateCf extends Command
                 $detalleHUs[] = [
                     'id' => $huId,
                     'nombre' => $huName,
-                    'estado' => 'Falla ('.$motivoFallo.')',
+                    'estado' => 'Falla (' . $motivoFallo . ')',
                     'aprobada' => false,
                 ];
             }
@@ -120,11 +117,11 @@ class CalculateCf extends Command
         $cfFormatted = number_format($cf, 2);
 
         $this->comment("\n==========================================");
-        $this->comment(' RESULTADO DE COBERTURA FUNCIONAL (CF)');
-        $this->comment('==========================================');
+        $this->comment(" RESULTADO DE COBERTURA FUNCIONAL (CF)");
+        $this->comment("==========================================");
         $this->info("HUs Aprobadas: {$husCubiertas} de {$totalHus}");
         $this->info("Porcentaje (CF): {$cfFormatted}%");
-        $this->comment('==========================================');
+        $this->comment("==========================================");
 
         // Debug info para el log de la terminal
         foreach ($detalleHUs as $info) {
@@ -138,13 +135,13 @@ class CalculateCf extends Command
 
         // Generar artefacto JSON
         $outputDir = base_path('tests/metrics-stg/cf');
-        if (! File::exists($outputDir)) {
+        if (!File::exists($outputDir)) {
             File::makeDirectory($outputDir, 0755, true);
         }
 
         $date = now()->timezone('America/Guayaquil')->format('Y-m-d-H-i');
         $outputFile = "{$outputDir}/cf-{$date}.json";
-
+        
         $data = [
             'metric' => 'Cobertura Funcional (CF)',
             'value' => round($cf, 2),
@@ -168,16 +165,16 @@ class CalculateCf extends Command
     private function extractHUsFromMarkdown()
     {
         $markdownPath = base_path('../../docs/01_analisis/historias_usuario.md');
-        if (! File::exists($markdownPath)) {
+        if (!File::exists($markdownPath)) {
             return [];
         }
 
         $content = File::get($markdownPath);
         $hus = [];
-
+        
         // Busca lineas como: "## HU-01: Registro de incidencia"
         preg_match_all('/^##\s*(HU-\d+):\s*(.*)$/m', $content, $matches, PREG_SET_ORDER);
-
+        
         foreach ($matches as $match) {
             $hus[$match[1]] = trim($match[2]);
         }
@@ -193,7 +190,7 @@ class CalculateCf extends Command
     {
         $testsPath = base_path('tests/Feature');
         $files = File::allFiles($testsPath);
-
+        
         $mappings = [];
 
         foreach ($files as $file) {
@@ -202,7 +199,7 @@ class CalculateCf extends Command
             }
 
             $content = file_get_contents($file->getRealPath());
-
+            
             // Usamos parser simple para extraer los bloques de comentarios y el método que le sigue
             preg_match_all('/\/\*\*([\s\S]*?)\*\/\s*public\s+function\s+(test_[a-zA-Z0-9_]+)/', $content, $matches, PREG_SET_ORDER);
 
@@ -213,7 +210,7 @@ class CalculateCf extends Command
                 // Buscar @group HU-XX en el docBlock
                 if (preg_match('/@group\s+(HU-\d+)/', $docBlock, $groupMatch)) {
                     $huId = $groupMatch[1];
-                    if (! isset($mappings[$huId])) {
+                    if (!isset($mappings[$huId])) {
                         $mappings[$huId] = [];
                     }
                     $mappings[$huId][] = $methodName;
@@ -232,15 +229,15 @@ class CalculateCf extends Command
         $results = [];
         // testcases pueden estar anidados en múltiples testsuites
         $testcases = $xml->xpath('//testcase');
-
+        
         foreach ($testcases as $case) {
             $name = (string) $case['name'];
-
+            
             $hasFailure = isset($case->failure);
             $hasError = isset($case->error);
-
+            
             $results[$name] = [
-                'passed' => (! $hasFailure && ! $hasError),
+                'passed' => (!$hasFailure && !$hasError),
             ];
         }
 
