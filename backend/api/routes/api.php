@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\SqaController;
+use App\Http\Controllers\Api\TrpController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CategoriaIncidenciaController;
 use App\Http\Controllers\DashboardController;
@@ -56,8 +56,8 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
     Route::get('v1/incidencias/{id}/historial', [IncidenciaController::class, 'getHistorial']);
     Route::post('v1/incidencias/{id}/comentarios', [IncidenciaController::class, 'addComment']);
 
-    Route::get('/v1/sqa/performance-stats', [SqaController::class, 'performanceStats']);
-    Route::get('/v1/sqa/performance-logs/export', [SqaController::class, 'exportLogs']);
+    Route::get('/v1/trp/performance-stats', [TrpController::class, 'performanceStats']);
+    Route::get('/v1/trp/performance-logs/export', [TrpController::class, 'exportLogs']);
     Route::apiResource('v1/instituciones', InstitucionController::class)->parameters([
         'instituciones' => 'institucion',
     ]);

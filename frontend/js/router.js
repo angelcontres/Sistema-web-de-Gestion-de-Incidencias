@@ -8,7 +8,7 @@ const routes = {
   '#/opciones-menu/form': 'app-menu-options-form',
   '#/roles': 'app-role-index',
   '#/permisos': 'app-permission-index',
-  '#/sqa-dashboard': 'app-sqa-dashboard',
+  '#/trp-dashboard': 'app-trp-dashboard',
   '#/usuarios': 'app-user-index',
   '#/usuarios/form': 'app-user-form',
   '#/ubicaciones': 'app-ubicaciones-index',
@@ -78,7 +78,10 @@ function navigate() {
     }
 
     // Protect #/categorias based on 'Ver Categoría de Incidencia' permission
-    if (basePath === '#/categorias' && !AuthService.hasPermission(PermissionsEnum.READ_CATEGORIAS_INCIDENCIA)) {
+    if (
+      basePath === '#/categorias' &&
+      !AuthService.hasPermission(PermissionsEnum.READ_CATEGORIAS_INCIDENCIA)
+    ) {
       window.location.hash = '#/';
       return;
     }
@@ -93,19 +96,28 @@ function navigate() {
     }
 
     // Protect #/tramites based on 'Ver Incidencia' permission
-    if (basePath.startsWith('#/tramites') && !AuthService.hasPermission(PermissionsEnum.READ_INCIDENCIAS)) {
+    if (
+      basePath.startsWith('#/tramites') &&
+      !AuthService.hasPermission(PermissionsEnum.READ_INCIDENCIAS)
+    ) {
       window.location.hash = '#/';
       return;
     }
 
     // Protect #/instituciones/kanban based on Kanban permissions
-    if (basePath === '#/instituciones/kanban' && !AuthService.hasPermission(PermissionsEnum.READ_KANBAN)) {
+    if (
+      basePath === '#/instituciones/kanban' &&
+      !AuthService.hasPermission(PermissionsEnum.READ_KANBAN)
+    ) {
       window.location.hash = '#/';
       return;
     }
 
     // Protect #/instituciones based on 'Ver Institución' permission
-    if (basePath === '#/instituciones' && !AuthService.hasPermission(PermissionsEnum.READ_INSTITUCIONES)) {
+    if (
+      basePath === '#/instituciones' &&
+      !AuthService.hasPermission(PermissionsEnum.READ_INSTITUCIONES)
+    ) {
       window.location.hash = '#/';
       return;
     }

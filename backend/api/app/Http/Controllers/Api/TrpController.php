@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class SqaController extends Controller
+class TrpController extends Controller
 {
     public function performanceStats()
     {
