@@ -110,42 +110,23 @@ class CalculateDd extends Command
         $totalLines = $clocData['SUM']['code'];
         $kloc = $totalLines / 1000;
 
-        // 4. Proceso Defectos (Git) iterando por varios rangos de meses para Grafana
-        $this->info("Analizando el historial de Git buscando defectos...");
-
-        $historicalData = [];
-        $monthRanges = [1, 2, 3, 6, 12, 24]; // Pre-calculamos estos rangos comunes para filtros en Grafana
-
-        if (!in_array($maxMonths, $monthRanges)) {
-            $monthRanges[] = $maxMonths; // Incluir el solicitado por comando si no está
-            sort($monthRanges);
-        }
-
-        foreach ($monthRanges as $m) {
-            $gitCommand = "git -C " . escapeshellarg($targetPath) . " rev-list --since=\"{$m} months ago\" --grep=\"fix\" --grep=\"bug\" --grep=\"corregido\" --grep=\"error\" --grep=\"hotfix\" -i HEAD --count";
-            $gitOutput = shell_exec($gitCommand);
-            $defectos = intval(trim($gitOutput));
-            $dd = $kloc > 0 ? ($defectos / $kloc) : 0;
-
-            $historicalData[] = [
-                'months' => $m,
-                'defectos' => $defectos,
-                'dd' => round($dd, 2)
-            ];
-
-            // Para mostrar en consola solo el valor principal (el solicitado por $maxMonths)
-            if ($m === $maxMonths) {
-                $mainDefectos = $defectos;
-                $mainDdFormatted = number_format($dd, 2);
-            }
-        }
+        // 4. Proceso Defectos (Git)
+        $this->info("Analizando el historial de Git buscando defectos (últimos {$maxMonths} meses)...");
+        
+        $gitCommand = "git -C " . escapeshellarg($targetPath) . " rev-list --since=\"{$maxMonths} months ago\" --grep=\"fix\" --grep=\"bug\" --grep=\"corregido\" --grep=\"error\" --grep=\"hotfix\" -i HEAD --count";
+        $gitOutput = shell_exec($gitCommand);
+        $defectos = intval(trim($gitOutput));
+        
+        // 5. Cálculo
+        $dd = $kloc > 0 ? ($defectos / $kloc) : 0;
+        $ddFormatted = number_format($dd, 2);
 
         $this->comment("\n==========================================");
         $this->comment(" RESULTADO DE DENSIDAD DE DEFECTOS (DD)");
         $this->comment("==========================================");
         $this->info("Líneas de Código (KLOC): " . number_format($kloc, 3));
-        $this->info("Defectos Encontrados (últimos {$maxMonths} meses): {$mainDefectos}");
-        $this->info("Densidad de Defectos: {$mainDdFormatted} defectos por KLOC");
+        $this->info("Defectos Encontrados ({$maxMonths} meses): {$defectos}");
+        $this->info("Densidad de Defectos: {$ddFormatted} defectos por KLOC");
         $this->comment("==========================================");
 
         // 6. Generar JSON
@@ -159,9 +140,11 @@ class CalculateDd extends Command
 
         $data = [
             'metric' => 'Densidad de Defectos (DD)',
+            'value' => round($dd, 2),
             'kloc' => round($kloc, 3),
             'total_lines' => $totalLines,
-            'historical_data' => $historicalData, // Grafana filtrará este array usando JSONata: $.historical_data[?(@.months==$rango)].dd
+            'defectos' => $defectos,
+            'meses_analizados' => $maxMonths,
             'fecha_procesamiento' => now()->timezone('America/Guayaquil')->toDateTimeString(),
         ];
 
