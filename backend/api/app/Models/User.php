@@ -59,6 +59,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación: Los territorios asignados a este usuario (por ejemplo, cobertura del supervisor).
+     */
+    public function territorios(): BelongsToMany
+    {
+        return $this->belongsToMany(Territorio::class, 'usuario_territorios', 'user_id', 'territorio_id')
+            ->withTimestamps();
+    }
+
+    /**
      * Check if the user has a specific permission.
      */
     public function hasPermission(string $permissionName): bool

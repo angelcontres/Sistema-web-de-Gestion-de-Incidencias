@@ -1,14 +1,14 @@
 import { BaseComponent } from '../../core/base-component.js';
 import { apiRequest, API_BASE_URL } from '../../core/api.js';
 
-export class SqaDashboardComponent extends BaseComponent {
+export class TrpDashboardComponent extends BaseComponent {
   constructor() {
-    super('js/pages/sqa-dashboard/sqa-dashboard.component.html');
+    super('js/pages/trp-dashboard/trp-dashboard.component.html');
   }
 
   async onInit() {
     try {
-      const response = await apiRequest('/sqa/performance-stats');
+      const response = await apiRequest('/trp/performance-stats');
       const dataLogs = response || [];
 
       this.renderChart(dataLogs.timeline);
@@ -44,7 +44,7 @@ export class SqaDashboardComponent extends BaseComponent {
   async downloadLogs(format) {
     try {
       const token = localStorage.getItem('access_token');
-      const url = `${API_BASE_URL}/sqa/performance-logs/export?format=${format}`;
+      const url = `${API_BASE_URL}/trp/performance-logs/export?format=${format}`;
 
       const response = await fetch(url, {
         headers: {
@@ -157,4 +157,4 @@ export class SqaDashboardComponent extends BaseComponent {
   }
 }
 
-customElements.define('app-sqa-dashboard', SqaDashboardComponent);
+customElements.define('app-trp-dashboard', TrpDashboardComponent);

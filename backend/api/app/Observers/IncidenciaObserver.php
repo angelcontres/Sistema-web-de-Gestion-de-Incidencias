@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
 
 class IncidenciaObserver
@@ -32,8 +33,8 @@ class IncidenciaObserver
     private function registrarHistorial(Incidencia $incidencia, $comentario = null): void
     {
         $user = auth()->user();
-        
-        \App\Models\HistorialIncidencia::create([
+
+        HistorialIncidencia::create([
             'incidencia_id' => $incidencia->id,
             'estado_id' => $incidencia->estado_id,
             'usuario_id' => $user ? $user->id : null,

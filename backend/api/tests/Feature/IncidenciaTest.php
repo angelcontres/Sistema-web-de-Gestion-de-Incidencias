@@ -7,15 +7,14 @@ use App\Models\Direccion;
 use App\Models\EstadoIncidencia;
 use App\Models\Incidencia;
 use App\Models\Institucion;
+use App\Models\OpcionMenu;
 use App\Models\Pais;
 use App\Models\Permiso;
-use App\Models\OpcionMenu;
 use App\Models\Prioridad;
 use App\Models\Role;
 use App\Models\Territorio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Services\IncidentGroupingService;
 use Tests\TestCase;
 
 class IncidenciaTest extends TestCase
@@ -320,7 +319,7 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->deleteJson("/api/v1/incidencias/{$incidencia->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonPath('message', 'Incidencia eliminada con éxito');
+            ->assertJsonPath('message', 'Incidencia eliminada con éxito');
 
         $this->assertSoftDeleted('reporte_incidencias', [
             'id' => $incidencia->id,
@@ -361,7 +360,7 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->putJson("/api/v1/incidencias/{$incidencia->id}", $payload);
 
         $response->assertStatus(200)
-                 ->assertJsonPath('data.estado_id', $nuevoEstado->id);
+            ->assertJsonPath('data.estado_id', $nuevoEstado->id);
 
         $this->assertDatabaseHas('reporte_incidencias', [
             'id' => $incidencia->id,
@@ -455,8 +454,10 @@ class IncidenciaTest extends TestCase
         $this->assertFalse($containsIncidencia1);
         $this->assertTrue($containsIncidencia2);
     }
+
     /**
      * CP-V-01: Latitud fuera de rango
+     *
      * @group HU-01
      */
     public function test_validates_latitud_out_of_range()
@@ -471,11 +472,12 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->postJson('/api/v1/direcciones', $payload);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['latitud']);
+            ->assertJsonValidationErrors(['latitud']);
     }
 
     /**
      * CP-V-02: Longitud fuera de rango
+     *
      * @group HU-01
      */
     public function test_validates_longitud_out_of_range()
@@ -490,11 +492,12 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->postJson('/api/v1/direcciones', $payload);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['longitud']);
+            ->assertJsonValidationErrors(['longitud']);
     }
 
     /**
      * CP-V-03: Campos obligatorios vacíos
+     *
      * @group HU-01
      */
     public function test_validates_required_fields_on_incidencia()
@@ -507,11 +510,12 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
+            ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
     }
 
     /**
      * CP-V-05: Tipo/Subtipo inválido (no existe)
+     *
      * @group HU-01
      */
     public function test_validates_tipo_and_subtipo_exist()
@@ -524,11 +528,12 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
+            ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
     }
 
     /**
      * CP-G-01: Agrupamiento de incidencias y aumento de afectados dentro del umbral
+     *
      * @group HU-01
      */
     public function test_incidents_within_threshold_group_and_increment_affected_count()
@@ -633,7 +638,7 @@ class IncidenciaTest extends TestCase
         $this->assertNotNull(Direccion::find($direccionLejana->id));
         $this->assertDatabaseHas('reporte_incidencias', [
             'direccion_id' => $direccionLejana->id,
-            'incidencia_descripcion' => 'Nueva incidencia lejana'
+            'incidencia_descripcion' => 'Nueva incidencia lejana',
         ]);
     }
 
@@ -723,10 +728,10 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
 
         $response->assertStatus(201);
-        
+
         // Verificamos que se haya asignado automáticamente la institución de la subcategoría
         $response->assertJsonPath('data.institucion_id', $this->subcategoriaAlta->institucion_id);
-        
+
         $this->assertDatabaseHas('reporte_incidencias', [
             'incidencia_descripcion' => 'Bache gigante sin institución en payload',
             'institucion_id' => $this->subcategoriaAlta->institucion_id,

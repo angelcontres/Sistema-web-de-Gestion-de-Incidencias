@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\PermissionsEnum;
 use App\Models\Permiso;
 use App\Models\Role;
 use App\Models\User;
@@ -61,27 +62,27 @@ class RoleSeeder extends Seeder
 
         // Assign specific permissions to the Supervisor role using Enums
         $permissionService->grantPermissionsToRole($supervisorRole, [
-            \App\Enums\PermissionsEnum::READ_PAISES,
-            \App\Enums\PermissionsEnum::READ_TERRITORIOS,
-            \App\Enums\PermissionsEnum::READ_DIRECCIONES,
-            \App\Enums\PermissionsEnum::READ_CATEGORIAS_INCIDENCIA,
-            \App\Enums\PermissionsEnum::READ_INCIDENCIAS,
-            \App\Enums\PermissionsEnum::UPDATE_INCIDENCIAS,
-            \App\Enums\PermissionsEnum::READ_DESPACHO_INCIDENCIAS,
-            \App\Enums\PermissionsEnum::UPDATE_DESPACHO_INCIDENCIAS,
-            \App\Enums\PermissionsEnum::READ_HISTORIAL,
+            PermissionsEnum::READ_PAISES,
+            PermissionsEnum::READ_TERRITORIOS,
+            PermissionsEnum::READ_DIRECCIONES,
+            PermissionsEnum::READ_CATEGORIAS_INCIDENCIA,
+            PermissionsEnum::READ_INCIDENCIAS,
+            PermissionsEnum::UPDATE_INCIDENCIAS,
+            PermissionsEnum::READ_DESPACHO_INCIDENCIAS,
+            PermissionsEnum::UPDATE_DESPACHO_INCIDENCIAS,
+            PermissionsEnum::READ_HISTORIAL,
         ]);
 
         $institucionRole = Role::where('nombre', 'Institucion')->first();
         if ($institucionRole) {
             $permissionService->grantPermissionsToRole($institucionRole, [
-                \App\Enums\PermissionsEnum::READ_PAISES,
-                \App\Enums\PermissionsEnum::READ_TERRITORIOS,
-                \App\Enums\PermissionsEnum::READ_DIRECCIONES,
-                \App\Enums\PermissionsEnum::READ_KANBAN,
-                \App\Enums\PermissionsEnum::CREATE_KANBAN,
-                \App\Enums\PermissionsEnum::UPDATE_KANBAN,
-                \App\Enums\PermissionsEnum::DELETE_KANBAN,
+                PermissionsEnum::READ_PAISES,
+                PermissionsEnum::READ_TERRITORIOS,
+                PermissionsEnum::READ_DIRECCIONES,
+                PermissionsEnum::READ_KANBAN,
+                PermissionsEnum::CREATE_KANBAN,
+                PermissionsEnum::UPDATE_KANBAN,
+                PermissionsEnum::DELETE_KANBAN,
             ]);
         }
 
@@ -89,11 +90,11 @@ class RoleSeeder extends Seeder
         $ciudadanoRole = Role::where('nombre', 'Ciudadano')->first();
         if ($ciudadanoRole) {
             $permissionService->grantPermissionsToRole($ciudadanoRole, [
-                \App\Enums\PermissionsEnum::READ_INCIDENCIAS,
-                \App\Enums\PermissionsEnum::CREATE_INCIDENCIAS,
-                \App\Enums\PermissionsEnum::READ_DIRECCIONES,
-                \App\Enums\PermissionsEnum::CREATE_DIRECCIONES,
-                \App\Enums\PermissionsEnum::READ_HISTORIAL,
+                PermissionsEnum::READ_INCIDENCIAS,
+                PermissionsEnum::CREATE_INCIDENCIAS,
+                PermissionsEnum::READ_DIRECCIONES,
+                PermissionsEnum::CREATE_DIRECCIONES,
+                PermissionsEnum::READ_HISTORIAL,
             ]);
         }
 

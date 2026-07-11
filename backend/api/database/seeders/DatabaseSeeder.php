@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UbicacionesSeeder::class);
         $this->call(InstitucionesSeeder::class);
         $this->call(ClasificacionesSeeder::class);
+        $this->call(SupervisoresTerritorialesSeeder::class);
 
         $roleService = app(RoleServiceInterface::class);
 
@@ -115,7 +116,7 @@ class DatabaseSeeder extends Seeder
             $roleService->syncRolesToUser($carlosUser, [$carlosUserRole->id]);
         }
 
-        //Crear usuario llamado Angel Villón
+        // Crear usuario llamado Angel Villón
         $angelUser = User::create([
             'name' => 'Angel Villón',
             'username' => 'angelvillon1',
@@ -128,7 +129,7 @@ class DatabaseSeeder extends Seeder
             $roleService->syncRolesToUser($angelUser, [$angelUserRole->id]);
         }
 
-        //Crear usuario llamado Paulo Orrala
+        // Crear usuario llamado Paulo Orrala
         $pauloUser = User::create([
             'name' => 'Paulo Orrala',
             'username' => 'pauloorrala1',

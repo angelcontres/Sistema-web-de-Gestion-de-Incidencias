@@ -63,9 +63,17 @@ class MenuOptionSeeder extends Seeder
             'created_by' => $user->id,
         ]);
 
-        $config = OpcionMenu::create([
-            'nombre' => 'Configuración',
-            'ruta' => '#/configuracion',
+        OpcionMenu::create([
+            'nombre' => 'Tablero Kanban',
+            'ruta' => '#/instituciones/kanban',
+            'icono' => 'bi bi-kanban-fill',
+            'padre_id' => null,
+            'created_by' => $user->id,
+        ]);
+
+        $mantenimiento = OpcionMenu::create([
+            'nombre' => 'Mantenimiento',
+            'ruta' => '#/mantenimiento',
             'icono' => 'bi bi-gear-fill',
             'padre_id' => null,
             'created_by' => $user->id,
@@ -75,39 +83,7 @@ class MenuOptionSeeder extends Seeder
             'nombre' => 'Opciones de Menú',
             'ruta' => '#/opciones-menu',
             'icono' => 'bi bi-menu-button-wide-fill',
-            'padre_id' => $config->id,
-            'created_by' => $user->id,
-        ]);
-
-        OpcionMenu::create([
-            'nombre' => 'Roles',
-            'ruta' => '#/roles',
-            'icono' => 'bi bi-shield-lock-fill',
-            'padre_id' => $config->id,
-            'created_by' => $user->id,
-        ]);
-
-        OpcionMenu::create([
-            'nombre' => 'Permisos',
-            'ruta' => '#/permisos',
-            'icono' => 'bi bi-key-fill',
-            'padre_id' => $config->id,
-            'created_by' => $user->id,
-        ]);
-
-        OpcionMenu::create([
-            'nombre' => 'Usuarios',
-            'ruta' => '#/usuarios',
-            'icono' => 'bi bi-people-fill',
-            'padre_id' => $config->id,
-            'created_by' => $user->id,
-        ]);
-
-        OpcionMenu::create([
-            'nombre' => 'SQA',
-            'ruta' => '#/sqa-dashboard',
-            'icono' => 'bi bi-graph-up',
-            'padre_id' => null,
+            'padre_id' => $mantenimiento->id,
             'created_by' => $user->id,
         ]);
 
@@ -115,7 +91,7 @@ class MenuOptionSeeder extends Seeder
             'nombre' => 'Ubicaciones',
             'ruta' => '#/ubicaciones',
             'icono' => 'bi bi-geo-alt-fill',
-            'padre_id' => $config->id,
+            'padre_id' => $mantenimiento->id,
             'created_by' => $user->id,
         ]);
 
@@ -123,7 +99,7 @@ class MenuOptionSeeder extends Seeder
             'nombre' => 'Instituciones',
             'ruta' => '#/instituciones',
             'icono' => 'bi bi-building-fill',
-            'padre_id' => $config->id,
+            'padre_id' => $mantenimiento->id,
             'created_by' => $user->id,
         ]);
 
@@ -131,16 +107,49 @@ class MenuOptionSeeder extends Seeder
             'nombre' => 'Categorías de Incidencias',
             'ruta' => '#/categorias',
             'icono' => 'bi bi-tags-fill',
-            'padre_id' => $config->id,
+            'padre_id' => $mantenimiento->id,
+            'created_by' => $user->id,
+        ]);
+
+        $administracion = OpcionMenu::create([
+            'nombre' => 'Administración',
+            'ruta' => '#/administracion',
+            'icono' => 'bi bi-shield-lock-fill',
+            'padre_id' => null,
             'created_by' => $user->id,
         ]);
 
         OpcionMenu::create([
-            'nombre' => 'Tablero Kanban',
-            'ruta' => '#/instituciones/kanban',
-            'icono' => 'bi bi-kanban-fill',
-            'padre_id' => null,
+            'nombre' => 'Roles',
+            'ruta' => '#/roles',
+            'icono' => 'bi bi-shield-lock-fill',
+            'padre_id' => $administracion->id,
             'created_by' => $user->id,
         ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Permisos',
+            'ruta' => '#/permisos',
+            'icono' => 'bi bi-key-fill',
+            'padre_id' => $administracion->id,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'Usuarios',
+            'ruta' => '#/usuarios',
+            'icono' => 'bi bi-people-fill',
+            'padre_id' => $administracion->id,
+            'created_by' => $user->id,
+        ]);
+
+        OpcionMenu::create([
+            'nombre' => 'TRP',
+            'ruta' => '#/trp-dashboard',
+            'icono' => 'bi bi-graph-up',
+            'padre_id' => $administracion->id,
+            'created_by' => $user->id,
+        ]);
+
     }
 }
