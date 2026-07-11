@@ -121,6 +121,15 @@ function navigate() {
       window.location.hash = '#/';
       return;
     }
+
+    // Protect #/trp-dashboard based on 'Ver TRP' permission
+    if (
+      basePath === '#/trp-dashboard' &&
+      !AuthService.hasPermission(PermissionsEnum.READ_TRP)
+    ) {
+      window.location.hash = '#/';
+      return;
+    }
   }
 
   // Find component or default to dashboard

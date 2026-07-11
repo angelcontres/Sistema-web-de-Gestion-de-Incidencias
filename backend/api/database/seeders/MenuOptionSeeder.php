@@ -15,141 +15,178 @@ class MenuOptionSeeder extends Seeder
     {
         $user = User::first();
 
-        OpcionMenu::create([
-            'nombre' => 'Dashboard',
-            'ruta' => '#/',
-            'icono' => 'bi bi-grid-fill',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        if (!$user) {
+            return;
+        }
 
-        $incidencia = OpcionMenu::create([
-            'nombre' => 'Incidencias',
-            'ruta' => '#/incidencias',
-            'icono' => 'bi bi-exclamation-triangle-fill',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/'],
+            [
+                'nombre' => 'Dashboard',
+                'icono' => 'bi bi-grid-fill',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Registro',
-            'ruta' => '#/incidencias/form',
-            'icono' => 'bi bi-pencil-square',
-            'padre_id' => $incidencia->id,
-            'created_by' => $user->id,
-        ]);
+        $incidencia = OpcionMenu::updateOrCreate(
+            ['ruta' => '#/incidencias'],
+            [
+                'nombre' => 'Incidencias',
+                'icono' => 'bi bi-exclamation-triangle-fill',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Despacho',
-            'ruta' => '#/incidencias/despacho',
-            'icono' => 'bi bi-send-check-fill',
-            'padre_id' => $incidencia->id,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/incidencias/form'],
+            [
+                'nombre' => 'Registro',
+                'icono' => 'bi bi-pencil-square',
+                'padre_id' => $incidencia->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        $tramites = OpcionMenu::create([
-            'nombre' => 'Trámites',
-            'ruta' => '#/tramites',
-            'icono' => 'bi bi-search',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/incidencias/despacho'],
+            [
+                'nombre' => 'Despacho',
+                'icono' => 'bi bi-send-check-fill',
+                'padre_id' => $incidencia->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Historial de incidencias',
-            'ruta' => '#/tramites/historial',
-            'icono' => 'bi bi-clock-history',
-            'padre_id' => $tramites->id,
-            'created_by' => $user->id,
-        ]);
+        $tramites = OpcionMenu::updateOrCreate(
+            ['ruta' => '#/tramites'],
+            [
+                'nombre' => 'Trámites',
+                'icono' => 'bi bi-search',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Tablero Kanban',
-            'ruta' => '#/instituciones/kanban',
-            'icono' => 'bi bi-kanban-fill',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/tramites/historial'],
+            [
+                'nombre' => 'Historial de incidencias',
+                'icono' => 'bi bi-clock-history',
+                'padre_id' => $tramites->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        $mantenimiento = OpcionMenu::create([
-            'nombre' => 'Mantenimiento',
-            'ruta' => '#/mantenimiento',
-            'icono' => 'bi bi-gear-fill',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/instituciones/kanban'],
+            [
+                'nombre' => 'Tablero Kanban',
+                'icono' => 'bi bi-kanban-fill',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Opciones de Menú',
-            'ruta' => '#/opciones-menu',
-            'icono' => 'bi bi-menu-button-wide-fill',
-            'padre_id' => $mantenimiento->id,
-            'created_by' => $user->id,
-        ]);
+        $mantenimiento = OpcionMenu::updateOrCreate(
+            ['ruta' => '#/mantenimiento'],
+            [
+                'nombre' => 'Mantenimiento',
+                'icono' => 'bi bi-gear-fill',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Ubicaciones',
-            'ruta' => '#/ubicaciones',
-            'icono' => 'bi bi-geo-alt-fill',
-            'padre_id' => $mantenimiento->id,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/opciones-menu'],
+            [
+                'nombre' => 'Opciones de Menú',
+                'icono' => 'bi bi-menu-button-wide-fill',
+                'padre_id' => $mantenimiento->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Instituciones',
-            'ruta' => '#/instituciones',
-            'icono' => 'bi bi-building-fill',
-            'padre_id' => $mantenimiento->id,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/ubicaciones'],
+            [
+                'nombre' => 'Ubicaciones',
+                'icono' => 'bi bi-geo-alt-fill',
+                'padre_id' => $mantenimiento->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Categorías de Incidencias',
-            'ruta' => '#/categorias',
-            'icono' => 'bi bi-tags-fill',
-            'padre_id' => $mantenimiento->id,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/instituciones'],
+            [
+                'nombre' => 'Instituciones',
+                'icono' => 'bi bi-building-fill',
+                'padre_id' => $mantenimiento->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        $administracion = OpcionMenu::create([
-            'nombre' => 'Administración',
-            'ruta' => '#/administracion',
-            'icono' => 'bi bi-shield-lock-fill',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/categorias'],
+            [
+                'nombre' => 'Categorías de Incidencias',
+                'icono' => 'bi bi-tags-fill',
+                'padre_id' => $mantenimiento->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Roles',
-            'ruta' => '#/roles',
-            'icono' => 'bi bi-shield-lock-fill',
-            'padre_id' => $administracion->id,
-            'created_by' => $user->id,
-        ]);
+        $administracion = OpcionMenu::updateOrCreate(
+            ['ruta' => '#/administracion'],
+            [
+                'nombre' => 'Administración',
+                'icono' => 'bi bi-shield-lock-fill',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Permisos',
-            'ruta' => '#/permisos',
-            'icono' => 'bi bi-key-fill',
-            'padre_id' => $administracion->id,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/roles'],
+            [
+                'nombre' => 'Roles',
+                'icono' => 'bi bi-shield-lock-fill',
+                'padre_id' => $administracion->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'Usuarios',
-            'ruta' => '#/usuarios',
-            'icono' => 'bi bi-people-fill',
-            'padre_id' => $administracion->id,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/permisos'],
+            [
+                'nombre' => 'Permisos',
+                'icono' => 'bi bi-key-fill',
+                'padre_id' => $administracion->id,
+                'created_by' => $user->id,
+            ]
+        );
 
-        OpcionMenu::create([
-            'nombre' => 'TRP',
-            'ruta' => '#/trp-dashboard',
-            'icono' => 'bi bi-graph-up',
-            'padre_id' => $administracion->id,
-            'created_by' => $user->id,
-        ]);
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/usuarios'],
+            [
+                'nombre' => 'Usuarios',
+                'icono' => 'bi bi-people-fill',
+                'padre_id' => $administracion->id,
+                'created_by' => $user->id,
+            ]
+        );
 
+        OpcionMenu::updateOrCreate(
+            ['ruta' => '#/trp-dashboard'],
+            [
+                'nombre' => 'TRP',
+                'icono' => 'bi bi-graph-up',
+                'padre_id' => $administracion->id,
+                'created_by' => $user->id,
+            ]
+        );
     }
 }
