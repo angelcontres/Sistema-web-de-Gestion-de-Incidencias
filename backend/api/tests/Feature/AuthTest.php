@@ -97,4 +97,48 @@ class AuthTest extends TestCase
         $this->assertTrue(collect($dataAdmin)->contains('nombre', 'Roles'));
         $this->assertFalse(collect($dataCiudadano)->contains('nombre', 'Roles'));
     }
+
+    public function test_admin_can_delete_user_and_removes_roles_and_tokens()
+    {
+        // 1. Crear el usuario Admin para autenticar la petición
+        $admin = User::factory()->create();
+        $rolAdmin = Role::firstOrCreate(['nombre' => 'Admin'], ['descripcion' => 'Admin', 'created_by' => $admin->id]);
+        $admin->roles()->sync([$rolAdmin->id]);
+
+        // 2. Crear el usuario que será eliminado (con roles y tokens)
+        $targetUser = User::factory()->create();
+        $rolCiudadano = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano', 'created_by' => $admin->id]);
+        $targetUser->roles()->sync([$rolCiudadano->id]);
+        
+        // Crear un token de Sanctum para el usuario a eliminar
+        $targetUser->createToken('test-token');
+
+        // Verificar que el usuario tiene roles y tokens antes de eliminar
+        $this->assertDatabaseHas('roles_users', [
+            'user_id' => $targetUser->id,
+            'rol_id' => $rolCiudadano->id
+        ]);
+        $this->assertDatabaseHas('personal_access_tokens', [
+            'tokenable_id' => $targetUser->id,
+            'tokenable_type' => User::class
+        ]);
+
+        // 3. Ejecutar la petición DELETE actuando como Admin
+        $response = $this->actingAs($admin)
+            ->deleteJson("/api/v1/usuarios/{$targetUser->id}");
+
+        // 4. Aserciones
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['message' => 'Usuario eliminado con éxito']);
+
+        // Verificar que el usuario fue borrado de la base de datos
+        $this->assertDatabaseMissing('users', ['id' => $targetUser->id]);
+
+        // Verificar que se eliminaron sus relaciones en roles_users y personal_access_tokens
+        $this->assertDatabaseMissing('roles_users', ['user_id' => $targetUser->id]);
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'tokenable_id' => $targetUser->id,
+            'tokenable_type' => User::class
+        ]);
+    }
 }

@@ -351,6 +351,12 @@ export class UserFormComponent extends BaseComponent {
       );
     }
 
+    // Get selected territories if supervisor container is visible
+    let territorios = [];
+    if (this.territoriosSelect && !this.territorioContainer.classList.contains('d-none')) {
+      territorios = Array.from(this.territoriosSelect.selectedOptions).map(opt => parseInt(opt.value));
+    }
+
     const payload = {
       username,
       name,

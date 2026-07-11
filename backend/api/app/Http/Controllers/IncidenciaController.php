@@ -25,12 +25,16 @@ class IncidenciaController extends Controller
 
         // Automatic state transition: when Supervisor queries list, Pendiente (1) -> En Revisión (2)
         if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
+            $transitionQuery = Incidencia::where('estado_id', 1);
             $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
             if (! empty($territorioIds)) {
-                $transitionQuery = Incidencia::where('estado_id', 1);
                 $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
                 $transitionQuery->whereHas('direccion', function ($q) use ($descendientesIds) {
                     $q->whereIn('territorio_id', $descendientesIds);
+                });
+            } elseif ($user->pais_id) {
+                $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
+                    $q->where('pais_id', $user->pais_id);
                 });
                 $incidenciasTransition = $transitionQuery->get();
                 foreach ($incidenciasTransition as $inc) {
