@@ -29,7 +29,7 @@ class AuthTest extends TestCase
 
         // Intentar acceder a rutas de administración de roles (requiere Admin)
         $response = $this->actingAs($ciudadano)->getJson('/api/v1/roles');
-        
+
         // Verifica si retorna 403 Forbidden
         $response->assertStatus(403);
     }
@@ -38,9 +38,9 @@ class AuthTest extends TestCase
     public function test_rejects_invalid_or_manipulated_token()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer invalid_and_manipulated_token_string'
+            'Authorization' => 'Bearer invalid_and_manipulated_token_string',
         ])->getJson('/api/v1/incidencias');
-        
+
         $response->assertStatus(401);
     }
 
@@ -48,7 +48,7 @@ class AuthTest extends TestCase
     public function test_cannot_access_after_logout_or_token_revocation()
     {
         $user = User::factory()->create();
-        
+
         // Simular login manual para obtener token real
         $token = $user->createToken('test-token')->plainTextToken;
 
@@ -56,7 +56,7 @@ class AuthTest extends TestCase
         $user->tokens()->delete();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/incidencias');
 
         $response->assertStatus(401);
@@ -79,7 +79,7 @@ class AuthTest extends TestCase
             'ruta' => '/roles',
             'orden' => 1,
             'activo' => true,
-            'created_by' => $admin->id
+            'created_by' => $admin->id,
         ]);
         $permisoAdmin = Permiso::firstOrCreate(['nombre' => 'Gestionar Roles', 'recurso' => 'roles', 'accion' => 'READ', 'opcion_menu_id' => $opcion->id]);
         $rolAdmin->permisos()->sync([$permisoAdmin->id]);
@@ -88,7 +88,7 @@ class AuthTest extends TestCase
         $responseAdmin = $this->actingAs($admin)->getJson('/api/v1/me/menu');
         $responseAdmin->assertStatus(200);
         $dataAdmin = $responseAdmin->json('data');
-        
+
         // Ciudadano no debería ver la opción
         $responseCiudadano = $this->actingAs($ciudadano)->getJson('/api/v1/me/menu');
         $responseCiudadano->assertStatus(200);

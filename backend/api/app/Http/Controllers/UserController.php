@@ -44,6 +44,10 @@ class UserController extends Controller
             $this->roleService->syncRolesToUser($user, $datosValidados['roles']);
         }
 
+        if (isset($datosValidados['territorios'])) {
+            $user->territorios()->sync($datosValidados['territorios']);
+        }
+
         return response()->json([
             'message' => 'Usuario creado con éxito',
             'data' => $user->load('roles'),
@@ -55,7 +59,7 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $user = User::with('roles')->findOrFail($id);
+        $user = User::with(['roles', 'territorios'])->findOrFail($id);
 
         return response()->json($user, 200);
     }
@@ -85,6 +89,9 @@ class UserController extends Controller
 
         // Sync roles (many-to-many relationship)
         $this->roleService->syncRolesToUser($user, $datosValidados['roles'] ?? []);
+
+        // Sync territories (many-to-many relationship)
+        $user->territorios()->sync($datosValidados['territorios'] ?? []);
 
         return response()->json([
             'message' => 'Usuario actualizado con éxito',

@@ -134,6 +134,20 @@
             <div class="invalid-feedback">Debe seleccionar una institución.</div>
           </div>
 
+          <!-- Cobertura Territorial (Solo visible si el rol es Supervisor) -->
+          <div class="mb-3 d-none" id="territorioContainer">
+            <label for="territorios_select" class="form-label fw-semibold text-secondary small"
+              >Cobertura Territorial (Provincias) *</label
+            >
+            <select class="form-select bg-light" id="territorios_select" multiple style="height: 120px;">
+              <!-- Se cargará dinámicamente -->
+            </select>
+            <div class="invalid-feedback">Debe seleccionar al menos una provincia.</div>
+            <div class="form-text text-muted small">
+              Mantenga presionado Ctrl (o Cmd en Mac) para seleccionar múltiples provincias.
+            </div>
+          </div>
+
           <!-- Estado Activo -->
           <div class="form-check form-switch mb-4">
             <input class="form-check-input" type="checkbox" id="activo" checked />

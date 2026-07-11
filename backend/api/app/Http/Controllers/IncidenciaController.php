@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\IncidenciasRequest;
 use App\Models\CategoriaIncidencia;
-use App\Models\Incidencia;
-use App\Models\HistorialIncidencia;
 use App\Models\Direccion;
+use App\Models\HistorialIncidencia;
+use App\Models\Incidencia;
+use App\Models\Territorio;
 use App\Services\IncidentGroupingService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -25,7 +26,13 @@ class IncidenciaController extends Controller
         // Automatic state transition: when Supervisor queries list, Pendiente (1) -> En Revisión (2)
         if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
             $transitionQuery = Incidencia::where('estado_id', 1);
-            if ($user->pais_id) {
+            $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+            if (! empty($territorioIds)) {
+                $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+                $transitionQuery->whereHas('direccion', function ($q) use ($descendientesIds) {
+                    $q->whereIn('territorio_id', $descendientesIds);
+                });
+            } elseif ($user->pais_id) {
                 $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
                     $q->where('pais_id', $user->pais_id);
                 });
@@ -52,7 +59,13 @@ class IncidenciaController extends Controller
 
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
             if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
-                if ($user->pais_id) {
+                $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+                if (! empty($territorioIds)) {
+                    $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+                    $query->whereHas('direccion', function ($q) use ($descendientesIds) {
+                        $q->whereIn('territorio_id', $descendientesIds);
+                    });
+                } elseif ($user->pais_id) {
                     $query->whereHas('direccion.territorio', function ($q) use ($user) {
                         $q->where('pais_id', $user->pais_id);
                     });
@@ -61,11 +74,11 @@ class IncidenciaController extends Controller
                 $query->where('institucion_id', $user->institucion_id);
             } else {
                 // If they are regular citizens, they can only see their own reports (or ones they are attached to)
-                $query->where(function($q) use ($user) {
+                $query->where(function ($q) use ($user) {
                     $q->where('cliente_id', $user->id)
-                      ->orWhereHas('reportantes', function($q2) use ($user) {
-                          $q2->where('user_id', $user->id);
-                      });
+                        ->orWhereHas('reportantes', function ($q2) use ($user) {
+                            $q2->where('user_id', $user->id);
+                        });
                 });
             }
         }
@@ -115,9 +128,9 @@ class IncidenciaController extends Controller
                             ->where('user_id', $user->id)
                             ->where('reporte_incidencia_id', $similar->id)
                             ->exists();
-                        if (!$exists) {
+                        if (! $exists) {
                             $similar->reportantes()->attach($user->id, [
-                                'created_by' => $user->id
+                                'created_by' => $user->id,
                             ]);
                         }
 
@@ -126,13 +139,13 @@ class IncidenciaController extends Controller
                             'incidencia_id' => $similar->id,
                             'estado_id' => $similar->estado_id,
                             'usuario_id' => $user->id,
-                            'comentario' => '[VINCULADO] ' . $request->incidencia_descripcion
+                            'comentario' => '[VINCULADO] '.$request->incidencia_descripcion,
                         ]);
                     }
 
                     // Delete the newly created address if it is not used elsewhere
                     $isReferenced = Incidencia::where('direccion_id', $direccion->id)->exists();
-                    if (!$isReferenced) {
+                    if (! $isReferenced) {
                         $direccion->delete();
                     }
 
@@ -183,7 +196,7 @@ class IncidenciaController extends Controller
 
         if ($user) {
             $incidencia->reportantes()->attach($user->id, [
-                'created_by' => $user->id
+                'created_by' => $user->id,
             ]);
         }
 
@@ -203,13 +216,13 @@ class IncidenciaController extends Controller
                     continue; // Omitir si el base64 no es válido
                 }
                 // Generar nombre de archivo único
-                $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
+                $fileName = 'incidencias/'.Str::uuid().'.'.$extension;
                 // Subir al almacenamiento (S3 o Local según el .env)
                 Storage::disk($disk)->put($fileName, $imageDecoded);
                 // Registrar en la BD (guardamos la ruta relativa)
                 $incidencia->recursos()->create([
                     'url' => $fileName,
-                    'tipo' => 'imagen'
+                    'tipo' => 'imagen',
                 ]);
             }
 
@@ -321,13 +334,13 @@ class IncidenciaController extends Controller
                     continue; // Omitir si el base64 no es válido
                 }
                 // Generar nombre de archivo único
-                $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
+                $fileName = 'incidencias/'.Str::uuid().'.'.$extension;
                 // Subir al almacenamiento (S3 o Local según el .env)
                 Storage::disk($disk)->put($fileName, $imageDecoded);
                 // Registrar en la BD (guardamos la ruta relativa)
                 $incidencia->recursos()->create([
                     'url' => $fileName,
-                    'tipo' => 'imagen'
+                    'tipo' => 'imagen',
                 ]);
             }
         }
@@ -417,6 +430,7 @@ class IncidenciaController extends Controller
         }
 
         $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate(10);
+
         return response()->json($historial, 200);
     }
 
@@ -436,7 +450,7 @@ class IncidenciaController extends Controller
             return response()->json(['message' => 'No autorizado.'], 403);
         }
 
-        $historial = \App\Models\HistorialIncidencia::create([
+        $historial = HistorialIncidencia::create([
             'incidencia_id' => $incidencia->id,
             'estado_id' => $incidencia->estado_id, // Keep current state
             'usuario_id' => $user ? $user->id : null,
@@ -445,7 +459,7 @@ class IncidenciaController extends Controller
 
         return response()->json([
             'message' => 'Comentario agregado con éxito',
-            'data' => $historial->load(['usuario', 'estado'])
+            'data' => $historial->load(['usuario', 'estado']),
         ], 201);
     }
 
@@ -459,7 +473,13 @@ class IncidenciaController extends Controller
         }
 
         if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
-            if ($user->pais_id && $incidencia->direccion && $incidencia->direccion->territorio && $incidencia->direccion->territorio->pais_id != $user->pais_id) {
+            $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+            if (! empty($territorioIds)) {
+                $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+                if (! $incidencia->direccion || ! in_array($incidencia->direccion->territorio_id, $descendientesIds)) {
+                    return false;
+                }
+            } elseif ($user->pais_id && $incidencia->direccion && $incidencia->direccion->territorio && $incidencia->direccion->territorio->pais_id != $user->pais_id) {
                 return false;
             }
 

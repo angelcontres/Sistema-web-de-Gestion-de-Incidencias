@@ -21,12 +21,12 @@ class EstadoIncidenciaSeeder extends Seeder
         ];
 
         // Evitar error de constraint unique renombrando temporalmente
-        foreach (\App\Models\EstadoIncidencia::all() as $estadoExistente) {
-            $estadoExistente->update(['nombre' => $estadoExistente->nombre . '_tmp_' . $estadoExistente->id]);
+        foreach (EstadoIncidencia::all() as $estadoExistente) {
+            $estadoExistente->update(['nombre' => $estadoExistente->nombre.'_tmp_'.$estadoExistente->id]);
         }
 
         foreach ($estados as $estado) {
-            \App\Models\EstadoIncidencia::updateOrCreate(
+            EstadoIncidencia::updateOrCreate(
                 ['id' => $estado['id']],
                 [
                     'nombre' => $estado['nombre'],

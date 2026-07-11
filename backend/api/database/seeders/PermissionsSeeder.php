@@ -96,7 +96,7 @@ class PermissionsSeeder extends Seeder
         $registroMenu = OpcionMenu::where('nombre', 'Registro')->first();
         if ($registroMenu) {
             Permiso::where('nombre', 'Crear Incidencia')->update([
-                'opcion_menu_id' => $registroMenu->id
+                'opcion_menu_id' => $registroMenu->id,
             ]);
         }
     }

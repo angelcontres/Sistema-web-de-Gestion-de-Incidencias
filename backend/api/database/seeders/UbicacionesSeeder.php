@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\TipoTerritorio;
 use App\Models\Direccion;
 use App\Models\Pais;
 use App\Models\Territorio;
@@ -15,107 +16,82 @@ class UbicacionesSeeder extends Seeder
     public function run(): void
     {
         // 1. Paises
-        $peru = Pais::create([
-            'nombre' => 'Perú',
-            'codigo_iso' => 'PE',
-            'activo' => true,
-        ]);
+        $peru = Pais::updateOrCreate(
+            ['codigo_iso' => 'PE'],
+            ['nombre' => 'Perú', 'activo' => true]
+        );
 
-        $mexico = Pais::create([
-            'nombre' => 'México',
-            'codigo_iso' => 'MX',
-            'activo' => true,
-        ]);
+        $mexico = Pais::updateOrCreate(
+            ['codigo_iso' => 'MX'],
+            ['nombre' => 'México', 'activo' => true]
+        );
 
-        $ecuador = Pais::create([
-            'nombre' => 'Ecuador',
-            'codigo_iso' => 'EC',
-            'activo' => true,
-        ]);
+        $ecuador = Pais::updateOrCreate(
+            ['codigo_iso' => 'EC'],
+            ['nombre' => 'Ecuador', 'activo' => true]
+        );
 
         // 2. Territorios (Perú)
         // Nivel 1: Departamentos
-        $limaDpto = Territorio::create([
-            'pais_id' => $peru->id,
-            'parent_id' => null,
-            'nombre' => 'Lima',
-            'tipo' => 'Departamento',
-        ]);
+        $limaDpto = Territorio::updateOrCreate(
+            ['pais_id' => $peru->id, 'parent_id' => null, 'nombre' => 'Lima'],
+            ['tipo' => TipoTerritorio::DEPARTAMENTO]
+        );
 
-        $arequipaDpto = Territorio::create([
-            'pais_id' => $peru->id,
-            'parent_id' => null,
-            'nombre' => 'Arequipa',
-            'tipo' => 'Departamento',
-        ]);
+        $arequipaDpto = Territorio::updateOrCreate(
+            ['pais_id' => $peru->id, 'parent_id' => null, 'nombre' => 'Arequipa'],
+            ['tipo' => TipoTerritorio::DEPARTAMENTO]
+        );
 
         // Nivel 2: Provincias
-        $limaProv = Territorio::create([
-            'pais_id' => $peru->id,
-            'parent_id' => $limaDpto->id,
-            'nombre' => 'Lima',
-            'tipo' => 'Provincia',
-        ]);
+        $limaProv = Territorio::updateOrCreate(
+            ['pais_id' => $peru->id, 'parent_id' => $limaDpto->id, 'nombre' => 'Lima'],
+            ['tipo' => TipoTerritorio::PROVINCIA]
+        );
 
-        $arequipaProv = Territorio::create([
-            'pais_id' => $peru->id,
-            'parent_id' => $arequipaDpto->id,
-            'nombre' => 'Arequipa',
-            'tipo' => 'Provincia',
-        ]);
+        $arequipaProv = Territorio::updateOrCreate(
+            ['pais_id' => $peru->id, 'parent_id' => $arequipaDpto->id, 'nombre' => 'Arequipa'],
+            ['tipo' => TipoTerritorio::PROVINCIA]
+        );
 
         // Nivel 3: Distritos (Leaf nodes)
-        $surco = Territorio::create([
-            'pais_id' => $peru->id,
-            'parent_id' => $limaProv->id,
-            'nombre' => 'Santiago de Surco',
-            'tipo' => 'Distrito',
-        ]);
+        $surco = Territorio::updateOrCreate(
+            ['pais_id' => $peru->id, 'parent_id' => $limaProv->id, 'nombre' => 'Santiago de Surco'],
+            ['tipo' => TipoTerritorio::DISTRITO]
+        );
 
-        $miraflores = Territorio::create([
-            'pais_id' => $peru->id,
-            'parent_id' => $limaProv->id,
-            'nombre' => 'Miraflores',
-            'tipo' => 'Distrito',
-        ]);
+        $miraflores = Territorio::updateOrCreate(
+            ['pais_id' => $peru->id, 'parent_id' => $limaProv->id, 'nombre' => 'Miraflores'],
+            ['tipo' => TipoTerritorio::DISTRITO]
+        );
 
-        $yanahuara = Territorio::create([
-            'pais_id' => $peru->id,
-            'parent_id' => $arequipaProv->id,
-            'nombre' => 'Yanahuara',
-            'tipo' => 'Distrito',
-        ]);
+        $yanahuara = Territorio::updateOrCreate(
+            ['pais_id' => $peru->id, 'parent_id' => $arequipaProv->id, 'nombre' => 'Yanahuara'],
+            ['tipo' => TipoTerritorio::DISTRITO]
+        );
 
         // Territorios (México)
         // Nivel 1: Estados
-        $cdmx = Territorio::create([
-            'pais_id' => $mexico->id,
-            'parent_id' => null,
-            'nombre' => 'Ciudad de México',
-            'tipo' => 'Estado',
-        ]);
+        $cdmx = Territorio::updateOrCreate(
+            ['pais_id' => $mexico->id, 'parent_id' => null, 'nombre' => 'Ciudad de México'],
+            ['tipo' => TipoTerritorio::ESTADO]
+        );
 
-        $jalisco = Territorio::create([
-            'pais_id' => $mexico->id,
-            'parent_id' => null,
-            'nombre' => 'Jalisco',
-            'tipo' => 'Estado',
-        ]);
+        $jalisco = Territorio::updateOrCreate(
+            ['pais_id' => $mexico->id, 'parent_id' => null, 'nombre' => 'Jalisco'],
+            ['tipo' => TipoTerritorio::ESTADO]
+        );
 
         // Nivel 2: Municipios (Leaf nodes)
-        $coyoacan = Territorio::create([
-            'pais_id' => $mexico->id,
-            'parent_id' => $cdmx->id,
-            'nombre' => 'Coyoacán',
-            'tipo' => 'Alcaldía',
-        ]);
+        $coyoacan = Territorio::updateOrCreate(
+            ['pais_id' => $mexico->id, 'parent_id' => $cdmx->id, 'nombre' => 'Coyoacán'],
+            ['tipo' => TipoTerritorio::ALCALDIA]
+        );
 
-        $guadalajara = Territorio::create([
-            'pais_id' => $mexico->id,
-            'parent_id' => $jalisco->id,
-            'nombre' => 'Guadalajara',
-            'tipo' => 'Municipio',
-        ]);
+        $guadalajara = Territorio::updateOrCreate(
+            ['pais_id' => $mexico->id, 'parent_id' => $jalisco->id, 'nombre' => 'Guadalajara'],
+            ['tipo' => TipoTerritorio::MUNICIPIO]
+        );
 
         // Territorios (Ecuador) desde JSON completo
         $jsonPath = database_path('seeders/data/ecuador.json');
@@ -133,12 +109,10 @@ class UbicacionesSeeder extends Seeder
 
             $provName = mb_convert_case($provData['provincia'], MB_CASE_TITLE, 'UTF-8');
 
-            $prov = Territorio::create([
-                'pais_id' => $ecuador->id,
-                'parent_id' => null,
-                'nombre' => $provName,
-                'tipo' => 'Provincia',
-            ]);
+            $prov = Territorio::updateOrCreate(
+                ['pais_id' => $ecuador->id, 'parent_id' => null, 'codigo' => (string) $provId],
+                ['nombre' => $provName, 'tipo' => TipoTerritorio::PROVINCIA]
+            );
 
             if (! isset($provData['cantones']) || ! is_array($provData['cantones'])) {
                 continue;
@@ -150,12 +124,10 @@ class UbicacionesSeeder extends Seeder
                 }
 
                 $cantName = mb_convert_case($cantData['canton'], MB_CASE_TITLE, 'UTF-8');
-                $cant = Territorio::create([
-                    'pais_id' => $ecuador->id,
-                    'parent_id' => $prov->id,
-                    'nombre' => $cantName,
-                    'tipo' => 'Cantón',
-                ]);
+                $cant = Territorio::updateOrCreate(
+                    ['pais_id' => $ecuador->id, 'parent_id' => $prov->id, 'codigo' => (string) $cantId],
+                    ['nombre' => $cantName, 'tipo' => TipoTerritorio::CANTON]
+                );
 
                 if (! isset($cantData['parroquias']) || ! is_array($cantData['parroquias'])) {
                     continue;
@@ -163,12 +135,10 @@ class UbicacionesSeeder extends Seeder
 
                 foreach ($cantData['parroquias'] as $parrId => $parrNameRaw) {
                     $parrName = mb_convert_case($parrNameRaw, MB_CASE_TITLE, 'UTF-8');
-                    $parr = Territorio::create([
-                        'pais_id' => $ecuador->id,
-                        'parent_id' => $cant->id,
-                        'nombre' => $parrName,
-                        'tipo' => 'Parroquia',
-                    ]);
+                    $parr = Territorio::updateOrCreate(
+                        ['pais_id' => $ecuador->id, 'parent_id' => $cant->id, 'codigo' => (string) $parrId],
+                        ['nombre' => $parrName, 'tipo' => TipoTerritorio::PARROQUIA]
+                    );
 
                     // Guardar referencia normalizada para las direcciones
                     $key = self::normalizeString("{$provName}.{$cantName}.{$parrName}");
@@ -178,77 +148,95 @@ class UbicacionesSeeder extends Seeder
         }
 
         // 3. Direcciones (Asociadas al último de los nodos)
-        Direccion::create([
-            'territorio_id' => $surco->id,
-            'detalle' => 'Av. Javier Prado Este 4200',
-            'referencia' => 'Cerca al Centro Comercial Jockey Plaza',
-            'codigo_postal' => '15023',
-            'latitud' => -12.11430000,
-            'longitud' => -76.97490000,
-        ]);
+        Direccion::updateOrCreate(
+            ['detalle' => 'Av. Javier Prado Este 4200', 'territorio_id' => $surco->id],
+            [
+                'referencia' => 'Cerca al Centro Comercial Jockey Plaza',
+                'codigo_postal' => '15023',
+                'latitud' => -12.11430000,
+                'longitud' => -76.97490000,
+            ]
+        );
 
-        Direccion::create([
-            'territorio_id' => $miraflores->id,
-            'detalle' => 'Calle Larco 750',
-            'referencia' => 'Frente al Parque Kennedy',
-            'codigo_postal' => '15074',
-            'latitud' => -12.12210000,
-            'longitud' => -77.02890000,
-        ]);
+        Direccion::updateOrCreate(
+            ['detalle' => 'Calle Larco 750', 'territorio_id' => $miraflores->id],
+            [
+                'referencia' => 'Frente al Parque Kennedy',
+                'codigo_postal' => '15074',
+                'latitud' => -12.12210000,
+                'longitud' => -77.02890000,
+            ]
+        );
 
-        Direccion::create([
-            'territorio_id' => $coyoacan->id,
-            'detalle' => 'Calle Londres 247, Del Carmen',
-            'referencia' => 'Museo Frida Kahlo (Casa Azul)',
-            'codigo_postal' => '04100',
-            'latitud' => 19.34960000,
-            'longitud' => -99.16250000,
-        ]);
+        Direccion::updateOrCreate(
+            ['detalle' => 'Calle Londres 247, Del Carmen', 'territorio_id' => $coyoacan->id],
+            [
+                'referencia' => 'Museo Frida Kahlo (Casa Azul)',
+                'codigo_postal' => '04100',
+                'latitud' => 19.34960000,
+                'longitud' => -99.16250000,
+            ]
+        );
 
-        Direccion::create([
-            'territorio_id' => $parroquias['guayas.guayaquil.tarqui']->id,
-            'detalle' => 'Av. Francisco de Orellana y Justino Cornejo',
-            'referencia' => 'Gobierno Zonal de Guayaquil',
-            'codigo_postal' => '090506',
-            'latitud' => -2.16430000,
-            'longitud' => -79.89720000,
-        ]);
+        if (isset($parroquias['guayas.guayaquil.tarqui'])) {
+            Direccion::updateOrCreate(
+                ['detalle' => 'Av. Francisco de Orellana y Justino Cornejo', 'territorio_id' => $parroquias['guayas.guayaquil.tarqui']->id],
+                [
+                    'referencia' => 'Gobierno Zonal de Guayaquil',
+                    'codigo_postal' => '090506',
+                    'latitud' => -2.16430000,
+                    'longitud' => -79.89720000,
+                ]
+            );
+        }
 
-        Direccion::create([
-            'territorio_id' => $parroquias['pichincha.quito.inaquito']->id,
-            'detalle' => 'Av. Amazonas N37-29 y Corea',
-            'referencia' => 'Frente al CCI',
-            'codigo_postal' => '170504',
-            'latitud' => -0.17640000,
-            'longitud' => -78.48780000,
-        ]);
+        if (isset($parroquias['pichincha.quito.inaquito'])) {
+            Direccion::updateOrCreate(
+                ['detalle' => 'Av. Amazonas N37-29 y Corea', 'territorio_id' => $parroquias['pichincha.quito.inaquito']->id],
+                [
+                    'referencia' => 'Frente al CCI',
+                    'codigo_postal' => '170504',
+                    'latitud' => -0.17640000,
+                    'longitud' => -78.48780000,
+                ]
+            );
+        }
 
-        Direccion::create([
-            'territorio_id' => $parroquias['santa elena.salinas.salinas']->id,
-            'detalle' => 'Malecón de Salinas y Calle 19',
-            'referencia' => 'Frente a la Playa de San Lorenzo, Salinas',
-            'codigo_postal' => '241550',
-            'latitud' => -2.21720000,
-            'longitud' => -80.96340000,
-        ]);
+        if (isset($parroquias['santa elena.salinas.salinas'])) {
+            Direccion::updateOrCreate(
+                ['detalle' => 'Malecón de Salinas y Calle 19', 'territorio_id' => $parroquias['santa elena.salinas.salinas']->id],
+                [
+                    'referencia' => 'Frente a la Playa de San Lorenzo, Salinas',
+                    'codigo_postal' => '241550',
+                    'latitud' => -2.21720000,
+                    'longitud' => -80.96340000,
+                ]
+            );
+        }
 
-        Direccion::create([
-            'territorio_id' => $parroquias['santa elena.la libertad.la libertad']->id,
-            'detalle' => 'Av. Eleodoro Solorzano, Paseo Shopping',
-            'referencia' => 'Centro Comercial Paseo Shopping La Libertad',
-            'codigo_postal' => '240201',
-            'latitud' => -2.22850000,
-            'longitud' => -80.91020000,
-        ]);
+        if (isset($parroquias['santa elena.la libertad.la libertad'])) {
+            Direccion::updateOrCreate(
+                ['detalle' => 'Av. Eleodoro Solorzano, Paseo Shopping', 'territorio_id' => $parroquias['santa elena.la libertad.la libertad']->id],
+                [
+                    'referencia' => 'Centro Comercial Paseo Shopping La Libertad',
+                    'codigo_postal' => '240201',
+                    'latitud' => -2.22850000,
+                    'longitud' => -80.91020000,
+                ]
+            );
+        }
 
-        Direccion::create([
-            'territorio_id' => $parroquias['santa elena.santa elena.manglaralto']->id,
-            'detalle' => 'Calle Principal de Montañita, Sector La Punta',
-            'referencia' => 'Cerca de la playa de surf de Montañita',
-            'codigo_postal' => '240103',
-            'latitud' => -1.82840000,
-            'longitud' => -80.75310000,
-        ]);
+        if (isset($parroquias['santa elena.santa elena.manglaralto'])) {
+            Direccion::updateOrCreate(
+                ['detalle' => 'Calle Principal de Montañita, Sector La Punta', 'territorio_id' => $parroquias['santa elena.santa elena.manglaralto']->id],
+                [
+                    'referencia' => 'Cerca de la playa de surf de Montañita',
+                    'codigo_postal' => '240103',
+                    'latitud' => -1.82840000,
+                    'longitud' => -80.75310000,
+                ]
+            );
+        }
     }
 
     /**

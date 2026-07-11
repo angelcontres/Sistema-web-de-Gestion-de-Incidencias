@@ -31,7 +31,7 @@ class IncidenciasRequest extends FormRequest
             'cantidad_afectados_incidencia' => 'nullable|integer|min:0',
             'institucion_id' => 'nullable|integer|exists:instituciones,id',
 
-            'recursos' => 'nullable|array|max:' . $maxFiles,
+            'recursos' => 'nullable|array|max:'.$maxFiles,
             'recursos.*' => 'string', // Cada elemento debe ser el string en base64
         ];
 
@@ -50,6 +50,7 @@ class IncidenciasRequest extends FormRequest
     public function messages(): array
     {
         $maxFiles = (int) env('MAX_FILE_UPLOAD_LIMIT', 5);
+
         return [
             'recursos.max' => "No se permiten más de {$maxFiles} imágenes adjuntas.",
         ];

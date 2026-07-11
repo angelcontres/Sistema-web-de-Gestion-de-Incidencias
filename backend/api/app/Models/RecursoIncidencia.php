@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
 use Illuminate\Support\Facades\Storage;
 
 class RecursoIncidencia extends Model
 {
     protected $table = 'recurso_incidencias';
+
     protected $fillable = [
         'incidencia_id',
         'url',

@@ -10,12 +10,6 @@ class IncidentGroupingService
     /**
      * Find a similar incident within 50 meters of the given coordinates
      * that is of the same category/subcategory and is in state "En Revisión" (estado_id = 2).
-     *
-     * @param int $tipoId
-     * @param int $subTipoId
-     * @param float $lat
-     * @param float $lng
-     * @return Incidencia|null
      */
     public function findSimilarIncident(int $tipoId, int $subTipoId, float $lat, float $lng): ?Incidencia
     {

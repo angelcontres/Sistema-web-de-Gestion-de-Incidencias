@@ -6,7 +6,7 @@ Actualmente ya existe un modelo de base de datos funcional que **no quiero redis
 
 ---
 
-# Modelo actual
+# Modelo actual [ruta](/docs/02_diagramas/SCRIPT-INCIDENCIAS.sql)
 
 El sistema ya dispone, entre otras, de las siguientes entidades:
 
@@ -17,6 +17,7 @@ El sistema ya dispone, entre otras, de las siguientes entidades:
 - instituciones
 - reporte_incidencias
 - historial_incidencias
+- estados_incidencia
 - usuario_incidencia
 - direcciones
 - territorios
@@ -45,7 +46,7 @@ No existen tablas separadas para provincias, cantones o parroquias.
 
 ---
 
-# Seeder de territorios
+# Seeder de territorios [al seeder, este obtiene el json de los territorios del ecuador](/backend/api/database/seeders/UbicacionesSeeder.php)
 
 Dispongo de un JSON oficial de Ecuador con la estructura:
 
@@ -123,8 +124,8 @@ El sistema debe funcionar de forma similar al despacho de incidencias utilizado 
 Existen tres actores principales:
 
 - Ciudadano
-- Supervisor territorial
-- Institución responsable
+- Supervisor (actualmente todo el que tenga rol de supervisor tiene acceso a cualquier incidencia)
+- Institución responsable (el rol de institucion propiamente dicho tiene asociacion con la entidad institucion para que solo las incidencias en las que se asignen a una institucion especifica le aparezcan para resolver)
 
 Los ciudadanos generan incidencias.
 
@@ -146,6 +147,7 @@ Ejemplos que NO deseo implementar:
 - etc.
 
 Debe existir únicamente un rol genérico:
+actualmente la entidad usuario tiene un pais_id, pero no se usa. El sistema debería funcionar a nivel nacional y ser escalable para ser a nivel mundial. Para eso es que se hizo la tabla recursiva de territorios.
 
 SUPERVISOR_TERRITORIAL
 
@@ -166,7 +168,7 @@ No deben mezclarse estas responsabilidades.
 
 ---
 
-# Cambio principal solicitado
+# MEJORA 1: Cambio principal solicitado
 
 Quiero incorporar una relación entre usuarios y territorios mediante una tabla adicional.
 
@@ -215,7 +217,7 @@ Toda la lógica debe obtenerse desde la base de datos.
 
 ---
 
-# Mejoras recomendadas para territorios
+# MEJORA 2: Mejoras recomendadas para territorios
 
 Se recomienda incorporar una columna:
 
