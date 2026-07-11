@@ -12,8 +12,19 @@ export class ToastService {
   }
 
   static show(type, message, title = '') {
-    const toastComponent = document.createElement('app-toast');
     const container = this.getContainer();
+    const activeToasts = container.querySelectorAll('app-toast');
+    const maxVisibleToasts = 3;
+
+    if (activeToasts.length >= maxVisibleToasts) {
+      // LIFO: El último en entrar es el primero en salir (el más reciente en el DOM)
+      const lastIn = activeToasts[activeToasts.length - 1];
+      if (lastIn) {
+        lastIn.remove();
+      }
+    }
+
+    const toastComponent = document.createElement('app-toast');
     container.appendChild(toastComponent);
     toastComponent.show(type, message, title);
   }

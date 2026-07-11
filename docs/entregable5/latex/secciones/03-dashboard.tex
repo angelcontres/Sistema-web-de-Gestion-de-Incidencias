@@ -1,0 +1,54 @@
+\section{Dashboard Gráfico de Calidad}
+\label{sec:dashboard}
+
+El siguiente dashboard refleja de manera visual las distribuciones derivadas de las estadísticas de ejecución consolidadas de las métricas de calidad de software implementadas. Las capturas a continuación representan los paneles configurados en Grafana para el monitoreo en tiempo real del estado de calidad del proyecto.
+
+\subsection{Tasa de Éxito de Pruebas (TEP)}
+La Tasa de Éxito de Pruebas (TEP) mide el porcentaje de casos de prueba ejecutados satisfactoriamente. Como se observa en la Figura~\ref{fig:dashboard-tep}, el sistema mantiene un 100\% de éxito en la ejecución de su suite de pruebas automatizadas (43 pruebas exitosas de 43 totales), lo que valida la robustez de las reglas de negocio implementadas en el backend.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../imagenes/tep.png}
+    \caption{Panel de Monitoreo de Tasa de Éxito de Pruebas (TEP) en Grafana}
+    \label{fig:dashboard-tep}
+\end{figure}
+
+\subsection{Cobertura Funcional (CF)}
+La Cobertura Funcional (CF) representa la proporción de historias de usuario (HUs) clave validadas por tests automáticos. Actualmente, se tiene un 58.33\% de cobertura (7 HUs cubiertas de 12 definidas en total). Como ilustra la Figura~\ref{fig:dashboard-cf}, el panel cuenta con una tabla de desglose que identifica con precisión qué requerimientos están cubiertos y cuáles están pendientes de pruebas.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../imagenes/cf.png}
+    \caption{Monitoreo de Cobertura Funcional (CF) y Desglose de Historias de Usuario}
+    \label{fig:dashboard-cf}
+\end{figure}
+
+\subsection{Densidad de Defectos (DD)}
+Esta métrica asocia la cantidad de errores reportados mediante commits de corrección en Git con las líneas de código del proyecto (KLOC). La Figura~\ref{fig:dashboard-dd} muestra una densidad de 1.23 defectos por cada 1,000 líneas de código, un nivel sumamente controlado respecto al estándar de la industria (menor a 2.0).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../imagenes/dd.png}
+    \caption{Histórico de Densidad de Defectos (DD) y Tamaño de Código (KLOC)}
+    \label{fig:dashboard-dd}
+\end{figure}
+
+\subsection{Vulnerabilidades Críticas (OWASP) (VCO)}
+El panel de seguridad (Figura~\ref{fig:dashboard-vco}) consolida la auditoría de dependencias (composer audit) y el análisis estático SAST en el frontend. Se reportan 184 incidencias críticas/altas, explicadas principalmente por la inyección de código mediante el uso de \texttt{innerHTML} en el frontend sin sanitización previa y por dependencias secundarias en el backend.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../imagenes/vco.png}
+    \caption{Resumen de Vulnerabilidades de Seguridad (VCO) y Distribución por Severidad}
+    \label{fig:dashboard-vco}
+\end{figure}
+
+\subsection{Tiempo de Respuesta Promedio (TRP)}
+El Tiempo de Respuesta Promedio (TRP) evalúa la latencia del API. La Figura~\ref{fig:dashboard-trp} muestra la evolución temporal del tiempo de respuesta agrupado por horas en las últimas 24 horas, junto con una tabla que detalla el Top 5 de los endpoints más lentos para enfocar labores de optimización y sintonía fina.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../imagenes/trp.png}
+    \caption{Panel de Tiempos de Respuesta (TRP) y Rendimiento de Endpoints}
+    \label{fig:dashboard-trp}
+\end{figure}

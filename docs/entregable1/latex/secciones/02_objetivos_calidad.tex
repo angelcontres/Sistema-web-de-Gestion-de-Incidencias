@@ -1,0 +1,32 @@
+\section{Objetivos de Calidad}
+Con el fin de asegurar un producto estable, seguro y confiable, se establecen los siguientes objetivos de calidad preventivos e integrales:
+
+\begin{itemize}
+    \item
+  \textbf{Garantizar la Integridad y Consistencia de Datos:} El 100\% de
+  los registros de incidencias deben asociarse a una ubicación
+  normalizada en la estructura de base de datos (\texttt{pais},
+  \texttt{provincia}, \texttt{ciudad}) y contar con coordenadas de
+  latitud/longitud válidas, evitando redundancias u orfandad espacial.
+\item
+  \textbf{Minimizar Defectos Funcionales:} Lograr una tasa de aprobación
+  de pruebas de al menos un 90\% en la validación de los flujos críticos
+  (transición de estados, control de tiempos de resolución, asignación
+  múltiple de roles y comentarios).
+\item
+  \textbf{Asegurar Rendimiento Temporal:} Garantizar que bajo
+  condiciones normales de carga, los tiempos promedio de respuesta de la
+  API REST del servidor y la carga inicial del mapa interactivo sean
+  entre 3 y 5 segundos.
+\item
+  \textbf{Mitigar Riesgos de Seguridad Críticos:} Obtener una evaluación
+  limpia de vulnerabilidades de seguridad web críticas, cumpliendo
+  rigurosamente con los 5 vectores del estándar OWASP Top 10
+  seleccionados.
+\item
+  \textbf{Mantener la Arquitectura y Código Limpio:} Implementar una
+  arquitectura limpia y desacoplada mediante el uso de contenedores
+  Docker (Nginx, Laravel, PostgreSQL), facilitando la mantenibilidad,
+  extensibilidad y la futura integración de microservicios (por ejemplo,
+  el módulo de IA/NLP o persistencia NoSQL).
+\end{itemize}

@@ -1,0 +1,37 @@
+\section{Descripción del Proyecto}
+El \textbf{Sistema Web de Gestión de Incidencias Georreferenciadas} es una plataforma tecnológica diseñada para registrar, clasificar, asignar, dar seguimiento y visualizar geográficamente problemas o reportes generados en entornos urbanos o institucionales. El sistema permite mantener una trazabilidad histórica del estado de cada incidencia, facilitando la colaboración y la toma de decisiones basada en datos espaciales.
+
+\subsection{Objetivo General del Sistema}
+Proporcionar una solución web robusta y centralizada que permita a los ciudadanos y usuarios reportar incidencias georreferenciadas de forma sencilla, y a los equipos de gestión operativa canalizar, priorizar y resolver estos eventos con una trazabilidad completa de su historial, métricas de rendimiento y notificaciones en tiempo real.
+
+\subsection{Alcance Funcional}
+El sistema cubre las siguientes fronteras operativas:
+
+\begin{itemize}
+    \item \textbf{Gestión de Reportes:} Permite el registro completo de incidencias incluyendo título, descripción, tipo/subtipo, nivel de prioridad y archivos adjuntos (fotografías o evidencias).
+    \item \textbf{Georreferenciación Jerárquica:} Almacena la ubicación normalizada mediante tablas relacionadas de entidades geopolíticas (\texttt{pais}, \texttt{provincia}, \texttt{ciudad}) y coordenadas espaciales exactas (latitud y longitud).
+    \item \textbf{Ciclo de Vida de Incidencias:} Soporta el flujo de estados obligatorio (Pendiente $\rightarrow$ En proceso $\rightarrow$ Resuelto) con cambio controlado y registro histórico inalterable de auditoría.
+    \item \textbf{Asignación de Responsables:} Asignación de múltiples operadores a cada caso, definiendo explícitamente sus roles (responsable principal o personal de apoyo).
+    \item \textbf{Colaboración y Seguimiento:} Hilo de comentarios cronológicos con restricciones de edición temporal (máximo 30 minutos desde la publicación) para garantizar el no repudio.
+    \item \textbf{Mapeo Dinámico y Espacial:} Representación visual mediante un mapa interactivo (Leaflet/OpenStreetMap) que agrupa los marcadores (clusters), muestra ventanas de detalle (popups) y permite búsquedas por radio de proximidad.
+    \item \textbf{Dashboard y Reportería:} Tablero analítico que presenta KPIs de rendimiento (tiempos promedio de resolución, volumen por tipo de incidencia) y exportación de informes en formatos CSV y PDF.
+    \item \textbf{Seguridad y Roles:} Control de acceso estricto basado en roles predefinidos (\texttt{Administrador}, \texttt{Gestor Operativo} y \texttt{Ciudadano/Usuario Reportante}).
+\end{itemize}
+
+\subsection{Principales Módulos}
+\begin{enumerate}
+    \item \textbf{Módulo de Registro e Integridad de Datos:} Encargado de capturar, normalizar y validar los datos de entrada en el frontend y backend.
+    \item \textbf{Módulo de Trazabilidad y Gestión de Estados:} Responsable de registrar cada transición de estado en la base de datos relacional junto con marcas temporales (timestamps) y autoría.
+    \item \textbf{Módulo Cartográfico y de Búsqueda Espacial:} Gestiona el mapa interactivo, realiza el cálculo de proximidad y procesa la renderización en el cliente.
+    \item \textbf{Módulo de Asignación y Seguimiento Colaborativo:} Coordina los hilos de conversación de incidencias y la relación muchos-a-muchos de responsables.
+    \item \textbf{Módulo de Dashboard e Indicadores (Analytics):} Encargado de agregar datos operativos para calcular promedios de resolución y tendencias de reportes.
+    \item \textbf{Módulo de Seguridad, Autenticación y Control de Accesos:} Autenticación de sesiones y tokens web, controlando el acceso mediante middlewares.
+    \item \textbf{Módulo de Notificaciones y Configuración:} Encola y despacha mensajes internos (in-app) o por correo electrónico.
+\end{enumerate}
+
+\subsection{Usuarios Involucrados}
+\begin{itemize}
+    \item \textbf{Ciudadano / Usuario Reportante:} Persona con acceso a la plataforma para registrar incidencias y consultar el estado y el historial de sus propios reportes.
+    \item \textbf{Gestor Operativo / Responsable:} Funcionario técnico que recibe la asignación de la incidencia, actualiza los estados del ciclo de trabajo, añade comentarios técnicos y asocia personal de apoyo.
+    \item \textbf{Administrador del Sistema:} Rol con privilegios globales para crear usuarios, asignar permisos, visualizar el dashboard completo, exportar informes y auditar las acciones del sistema.
+\end{itemize}

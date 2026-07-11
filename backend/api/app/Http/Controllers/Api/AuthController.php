@@ -67,6 +67,13 @@ class AuthController extends Controller
                 'is_admin' => $isAdmin,
                 'permisos' => $permisosList,
                 'pais_id' => $user->pais_id,
+                'max_files' => (int) env('MAX_FILE_UPLOAD_LIMIT', 5),
+                'roles' => $user->roles->map(function ($role) {
+                    return [
+                        'id' => $role->id,
+                        'nombre' => $role->nombre,
+                    ];
+                })->toArray(),
             ],
         ], 200);
     }

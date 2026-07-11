@@ -2,6 +2,7 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { IncidenciaService } from '../../services/incidencia.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
+import { getBadgeClass, getTextColorClass } from '../../../../shared/utils/badge-states.js';
 
 export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   constructor() {
@@ -52,8 +53,8 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
 
     container.innerHTML = '';
 
-    // Alertas: Pendientes (2) o En Revisión (3)
-    const alertas = this.incidencias.filter((i) => i.estado_id === 2 || i.estado_id === 3);
+    // Alertas: Pendientes (1) o En Revisión (2)
+    const alertas = this.incidencias.filter((i) => i.estado_id === 1 || i.estado_id === 2);
     badge.textContent = alertas.length;
 
     if (alertas.length === 0) {
@@ -67,10 +68,8 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       a.href = 'javascript:void(0)';
       a.className = 'list-group-item list-group-item-action p-3 border-start-0 border-end-0';
 
-      const icon =
-        inc.estado_id === 2
-          ? '<i class="bi bi-circle-fill text-danger me-2" style="font-size: 0.5rem;"></i>'
-          : '<i class="bi bi-circle-fill text-warning me-2" style="font-size: 0.5rem;"></i>';
+      const textClass = getTextColorClass(inc.estado);
+      const icon = `<i class="bi bi-circle-fill text-${textClass} me-2" style="font-size: 0.5rem;"></i>`;
       const prioridad = inc.prioridad ? inc.prioridad.nombre : 'Normal';
       const color = inc.prioridad ? inc.prioridad.color_hex : '#6c757d';
 
@@ -82,7 +81,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
         <div class="small text-muted mb-1"><i class="bi bi-geo-alt me-1"></i> ${inc.direccion ? inc.direccion.detalle : 'Desconocida'}</div>
         <div class="small text-muted d-flex justify-content-between">
           <span><i class="bi bi-clock me-1"></i> ${new Date(inc.created_at).toLocaleDateString()}</span>
-          <span class="fw-bold text-${inc.estado_id === 2 ? 'danger' : 'warning'}">${inc.estado ? inc.estado.nombre : ''}</span>
+          <span class="fw-bold text-${getTextColorClass(inc.estado)}">${inc.estado ? inc.estado.nombre : ''}</span>
         </div>
       `;
 
@@ -117,9 +116,9 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       const lng = parseFloat(inc.direccion.longitud);
 
       let markerColor = 'blue';
-      if (inc.estado_id === 2) markerColor = 'red';
-      else if (inc.estado_id === 3) markerColor = 'orange';
-      else if (inc.estado_id === 5) markerColor = 'green';
+      if (inc.estado_id === 1) markerColor = 'red';
+      else if (inc.estado_id === 2) markerColor = 'orange';
+      else if (inc.estado_id === 4) markerColor = 'green';
 
       const customIcon = new L.Icon({
         iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${markerColor}.png`,
@@ -158,22 +157,27 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   }
 
   renderChart() {
-    const canvas = this.querySelector('#chart-incidencias-pais');
+    const canvas = this.querySelector('#chart-incidencias-provincia');
     if (!canvas || !window.Chart) return;
 
-    // Agrupar por país
-    const paisesMap = {};
+    // Agrupar por provincia (territorio padre)
+    const provinciasMap = {};
     this.incidencias.forEach((inc) => {
-      const paisNombre =
-        inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
-          ? inc.direccion.territorio.pais.nombre
-          : 'Desconocido';
-      if (!paisesMap[paisNombre]) paisesMap[paisNombre] = 0;
-      paisesMap[paisNombre]++;
+      let provinciaNombre = 'Desconocido';
+      if (inc.direccion && inc.direccion.territorio) {
+        if (inc.direccion.territorio.parent) {
+          provinciaNombre = inc.direccion.territorio.parent.nombre;
+        } else {
+          // Si no tiene padre, el territorio mismo podría ser la provincia
+          provinciaNombre = inc.direccion.territorio.nombre;
+        }
+      }
+      if (!provinciasMap[provinciaNombre]) provinciasMap[provinciaNombre] = 0;
+      provinciasMap[provinciaNombre]++;
     });
 
-    const labels = Object.keys(paisesMap);
-    const data = Object.values(paisesMap);
+    const labels = Object.keys(provinciasMap);
+    const data = Object.values(provinciasMap);
 
     if (this.chart) {
       this.chart.destroy();
@@ -214,9 +218,9 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
     this.incidenciaSeleccionada = inc;
 
     this.querySelector('#modal-incidencia-id').textContent = `#${inc.id}`;
-    this.querySelector('#modal-incidencia-estado').textContent = inc.estado
-      ? inc.estado.nombre
-      : '';
+    const badgeEl = this.querySelector('#modal-incidencia-estado');
+    badgeEl.textContent = inc.estado ? inc.estado.nombre : '';
+    badgeEl.className = `badge bg-${getBadgeClass(inc.estado)}`;
     this.querySelector('#modal-incidencia-fecha').textContent = new Date(
       inc.created_at
     ).toLocaleString();
@@ -236,8 +240,8 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
 
     // Disable button if already dispatched/in process/resolved
     const btn = this.querySelector('#btn-despachar-incidencia');
-    if (inc.estado_id >= 4) {
-      // 4: En Proceso, 5: Resuelto, 6: Rechazado
+    if (inc.estado_id >= 3) {
+      // 3: En Proceso, 4: Resuelto, 5: Rechazado
       btn.disabled = true;
       btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Ya Despachada';
     } else {
@@ -261,7 +265,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-primary'
     );
-    
+
     if (!isConfirmed) return;
 
     const btn = this.querySelector('#btn-despachar-incidencia');
@@ -270,10 +274,10 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...';
 
     try {
-      // Estado ID 4 es "En Proceso"
+      // Estado ID 3 es "En Proceso"
       await IncidenciaService.update(this.incidenciaSeleccionada.id, {
         version: this.incidenciaSeleccionada.version,
-        estado_id: 4,
+        estado_id: 3,
         tipo_incidencia_id: this.incidenciaSeleccionada.tipo_incidencia_id,
         sub_tipo_incidencia_id: this.incidenciaSeleccionada.sub_tipo_incidencia_id,
       });
@@ -284,7 +288,9 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       ToastService.success('Incidencia despachada con éxito.');
     } catch (error) {
       console.error('Error al despachar la incidencia:', error);
-      ToastService.error('Error al despachar la incidencia. Puede que alguien más la haya modificado.');
+      ToastService.error(
+        'Error al despachar la incidencia. Puede que alguien más la haya modificado.'
+      );
       btn.disabled = false;
       btn.innerHTML = '<i class="bi bi-send-check-fill me-2"></i>Despachar';
     }

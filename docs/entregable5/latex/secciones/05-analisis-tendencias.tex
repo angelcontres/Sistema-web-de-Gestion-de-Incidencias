@@ -1,0 +1,15 @@
+\section{Análisis de Tendencias y Áreas Críticas}
+\label{sec:analisis_tendencias}
+
+A partir de la tabulación analítica y las fórmulas aplicadas a la Sección de Síntesis, se extraen las siguientes observaciones formales de ingeniería sobre el comportamiento orgánico del sistema:
+
+\begin{itemize}
+    \item \textbf{Concentración de Errores por Ausencia Estructural de Código:}
+    El análisis estadístico revela una anomalía positiva muy distintiva: la tasa de fallo del 12\% no se debe a que el código desarrollado sea defectuoso lógicamente (no hay fallos de segmentación ni errores 500 recurrentes), sino a que existe código ``faltante''. Los casos CP-F-08 (Notificaciones automáticas), CP-F-12 (Consulta por estado) y CP-F-13 (Consulta por tipo) están catalogados como pendientes de implementar. Esto significa que la arquitectura base del software no es frágil, sino que está temporalmente incompleta en módulos complementarios.
+    
+    \item \textbf{Capa Externa y APIs como Zonas de Riesgo Latente (BUG-01):}
+    El único defecto funcional verificado, y que provocó la apertura del BUG-01, provino del sistema de geolocalización frontend acoplado a Leaflet (una dependencia de terceros). Esto traza una tendencia técnica clara: el backend de Laravel maneja excelentemente la lógica de negocios del CRUD y las transacciones ACID de PostgreSQL sin producir errores, pero la integración con APIs y cartografía de capas externas es la principal área crítica, demandando necesariamente arquitecturas resilientes con alternativas manuales (planes de contingencia o fallbacks) en caso de que fallen las respuestas ajenas.
+    
+    \item \textbf{Riesgos Temporales en Productividad (Scope Creep):}
+    Si la Densidad de Defectos es excepcionalmente baja ($0.04$), significa que el equipo de software invierte buen tiempo estructurando soluciones sólidas, con buena arquitectura orientada a objetos. Pero el hecho de no haber cubierto el 100\% de las Historias de Usuario (Coordinación de Notificaciones) en los tiempos previstos, denota un posible riesgo latente en la subestimación de tiempos de Sprint y plazos de entrega.
+\end{itemize}

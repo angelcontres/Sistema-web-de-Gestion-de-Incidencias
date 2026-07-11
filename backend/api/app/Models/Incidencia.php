@@ -117,6 +117,15 @@ class Incidencia extends Model
     }
 
     /**
+     * Relación: Usuarios que han reportado esta misma incidencia (afectados/coincidentes).
+     */
+    public function reportantes(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'usuario_incidencia', 'reporte_incidencia_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    /**
      * Relación: El historial de cambios de estado de la incidencia.
      */
     public function historial()

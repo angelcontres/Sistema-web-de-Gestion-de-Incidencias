@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{comment}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{ltablex}
+\usepackage{xltabular}
+
+
+% Configuración del interlineado
+\onehalfspacing
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+
+    % Logo UPSE
+    \includegraphics[width=4cm]{../../05_assets/Upse-logo.png}\\[1cm]
+
+    {\Large \textbf{UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA}}\\[0.4cm]
+
+    {\large FACULTAD DE SISTEMAS Y TELECOMUNICACIONES}\\[0.2cm]
+
+    {\large CARRERA DE SOFTWARE}\\[2cm]
+
+    {\Large \textbf{Entregable 5: Métricas de Calidad de Software}}\\[2cm]
+
+    \begin{flushleft}
+    \textbf{Asignatura:} Calidad de Software\\[0.3cm]
+
+    \textbf{Docente:} Ing. Anthony Pachay\\[0.8cm]
+
+    \textbf{Integrantes:}
+    \begin{itemize}
+        \item Orrala Arriaga Paulo Rafael
+        \item Patiño García Carlos Fernando
+        \item Villón Panimboza Ángel Alejandro
+    \end{itemize}
+
+    \textbf{Periodo Académico:} 2026-1\\[0.3cm]
+
+    \textbf{Paralelo:} 6/1
+    \end{flushleft}
+
+    \vfill
+
+    {\large La Libertad, Ecuador}\\[0.2cm]
+    {\large 10 de Julio del 2026}
+
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+\listoftables
+\newpage
+\listoffigures
+\newpage
+
+% --- subsecciones distribuidas ---
+\input{secciones/01-sintesis-ejecucion}
+\newpage
+\input{secciones/02-formulas-indicadores}
+\newpage
+\input{secciones/03-dashboard}
+\newpage
+\input{secciones/04-auditoria-vs-plan}
+\newpage
+\input{secciones/05-analisis-tendencias}
+\newpage
+\input{secciones/06-mejoras}
+
+\end{document}
