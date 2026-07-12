@@ -68,9 +68,10 @@ class EtlRunCommand extends Command
         SyncFactIncidenciasJob::dispatchSync();
         $this->info('Hechos de incidencias sincronizados.');
 
-        $this->info('3/4 Cargando métricas SQA desde JSONs...');
-        LoadSqaMetricsFromJsonJob::dispatchSync();
-        $this->info('Métricas SQA cargadas.');
+        // Nota: El job de métricas SQA (LoadSqaMetricsFromJsonJob) se ha removido del flujo
+        // general de cada 5 minutos debido a que es un proceso pesado (SAST, PHPUnit, cloc).
+        // Se ejecuta de manera programada e independiente de forma diaria en console.php,
+        // pero aún puede ejecutarse de manera manual usando: php artisan etl:run --only=sqa
 
         $this->info('4/4 Ejecutando sincronización de hechos de performance...');
         SyncPerformanceLogsJob::dispatchSync();
