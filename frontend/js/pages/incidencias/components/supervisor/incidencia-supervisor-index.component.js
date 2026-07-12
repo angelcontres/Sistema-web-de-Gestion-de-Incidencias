@@ -38,7 +38,6 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       this.incidencias = await IncidenciaService.getAll();
       this.renderAlertas();
       this.initOrUpdateMap();
-      this.renderChart();
     } catch (error) {
       console.error('Error cargando dashboard:', error);
     } finally {
@@ -154,64 +153,6 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       const group = new L.featureGroup(this.markers);
       this.map.fitBounds(group.getBounds().pad(0.1));
     }
-  }
-
-  renderChart() {
-    const canvas = this.querySelector('#chart-incidencias-provincia');
-    if (!canvas || !window.Chart) return;
-
-    // Agrupar por provincia (territorio padre)
-    const provinciasMap = {};
-    this.incidencias.forEach((inc) => {
-      let provinciaNombre = 'Desconocido';
-      if (inc.direccion && inc.direccion.territorio) {
-        if (inc.direccion.territorio.parent) {
-          provinciaNombre = inc.direccion.territorio.parent.nombre;
-        } else {
-          // Si no tiene padre, el territorio mismo podría ser la provincia
-          provinciaNombre = inc.direccion.territorio.nombre;
-        }
-      }
-      if (!provinciasMap[provinciaNombre]) provinciasMap[provinciaNombre] = 0;
-      provinciasMap[provinciaNombre]++;
-    });
-
-    const labels = Object.keys(provinciasMap);
-    const data = Object.values(provinciasMap);
-
-    if (this.chart) {
-      this.chart.destroy();
-    }
-
-    this.chart = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Total Incidencias',
-            data: data,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            borderRadius: 4,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1 },
-          },
-        },
-        plugins: {
-          legend: { display: false },
-        },
-      },
-    });
   }
 
   abrirModalDespacho(inc) {

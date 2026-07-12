@@ -1,3 +1,8 @@
+CREATE TABLE public.cache_locks (
+    key character varying(255) NOT NULL,
+    owner character varying(255) NOT NULL,
+    expiration bigint NOT NULL
+);
 CREATE TABLE public.categorias_incidencia (
     id bigint NOT NULL,
     parent_id bigint,
@@ -9,7 +14,6 @@ CREATE TABLE public.categorias_incidencia (
     updated_at timestamp(0) without time zone,
     institucion_id bigint
 );
-
 CREATE TABLE public.direcciones (
     id bigint NOT NULL,
     territorio_id bigint NOT NULL,
@@ -23,9 +27,6 @@ CREATE TABLE public.direcciones (
     updated_at timestamp(0) without time zone,
     precision_gps numeric(10,2)
 );
-
---
-
 CREATE TABLE public.estados_incidencia (
     id bigint NOT NULL,
     nombre character varying(255) NOT NULL,
@@ -36,7 +37,15 @@ CREATE TABLE public.estados_incidencia (
     deleted_at timestamp(0) without time zone,
     deleted_by bigint
 );
-
+CREATE TABLE public.failed_jobs (
+    id bigint NOT NULL,
+    uuid character varying(255) NOT NULL,
+    connection character varying(255) NOT NULL,
+    queue character varying(255) NOT NULL,
+    payload text NOT NULL,
+    exception text NOT NULL,
+    failed_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
 CREATE TABLE public.historial_incidencias (
     id bigint NOT NULL,
     incidencia_id bigint NOT NULL,
@@ -46,9 +55,6 @@ CREATE TABLE public.historial_incidencias (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone
 );
-
-
-
 CREATE TABLE public.instituciones (
     id bigint NOT NULL,
     nombre character varying(255) NOT NULL,
@@ -61,7 +67,32 @@ CREATE TABLE public.instituciones (
     deleted_by bigint,
     activo boolean DEFAULT true NOT NULL
 );
-
+CREATE TABLE public.job_batches (
+    id character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    total_jobs integer NOT NULL,
+    pending_jobs integer NOT NULL,
+    failed_jobs integer NOT NULL,
+    failed_job_ids text NOT NULL,
+    options text,
+    cancelled_at integer,
+    created_at integer NOT NULL,
+    finished_at integer
+);
+CREATE TABLE public.jobs (
+    id bigint NOT NULL,
+    queue character varying(255) NOT NULL,
+    payload text NOT NULL,
+    attempts smallint NOT NULL,
+    reserved_at integer,
+    available_at integer NOT NULL,
+    created_at integer NOT NULL
+);
+CREATE TABLE public.migrations (
+    id integer NOT NULL,
+    migration character varying(255) NOT NULL,
+    batch integer NOT NULL
+);
 CREATE TABLE public.opciones_menu (
     id bigint NOT NULL,
     nombre character varying(50) NOT NULL,
@@ -75,7 +106,6 @@ CREATE TABLE public.opciones_menu (
     deleted_at timestamp(0) without time zone,
     deleted_by bigint
 );
-
 CREATE TABLE public.paises (
     id bigint NOT NULL,
     nombre character varying(255) NOT NULL,
@@ -84,7 +114,11 @@ CREATE TABLE public.paises (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone
 );
-
+CREATE TABLE public.password_reset_tokens (
+    email character varying(255) NOT NULL,
+    token character varying(255) NOT NULL,
+    created_at timestamp(0) without time zone
+);
 CREATE TABLE public.performance_logs (
     id bigint NOT NULL,
     trp integer NOT NULL,
@@ -95,7 +129,6 @@ CREATE TABLE public.performance_logs (
     updated_at timestamp(0) without time zone,
     deleted_at timestamp(0) without time zone
 );
-
 CREATE TABLE public.permisos (
     id bigint NOT NULL,
     nombre character varying(255) NOT NULL,
@@ -109,7 +142,18 @@ CREATE TABLE public.permisos (
     updated_by bigint,
     deleted_by bigint
 );
-
+CREATE TABLE public.personal_access_tokens (
+    id bigint NOT NULL,
+    tokenable_type character varying(255) NOT NULL,
+    tokenable_id bigint NOT NULL,
+    name text NOT NULL,
+    token character varying(64) NOT NULL,
+    abilities text,
+    last_used_at timestamp(0) without time zone,
+    expires_at timestamp(0) without time zone,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
+);
 CREATE TABLE public.prioridades (
     id bigint NOT NULL,
     nombre character varying(255) NOT NULL,
@@ -121,7 +165,6 @@ CREATE TABLE public.prioridades (
     deleted_at timestamp(0) without time zone,
     deleted_by bigint
 );
-
 CREATE TABLE public.recurso_incidencias (
     id bigint NOT NULL,
     incidencia_id bigint NOT NULL,
@@ -130,7 +173,6 @@ CREATE TABLE public.recurso_incidencias (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone
 );
-
 CREATE TABLE public.reporte_incidencias (
     id bigint NOT NULL,
     incidencia_descripcion text,
@@ -150,7 +192,6 @@ CREATE TABLE public.reporte_incidencias (
     deleted_at timestamp(0) without time zone,
     deleted_by bigint
 );
-
 CREATE TABLE public.roles (
     id bigint NOT NULL,
     nombre character varying(255) NOT NULL,
@@ -161,7 +202,6 @@ CREATE TABLE public.roles (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone
 );
-
 CREATE TABLE public.roles_permisos (
     id bigint NOT NULL,
     rol_id bigint NOT NULL,
@@ -169,7 +209,6 @@ CREATE TABLE public.roles_permisos (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone
 );
-
 CREATE TABLE public.roles_users (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
@@ -177,7 +216,6 @@ CREATE TABLE public.roles_users (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone
 );
-
 CREATE TABLE public.sessions (
     id character varying(255) NOT NULL,
     user_id bigint,
@@ -186,7 +224,6 @@ CREATE TABLE public.sessions (
     payload text NOT NULL,
     last_activity integer NOT NULL
 );
-
 CREATE TABLE public.territorios (
     id bigint NOT NULL,
     pais_id bigint NOT NULL,
@@ -195,9 +232,9 @@ CREATE TABLE public.territorios (
     tipo character varying(255),
     activo boolean DEFAULT true NOT NULL,
     created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    updated_at timestamp(0) without time zone,
+    codigo character varying(255)
 );
-
 CREATE TABLE public.users (
     id bigint NOT NULL,
     username character varying(255) NOT NULL,
@@ -214,7 +251,6 @@ CREATE TABLE public.users (
     pais_id bigint,
     institucion_id bigint
 );
-
 CREATE TABLE public.usuario_incidencia (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
@@ -225,4 +261,11 @@ CREATE TABLE public.usuario_incidencia (
     updated_by bigint,
     deleted_at timestamp(0) without time zone,
     deleted_by bigint
+);
+CREATE TABLE public.usuario_territorios (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    territorio_id bigint NOT NULL,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
 );

@@ -44,6 +44,7 @@ class MeasureResponseTime
                 'trp' => $durationMs,
                 'endpoint' => $request->path(),
                 'metodo' => $request->method(),
+                'usuario_id' => $request->user()?->id ?? auth()->id(),
                 'logged_at' => now(),
             ]);
         }
