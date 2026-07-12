@@ -136,28 +136,78 @@ class CalculateCf extends Command
             }
         }
 
-        // Generar artefacto JSON
-        $outputDir = base_path('tests/metrics-stg/cf');
-        if (! File::exists($outputDir)) {
-            File::makeDirectory($outputDir, 0755, true);
+        // Guardar en esquema analítico OLAP
+        $now = now()->timezone('America/Guayaquil');
+        $tiempoId = (int) $now->format('YmdH');
+
+        // Asegurar que la dimensión tiempo exista
+        \Illuminate\Support\Facades\DB::table('metrics.dim_tiempo')->updateOrInsert(
+            ['id' => $tiempoId],
+            [
+                'fecha' => $now->toDateTimeString(),
+                'anio' => $now->year,
+                'mes' => $now->month,
+                'dia' => $now->day,
+                'hora' => $now->hour,
+                'trimestre' => ceil($now->month / 3),
+                'dia_semana' => $now->format('l'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        // Asegurar que la métrica exista en dim_metric y obtener su ID
+        $metricId = \Illuminate\Support\Facades\DB::table('metrics.dim_metric')
+            ->where('codigo', 'CF')
+            ->value('id');
+
+        if (!$metricId) {
+            $metricId = \Illuminate\Support\Facades\DB::table('metrics.dim_metric')->insertGetId([
+                'nombre' => 'Cobertura Funcional',
+                'codigo' => 'CF',
+                'tipo' => 'Calidad',
+                'descripcion' => 'Porcentaje de historias de usuario cubiertas y aprobadas',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
 
-        $date = now()->timezone('America/Guayaquil')->format('Y-m-d-H-i');
-        $outputFile = "{$outputDir}/cf-{$date}.json";
+        // Insertar en la tabla de hechos de calidad
+        \Illuminate\Support\Facades\DB::table('metrics.fact_quality')->insert([
+            'tiempo_id' => $tiempoId,
+            'metric_id' => $metricId,
+            'valor_porcentaje' => round($cf, 2),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-        $data = [
-            'metric' => 'Cobertura Funcional (CF)',
-            'value' => round($cf, 2),
-            'total_hus' => $totalHus,
-            'hus_cubiertas' => $husCubiertas,
-            'hus_no_cubiertas' => $totalHus - $husCubiertas,
-            'detalle' => $detalleHUs,
-            'fecha_procesamiento' => now()->timezone('America/Guayaquil')->toDateTimeString(),
-        ];
+        // Procesar historias de usuario detalladas para fact_cobertura
+        foreach ($detalleHUs as $info) {
+            // Asegurar HU en la dimensión
+            \Illuminate\Support\Facades\DB::table('metrics.dim_historia_usuario')->updateOrInsert(
+                ['codigo' => $info['id']],
+                [
+                    'nombre' => $info['nombre'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
 
-        File::put($outputFile, json_encode($data, JSON_PRETTY_PRINT));
+            $huDbId = \Illuminate\Support\Facades\DB::table('metrics.dim_historia_usuario')
+                ->where('codigo', $info['id'])
+                ->value('id');
 
-        $this->info("\nArtefacto generado exitosamente en: tests/metrics-stg/cf/cf-{$date}.json");
+            // Insertar en la tabla de hechos de cobertura
+            \Illuminate\Support\Facades\DB::table('metrics.fact_cobertura')->insert([
+                'tiempo_id' => $tiempoId,
+                'hu_id' => $huDbId,
+                'aprobada' => $info['aprobada'] ? 1 : 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->info("\nMétrica de Cobertura Funcional (CF) guardada exitosamente en el esquema OLAP (fact_quality y fact_cobertura).");
 
         return 0;
     }

@@ -65,29 +65,39 @@ class CalculateTep extends Command
         $this->info("Tasa de Éxito (TEP): {$tepFormatted}%");
         $this->comment('==========================================');
 
-        // Crear directorio si no existe
-        $outputDir = base_path('tests/metrics-stg/tep/');
-        if (! File::exists($outputDir)) {
-            File::makeDirectory($outputDir, 0755, true);
-        }
+        // Guardar en esquema analítico OLAP
+        $now = now()->timezone('America/Guayaquil');
+        $tiempoId = (int) $now->format('YmdH');
 
-        // Generar archivo JSON con la fecha actual en la zona horaria de Ecuador (America/Guayaquil)
-        $date = now()->timezone('America/Guayaquil')->format('Y-m-d-H-i');
-        $outputFile = "{$outputDir}/tep-{$date}.json";
+        // Asegurar que la dimensión tiempo exista
+        \Illuminate\Support\Facades\DB::table('metrics.dim_tiempo')->updateOrInsert(
+            ['id' => $tiempoId],
+            [
+                'fecha' => $now->toDateTimeString(),
+                'anio' => $now->year,
+                'mes' => $now->month,
+                'dia' => $now->day,
+                'hora' => $now->hour,
+                'trimestre' => ceil($now->month / 3),
+                'dia_semana' => $now->format('l'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
 
-        $data = [
-            'metric' => 'Tasa de Exito de Pruebas (TEP)',
-            'value' => round($tep, 2),
+        // Insertar en la tabla de hechos de testing
+        \Illuminate\Support\Facades\DB::table('metrics.fact_testing')->insert([
+            'tiempo_id' => $tiempoId,
             'total_pruebas' => $totalPruebas,
             'pruebas_aprobadas' => $aprobadas,
             'pruebas_fallidas' => $fallas + $errores,
             'pruebas_omitidas' => $omitidas,
-            'fecha_procesamiento' => now()->timezone('America/Guayaquil')->toDateTimeString(),
-        ];
+            'tep' => round($tep, 2),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-        File::put($outputFile, json_encode($data, JSON_PRETTY_PRINT));
-
-        $this->info("\nArtefacto generado exitosamente en: tests/metrics-stg/tep/tep-{$date}.json");
+        $this->info("\nMétrica de Tasa de Éxito de Pruebas (TEP) guardada exitosamente en el esquema OLAP (fact_testing).");
 
         return 0;
     }
