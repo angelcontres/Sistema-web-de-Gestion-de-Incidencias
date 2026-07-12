@@ -163,6 +163,74 @@ El frontend utiliza las reglas compartidas definidas en `frontend/.prettierrc`.
 
 ---
 
+## Arquitectura de Datos y Data Warehouse (OLAP)
+
+El proyecto cuenta con una base de datos híbrida que separa la operación diaria (esquema `public`) de las métricas históricas de rendimiento, incidencias y calidad (esquema `metrics`).
+
+### Ejecución del ETL
+
+Los datos del esquema `metrics` se actualizan mediante el comando ETL.
+
+- **Correr el proceso ETL completo**:
+  ```bash
+  php artisan etl:run
+  ```
+- **Correr únicamente un Job específico** (útil en desarrollo):
+
+  ```bash
+  # Solo dimensiones (dim_territorio, dim_categoria, etc.)
+  php artisan etl:run --only=dimensions
+
+  # Solo incidencias, calidad (sqa) o rendimiento (performance)
+  php artisan etl:run --only=incidencias
+  php artisan etl:run --only=sqa
+  php artisan etl:run --only=performance
+  ```
+
+### Desarrollo Local (Automatización del ETL)
+
+Para que los KPIs se actualicen en segundo plano localmente mientras el servidor `php artisan serve` está corriendo:
+
+1. Abre otra pestaña de la terminal.
+2. Ejecuta el daemon programador de desarrollo:
+   ```bash
+   php artisan schedule:work
+   ```
+   Esto simulará el cron de Laravel ejecutando las tareas programadas (el ETL corre cada 5 minutos en `console.php`).
+
+### Regla Crítica de Despliegue en Producción
+
+- **Si bien `php artisan migrate:fresh` es peligroso en producción**, ya que esto eliminará de forma irreversible todos los datos históricos guardados en el esquema `metrics`.
+
+Ya hay una carpeta designada solamente para las migraciones del esquema analítico.
+
+[Migraciones OLAP](/backend/api/database/migrations/olap)
+
+## [¡OJITO!]
+
+La ruta del negocio por defecto de las migraciones siempre ha sido `/database/migrations`
+Sin embargo, como creamos una carpeta ./olap para las migraciones del esquema analítico, si simplemente ejecutamos `php artisan migrate`, intentará acceder a la carpeta ./olap.
+
+Especificar la ruta del negocio `php artisan migrate --path=database/migrations` hará que no entre a la carpeta /olap
+
+Sólo si es necesario ejecutar las migraciones para la olap en específico, se puede ejecutar:
+`php artisan migrate:fresh --path=/database/migrations/olap`
+
+La forma segura de repoblar el negocio sin tocar el OLAP es usar `--exclude-path` (disponible desde Laravel 10/11):
+
+```bash
+php artisan migrate:fresh --exclude-path=database/migrations/olap --seed
+```
+
+---
+
+- **Otra opción es usar migraciones incrementales**: Para cualquier cambio en la base de datos de producción, crea archivos de migración no destructivos con `php artisan make:migration` y ejecútalos usando únicamente:
+  ```bash
+  php artisan migrate
+  ```
+
+---
+
 ## Contribuir
 
 - Crear una rama por feature: `git checkout -b <nombre generado en linear>`

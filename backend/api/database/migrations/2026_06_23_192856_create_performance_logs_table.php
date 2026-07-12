@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('trp')->comment('Tiempo de respuesta en milisegundos');
             $table->string('endpoint');
             $table->string('metodo', 10);
+            $table->foreignId('usuario_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('logged_at');
             $table->timestamps();
             $table->softDeletes();
