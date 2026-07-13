@@ -97,35 +97,105 @@ class CalculateVco extends Command
             }
         }
 
-        // 4. Generar JSON
-        $outputDir = base_path('tests/metrics-stg/vco/');
-        if (! File::exists($outputDir)) {
-            File::makeDirectory($outputDir, 0755, true);
+        // 4. Guardar en esquema analítico OLAP
+        $now = now()->timezone('America/Guayaquil');
+        $tiempoId = (int) $now->format('YmdH');
+
+        // Asegurar que la dimensión tiempo exista
+        \Illuminate\Support\Facades\DB::table('metrics.dim_tiempo')->updateOrInsert(
+            ['id' => $tiempoId],
+            [
+                'fecha' => $now->toDateTimeString(),
+                'anio' => $now->year,
+                'mes' => $now->month,
+                'dia' => $now->day,
+                'hora' => $now->hour,
+                'trimestre' => ceil($now->month / 3),
+                'dia_semana' => $now->format('l'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        // Asegurar que las capas existan
+        \Illuminate\Support\Facades\DB::table('metrics.dim_capa')->updateOrInsert(
+            ['id' => 1],
+            ['nombre' => 'Backend', 'created_at' => now(), 'updated_at' => now()]
+        );
+        \Illuminate\Support\Facades\DB::table('metrics.dim_capa')->updateOrInsert(
+            ['id' => 2],
+            ['nombre' => 'Frontend', 'created_at' => now(), 'updated_at' => now()]
+        );
+
+        // Procesar vulnerabilidades del Backend
+        foreach ($backendIssues as $issue) {
+            $titulo = $issue['title'] ?? 'Vulnerabilidad Desconocida';
+            $severidad = strtolower($issue['severity'] ?? 'unknown');
+            $hash = hash('sha256', $titulo . '_' . $severidad);
+
+            // Asegurar vulnerabilidad en dim_vulnerabilidad
+            \Illuminate\Support\Facades\DB::table('metrics.dim_vulnerabilidad')->updateOrInsert(
+                ['hash_identificador' => $hash],
+                [
+                    'titulo' => $titulo,
+                    'severidad' => $severidad,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            $vulnId = \Illuminate\Support\Facades\DB::table('metrics.dim_vulnerabilidad')
+                ->where('hash_identificador', $hash)
+                ->value('id');
+
+            // Insertar en la tabla de hechos
+            \Illuminate\Support\Facades\DB::table('metrics.fact_security')->insert([
+                'tiempo_id' => $tiempoId,
+                'capa_id' => 1, // Backend
+                'vulnerabilidad_id' => $vulnId,
+                'componente_afectado' => $issue['package'] ?? 'Desconocido',
+                'linea_afectada' => 0, // 0 a nivel de paquete
+                'codigo_sospechoso' => 'N/A',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
 
-        $date = now()->timezone('America/Guayaquil')->format('Y-m-d-H-i');
-        $outputFile = "{$outputDir}vco-{$date}.json";
+        // Procesar vulnerabilidades del Frontend
+        foreach ($frontendIssues as $issue) {
+            $titulo = $issue['type'] ?? 'Vulnerabilidad Desconocida';
+            $severidad = strtolower($issue['severity'] ?? 'unknown');
+            $hash = hash('sha256', $titulo . '_' . $severidad);
 
-        $data = [
-            'metric' => 'Vulnerabilidades Criticas (OWASP) (VCO)',
-            'total_critical_high' => $totalCriticalHigh,
-            'resumen_origen' => [
-                'backend' => count($backendIssues),
-                'frontend' => count($frontendIssues),
-            ],
-            'resumen_severidades' => $severitiesSummary,
-            'backend' => [
-                'vulnerabilities' => $backendIssues,
-            ],
-            'frontend' => [
-                'vulnerabilities' => $frontendIssues,
-            ],
-            'fecha_procesamiento' => now()->timezone('America/Guayaquil')->toDateTimeString(),
-        ];
+            // Asegurar vulnerabilidad en dim_vulnerabilidad
+            \Illuminate\Support\Facades\DB::table('metrics.dim_vulnerabilidad')->updateOrInsert(
+                ['hash_identificador' => $hash],
+                [
+                    'titulo' => $titulo,
+                    'severidad' => $severidad,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
 
-        File::put($outputFile, json_encode($data, JSON_PRETTY_PRINT));
+            $vulnId = \Illuminate\Support\Facades\DB::table('metrics.dim_vulnerabilidad')
+                ->where('hash_identificador', $hash)
+                ->value('id');
 
-        $this->info("\nArtefacto generado exitosamente en: tests/metrics-stg/vco/vco-{$date}.json");
+            // Insertar en la tabla de hechos
+            \Illuminate\Support\Facades\DB::table('metrics.fact_security')->insert([
+                'tiempo_id' => $tiempoId,
+                'capa_id' => 2, // Frontend
+                'vulnerabilidad_id' => $vulnId,
+                'componente_afectado' => $issue['file'] ?? 'Desconocido',
+                'linea_afectada' => $issue['line'] ?? 0,
+                'codigo_sospechoso' => $issue['match'] ?? 'N/A',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->info("\nMétricas de seguridad (VCO) guardadas exitosamente en el esquema OLAP (fact_security).");
 
         return 0;
     }

@@ -139,22 +139,54 @@ class CalculateDd extends Command
             File::makeDirectory($outputDir, 0755, true);
         }
 
-        $date = now()->timezone('America/Guayaquil')->format('Y-m-d-H-i');
-        $outputFile = "{$outputDir}dd-{$date}.json";
+        // 4. Guardar en esquema analítico OLAP
+        $now = now()->timezone('America/Guayaquil');
+        $tiempoId = (int) $now->format('YmdH');
 
-        $data = [
-            'metric' => 'Densidad de Defectos (DD)',
-            'value' => round($dd, 2),
-            'kloc' => round($kloc, 3),
-            'total_lines' => $totalLines,
-            'defectos' => $defectos,
-            'meses_analizados' => $maxMonths,
-            'fecha_procesamiento' => now()->timezone('America/Guayaquil')->toDateTimeString(),
-        ];
+        // Asegurar que la dimensión tiempo exista
+        \Illuminate\Support\Facades\DB::table('metrics.dim_tiempo')->updateOrInsert(
+            ['id' => $tiempoId],
+            [
+                'fecha' => $now->toDateTimeString(),
+                'anio' => $now->year,
+                'mes' => $now->month,
+                'dia' => $now->day,
+                'hora' => $now->hour,
+                'trimestre' => ceil($now->month / 3),
+                'dia_semana' => $now->format('l'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
 
-        File::put($outputFile, json_encode($data, JSON_PRETTY_PRINT));
+        // Asegurar que la métrica exista en dim_metric y obtener su ID
+        $metricId = \Illuminate\Support\Facades\DB::table('metrics.dim_metric')
+            ->where('codigo', 'DD')
+            ->value('id');
 
-        $this->info("\nArtefacto generado exitosamente en: tests/metrics-stg/dd/dd-{$date}.json");
+        if (!$metricId) {
+            $metricId = \Illuminate\Support\Facades\DB::table('metrics.dim_metric')->insertGetId([
+                'nombre' => 'Densidad de Defectos',
+                'codigo' => 'DD',
+                'tipo' => 'Calidad',
+                'descripcion' => 'Defectos por cada 1000 líneas de código (KLOC)',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Insertar en la tabla de hechos de calidad
+        \Illuminate\Support\Facades\DB::table('metrics.fact_quality')->insert([
+            'tiempo_id' => $tiempoId,
+            'metric_id' => $metricId,
+            // Guardamos el valor DD en la columna valor_porcentaje
+            'valor_porcentaje' => round($dd, 2), 
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->info("\nMétrica de Densidad de Defectos (DD) guardada exitosamente en el esquema OLAP (fact_quality).");
+        $this->info("KLOC: " . round($kloc, 3) . " | Defectos: $defectos | DD: " . round($dd, 2));
 
         return 0;
     }

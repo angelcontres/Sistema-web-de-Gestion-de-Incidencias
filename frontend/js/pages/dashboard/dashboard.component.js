@@ -13,7 +13,7 @@ export class DashboardComponent extends BaseComponent {
 
   onInit() {
     console.log('DashboardComponent inicializado (onInit)');
-    
+
     // 1. Iniciar reloj y fecha en vivo
     this.initClock();
 
@@ -24,6 +24,7 @@ export class DashboardComponent extends BaseComponent {
     setTimeout(() => {
       this.initDashboardMap();
       this.loadDashboardData();
+      this.initGrafanaDashboards();
     }, 50);
 
     // 4. Renderizar menú dinámico
@@ -55,7 +56,13 @@ export class DashboardComponent extends BaseComponent {
     const updateTime = () => {
       const now = new Date();
       if (clockEl) clockEl.textContent = now.toLocaleTimeString('es-EC', { hour12: false });
-      if (dateEl) dateEl.textContent = now.toLocaleDateString('es-EC', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      if (dateEl)
+        dateEl.textContent = now.toLocaleDateString('es-EC', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
     };
 
     updateTime();
@@ -65,7 +72,7 @@ export class DashboardComponent extends BaseComponent {
   async loadMenuData() {
     const container = this.querySelector('#dashboardMenuContainer');
     if (!container) return;
-    
+
     try {
       let menuList = null;
       try {
@@ -80,11 +87,13 @@ export class DashboardComponent extends BaseComponent {
         menuList = response.data || response;
         localStorage.setItem('user_menu', JSON.stringify(menuList));
       }
-      
-      // Filtrar solo los menús de nivel superior
-      const rootMenus = menuList.filter(item => !item.padre_id);
 
-      container.innerHTML = rootMenus.map(menu => `
+      // Filtrar solo los menús de nivel superior
+      const rootMenus = menuList.filter((item) => !item.padre_id);
+
+      container.innerHTML = rootMenus
+        .map(
+          (menu) => `
         <div class="col-6 col-md-4 col-lg-3">
           <a href="${menu.ruta || '#/'}" class="card border border-light shadow-sm rounded-3 text-decoration-none stat-card-hover bg-white text-dark h-100">
             <div class="card-body p-3 d-flex align-items-center gap-3">
@@ -97,7 +106,9 @@ export class DashboardComponent extends BaseComponent {
             </div>
           </a>
         </div>
-      `).join('');
+      `
+        )
+        .join('');
     } catch (error) {
       console.error('Error cargando el menú del dashboard:', error);
       container.innerHTML = '<p class="text-danger">No se pudieron cargar las operaciones.</p>';
@@ -107,7 +118,6 @@ export class DashboardComponent extends BaseComponent {
   async loadDashboardData() {
     try {
       const response = await apiRequest('/dashboard/stats');
-      this.updateKPIs(response.kpis);
       this.renderTopServices(response.servicios_mas_utilizados);
       this.renderRecentIncidents(response.recientes);
       this.updateMapMarkers(response.mapa_reportes);
@@ -116,18 +126,121 @@ export class DashboardComponent extends BaseComponent {
     }
   }
 
-  updateKPIs(kpis) {
-    if (!kpis) return;
-    const update = (id, value) => {
-      const el = this.querySelector(id);
-      if (el) el.textContent = value;
+  initGrafanaDashboards() {
+    const container = this.querySelector('#grafanaKpisContainer');
+    if (!container) return;
+
+    const GRAFANA_BASE = 'http://localhost:3000'; // Ajustable según host de Grafana
+
+    const user = AuthService.getCurrentUser();
+    const instId = user && user.institucion_id ? user.institucion_id : '';
+    const userId = user && user.id ? user.id : '';
+
+    const GRAFANA_PANELS = {
+      Admin: [
+        {
+          title: 'Tiempo de Respuesta Promedio (TRP)',
+          url: `${GRAFANA_BASE}/d-solo/ad79j7w/incidents-dashboards?orgId=1&from=1783884755369&to=1783971155369&timezone=browser&dtab=Admin&var-custom0=&var-query0=&refresh=10s&theme=light&panelId=panel-15`,
+        },
+        {
+          title: 'Incidencias Totales',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/admin?panelId=2&theme=light`,
+        },
+        {
+          title: 'Tasa de Éxito de Pruebas (TEP)',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/admin?panelId=3&theme=light`,
+        },
+        {
+          title: 'Vulnerabilidades Críticas',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/admin?panelId=4&theme=light`,
+        },
+      ],
+      Supervisor: [
+        {
+          title: 'Incidencias Activas',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/supervisor?panelId=1&theme=light`,
+        },
+        {
+          title: 'Incidencias Sin Asignar',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/supervisor?panelId=2&theme=light`,
+        },
+        {
+          title: 'Tiempo Promedio de Respuesta',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/supervisor?panelId=3&theme=light`,
+        },
+      ],
+      Institucion: [
+        {
+          title: 'Mis Incidencias Activas',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/institucion?panelId=1&theme=light&var-institucion_id=${instId}`,
+        },
+        {
+          title: 'Incidencias Resueltas Hoy',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/institucion?panelId=2&theme=light&var-institucion_id=${instId}`,
+        },
+      ],
+      Ciudadano: [
+        {
+          title: 'Mis Reportes Realizados',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/ciudadano?panelId=1&theme=light&var-usuario_id=${userId}`,
+        },
+        {
+          title: 'Mis Reportes Resueltos',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/ciudadano?panelId=2&theme=light&var-usuario_id=${userId}`,
+        },
+      ],
+      Default: [
+        {
+          title: 'Incidencias Activas',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/general?panelId=1&theme=light`,
+        },
+        {
+          title: 'Resueltas Hoy',
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/general?panelId=2&theme=light`,
+        },
+      ],
     };
-    
-    update('#kpi-activas', kpis.activas);
-    update('#kpi-nuevas-activas', `+${kpis.nuevas_activas_2h} nuevas`);
-    update('#kpi-sin-asignar', kpis.sin_asignar);
-    update('#kpi-resueltas-hoy', kpis.resueltas_hoy);
-    update('#kpi-tiempo-respuesta', kpis.tiempo_respuesta);
+
+    // Resolver rol por permisos o is_admin
+    let role = 'Default';
+    if (AuthService.isAdmin()) {
+      role = 'Admin';
+    } else if (AuthService.hasPermission('Ver Despacho de Incidencia')) {
+      role = 'Supervisor';
+    } else if (AuthService.hasPermission('Ver Kanban')) {
+      role = 'Institucion';
+    } else if (AuthService.hasPermission('Crear Incidencia')) {
+      role = 'Ciudadano';
+    }
+
+    const panels = GRAFANA_PANELS[role] || GRAFANA_PANELS['Default'];
+    const numPanels = panels.length;
+
+    // Determinar columnas Bootstrap para grid
+    let colClass = 'col-md-3';
+    if (numPanels === 3) colClass = 'col-md-4';
+    else if (numPanels === 2) colClass = 'col-md-6';
+    else if (numPanels === 1) colClass = 'col-md-12';
+
+    container.innerHTML = panels
+      .map(
+        (panel) => `
+      <div class="${colClass}">
+        <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden" style="height: 150px;">
+          <iframe src="${panel.url}" width="100%" height="100%" frameborder="0" style="border: none;"></iframe>
+        </div>
+      </div>
+    `
+      )
+      .join('');
+
+    // Inyectar el gráfico de provincias si el usuario es Supervisor o Admin
+    const provinciaChartContainer = this.querySelector('#provinciaChartContainer');
+    const iframeProvincia = this.querySelector('#iframe-provincia-chart');
+    if (provinciaChartContainer && iframeProvincia && (role === 'Supervisor' || role === 'Admin')) {
+      provinciaChartContainer.style.display = 'block';
+      iframeProvincia.src = `${GRAFANA_BASE}/d-solo/ad79j7w/incidents-dashboards?orgId=1&from=1783884917625&to=1783971317625&timezone=browser&dtab=Supervisor&var-custom0=&var-query0=&refresh=10s&theme=light&panelId=panel-25`;
+    }
   }
 
   renderTopServices(services) {
@@ -139,7 +252,9 @@ export class DashboardComponent extends BaseComponent {
       return;
     }
 
-    container.innerHTML = services.map(service => `
+    container.innerHTML = services
+      .map(
+        (service) => `
       <div>
         <div class="d-flex justify-content-between text-secondary small fw-bold mb-1">
           <span>${service.nombre}</span>
@@ -149,7 +264,9 @@ export class DashboardComponent extends BaseComponent {
           <div class="progress-bar bg-${service.color}" role="progressbar" style="width: ${service.porcentaje}%" aria-valuenow="${service.porcentaje}" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   initDashboardMap() {
@@ -162,7 +279,7 @@ export class DashboardComponent extends BaseComponent {
     this.map = L.map(mapContainer, {
       center: [defaultLat, defaultLng],
       zoom: 14,
-      zoomControl: false
+      zoomControl: false,
     });
 
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
@@ -170,20 +287,20 @@ export class DashboardComponent extends BaseComponent {
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OpenStreetMap &copy; CARTO',
       subdomains: 'abcd',
-      maxZoom: 20
+      maxZoom: 20,
     }).addTo(this.map);
   }
 
   updateMapMarkers(markersData) {
     if (!this.map || !markersData) return;
 
-    markersData.forEach(inc => {
+    markersData.forEach((inc) => {
       const marker = L.circleMarker([inc.lat, inc.lng], {
         radius: 10,
         fillColor: '#3b82f6',
         color: '#ffffff',
         weight: 2.5,
-        fillOpacity: 0.95
+        fillOpacity: 0.95,
       }).addTo(this.map);
 
       marker.bindPopup(`
@@ -209,14 +326,16 @@ export class DashboardComponent extends BaseComponent {
     if (!container || !incidents) return;
 
     if (incidents.length === 0) {
-      container.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No hay reportes recientes.</td></tr>';
+      container.innerHTML =
+        '<tr><td colspan="7" class="text-center text-muted py-4">No hay reportes recientes.</td></tr>';
       return;
     }
 
-    container.innerHTML = incidents.map(inc => {
-      const estadoClass = getSoftClass(inc.estado);
-      
-      return `
+    container.innerHTML = incidents
+      .map((inc) => {
+        const estadoClass = getSoftClass(inc.estado);
+
+        return `
         <tr data-id="${inc.id}" style="cursor: pointer;">
           <td><span class="fw-bold text-dark">INC-${inc.id.toString().padStart(4, '0')}</span></td>
           <td>
@@ -241,11 +360,12 @@ export class DashboardComponent extends BaseComponent {
           <td class="text-muted">${inc.reportado}</td>
         </tr>
       `;
-    }).join('');
+      })
+      .join('');
 
     // Dblclick listener para redirección a edición
     const rows = container.querySelectorAll('tr[data-id]');
-    rows.forEach(row => {
+    rows.forEach((row) => {
       row.addEventListener('dblclick', () => {
         const id = row.getAttribute('data-id');
         window.location.hash = `#/incidencias/form?id=${id}`;

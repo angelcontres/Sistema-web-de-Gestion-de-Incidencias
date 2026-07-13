@@ -451,15 +451,19 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   async autofillTerritoriosCascading(paisId, address) {
+    // 1. Siempre cargar Nivel 1 para el país seleccionado
+    await this.cargarDropdownNivel1(paisId);
+
     const possibleNivel1Names = [address.state, address.region, address.province].filter(Boolean);
     const n1Name = possibleNivel1Names[0] || '';
 
     if (n1Name) {
-      await this.cargarDropdownNivel1(paisId);
       const opt1 = this.findOptionMatchingText(this.dirNivel1Select, n1Name);
       if (opt1) {
         this.dirNivel1Select.value = opt1.value;
-        this.querySelector('#colDirNivel1').classList.remove('d-none');
+
+        // 2. Siempre cargar Nivel 2 si se encontró y seleccionó Nivel 1
+        await this.cargarDropdownNivel2(paisId, opt1.value);
 
         const possibleNivel2Names = [
           address.county,
@@ -469,11 +473,12 @@ export class IncidenciaFormComponent extends BaseComponent {
         ].filter(Boolean);
         const n2Name = possibleNivel2Names[0] || '';
         if (n2Name) {
-          await this.cargarDropdownNivel2(paisId, opt1.value);
           const opt2 = this.findOptionMatchingText(this.dirNivel2Select, n2Name);
           if (opt2) {
             this.dirNivel2Select.value = opt2.value;
-            this.querySelector('#colDirNivel2').classList.remove('d-none');
+
+            // 3. Siempre cargar Nivel 3 si se encontró y seleccionó Nivel 2
+            await this.cargarDropdownNivel3(paisId, opt2.value);
 
             const possibleNivel3Names = [
               address.parish,
@@ -483,8 +488,6 @@ export class IncidenciaFormComponent extends BaseComponent {
             ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
 
-            // Load and show Nivel 3 if we matched Nivel 2
-            await this.cargarDropdownNivel3(paisId, opt2.value);
             if (n3Name) {
               const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
               if (opt3) {
@@ -498,15 +501,19 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   async autofillModalTerritoriosCascading(paisId, address) {
+    // 1. Siempre cargar Nivel 1 en el modal
+    await this.cargarModalDropdownNivel1(paisId);
+
     const possibleNivel1Names = [address.state, address.region, address.province].filter(Boolean);
     const n1Name = possibleNivel1Names[0] || '';
 
     if (n1Name) {
-      await this.cargarModalDropdownNivel1(paisId);
       const opt1 = this.findOptionMatchingText(this.modalDirNivel1, n1Name);
       if (opt1) {
         this.modalDirNivel1.value = opt1.value;
-        this.colModalDirNivel1.classList.remove('d-none');
+
+        // 2. Siempre cargar Nivel 2 en el modal
+        await this.cargarModalDropdownNivel2(paisId, opt1.value);
 
         const possibleNivel2Names = [
           address.county,
@@ -516,11 +523,13 @@ export class IncidenciaFormComponent extends BaseComponent {
         ].filter(Boolean);
         const n2Name = possibleNivel2Names[0] || '';
         if (n2Name) {
-          await this.cargarModalDropdownNivel2(paisId, opt1.value);
           const opt2 = this.findOptionMatchingText(this.modalDirNivel2, n2Name);
           if (opt2) {
             this.modalDirNivel2.value = opt2.value;
-            this.colModalDirNivel2.classList.remove('d-none');
+            
+            // 3. Siempre cargar Nivel 3 en el modal
+            await this.cargarModalDropdownNivel3(paisId, opt2.value);
+
             const possibleNivel3Names = [
               address.parish,
               address.suburb,
@@ -529,8 +538,6 @@ export class IncidenciaFormComponent extends BaseComponent {
             ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
 
-            // Load and show Nivel 3 in modal if we matched Nivel 2
-            await this.cargarModalDropdownNivel3(paisId, opt2.value);
             if (n3Name) {
               const opt3 = this.findOptionMatchingText(this.modalDirNivel3, n3Name);
               if (opt3) {
@@ -1159,6 +1166,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         estado_id: 4, // Resuelto
         version: inc.version,
         comentario_estado: 'Resolución confirmada por el solicitante/operador.',
+        fecha_local: this.obtenerFechaLocalISO(),
       };
 
       await IncidenciaService.update(id, payload);
@@ -1246,6 +1254,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     try {
       // 2. Guardar incidencia
       const incPayload = {
+        fecha_local: this.obtenerFechaLocalISO(),
         incidencia_descripcion: this.descripcionInput.value,
         direccion_id: direccionId,
         tipo_incidencia_id: parseInt(this.tipoSelect.value),
@@ -1403,6 +1412,12 @@ export class IncidenciaFormComponent extends BaseComponent {
   limpiarErrores() {
     const errorAlert = this.querySelector('#formErrorAlert');
     if (errorAlert) errorAlert.classList.add('d-none');
+  }
+
+  obtenerFechaLocalISO() {
+    const now = new Date();
+    const offsetMs = now.getTimezoneOffset() * 60 * 1000;
+    return new Date(now.getTime() - offsetMs).toISOString().slice(0, 19).replace('T', ' ');
   }
 }
 

@@ -16,6 +16,7 @@ class PerformanceLog extends Model
         'trp',
         'endpoint',
         'metodo',
+        'usuario_id',
         'logged_at',
     ];
 
