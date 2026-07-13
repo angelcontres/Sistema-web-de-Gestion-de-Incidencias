@@ -130,13 +130,17 @@ export class DashboardComponent extends BaseComponent {
     const container = this.querySelector('#grafanaKpisContainer');
     if (!container) return;
 
-    const GRAFANA_BASE = 'https://localhost:3000'; // Ajustable según host de Grafana
+    const GRAFANA_BASE = 'http://localhost:3000'; // Ajustable según host de Grafana
+
+    const user = AuthService.getCurrentUser();
+    const instId = user && user.institucion_id ? user.institucion_id : '';
+    const userId = user && user.id ? user.id : '';
 
     const GRAFANA_PANELS = {
       Admin: [
         {
           title: 'Tiempo de Respuesta Promedio (TRP)',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/admin?panelId=1&theme=light`,
+          url: `${GRAFANA_BASE}/d-solo/ad79j7w/incidents-dashboards?orgId=1&from=1783884755369&to=1783971155369&timezone=browser&dtab=Admin&var-custom0=&var-query0=&refresh=10s&theme=light&panelId=panel-15`,
         },
         {
           title: 'Incidencias Totales',
@@ -168,21 +172,21 @@ export class DashboardComponent extends BaseComponent {
       Institucion: [
         {
           title: 'Mis Incidencias Activas',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/institucion?panelId=1&theme=light`,
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/institucion?panelId=1&theme=light&var-institucion_id=${instId}`,
         },
         {
           title: 'Incidencias Resueltas Hoy',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/institucion?panelId=2&theme=light`,
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/institucion?panelId=2&theme=light&var-institucion_id=${instId}`,
         },
       ],
       Ciudadano: [
         {
           title: 'Mis Reportes Realizados',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/ciudadano?panelId=1&theme=light`,
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/ciudadano?panelId=1&theme=light&var-usuario_id=${userId}`,
         },
         {
           title: 'Mis Reportes Resueltos',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/ciudadano?panelId=2&theme=light`,
+          url: `${GRAFANA_BASE}/d-solo/metrics-dw/ciudadano?panelId=2&theme=light&var-usuario_id=${userId}`,
         },
       ],
       Default: [
@@ -235,7 +239,7 @@ export class DashboardComponent extends BaseComponent {
     const iframeProvincia = this.querySelector('#iframe-provincia-chart');
     if (provinciaChartContainer && iframeProvincia && (role === 'Supervisor' || role === 'Admin')) {
       provinciaChartContainer.style.display = 'block';
-      iframeProvincia.src = `${GRAFANA_BASE}/d-solo/metrics-dw/supervisor?panelId=5&theme=light`;
+      iframeProvincia.src = `${GRAFANA_BASE}/d-solo/ad79j7w/incidents-dashboards?orgId=1&from=1783884917625&to=1783971317625&timezone=browser&dtab=Supervisor&var-custom0=&var-query0=&refresh=10s&theme=light&panelId=panel-25`;
     }
   }
 

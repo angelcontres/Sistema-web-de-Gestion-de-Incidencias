@@ -737,4 +737,37 @@ class IncidenciaTest extends TestCase
             'institucion_id' => $this->subcategoriaAlta->institucion_id,
         ]);
     }
+    public function test_system_applies_local_timezone_on_creation()
+    {
+        $fechaLocal = '2026-12-31 23:59:59';
+        
+        $payload = [
+            'fecha_local' => $fechaLocal,
+            'incidencia_descripcion' => 'Incidencia con fecha local de prueba',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'cantidad_afectados_incidencia' => 1,
+            'estado_id' => $this->estadoPendiente->id,
+        ];
+
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+
+        $response->assertStatus(201);
+
+        $incidenciaId = $response->json('data.id');
+
+        $this->assertDatabaseHas('reporte_incidencias', [
+            'id' => $incidenciaId,
+            'created_at' => $fechaLocal,
+            'updated_at' => $fechaLocal,
+        ]);
+
+        $this->assertDatabaseHas('historial_incidencias', [
+            'incidencia_id' => $incidenciaId,
+            'created_at' => $fechaLocal,
+            'updated_at' => $fechaLocal,
+        ]);
+    }
 }
+

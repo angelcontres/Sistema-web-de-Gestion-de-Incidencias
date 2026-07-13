@@ -36,10 +36,11 @@ class IncidenciaController extends Controller
                 $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
                     $q->where('pais_id', $user->pais_id);
                 });
-                $incidenciasTransition = $transitionQuery->get();
-                foreach ($incidenciasTransition as $inc) {
-                    $inc->update(['estado_id' => 2]);
-                }
+            }
+
+            $incidenciasTransition = $transitionQuery->get();
+            foreach ($incidenciasTransition as $inc) {
+                $inc->update(['estado_id' => 2]);
             }
         }
 
