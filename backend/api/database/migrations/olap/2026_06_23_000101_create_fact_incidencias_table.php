@@ -25,6 +25,9 @@ return new class extends Migration
             $table->unsignedBigInteger('usuario_reporta_id')->nullable()->index();
             $table->foreign('usuario_reporta_id')->references('id')->on('metrics.dim_usuario')->nullOnDelete();
 
+            $table->unsignedBigInteger('usuario_asignado_id')->nullable()->index();
+            $table->foreign('usuario_asignado_id')->references('id')->on('metrics.dim_usuario')->nullOnDelete();
+
             $table->unsignedInteger('cantidad')->default(1);
             $table->string('codigo_postal', 20)->nullable()->index();
             $table->integer('tiempo_respuesta_minutos')->nullable();

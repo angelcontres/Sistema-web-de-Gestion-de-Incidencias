@@ -28,7 +28,8 @@ class SyncFactIncidenciasJob implements ShouldQueue
                 'reporte_incidencias.estado_id',
                 'reporte_incidencias.prioridad_id',
                 'reporte_incidencias.institucion_id',
-                'reporte_incidencias.cliente_id as usuario_reporta_id'
+                'reporte_incidencias.cliente_id as usuario_reporta_id',
+                DB::raw('(SELECT user_id FROM usuario_incidencia WHERE usuario_incidencia.reporte_incidencia_id = reporte_incidencias.id ORDER BY created_at ASC LIMIT 1) as usuario_asignado_id')
             )
             ->get();
 
@@ -76,6 +77,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
                 'prioridad_id' => $inc->prioridad_id,
                 'institucion_id' => $inc->institucion_id,
                 'usuario_reporta_id' => $inc->usuario_reporta_id,
+                'usuario_asignado_id' => $inc->usuario_asignado_id,
                 'cantidad' => 1,
                 'codigo_postal' => $inc->codigo_postal ?: 'N/A',
                 'tiempo_respuesta_minutos' => $tiempoRespuesta,
@@ -88,7 +90,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
                 DB::table('metrics.fact_incidencias')->upsert(
                     $records,
                     ['id'],
-                    ['tiempo_id', 'territorio_id', 'categoria_id', 'estado_id', 'prioridad_id', 'institucion_id', 'usuario_reporta_id', 'cantidad', 'codigo_postal', 'tiempo_respuesta_minutos', 'tiempo_resolucion_minutos', 'updated_at']
+                    ['tiempo_id', 'territorio_id', 'categoria_id', 'estado_id', 'prioridad_id', 'institucion_id', 'usuario_reporta_id', 'usuario_asignado_id', 'cantidad', 'codigo_postal', 'tiempo_respuesta_minutos', 'tiempo_resolucion_minutos', 'updated_at']
                 );
                 $records = [];
             }
@@ -98,7 +100,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
             DB::table('metrics.fact_incidencias')->upsert(
                 $records,
                 ['id'],
-                ['tiempo_id', 'territorio_id', 'categoria_id', 'estado_id', 'prioridad_id', 'institucion_id', 'usuario_reporta_id', 'cantidad', 'codigo_postal', 'tiempo_respuesta_minutos', 'tiempo_resolucion_minutos', 'updated_at']
+                ['tiempo_id', 'territorio_id', 'categoria_id', 'estado_id', 'prioridad_id', 'institucion_id', 'usuario_reporta_id', 'usuario_asignado_id', 'cantidad', 'codigo_postal', 'tiempo_respuesta_minutos', 'tiempo_resolucion_minutos', 'updated_at']
             );
         }
     }
