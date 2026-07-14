@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\TimezoneService;
 
 class SyncDimensionsJob implements ShouldQueue
 {
@@ -29,8 +30,8 @@ class SyncDimensionsJob implements ShouldQueue
     private function syncDimTiempo(): void
     {
         // Generar registros de tiempo por hora para los últimos 30 días y los siguientes 2 días
-        $start = Carbon::now()->subDays(30)->startOfDay();
-        $end = Carbon::now()->addDays(2)->endOfDay();
+        $start = TimezoneService::nowLocal()->subDays(30)->startOfDay();
+        $end = TimezoneService::nowLocal()->addDays(2)->endOfDay();
 
         $records = [];
         for ($date = $start->copy(); $date->lte($end); $date->addHour()) {

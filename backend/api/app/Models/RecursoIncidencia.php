@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class RecursoIncidencia extends Model
 {
+    use HasLocalTimezone;
     protected $table = 'recurso_incidencias';
 
     protected $fillable = [

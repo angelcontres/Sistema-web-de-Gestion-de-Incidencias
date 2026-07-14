@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasLocalTimezone;
 use App\Observers\IncidenciaObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -29,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 ])]
 class Incidencia extends Model
 {
+    use HasLocalTimezone;
     use HasFactory, SoftDeletes;
 
     protected $table = 'reporte_incidencias';
