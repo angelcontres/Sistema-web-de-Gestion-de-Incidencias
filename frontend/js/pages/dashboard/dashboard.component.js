@@ -130,76 +130,14 @@ export class DashboardComponent extends BaseComponent {
     const container = this.querySelector('#grafanaKpisContainer');
     if (!container) return;
 
-    const GRAFANA_BASE = 'http://localhost:3000'; // Ajustable según host de Grafana
+    const GRAFANA_BASE =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:3000'
+        : 'https://grafana.dihm-muertos.site';
 
     const user = AuthService.getCurrentUser();
     const instId = user && user.institucion_id ? user.institucion_id : '';
     const userId = user && user.id ? user.id : '';
-
-    const GRAFANA_PANELS = {
-      Admin: [
-        {
-          title: 'Tiempo de Respuesta Promedio (TRP)',
-          url: `${GRAFANA_BASE}/d-solo/ad79j7w/incidents-dashboards?orgId=1&from=1783884755369&to=1783971155369&timezone=browser&dtab=Admin&var-custom0=&var-query0=&refresh=10s&theme=light&panelId=panel-15`,
-        },
-        {
-          title: 'Incidencias Totales',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/admin?panelId=2&theme=light`,
-        },
-        {
-          title: 'Tasa de Éxito de Pruebas (TEP)',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/admin?panelId=3&theme=light`,
-        },
-        {
-          title: 'Vulnerabilidades Críticas',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/admin?panelId=4&theme=light`,
-        },
-      ],
-      Supervisor: [
-        {
-          title: 'Incidencias Activas',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/supervisor?panelId=1&theme=light`,
-        },
-        {
-          title: 'Incidencias Sin Asignar',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/supervisor?panelId=2&theme=light`,
-        },
-        {
-          title: 'Tiempo Promedio de Respuesta',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/supervisor?panelId=3&theme=light`,
-        },
-      ],
-      Institucion: [
-        {
-          title: 'Mis Incidencias Activas',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/institucion?panelId=1&theme=light&var-institucion_id=${instId}`,
-        },
-        {
-          title: 'Incidencias Resueltas Hoy',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/institucion?panelId=2&theme=light&var-institucion_id=${instId}`,
-        },
-      ],
-      Ciudadano: [
-        {
-          title: 'Mis Reportes Realizados',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/ciudadano?panelId=1&theme=light&var-usuario_id=${userId}`,
-        },
-        {
-          title: 'Mis Reportes Resueltos',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/ciudadano?panelId=2&theme=light&var-usuario_id=${userId}`,
-        },
-      ],
-      Default: [
-        {
-          title: 'Incidencias Activas',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/general?panelId=1&theme=light`,
-        },
-        {
-          title: 'Resueltas Hoy',
-          url: `${GRAFANA_BASE}/d-solo/metrics-dw/general?panelId=2&theme=light`,
-        },
-      ],
-    };
 
     // Resolver rol por permisos o is_admin
     let role = 'Default';
@@ -213,33 +151,49 @@ export class DashboardComponent extends BaseComponent {
       role = 'Ciudadano';
     }
 
-    const panels = GRAFANA_PANELS[role] || GRAFANA_PANELS['Default'];
-    const numPanels = panels.length;
+    // URLs de dashboards completos por rol
+    // Usamos el formato /d/{dashboard_uid}/ en lugar de /d-solo/ para incrustar el dashboard completo.
+    // Usamos kiosk=1 para ocultar menús nativos de Grafana, u opcionalmente kiosk=tv si quieres conservar la barra de variables.
+    const GRAFANA_DASHBOARDS = {
+      Admin: `${GRAFANA_BASE}/public-dashboards/9ac6fce33cb94171a06080c1b8c0822f?kiosk=1&theme=light&refresh=30s`,
+      Supervisor: `${GRAFANA_BASE}/public-dashboards/537d8b50adb642e085c6117223d6ca4b?&theme=light&refresh=30s`,
+      Institucion: `${GRAFANA_BASE}/public-dashboards/fccfc0dc5c614ac0a916dced799d48fd?&theme=light&refresh=30s`,
+      Ciudadano: `${GRAFANA_BASE}/public-dashboards/783ab487ecc044dab11a85c0ca61eaf3?&theme=light&refresh=30s`,
+      Default: `${GRAFANA_BASE}/public-dashboards/537d8b50adb642e085c6117223d6ca4b?&theme=light&refresh=30s`,
+    };
 
-    // Determinar columnas Bootstrap para grid
-    let colClass = 'col-md-3';
-    if (numPanels === 3) colClass = 'col-md-4';
-    else if (numPanels === 2) colClass = 'col-md-6';
-    else if (numPanels === 1) colClass = 'col-md-12';
+    // Si tuvieras un único dashboard unificado con pestañas (tabs) controladas por una variable 'dtab':
+    // const GRAFANA_DASHBOARDS = {
+    //   Admin: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=Admin`,
+    //   Supervisor: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=Supervisor`,
+    //   Institucion: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=Institucion&var-institucion_id=${instId}`,
+    //   Ciudadano: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=Ciudadano&var-usuario_id=${userId}`,
+    //   Default: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=General`,
+    // };
 
-    container.innerHTML = panels
-      .map(
-        (panel) => `
-      <div class="${colClass}">
-        <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden" style="height: 150px;">
-          <iframe src="${panel.url}" width="100%" height="100%" frameborder="0" style="border: none;"></iframe>
+    const dashboardUrl = GRAFANA_DASHBOARDS[role] || GRAFANA_DASHBOARDS['Default'];
+
+    container.innerHTML = `
+      <div class="w-100">
+        <div class="card border-0 shadow-sm rounded-4 bg-transparent overflow-hidden" style="height: 100vh; max-height: 100vh;">
+          <iframe 
+            src="${dashboardUrl}" 
+            width="100%" 
+            height="100%" 
+            style="border: none; display: block; width: 100%; height: 100%;" 
+            frameborder="0"
+            allowtransparency="true">
+          </iframe>
         </div>
       </div>
-    `
-      )
-      .join('');
+    `;
 
     // Inyectar el gráfico de provincias si el usuario es Supervisor o Admin
     const provinciaChartContainer = this.querySelector('#provinciaChartContainer');
     const iframeProvincia = this.querySelector('#iframe-provincia-chart');
     if (provinciaChartContainer && iframeProvincia && (role === 'Supervisor' || role === 'Admin')) {
       provinciaChartContainer.style.display = 'block';
-      iframeProvincia.src = `${GRAFANA_BASE}/d-solo/ad79j7w/incidents-dashboards?orgId=1&from=1783884917625&to=1783971317625&timezone=browser&dtab=Supervisor&var-custom0=&var-query0=&refresh=10s&theme=light&panelId=panel-25`;
+      iframeProvincia.src = `${GRAFANA_BASE}/d-solo/ad79j7w/incidents-dashboards?orgId=1&from=1783884717625&to=1783971317625&timezone=browser&dtab=Supervisor&var-custom0=&var-query0=&refresh=10s&theme=light&panelId=panel-25`;
     }
   }
 

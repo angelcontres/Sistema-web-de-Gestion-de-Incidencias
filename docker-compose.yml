@@ -30,6 +30,36 @@ services:
     networks:
       - sistema_net
 
+  # Worker de Laravel para procesar tareas en segundo plano (Colas)
+  laravel-worker:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: sistema_laravel_worker
+    restart: always
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+    volumes:
+      - ./backend/api:/var/www/html
+    depends_on:
+      - postgres
+    networks:
+      - sistema_net
+
+  # Scheduler de Laravel para ejecutar tareas programadas (ETL y comandos SQA)
+  laravel-scheduler:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: sistema_laravel_scheduler
+    restart: always
+    command: php artisan schedule:work
+    volumes:
+      - ./backend/api:/var/www/html
+    depends_on:
+      - postgres
+    networks:
+      - sistema_net
+
   # Base de Datos (PostgreSQL) [Asignatura: Base de Datos / Data Center]
   postgres:
     image: postgis/postgis:17-3.4-alpine
@@ -74,6 +104,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ALLOW_EMBEDDING=true
       - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
     depends_on:
       - postgres
     networks:
