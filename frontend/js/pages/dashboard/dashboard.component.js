@@ -155,11 +155,10 @@ export class DashboardComponent extends BaseComponent {
     // Usamos el formato /d/{dashboard_uid}/ en lugar de /d-solo/ para incrustar el dashboard completo.
     // Usamos kiosk=1 para ocultar menús nativos de Grafana, u opcionalmente kiosk=tv si quieres conservar la barra de variables.
     const GRAFANA_DASHBOARDS = {
-      Admin: `${GRAFANA_BASE}/public-dashboards/9ac6fce33cb94171a06080c1b8c0822f?kiosk=1&theme=light&refresh=30s`,
-      Supervisor: `${GRAFANA_BASE}/public-dashboards/537d8b50adb642e085c6117223d6ca4b?&theme=light&refresh=30s`,
-      Institucion: `${GRAFANA_BASE}/public-dashboards/fccfc0dc5c614ac0a916dced799d48fd?&theme=light&refresh=30s`,
-      Ciudadano: `${GRAFANA_BASE}/public-dashboards/783ab487ecc044dab11a85c0ca61eaf3?&theme=light&refresh=30s`,
-      Default: `${GRAFANA_BASE}/public-dashboards/537d8b50adb642e085c6117223d6ca4b?&theme=light&refresh=30s`,
+      Admin: `${GRAFANA_BASE}/public-dashboards/67dae25e85084dbaa5cef69077333d3a?kiosk=1&theme=light&refresh=30s`,
+      Supervisor: `${GRAFANA_BASE}/public-dashboards/68779fc028794daabb5f88e7b45f06df?&theme=light&refresh=30s`,
+      Institucion: `${GRAFANA_BASE}/public-dashboards/8d027b7c2537405390edd792f2372c86?&theme=light&refresh=30s`,
+      Ciudadano: `${GRAFANA_BASE}/public-dashboards/8a745a9427534b908eb7d2ee2fc888ca?&theme=light&refresh=30s`,
     };
 
     // Si tuvieras un único dashboard unificado con pestañas (tabs) controladas por una variable 'dtab':
