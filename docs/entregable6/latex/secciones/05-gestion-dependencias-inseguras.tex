@@ -1,0 +1,26 @@
+\section{Gestión de Dependencias Inseguras}
+
+La arquitectura moderna del software depende intrínsecamente del ecosistema de librerías de terceros (Open Source). Para garantizar que el Sistema de Gestión de Incidencias no incorpore brechas de seguridad a través de su cadena de suministro, se implementaron mecanismos de Auditoría de Análisis de Composición de Software (SCA).
+
+\subsection{Inspección en el Ecosistema Backend y Contenedores}
+
+El núcleo del backend, basado en PHP, fue auditado nativamente a través del empaquetador de componentes. Para ello, se integró el motor de vulnerabilidades de \textbf{Snyk} en conjunto con el comando \texttt{composer audit}. 
+
+Este análisis cruza las versiones definidas en el archivo \texttt{composer.lock} contra bases de datos globales de vulnerabilidades y exposiciones comunes (CVE). El reporte automatizado generó observaciones en tiempo real sobre aquellos paquetes que carecen de mantenimiento comunitario activo, recomendando la migración o actualización a ramas menores más seguras. La misma estrategia de evaluación mediante Snyk garantiza la sanidad técnica de las imágenes base configuradas en los archivos \texttt{Dockerfile} y \texttt{docker-compose.yml}.
+
+\subsection{Inspección en el Ecosistema Frontend}
+
+De forma análoga, para el ecosistema JavaScript Vanilla del cliente, las herramientas SCA mapean las dependencias contenidas en \texttt{package.json} a fin de prevenir ataques a la cadena de suministro.
+
+\subsection{Auditoría mediante OWASP Dependency-Check}
+
+Adicionalmente a los análisis de Snyk y Composer, se integró la herramienta de código abierto \textbf{OWASP Dependency-Check} (v12.2.2) para el análisis de composición de software (SCA) multiplataforma. Esta utilidad se ejecuta a nivel de consola local escaneando de manera combinada los manifiestos de dependencias bloqueadas (\texttt{composer.lock} y \texttt{package-lock.json}).
+
+El escáner genera un reporte interactivo en formato HTML que detalla el identificador CVE de cada vulnerabilidad encontrada, la severidad según la escala de puntuación CVSS, el paquete afectado y la versión parcheada recomendada. Este análisis robustece el cumplimiento del estándar OWASP A06:2021, mitigando la inclusión involuntaria de librerías desactualizadas en los entornos transaccional y cliente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia_snyk.png}
+    \caption{Evidencia del escaneo de dependencias mediante Snyk.}
+    \label{fig:evidencia_snyk}
+\end{figure}

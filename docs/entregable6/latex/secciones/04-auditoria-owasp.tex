@@ -1,0 +1,64 @@
+\section{Auditoría de Seguridad y OWASP Top 10}
+
+Para el aseguramiento de la confidencialidad, integridad y disponibilidad del sistema, se evaluó la susceptibilidad de la base de código frente a los riesgos estipulados en el estándar internacional OWASP Top 10. A continuación, se detallan de manera individual las categorías analizadas bajo la estructura metodológica exigida.
+
+\subsection{A03:2021 – Injection (Cross-Site Scripting - XSS)}
+
+\begin{itemize}
+    \item \textbf{¿Existe riesgo?} \\
+    Sí. El análisis estático de código del frontend identificó un uso recurrente de la propiedad \texttt{innerHTML} para inyectar variables dinámicas procedentes de fuentes de datos (como el almacenamiento local o respuestas del servidor) de manera directa en el DOM, sin aplicar filtros de sanitización previa.
+    
+    \item \textbf{Nivel del impacto} \\
+    \textbf{Medio-Alto.} Un atacante que logre persistir código malicioso (por ejemplo, en el nombre de un menú de navegación, descripción de una incidencia o un mensaje del sistema) podría forzar la ejecución de scripts arbitrarios en el contexto del navegador de otros usuarios, comprometiendo tokens de sesión y exponiendo al sistema al robo de información.
+    
+    \item \textbf{Evidencia de código}
+    \begin{verbatim}
+    // Archivo: frontend/js/shared/components/toast/toast.component.js (Línea 57)
+    messageEl.innerHTML = message;
+
+    // Archivo: frontend/js/components/menu-lobby/menu-lobby.component.js (Línea 65)
+    titleEl.innerHTML = `<i class="${parentMenu.icono || ''} me-2 text-primary"></i> 
+                         ${parentMenu.nombre}`;
+    \end{verbatim}
+    
+    \item \textbf{Recomendación} \\
+    Se recomienda prohibir la inyección directa de texto sin sanitizar. Para elementos que solo representen texto, usar la propiedad segura \texttt{textContent} (que escapa automáticamente caracteres HTML). Para inyecciones necesarias de plantillas con formato, se debe integrar una librería de sanitización del lado del cliente como \textit{DOMPurify} para remover scripts maliciosos previo a su asignación al elemento.
+\end{itemize}
+
+\subsection{A05:2021 – Security Misconfiguration}
+
+\begin{itemize}
+    \item \textbf{¿Existe riesgo?} \\
+    Sí. El escaneo de PHPStan determinó el consumo de variables de entorno mediante el helper de Laravel \texttt{env()} de forma directa en el código de controladores y clases de solicitudes de API, vulnerando las buenas prácticas de gestión de configuración segura.
+    
+    \item \textbf{Nivel del impacto} \\
+    \textbf{Alto.} Cuando la aplicación transaccional de Laravel se despliega en producción optimizando el rendimiento mediante la caché de configuración (\texttt{php artisan config:cache}), Laravel deshabilita la lectura directa del archivo \texttt{.env}. En consecuencia, todas las funciones \texttt{env()} en los controladores devuelven \texttt{null}. Esto provoca fallos inesperados de autenticación, almacenamiento en discos de archivos incorrectos o caídas del servicio al intentar realizar transacciones.
+    
+    \item \textbf{Evidencia de código}
+    \begin{verbatim}
+    // Archivo: backend/api/app/Http/Controllers/Api/AuthController.php (Línea 70)
+    'max_files' => (int) env('MAX_FILE_UPLOAD_LIMIT', 5),
+
+    // Archivo: backend/api/app/Http/Controllers/IncidenciaController.php (Línea 203)
+    $disk = env('FILESYSTEM_DISK', 'public');
+    \end{verbatim}
+    
+    \item \textbf{Recomendación} \\
+    Se debe centralizar la lectura de variables de entorno exclusivamente en los archivos ubicados en el directorio \texttt{config/} de Laravel. Posteriormente, en el código de negocio (controladores, modelos), se debe acceder a estos parámetros mediante la función \texttt{config()}, la cual lee de forma segura los valores cacheados. Por ejemplo, migrar \texttt{env('FILESYSTEM\_DISK')} hacia \texttt{config('filesystems.default')}.
+\end{itemize}
+
+\subsection{A06:2021 – Vulnerable and Outdated Components}
+
+\begin{itemize}
+    \item \textbf{¿Existe riesgo?} \\
+    Sí. Como ocurre en sistemas modernos, la aplicación transaccional depende de paquetes y módulos externos gestionados por \textit{Composer} y \textit{NPM} que se encuentran desactualizados o poseen vulnerabilidades públicas (CVEs) vigentes en las versiones actuales del proyecto.
+    
+    \item \textbf{Nivel del impacto} \\
+    \textbf{Medio.} La explotación exitosa de una vulnerabilidad en librerías de terceros (como frameworks PHP, dependencias de diseño o utilidades JS) puede permitir ataques dirigidos desde el exterior, ejecución remota de código en contenedores o denegación de servicio.
+    
+    \item \textbf{Evidencia de código} \\
+    Alertas detectadas en el análisis de composición de software de dependencias obsoletas en el archivo \texttt{composer.json} del backend y \texttt{package.json} en frontend.
+    
+    \item \textbf{Recomendación} \\
+    Implementar auditorías automatizadas recurrentes mediante el pipeline de CI/CD invocando las herramientas de análisis de composición de software (SCA) integradas: \texttt{composer audit}, \texttt{snyk test} y \texttt{OWASP Dependency-Check}, restringiendo el paso a producción si existen severidades de rango Alto o Crítico.
+\end{itemize}
