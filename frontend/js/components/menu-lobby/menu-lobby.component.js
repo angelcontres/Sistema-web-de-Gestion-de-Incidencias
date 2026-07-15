@@ -30,7 +30,7 @@ export class MenuLobbyComponent extends BaseComponent {
       if (menuStr) {
         menuList = JSON.parse(menuStr);
       }
-    } catch(e) {}
+    } catch(e) { /* empty */ }
 
     if (!menuList || menuList.length === 0) {
       try {
