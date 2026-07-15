@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Incidencia;
-use Carbon\Carbon;
+use App\Services\TimezoneService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -26,19 +26,21 @@ class DashboardController extends Controller
 
     private function calculateKpis()
     {
-        $now = Carbon::now();
-        $today = Carbon::today();
-
+        $now = TimezoneService::nowLocal();
+        
         $activas = Incidencia::whereIn('estado_id', [1, 2])->count();
 
         $nuevasActivas = Incidencia::whereIn('estado_id', [1, 2])
-            ->where('created_at', '>=', $now->subHours(2))
+            ->where('created_at', '>=', $now->copy()->setTimezone('UTC')->subHours(2))
             ->count();
 
         $sinAsignar = Incidencia::whereNull('institucion_id')->count();
 
+        $startOfDay = $now->copy()->startOfDay()->setTimezone('UTC');
+        $endOfDay = $now->copy()->endOfDay()->setTimezone('UTC');
+
         $resueltasHoy = Incidencia::where('estado_id', 4)
-            ->whereDate('updated_at', $today)
+            ->whereBetween('updated_at', [$startOfDay, $endOfDay])
             ->count();
 
         return [
@@ -52,7 +54,7 @@ class DashboardController extends Controller
 
     private function getTopServices($days = 30)
     {
-        $startDate = Carbon::now()->subDays($days);
+        $startDate = TimezoneService::nowLocal()->subDays($days)->startOfDay()->setTimezone('UTC');
 
         $totalIncidents = Incidencia::where('created_at', '>=', $startDate)->count();
 

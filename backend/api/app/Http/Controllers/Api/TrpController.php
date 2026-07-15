@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PerformanceLog;
+use App\Services\TimezoneService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -13,7 +14,7 @@ class TrpController extends Controller
     public function performanceStats()
     {
         // 1. TRP over time (last 24 hours, grouped by hour)
-        $timeline = PerformanceLog::where('logged_at', '>=', now()->subDay())
+        $timeline = PerformanceLog::where('logged_at', '>=', TimezoneService::nowLocal()->setTimezone('UTC')->subDay())
             ->select(
                 DB::raw("DATE_TRUNC('hour', logged_at) as hour"),
                 DB::raw('ROUND(AVG(trp)) as avg_trp')
@@ -44,7 +45,7 @@ class TrpController extends Controller
     public function exportLogs(Request $request)
     {
         $format = $request->query('format', 'csv');
-        $fileName = 'performance_logs_'.date('Y_m_d_H_i_s').'.'.$format;
+        $fileName = 'performance_logs_'.TimezoneService::nowLocal()->format('Y_m_d_H_i_s').'.'.$format;
 
         $headers = [
             'Content-Type' => $format === 'csv' ? 'text/csv' : 'text/plain',

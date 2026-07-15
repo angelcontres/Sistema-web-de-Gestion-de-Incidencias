@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasLocalTimezone;
 use Database\Factories\OpcionMenuFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['nombre', 'icono', 'ruta', 'padre_id', 'created_by', 'updated_by', 'deleted_by'])]
 class OpcionMenu extends Model
 {
+    use HasLocalTimezone;
     /** @use HasFactory<OpcionMenuFactory> */
     use HasFactory, SoftDeletes;
 

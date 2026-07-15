@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\TimezoneService;
 
 class SyncPerformanceLogsJob implements ShouldQueue
 {
@@ -47,7 +48,7 @@ class SyncPerformanceLogsJob implements ShouldQueue
 
             if (!$endpointId) continue;
 
-            $loggedAt = Carbon::parse($log->logged_at);
+            $loggedAt = TimezoneService::toLocal($log->logged_at);
             $tiempoId = (int)$loggedAt->format('YmdH');
 
             $this->ensureTiempoIdExists($tiempoId, $loggedAt);

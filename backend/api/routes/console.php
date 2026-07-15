@@ -14,11 +14,9 @@ Schedule::command('etl:run')->everyFiveMinutes();
 // =========================================================================
 
 // Activa: Ejecución automática diaria para analizar vulnerabilidades (VCO)
-Schedule::command('sqa:vco')->dailyAt('02:00');
-
-// Pasivas: Aunque son manuales/pasivas, se programan diariamente por la
-// madrugada para asegurar el llenado histórico en el Data Warehouse
-Schedule::command('sqa:dd')->dailyAt('03:00');  // Densidad de Defectos
-Schedule::command('sqa:cf')->dailyAt('04:00');  // Cobertura Funcional
-Schedule::command('sqa:tep')->dailyAt('05:00'); // Tasa de Éxito de Pruebas
+Schedule::command('sqa:vco')->dailyAt('02:00')->timezone('America/Guayaquil');
+// Pasivas:
+Schedule::command('sqa:dd')->dailyAt('03:00')->timezone('America/Guayaquil');  // Densidad de Defectos
+Schedule::command('sqa:cf')->dailyAt('04:00')->timezone('America/Guayaquil');  // Cobertura Funcional
+Schedule::command('sqa:tep')->dailyAt('05:00')->timezone('America/Guayaquil'); // Tasa de Éxito de Pruebas
 

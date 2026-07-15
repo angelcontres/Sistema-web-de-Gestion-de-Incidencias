@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\TimezoneService;
 
 class SyncFactIncidenciasJob implements ShouldQueue
 {
@@ -42,7 +43,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
 
         $records = [];
         foreach ($incidencias as $inc) {
-            $createdTime = Carbon::parse($inc->created_at);
+            $createdTime = TimezoneService::toLocal($inc->created_at);
             $tiempoId = (int)$createdTime->format('YmdH');
 
             // Asegurarse de que el tiempo_id exista en dim_tiempo, si no, crear uno rápido
@@ -58,13 +59,13 @@ class SyncFactIncidenciasJob implements ShouldQueue
                 // Primer cambio a En Proceso
                 $enProcesoLog = $historialDeIncidencia->firstWhere('estado_id', 3);
                 if ($enProcesoLog) {
-                    $tiempoRespuesta = (int)$createdTime->diffInMinutes(Carbon::parse($enProcesoLog->created_at));
+                    $tiempoRespuesta = (int)$createdTime->diffInMinutes(TimezoneService::toLocal($enProcesoLog->created_at));
                 }
 
                 // Primer cambio a Resuelto
                 $resueltoLog = $historialDeIncidencia->firstWhere('estado_id', 4);
                 if ($resueltoLog) {
-                    $tiempoResolucion = (int)$createdTime->diffInMinutes(Carbon::parse($resueltoLog->created_at));
+                    $tiempoResolucion = (int)$createdTime->diffInMinutes(TimezoneService::toLocal($resueltoLog->created_at));
                 }
             }
 

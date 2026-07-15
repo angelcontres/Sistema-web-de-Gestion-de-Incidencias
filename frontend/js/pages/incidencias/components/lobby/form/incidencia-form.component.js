@@ -1166,7 +1166,6 @@ export class IncidenciaFormComponent extends BaseComponent {
         estado_id: 4, // Resuelto
         version: inc.version,
         comentario_estado: 'Resolución confirmada por el solicitante/operador.',
-        fecha_local: this.obtenerFechaLocalISO(),
       };
 
       await IncidenciaService.update(id, payload);
@@ -1254,7 +1253,6 @@ export class IncidenciaFormComponent extends BaseComponent {
     try {
       // 2. Guardar incidencia
       const incPayload = {
-        fecha_local: this.obtenerFechaLocalISO(),
         incidencia_descripcion: this.descripcionInput.value,
         direccion_id: direccionId,
         tipo_incidencia_id: parseInt(this.tipoSelect.value),
@@ -1412,12 +1410,6 @@ export class IncidenciaFormComponent extends BaseComponent {
   limpiarErrores() {
     const errorAlert = this.querySelector('#formErrorAlert');
     if (errorAlert) errorAlert.classList.add('d-none');
-  }
-
-  obtenerFechaLocalISO() {
-    const now = new Date();
-    const offsetMs = now.getTimezoneOffset() * 60 * 1000;
-    return new Date(now.getTime() - offsetMs).toISOString().slice(0, 19).replace('T', ' ');
   }
 }
 
