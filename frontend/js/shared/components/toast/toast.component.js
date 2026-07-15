@@ -22,8 +22,8 @@ export class ToastComponent extends BaseComponent {
     const messageEl = this.querySelector('#toast-message');
     const closeBtn = this.querySelector('#toast-btn-close');
 
-    let icon = '';
-    let bgClass = '';
+    let icon;
+    let bgClass;
     let textClass = 'text-white';
     
     switch (type) {

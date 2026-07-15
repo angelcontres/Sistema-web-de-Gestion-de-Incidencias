@@ -101,7 +101,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
     const diffMins = Math.floor(diffMs / (1000 * 60));
 
-    let timeAgo = '';
+    let timeAgo;
     if (diffHrs >= 24) {
       timeAgo = `hace ${Math.floor(diffHrs / 24)} días`;
     } else if (diffHrs > 0) {
@@ -159,7 +159,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       if (reportantes.length > 0) {
         reportantesContainer.classList.remove('d-none');
 
-        let html = '';
+        let html;
         if (reportantes.length <= 3) {
           html =
             `<ul class="list-unstyled mb-0">` +

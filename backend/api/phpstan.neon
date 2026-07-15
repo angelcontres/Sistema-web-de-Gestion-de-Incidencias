@@ -1,0 +1,14 @@
+includes:
+    - vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - routes/
+        - database/
+    
+    # Nivel de análisis (0 básico, 9 extremadamente estricto)
+    level: 4
+
+    excludePaths:
+        - app/Console/Commands/EtlRunCommand.php

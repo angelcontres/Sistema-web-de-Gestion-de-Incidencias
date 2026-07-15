@@ -2,3 +2,6 @@
 docs/entregable*/latex/build/
 docs/entregable*/imagenes/
 backend/api/tests/raw-results
+dependency-check/
+dependency-check-report.html
+

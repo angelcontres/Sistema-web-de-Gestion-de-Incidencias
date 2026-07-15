@@ -23,6 +23,7 @@ export class DireccionFormComponent extends BaseComponent {
     const dirPaisSelect = modalEl.querySelector('#dirPaisSelect');
     const dirNivel1Select = modalEl.querySelector('#dirNivel1Select');
     const dirNivel2Select = modalEl.querySelector('#dirNivel2Select');
+    const dirNivel3Select = modalEl.querySelector('#dirNivel3Select');
 
     document.body.appendChild(modalEl);
     this.direccionModalObj = new bootstrap.Modal(modalEl);

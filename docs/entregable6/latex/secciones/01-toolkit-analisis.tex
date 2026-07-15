@@ -1,0 +1,34 @@
+\section{Línea Base y Toolkit de Análisis}
+
+Para llevar a cabo la auditoría de calidad de código del Sistema de Gestión de Incidencias, se ha configurado un stack analítico integrado por herramientas líderes en análisis estático (SAST) y análisis de dependencias (SCA). El proyecto cuenta con una arquitectura dividida en un backend (Laravel/PHP) y un frontend (JavaScript Vanilla modular), por lo cual el toolkit tecnológico se ha seleccionado para cubrir las especificidades de ambos entornos.
+
+\subsection{Selección de Herramientas SQA}
+
+La correspondencia del toolkit técnico seleccionado frente a los componentes y lenguajes del sistema se detalla en la siguiente tabla:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Herramienta} & \textbf{Capa / Lenguaje} & \textbf{Propósito Principal} \\ \hline
+\textbf{PHPStan (Larastan)} & Backend (PHP) & Detección de bugs lógicos, tipado y código inalcanzable. \\ \hline
+\textbf{ESLint} & Frontend (JS) & Control de buenas prácticas, prevención de XSS y código muerto. \\ \hline
+\textbf{Laravel Pint} & Backend (PHP) & Homogeneizar reglas de estilo y legibilidad (PSR-12). \\ \hline
+\textbf{Snyk / Composer Audit} & Backend \& Docker & Identificación de vulnerabilidades en librerías de terceros. \\ \hline
+\textbf{SonarQube} & Full Stack & Medición integral de duplicación, Code Smells y deuda técnica. \\ \hline
+\end{tabular}
+\caption{Toolkit tecnológico para el aseguramiento de calidad (SQA).}
+\label{tab:toolkit}
+\end{table}
+
+\subsection{Configuraciones del Entorno Analítico}
+
+Para garantizar la precisión de los análisis y reducir los falsos positivos, se establecieron configuraciones específicas en cada herramienta:
+
+\begin{itemize}
+    \item \textbf{ESLint (Frontend):} Se implementó el estándar \textit{Flat Config} (v9) mapeando los objetos globales del navegador y librerías del sistema (como \texttt{Leaflet} y \texttt{Chart.js}). Asimismo, se configuraron excepciones específicas para no sesgar las métricas al auditar archivos de pruebas unitarias (Jest).
+    \item \textbf{PHPStan (Backend):} Se integró mediante la extensión \textit{Larastan} en el Nivel 4. Esto permite al motor de inferencia comprender la estructura dinámica del framework Laravel (como los métodos mágicos de Eloquent y los \textit{Facades}) sin generar falsos positivos.
+    \item \textbf{SonarQube:} Se definió el archivo \texttt{sonar-project.properties} centralizado en la raíz, delimitando estrictamente los directorios de código fuente y excluyendo dependencias de terceros (\texttt{vendor}, \texttt{node\_modules}) para obtener una medición real del esfuerzo propio del equipo de desarrollo.
+\end{itemize}
+
+El proceso de recolección de métricas se consolida a su vez con la arquitectura OLAP del sistema, donde comandos automatizados (\texttt{php artisan sqa:*}) almacenan los resultados de las auditorías en un Data Warehouse (esquema \texttt{metrics}) para su visualización histórica.
