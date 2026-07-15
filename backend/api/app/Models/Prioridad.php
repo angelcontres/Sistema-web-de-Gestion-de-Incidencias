@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['nombre', 'color_hex', 'created_by', 'updated_by', 'deleted_by'])]
 class Prioridad extends Model
 {
+    use HasLocalTimezone;
     use HasFactory, SoftDeletes;
 
     public function creador(): BelongsTo

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasLocalTimezone;
 use App\Enums\TipoTerritorio;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['pais_id', 'parent_id', 'nombre', 'tipo', 'codigo', 'activo'])]
 class Territorio extends Model
 {
+    use HasLocalTimezone;
     use HasFactory;
 
     protected $table = 'territorios';
