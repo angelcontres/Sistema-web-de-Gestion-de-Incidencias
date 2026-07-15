@@ -253,7 +253,7 @@
                       <div class="invalid-feedback">La dirección detallada es obligatoria.</div>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-6" style="display: none !important;">
                       <label for="dirCodigoPostal" class="form-label fw-semibold text-dark small"
                         >Código Postal</label
                       >
@@ -265,14 +265,13 @@
                       />
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-6" style="display: none !important;">
                       <label for="dirPais" class="form-label fw-semibold text-dark small"
-                        >País <span class="text-danger">*</span></label
+                        >País</label
                       >
                       <select
                         id="dirPais"
                         class="form-select rounded-2 border-secondary-subtle"
-                        required
                       >
                         <option value="">-- Seleccione --</option>
                       </select>
@@ -280,12 +279,12 @@
                     </div>
 
                     <!-- Cascading Dropdowns para Territorio -->
-                    <div class="col-12 d-none" id="colDirNivel1">
+                    <div class="col-12 d-none" id="colDirNivel1" style="display: none !important;">
                       <label
                         id="lblDirNivel1"
                         for="dirNivel1"
                         class="form-label fw-semibold text-dark small"
-                        >Provincia <span class="text-danger">*</span></label
+                        >Provincia</label
                       >
                       <select
                         id="dirNivel1"
@@ -296,12 +295,12 @@
                       </select>
                     </div>
 
-                    <div class="col-12 d-none" id="colDirNivel2">
+                    <div class="col-12 d-none" id="colDirNivel2" style="display: none !important;">
                       <label
                         id="lblDirNivel2"
                         for="dirNivel2"
                         class="form-label fw-semibold text-dark small"
-                        >Cantón <span class="text-danger">*</span></label
+                        >Cantón</label
                       >
                       <select
                         id="dirNivel2"
@@ -328,7 +327,7 @@
                       </select>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-6" style="display: none !important;">
                       <label for="dirLat" class="form-label fw-semibold text-dark small"
                         >Latitud</label
                       >
@@ -340,7 +339,7 @@
                       />
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-6" style="display: none !important;">
                       <label for="dirLng" class="form-label fw-semibold text-dark small"
                         >Longitud</label
                       >
@@ -502,7 +501,7 @@
               <div class="invalid-feedback">La dirección detallada es obligatoria.</div>
             </div>
 
-            <div class="col-6">
+            <div class="col-6" style="display: none !important;">
               <label for="modalDirCodigoPostal" class="form-label fw-semibold text-dark small"
                 >Código Postal</label
               >
@@ -514,14 +513,13 @@
               />
             </div>
 
-            <div class="col-6">
+            <div class="col-6" style="display: none !important;">
               <label for="modalDirPais" class="form-label fw-semibold text-dark small"
-                >País <span class="text-danger">*</span></label
+                >País</label
               >
               <select
                 id="modalDirPais"
                 class="form-select rounded-2 border-secondary-subtle"
-                required
               >
                 <option value="">-- Seleccione --</option>
               </select>
@@ -529,12 +527,12 @@
             </div>
 
             <!-- Cascading Dropdowns para Territorio en Modal -->
-            <div class="col-12 d-none" id="colModalDirNivel1">
+            <div class="col-12 d-none" id="colModalDirNivel1" style="display: none !important;">
               <label
                 id="lblModalDirNivel1"
                 for="modalDirNivel1"
                 class="form-label fw-semibold text-dark small"
-                >Provincia <span class="text-danger">*</span></label
+                >Provincia</label
               >
               <select
                 id="modalDirNivel1"
@@ -546,12 +544,12 @@
               <div class="invalid-feedback">La provincia es obligatoria.</div>
             </div>
 
-            <div class="col-12 d-none" id="colModalDirNivel2">
+            <div class="col-12 d-none" id="colModalDirNivel2" style="display: none !important;">
               <label
                 id="lblModalDirNivel2"
                 for="modalDirNivel2"
                 class="form-label fw-semibold text-dark small"
-                >Cantón <span class="text-danger">*</span></label
+                >Cantón</label
               >
               <select
                 id="modalDirNivel2"
@@ -580,7 +578,7 @@
               <div class="invalid-feedback">La parroquia es obligatoria.</div>
             </div>
 
-            <div class="col-6">
+            <div class="col-6" style="display: none !important;">
               <label for="modalDirLat" class="form-label fw-semibold text-dark small"
                 >Latitud</label
               >
@@ -592,7 +590,7 @@
               />
             </div>
 
-            <div class="col-6">
+            <div class="col-6" style="display: none !important;">
               <label for="modalDirLng" class="form-label fw-semibold text-dark small"
                 >Longitud</label
               >

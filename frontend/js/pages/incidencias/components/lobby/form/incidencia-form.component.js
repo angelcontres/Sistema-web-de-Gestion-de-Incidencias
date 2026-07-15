@@ -353,6 +353,18 @@ export class IncidenciaFormComponent extends BaseComponent {
     }
   }
 
+  calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radio de la Tierra en km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distancia en km
+  }
+
   async autofillDesdeCoordenadas(lat, lng) {
     const mapLoader = this.querySelector('#mapLoader');
     if (mapLoader) mapLoader.classList.remove('d-none');
@@ -385,15 +397,29 @@ export class IncidenciaFormComponent extends BaseComponent {
         await this.autofillTerritoriosCascading(matchedPais.id, address);
       }
 
-      // Check if location is already registered in DB
+      // Check if location is already registered in DB (Optimizado por proximidad)
       let matchedDbDir = null;
       try {
         const dbDirs = (await CatalogoService.getDirecciones()) || [];
-        matchedDbDir = dbDirs.find((d) => {
-          const latDiff = Math.abs(parseFloat(d.latitud) - parseFloat(lat));
-          const lngDiff = Math.abs(parseFloat(d.longitud) - parseFloat(lng));
-          return latDiff < 0.00025 && lngDiff < 0.00025;
-        });
+        let minDistance = Infinity;
+
+        for (const d of dbDirs) {
+          if (!d.latitud || !d.longitud) continue;
+
+          const dist = this.calcularDistancia(
+            parseFloat(lat),
+            parseFloat(lng),
+            parseFloat(d.latitud),
+            parseFloat(d.longitud)
+          );
+
+          // Obtener la ubicación (y parroquia) más cercana. 
+          // Puede ajustarse un radio máximo (ej. dist <= 10) si no se desea que asigne direcciones muy lejanas.
+          if (dist < minDistance) {
+            minDistance = dist;
+            matchedDbDir = d;
+          }
+        }
       } catch (err) {
         console.warn('Error fetching existing addresses for matching:', err);
       }

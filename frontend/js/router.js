@@ -20,7 +20,8 @@ const routes = {
   '#/instituciones': 'app-institucion-index',
   '#/instituciones/kanban': 'app-kanban-institucion',
   '#/public': 'app-public',
-  '#/configuracion': 'app-menu-lobby',
+  '#/administracion': 'app-menu-lobby',
+  '#/mantenimiento': 'app-menu-lobby',
 
   '#/tramites': 'app-menu-lobby',
   '#/tramites/historial': 'app-historial-index',
@@ -123,10 +124,7 @@ function navigate() {
     }
 
     // Protect #/trp-dashboard based on 'Ver TRP' permission
-    if (
-      basePath === '#/trp-dashboard' &&
-      !AuthService.hasPermission(PermissionsEnum.READ_TRP)
-    ) {
+    if (basePath === '#/trp-dashboard' && !AuthService.hasPermission(PermissionsEnum.READ_TRP)) {
       window.location.hash = '#/';
       return;
     }
