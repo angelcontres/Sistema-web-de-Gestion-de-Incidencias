@@ -29,21 +29,21 @@ jobs:
     - name: Copiar el código a la VAIO
       uses: actions/checkout@v4
 
+    - name: Configurar entorno (.env) para PostgreSQL en el Servidor
+      run: |
+        cp backend/api/.env.example backend/api/.env
+        sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/' backend/api/.env
+        sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=postgres/' backend/api/.env
+        sed -i 's/# DB_PORT=3306/DB_PORT=5432/' backend/api/.env
+        sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=gestion_incidencias/' backend/api/.env
+        sed -i 's/# DB_USERNAME=root/DB_USERNAME=angeltux/' backend/api/.env
+        sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password_segura_upse/' backend/api/.env
+
     - name: Construir y levantar contenedores en segundo plano
       run: docker compose up -d --build --pull always
 
     - name: Instalar dependencias de PHP (Composer) dentro del contenedor
       run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
-
-    - name: Configurar entorno (.env) para PostgreSQL
-      run: |
-        docker exec sistema_laravel cp .env.example .env
-        docker exec sistema_laravel sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/' .env
-        docker exec sistema_laravel sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=postgres/' .env
-        docker exec sistema_laravel sed -i 's/# DB_PORT=3306/DB_PORT=5432/' .env
-        docker exec sistema_laravel sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=gestion_incidencias/' .env
-        docker exec sistema_laravel sed -i 's/# DB_USERNAME=root/DB_USERNAME=angeltux/' .env
-        docker exec sistema_laravel sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password_segura_upse/' .env
 
     - name: Generar clave de seguridad de Laravel
       run: docker exec sistema_laravel php artisan key:generate
@@ -56,7 +56,7 @@ jobs:
         done
 
     - name: Ejecutar migraciones de Laravel dentro del contenedor
-      run: docker exec sistema_laravel php artisan migrate:fresh --seed --force
+      run: docker exec sistema_laravel php artisan migrate --force
 
     - name: Ejecutar migraciones de OLAP dentro del contenedor
       run: docker exec sistema_laravel php artisan migrate --path=database/migrations/olap --force

@@ -17,44 +17,55 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@admin.com',
-            'password' => 'holamundo',
-        ]);
+        $user = User::where('email', 'admin@admin.com')->first();
+        if (!$user) {
+            $user = User::factory()->create([
+                'name' => 'Admin',
+                'email' => 'admin@admin.com',
+                'password' => 'holamundo',
+            ]);
+        }
 
-        $adminRole = Role::create([
-            'nombre' => 'Admin',
-            'descripcion' => 'Acceso total a todos los módulos del sistema.',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        $adminRole = Role::updateOrCreate(
+            ['nombre' => 'Admin'],
+            [
+                'descripcion' => 'Acceso total a todos los módulos del sistema.',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
         $roleService = app(RoleServiceInterface::class);
         $permissionService = app(PermissionServiceInterface::class);
 
         $roleService->syncRolesToUser($user, [$adminRole->id]);
 
-        $supervisorRole = Role::create([
-            'nombre' => 'Supervisor',
-            'descripcion' => 'Supervisor que gestiona y despacha incidencias.',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        $supervisorRole = Role::updateOrCreate(
+            ['nombre' => 'Supervisor'],
+            [
+                'descripcion' => 'Supervisor que gestiona y despacha incidencias.',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
-        Role::create([
-            'nombre' => 'Institucion',
-            'descripcion' => 'Instituciones que solventa, ejem: Bomberos, Policias, etc',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        Role::updateOrCreate(
+            ['nombre' => 'Institucion'],
+            [
+                'descripcion' => 'Instituciones que solventa, ejem: Bomberos, Policias, etc',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
-        Role::create([
-            'nombre' => 'Ciudadano',
-            'descripcion' => 'Ciudadano que reporta incidencias',
-            'padre_id' => null,
-            'created_by' => $user->id,
-        ]);
+        Role::updateOrCreate(
+            ['nombre' => 'Ciudadano'],
+            [
+                'descripcion' => 'Ciudadano que reporta incidencias',
+                'padre_id' => null,
+                'created_by' => $user->id,
+            ]
+        );
 
         // Assign all existing permissions to the Admin role
         $allPermissionsIds = Permiso::pluck('id')->toArray();

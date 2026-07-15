@@ -60,13 +60,15 @@ class PermissionsSeeder extends Seeder
 
             if ($opcionMenu) {
                 foreach ($acciones as $verbo => $metodo) {
-                    Permiso::create([
-                        'nombre' => "{$verbo} {$opcionSingular}",
-                        'accion' => $metodo,
-                        'recurso' => $recursoStr,
-                        'opcion_menu_id' => $opcionMenu->id,
-                        'created_by' => $user->id,
-                    ]);
+                    Permiso::updateOrCreate(
+                        ['nombre' => "{$verbo} {$opcionSingular}"],
+                        [
+                            'accion' => $metodo,
+                            'recurso' => $recursoStr,
+                            'opcion_menu_id' => $opcionMenu->id,
+                            'created_by' => $user->id,
+                        ]
+                    );
                 }
             }
         }
@@ -81,13 +83,15 @@ class PermissionsSeeder extends Seeder
             ];
             foreach ($subRecursos as $recursoSub => $nombreSingular) {
                 foreach ($acciones as $verbo => $metodo) {
-                    Permiso::create([
-                        'nombre' => "{$verbo} {$nombreSingular}",
-                        'accion' => $metodo,
-                        'recurso' => $recursoSub,
-                        'opcion_menu_id' => $ubicacionesMenu->id,
-                        'created_by' => $user->id,
-                    ]);
+                    Permiso::updateOrCreate(
+                        ['nombre' => "{$verbo} {$nombreSingular}"],
+                        [
+                            'accion' => $metodo,
+                            'recurso' => $recursoSub,
+                            'opcion_menu_id' => $ubicacionesMenu->id,
+                            'created_by' => $user->id,
+                        ]
+                    );
                 }
             }
         }
