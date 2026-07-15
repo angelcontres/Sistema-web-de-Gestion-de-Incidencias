@@ -71,12 +71,7 @@ class RoleSeeder extends Seeder
         $allPermissionsIds = Permiso::pluck('id')->toArray();
         $permissionService->syncPermissionsToRole($adminRole, $allPermissionsIds);
 
-        // Assign specific permissions to the Supervisor role using Enums
         $permissionService->grantPermissionsToRole($supervisorRole, [
-            PermissionsEnum::READ_PAISES,
-            PermissionsEnum::READ_TERRITORIOS,
-            PermissionsEnum::READ_DIRECCIONES,
-            PermissionsEnum::READ_CATEGORIAS_INCIDENCIA,
             PermissionsEnum::READ_INCIDENCIAS,
             PermissionsEnum::UPDATE_INCIDENCIAS,
             PermissionsEnum::READ_DESPACHO_INCIDENCIAS,
@@ -103,8 +98,6 @@ class RoleSeeder extends Seeder
             $permissionService->grantPermissionsToRole($ciudadanoRole, [
                 PermissionsEnum::READ_INCIDENCIAS,
                 PermissionsEnum::CREATE_INCIDENCIAS,
-                PermissionsEnum::READ_DIRECCIONES,
-                PermissionsEnum::CREATE_DIRECCIONES,
                 PermissionsEnum::READ_HISTORIAL,
             ]);
         }
@@ -116,7 +109,7 @@ class RoleSeeder extends Seeder
         echo "--- RESULTADO DEL TEST DE PERMISOS ---\n";
 
         echo 'Permisos de Admin (Deberían ser '.count($allPermissionsIds).'): '.$adminPermisosCount."\n";
-        echo 'Permisos de Supervisor (Deberían ser 9): '.$supervisorPermisosCount."\n";
+        echo 'Permisos de Supervisor (Deberían ser 5): '.$supervisorPermisosCount."\n";
         echo "--------------------------------------\n";
     }
 }
