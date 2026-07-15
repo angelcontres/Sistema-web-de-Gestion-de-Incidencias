@@ -7,7 +7,7 @@ La identificación de métricas de calidad y deuda técnica carece de valor si n
 \begin{table}[h!]
 \centering
 \small
-\begin{tabular}{|p{4.5cm}|p{2cm}|p{8cm}|}
+\begin{tabular}{|p{4.5cm}|p{2cm}|p{8.2cm}|}
 \hline
 \textbf{Hallazgo / Code Smell} & \textbf{Riesgo} & \textbf{Estrategia de Refactorización} \\ \hline
 Uso de \texttt{env()} fuera de \texttt{config/} & Alto (Fallo en Producción) & Migrar las llamadas dinámicas hacia archivos estáticos en \texttt{config/} y referenciarlas posteriormente mediante el \textit{helper} \texttt{config('archivo.llave')}. \\ \hline
@@ -15,6 +15,7 @@ Variables y Bloques JS inútiles & Medio (Deuda Técnica) & Remover condicionale
 Atributos mágicos no declarados (Modelos Eloquent) & Medio (Mantenibilidad) & Documentar explícitamente mediante etiquetas \texttt{@property} los tipos de datos en la cabecera (PHPDoc) de las clases de modelo. \\ \hline
 Relaciones inexistentes o mal declaradas en Backend & Medio (Fiabilidad) & Definir un tipado fuerte de retorno (ej. \texttt{: HasMany}) en los métodos de asociación de entidades para evitar la corrupción de acceso. \\ \hline
 Objetos o variables DOM no inicializados (Frontend) & Alto (Crash de JS) & Validar que variables como \texttt{dirNivel3Select} sean instanciadas antes de asignar manejadores de eventos. \\ \hline
+Librerías externas obsoletas con vulnerabilidades (SCA) & Medio-Alto (Explotación CVE) & Configurar auditorías automatizadas periódicas con \texttt{OWASP Dependency-Check} y actualizar dependencias críticas como \texttt{symfony/var-dumper} (mitigando CVE-2026-45066 y CVE-2026-45753). \\ \hline
 \end{tabular}
 \caption{Matriz de Hallazgos SQA y Refactorización.}
 \label{tab:matriz_hallazgos}

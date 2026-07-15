@@ -14,9 +14,16 @@ De forma análoga, para el ecosistema JavaScript Vanilla del cliente, las herram
 
 \subsection{Auditoría mediante OWASP Dependency-Check}
 
-Adicionalmente a los análisis de Snyk y Composer, se integró la herramienta de código abierto \textbf{OWASP Dependency-Check} (v12.2.2) para el análisis de composición de software (SCA) multiplataforma. Esta utilidad se ejecuta a nivel de consola local escaneando de manera combinada los manifiestos de dependencias bloqueadas (\texttt{composer.lock} y \texttt{package-lock.json}).
+Adicionalmente a los análisis de Snyk y Composer, se ejecutó de manera local la utilidad oficial de \textbf{OWASP Dependency-Check} (v12.2.2) para el análisis de composición de software (SCA). El análisis se centró en el manifiesto de dependencias bloqueadas del backend (\texttt{composer.lock}), integrando una clave de acceso (NVD API Key) para acelerar la sincronización de registros con la base de datos nacional de vulnerabilidades (NVD) del NIST.
 
-El escáner genera un reporte interactivo en formato HTML que detalla el identificador CVE de cada vulnerabilidad encontrada, la severidad según la escala de puntuación CVSS, el paquete afectado y la versión parcheada recomendada. Este análisis robustece el cumplimiento del estándar OWASP A06:2021, mitigando la inclusión involuntaria de librerías desactualizadas en los entornos transaccional y cliente.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-check-owasp.png}
+    \caption{Evidencia del escaneo de dependencias de composer mediante check OWASP.}
+    \label{fig:evidencia_owasp}
+\end{figure}
+
+El reporte interactivo HTML generado arrojó que, de las \textbf{113 dependencias únicas analizadas}, se identificaron \textbf{18 dependencias vulnerables} que asocian un total de \textbf{274 vulnerabilidades individuales (CVEs)}. Entre los hallazgos críticos detectados se encuentran subcomponentes del framework Symfony como \texttt{var-dumper} (asociando vulnerabilidades de inyección y conflictos de interpretación como CVE-2026-45066 y CVE-2026-45753) y la librería de manejo de errores \texttt{whoops} (v2.18.4). Este diagnóstico aporta visibilidad directa para mitigar el riesgo de vulnerabilidades en componentes de terceros, alineándose al estándar OWASP A06:2021. No se escaneó a nivel de frontend porque al ser Vanilla no existe un nodejs.
 
 \begin{figure}[H]
     \centering
@@ -24,3 +31,4 @@ El escáner genera un reporte interactivo en formato HTML que detalla el identif
     \caption{Evidencia del escaneo de dependencias mediante Snyk.}
     \label{fig:evidencia_snyk}
 \end{figure}
+
