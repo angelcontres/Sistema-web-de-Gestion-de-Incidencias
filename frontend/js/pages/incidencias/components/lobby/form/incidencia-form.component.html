@@ -116,7 +116,9 @@
                     >
                       <option value="">-- Seleccione --</option>
                     </select>
-                    <div class="invalid-feedback">Por favor seleccione una categoría principal.</div>
+                    <div class="invalid-feedback">
+                      Por favor seleccione una categoría principal.
+                    </div>
                   </div>
 
                   <div class="col-12">
@@ -183,168 +185,181 @@
                   <i class="bi bi-geo-alt me-2 text-primary"></i>Ubicación Geográfica
                 </h5>
 
-              <!-- Geolocalización (Botón) -->
-              <div class="d-flex justify-content-start mb-3">
-                <button
-                  type="button"
-                  id="btnObtenerUbicacion"
-                  class="btn btn-success btn-lg fw-semibold px-4 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm"
-                >
-                  <i id="btnObtenerUbicacionIcon" class="bi bi-geo-fill fs-5"></i>
-                  <span
-                    id="btnObtenerUbicacionSpinner"
-                    class="spinner-border spinner-border-sm d-none"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
-                  <span id="btnObtenerUbicacionText">Obtener mi ubicación</span>
-                </button>
-              </div>
-
-              <!-- Mapa de Referencia (Solo Lectura) -->
-              <div class="row g-3 mb-3">
-                <div class="col-12" id="colMapaContainer">
-                  <div
-                    class="rounded-3 border overflow-hidden position-relative shadow-sm"
-                    style="height: 250px"
+                <!-- Geolocalización (Botones) -->
+                <div class="d-flex justify-content-start mb-3 gap-2">
+                  <button
+                    type="button"
+                    id="btnObtenerUbicacion"
+                    class="btn btn-success btn-lg fw-semibold px-4 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm"
                   >
-                    <div id="incidenciaMapa" class="w-100 h-100 bg-light" style="z-index: 1"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Fila con Feedback y Campos de Detalle -->
-              <div class="row g-3">
-                <div class="col-lg-12">
-                  <!-- Indicador minimalista de ubicación -->
-                  <div
-                    id="infoUbicacionMinimalista"
-                    class="p-3 bg-light rounded-3 border border-light-subtle text-dark-emphasis mb-3 shadow-sm d-none"
+                    <i id="btnObtenerUbicacionIcon" class="bi bi-geo-fill fs-5"></i>
+                    <span
+                      id="btnObtenerUbicacionSpinner"
+                      class="spinner-border spinner-border-sm d-none"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    <span id="btnObtenerUbicacionText">Obtener mi ubicación</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="btnSeleccionarMapa"
+                    class="btn btn-outline-success btn-lg fw-semibold px-4 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm"
+                    title="Seleccionar ubicación manualmente"
                   >
-                    <div class="d-flex align-items-start gap-2">
-                      <i class="bi bi-geo-alt-fill text-primary fs-5"></i>
-                      <span id="txtInfoUbicacion" class="fw-medium"
-                        >Ubicación seleccionada: Ninguna</span
-                      >
+                    <i class="bi bi-pin-map-fill fs-5"></i>
+                    <span class="d-none d-md-inline">Seleccionar en el mapa</span>
+                  </button>
+                </div>
+
+                <!-- Mapa de Referencia (Solo Lectura) -->
+                <div class="row g-3 mb-3">
+                  <div class="col-12" id="colMapaContainer">
+                    <div
+                      class="rounded-3 border overflow-hidden position-relative shadow-sm"
+                      style="height: 250px"
+                    >
+                      <div
+                        id="incidenciaMapa"
+                        class="w-100 h-100 bg-light"
+                        style="z-index: 1"
+                      ></div>
                     </div>
                   </div>
                 </div>
 
-                <div class="col-lg-12" id="detallesDireccionContainer">
-                  <div class="row g-2">
-                    <div class="col-12">
-                      <label for="dirDetalle" class="form-label fw-semibold text-dark small"
-                        >Dirección Detallada <span class="text-danger">*</span></label
-                      >
-                      <input
-                        type="text"
-                        id="dirDetalle"
-                        class="form-control rounded-2 border-secondary-subtle"
-                        required
-                        placeholder="Calle, número, intersección"
-                      />
-                      <div class="invalid-feedback">La dirección detallada es obligatoria.</div>
+                <!-- Fila con Feedback y Campos de Detalle -->
+                <div class="row g-3">
+                  <div class="col-lg-12">
+                    <!-- Indicador minimalista de ubicación -->
+                    <div
+                      id="infoUbicacionMinimalista"
+                      class="p-3 bg-light rounded-3 border border-light-subtle text-dark-emphasis mb-3 shadow-sm d-none"
+                    >
+                      <div class="d-flex align-items-start gap-2">
+                        <i class="bi bi-geo-alt-fill text-primary fs-5"></i>
+                        <span id="txtInfoUbicacion" class="fw-medium"
+                          >Ubicación seleccionada: Ninguna</span
+                        >
+                      </div>
                     </div>
+                  </div>
 
-                    <div class="col-6" style="display: none !important">
-                      <label for="dirCodigoPostal" class="form-label fw-semibold text-dark small"
-                        >Código Postal</label
-                      >
-                      <input
-                        type="text"
-                        id="dirCodigoPostal"
-                        class="form-control rounded-2 border-secondary-subtle"
-                        placeholder="123456"
-                      />
-                    </div>
+                  <div class="col-lg-12" id="detallesDireccionContainer">
+                    <div class="row g-2">
+                      <div class="col-12">
+                        <label for="dirDetalle" class="form-label fw-semibold text-dark small"
+                          >Dirección Detallada <span class="text-danger">*</span></label
+                        >
+                        <input
+                          type="text"
+                          id="dirDetalle"
+                          class="form-control rounded-2 border-secondary-subtle"
+                          required
+                          placeholder="Calle, número, intersección"
+                        />
+                        <div class="invalid-feedback">La dirección detallada es obligatoria.</div>
+                      </div>
 
-                    <div class="col-6" style="display: none !important">
-                      <label for="dirPais" class="form-label fw-semibold text-dark small"
-                        >País</label
-                      >
-                      <select id="dirPais" class="form-select rounded-2 border-secondary-subtle">
-                        <option value="">-- Seleccione --</option>
-                      </select>
-                      <div class="invalid-feedback">El país es obligatorio.</div>
-                    </div>
+                      <div class="col-6" style="display: none !important">
+                        <label for="dirCodigoPostal" class="form-label fw-semibold text-dark small"
+                          >Código Postal</label
+                        >
+                        <input
+                          type="text"
+                          id="dirCodigoPostal"
+                          class="form-control rounded-2 border-secondary-subtle"
+                          placeholder="123456"
+                        />
+                      </div>
 
-                    <!-- Cascading Dropdowns para Territorio -->
-                    <div class="col-12 d-none" id="colDirNivel1" style="display: none !important">
-                      <label
-                        id="lblDirNivel1"
-                        for="dirNivel1"
-                        class="form-label fw-semibold text-dark small"
-                        >Provincia</label
-                      >
-                      <select
-                        id="dirNivel1"
-                        class="form-select rounded-2 border-secondary-subtle"
-                        disabled
-                      >
-                        <option value="">-- Seleccione --</option>
-                      </select>
-                    </div>
+                      <div class="col-6" style="display: none !important">
+                        <label for="dirPais" class="form-label fw-semibold text-dark small"
+                          >País</label
+                        >
+                        <select id="dirPais" class="form-select rounded-2 border-secondary-subtle">
+                          <option value="">-- Seleccione --</option>
+                        </select>
+                        <div class="invalid-feedback">El país es obligatorio.</div>
+                      </div>
 
-                    <div class="col-12 d-none" id="colDirNivel2" style="display: none !important">
-                      <label
-                        id="lblDirNivel2"
-                        for="dirNivel2"
-                        class="form-label fw-semibold text-dark small"
-                        >Cantón</label
-                      >
-                      <select
-                        id="dirNivel2"
-                        class="form-select rounded-2 border-secondary-subtle"
-                        disabled
-                      >
-                        <option value="">-- Seleccione --</option>
-                      </select>
-                    </div>
+                      <!-- Cascading Dropdowns para Territorio -->
+                      <div class="col-12 d-none" id="colDirNivel1" style="display: none !important">
+                        <label
+                          id="lblDirNivel1"
+                          for="dirNivel1"
+                          class="form-label fw-semibold text-dark small"
+                          >Provincia</label
+                        >
+                        <select
+                          id="dirNivel1"
+                          class="form-select rounded-2 border-secondary-subtle"
+                          disabled
+                        >
+                          <option value="">-- Seleccione --</option>
+                        </select>
+                      </div>
 
-                    <div class="col-12 d-none" id="colDirNivel3">
-                      <label
-                        id="lblDirNivel3"
-                        for="dirNivel3"
-                        class="form-label fw-semibold text-dark small"
-                        >Parroquia <span class="text-danger">*</span></label
-                      >
-                      <select
-                        id="dirNivel3"
-                        class="form-select rounded-2 border-secondary-subtle"
-                        disabled
-                      >
-                        <option value="">-- Seleccione --</option>
-                      </select>
-                    </div>
+                      <div class="col-12 d-none" id="colDirNivel2" style="display: none !important">
+                        <label
+                          id="lblDirNivel2"
+                          for="dirNivel2"
+                          class="form-label fw-semibold text-dark small"
+                          >Cantón</label
+                        >
+                        <select
+                          id="dirNivel2"
+                          class="form-select rounded-2 border-secondary-subtle"
+                          disabled
+                        >
+                          <option value="">-- Seleccione --</option>
+                        </select>
+                      </div>
 
-                    <div class="col-6" style="display: none !important">
-                      <label for="dirLat" class="form-label fw-semibold text-dark small"
-                        >Latitud</label
-                      >
-                      <input
-                        type="text"
-                        id="dirLat"
-                        class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
-                        readonly
-                      />
-                    </div>
+                      <div class="col-12 d-none" id="colDirNivel3">
+                        <label
+                          id="lblDirNivel3"
+                          for="dirNivel3"
+                          class="form-label fw-semibold text-dark small"
+                          >Parroquia <span class="text-danger">*</span></label
+                        >
+                        <select
+                          id="dirNivel3"
+                          class="form-select rounded-2 border-secondary-subtle"
+                          disabled
+                        >
+                          <option value="">-- Seleccione --</option>
+                        </select>
+                      </div>
 
-                    <div class="col-6" style="display: none !important">
-                      <label for="dirLng" class="form-label fw-semibold text-dark small"
-                        >Longitud</label
-                      >
-                      <input
-                        type="text"
-                        id="dirLng"
-                        class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
-                        readonly
-                      />
+                      <div class="col-6" style="display: none !important">
+                        <label for="dirLat" class="form-label fw-semibold text-dark small"
+                          >Latitud</label
+                        >
+                        <input
+                          type="text"
+                          id="dirLat"
+                          class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
+                          readonly
+                        />
+                      </div>
+
+                      <div class="col-6" style="display: none !important">
+                        <label for="dirLng" class="form-label fw-semibold text-dark small"
+                          >Longitud</label
+                        >
+                        <input
+                          type="text"
+                          id="dirLng"
+                          class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
+                          readonly
+                        />
+                      </div>
+                      <input type="hidden" id="dirPrecisionGps" value="" />
                     </div>
-                    <input type="hidden" id="dirPrecisionGps" value="" />
                   </div>
                 </div>
               </div>
-            </div>
             </div>
           </div>
 

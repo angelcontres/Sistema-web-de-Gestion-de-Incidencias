@@ -132,14 +132,13 @@ export class DashboardComponent extends BaseComponent {
     const container = this.querySelector('#grafanaKpisContainer');
     if (!container) return;
 
-    const GRAFANA_BASE =
-      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:3000'
-        : 'https://grafana.dihm-muertos.site';
+    const GRAFANA_BASE = 'https://grafana.dihm-muertos.site';
 
     const user = AuthService.getCurrentUser();
     const instId = user && user.institucion_id ? user.institucion_id : '';
     const userId = user && user.id ? user.id : '';
+    console.log('ID usuario institucion: ' + instId);
+    console.log('ID usuario actual (sesion): ' + userId);
 
     // Resolver rol por permisos o is_admin
     let role = 'Default';

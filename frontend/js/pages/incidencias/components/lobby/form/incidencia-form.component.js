@@ -46,6 +46,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.btnObtenerUbicacionSpinner = this.querySelector('#btnObtenerUbicacionSpinner');
     this.btnObtenerUbicacionText = this.querySelector('#btnObtenerUbicacionText');
     this.btnObtenerUbicacionIcon = this.querySelector('#btnObtenerUbicacionIcon');
+    this.btnSeleccionarMapa = this.querySelector('#btnSeleccionarMapa');
     this.dirPrecisionGpsInput = this.querySelector('#dirPrecisionGps');
     this.btnSubmit = this.querySelector('#btnSubmit');
     this.btnConfirmarResolucion = this.querySelector('#btnConfirmarResolucion');
@@ -205,6 +206,9 @@ export class IncidenciaFormComponent extends BaseComponent {
     if (this.btnObtenerUbicacion) {
       this.btnObtenerUbicacion.addEventListener('click', () => this.obtenerUbicacionActual());
     }
+    if (this.btnSeleccionarMapa) {
+      this.btnSeleccionarMapa.addEventListener('click', () => this.habilitarMapaInteractivo());
+    }
 
     // Resources/Upload events
     if (this.dropzoneContainer && this.fileInput) {
@@ -317,7 +321,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     const mapDiv = this.querySelector('#incidenciaMapa');
     if (!mapDiv) return;
 
-    // Make map non-interactive (read-only guide)
+    // Make map non-interactive (read-only guide) by default
     this.map = L.map(mapDiv, {
       zoomControl: false,
       dragging: false,
@@ -334,6 +338,49 @@ export class IncidenciaFormComponent extends BaseComponent {
       subdomains: 'abcd',
       maxZoom: 20,
     }).addTo(this.map);
+
+    this.isMapInteractive = false;
+  }
+
+  habilitarMapaInteractivo() {
+    const mapDiv = this.querySelector('#incidenciaMapa');
+    if (!mapDiv) return;
+
+    if (this.map) {
+      this.map.remove();
+    }
+
+    // Initialize with all default interactions enabled
+    this.map = L.map(mapDiv).setView(
+      this.coords ? [this.coords.lat, this.coords.lng] : MAP_CONFIG.DEFAULT_CENTER,
+      this.coords ? 16 : MAP_CONFIG.DEFAULT_ZOOM
+    );
+
+    L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
+      attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
+      subdomains: 'abcd',
+      maxZoom: 20,
+    }).addTo(this.map);
+
+    this.isMapInteractive = true;
+    this.marker = null; // Reset marker reference
+
+    // Restore marker if coords exist
+    if (this.coords) {
+      this.actualizarMarcador(this.coords.lat, this.coords.lng, false);
+    }
+
+    this.map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      this.actualizarMarcador(lat, lng, true);
+    });
+
+    ToastService.info('Mapa habilitado. Haga clic o arrastre el marcador para seleccionar la ubicación.');
+    
+    if (this.btnSeleccionarMapa) {
+      this.btnSeleccionarMapa.classList.replace('btn-outline-primary', 'btn-primary');
+      this.btnSeleccionarMapa.disabled = true;
+    }
   }
 
   actualizarMarcador(lat, lng, triggerGeocode = false) {
@@ -348,8 +395,13 @@ export class IncidenciaFormComponent extends BaseComponent {
       if (this.marker) {
         this.marker.setLatLng([lat, lng]);
       } else {
-        // Marker no arrastrable
-        this.marker = L.marker([lat, lng], { draggable: false }).addTo(this.map);
+        this.marker = L.marker([lat, lng], { draggable: !!this.isMapInteractive }).addTo(this.map);
+        if (this.isMapInteractive) {
+          this.marker.on('dragend', (e) => {
+            const pos = e.target.getLatLng();
+            this.actualizarMarcador(pos.lat, pos.lng, true);
+          });
+        }
       }
       this.map.setView([lat, lng], 16);
     }
