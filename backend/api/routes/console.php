@@ -14,9 +14,9 @@ Schedule::command('etl:run')->everyThirtySeconds();
 // =========================================================================
 
 // Activa: Ejecución automática diaria para analizar vulnerabilidades (VCO)
-Schedule::command('sqa:vco')->everyThirtySeconds();
+Schedule::command('sqa:vco')->everyThirtyMinutes();
 // Pasivas:
-Schedule::command('sqa:dd')->everyThirtySeconds();  // Densidad de Defectos
-Schedule::command('sqa:cf')->everyThirtySeconds();  // Cobertura Funcional
-Schedule::command('sqa:tep')->everyThirtySeconds(); // Tasa de Éxito de Pruebas
+Schedule::command('sqa:dd')->everyThirtyMinutes();  // Densidad de Defectos
+Schedule::command('sqa:cf')->everyThirtyMinutes();  // Cobertura Funcional
+Schedule::command('sqa:tep')->everyTwoHours(); // Tasa de Éxito de Pruebas
 
