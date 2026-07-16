@@ -189,14 +189,6 @@ export class DashboardComponent extends BaseComponent {
         </div>
       </div>
     `;
-
-    // Inyectar el gráfico de provincias si el usuario es Supervisor o Admin
-    const provinciaChartContainer = this.querySelector('#provinciaChartContainer');
-    const iframeProvincia = this.querySelector('#iframe-provincia-chart');
-    if (provinciaChartContainer && iframeProvincia && (role === 'Supervisor' || role === 'Admin')) {
-      provinciaChartContainer.style.display = 'block';
-      iframeProvincia.src = `${dashboardUrl}`;
-    }
   }
 
   renderTopServices(services) {

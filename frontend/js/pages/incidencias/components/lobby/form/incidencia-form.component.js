@@ -42,10 +42,11 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.dirNivel3Select = this.querySelector('#dirNivel3');
     this.dirLatInput = this.querySelector('#dirLat');
     this.dirLngInput = this.querySelector('#dirLng');
-    this.btnBuscarDireccion = this.querySelector('#btnBuscarDireccion');
     this.btnObtenerUbicacion = this.querySelector('#btnObtenerUbicacion');
+    this.btnObtenerUbicacionSpinner = this.querySelector('#btnObtenerUbicacionSpinner');
+    this.btnObtenerUbicacionText = this.querySelector('#btnObtenerUbicacionText');
+    this.btnObtenerUbicacionIcon = this.querySelector('#btnObtenerUbicacionIcon');
     this.dirPrecisionGpsInput = this.querySelector('#dirPrecisionGps');
-    this.direccionSearchInput = this.querySelector('#direccionSearch');
     this.btnSubmit = this.querySelector('#btnSubmit');
     this.btnConfirmarResolucion = this.querySelector('#btnConfirmarResolucion');
     this.divInstitucion = this.querySelector('#divInstitucion');
@@ -153,7 +154,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.dirNivel3Select?.removeAttribute('required');
     }
 
-    // Initialize map
+    // Initialize map in read-only mode
     this.initMap();
 
     // Event listeners
@@ -204,13 +205,6 @@ export class IncidenciaFormComponent extends BaseComponent {
     if (this.btnObtenerUbicacion) {
       this.btnObtenerUbicacion.addEventListener('click', () => this.obtenerUbicacionActual());
     }
-    this.btnBuscarDireccion.addEventListener('click', () => this.buscarDireccionText());
-    this.direccionSearchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.buscarDireccionText();
-      }
-    });
 
     // Resources/Upload events
     if (this.dropzoneContainer && this.fileInput) {
@@ -272,8 +266,20 @@ export class IncidenciaFormComponent extends BaseComponent {
       return;
     }
 
-    const mapLoader = this.querySelector('#mapLoader');
-    if (mapLoader) mapLoader.classList.remove('d-none');
+    const toggleLoading = (isLoading) => {
+      if (this.btnObtenerUbicacion) this.btnObtenerUbicacion.disabled = isLoading;
+      if (isLoading) {
+        this.btnObtenerUbicacionIcon?.classList.add('d-none');
+        this.btnObtenerUbicacionSpinner?.classList.remove('d-none');
+        if (this.btnObtenerUbicacionText) this.btnObtenerUbicacionText.textContent = 'Obteniendo ubicación...';
+      } else {
+        this.btnObtenerUbicacionIcon?.classList.remove('d-none');
+        this.btnObtenerUbicacionSpinner?.classList.add('d-none');
+        if (this.btnObtenerUbicacionText) this.btnObtenerUbicacionText.textContent = 'Obtener mi ubicación';
+      }
+    };
+
+    toggleLoading(true);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -282,15 +288,12 @@ export class IncidenciaFormComponent extends BaseComponent {
           this.dirPrecisionGpsInput.value = accuracy.toFixed(2);
         }
         this.actualizarMarcador(latitude, longitude, false);
-        if (this.map) {
-          this.map.setView([latitude, longitude], 16);
-        }
         await this.autofillDesdeCoordenadas(latitude, longitude);
-        if (mapLoader) mapLoader.classList.add('d-none');
+        toggleLoading(false);
         ToastService.success(`Ubicación obtenida con éxito (Precisión: ${accuracy.toFixed(1)}m).`);
       },
       (error) => {
-        if (mapLoader) mapLoader.classList.add('d-none');
+        toggleLoading(false);
         let msg = 'Error al obtener la geolocalización.';
         if (error.code === error.PERMISSION_DENIED) {
           msg = 'Permiso denegado por el usuario para obtener geolocalización.';
@@ -309,43 +312,46 @@ export class IncidenciaFormComponent extends BaseComponent {
     );
   }
 
-  // --- MAP LOGIC ---
+  // --- MAP & LOCATION LOGIC ---
   initMap() {
     const mapDiv = this.querySelector('#incidenciaMapa');
     if (!mapDiv) return;
 
-    this.map = L.map(mapDiv).setView(MAP_CONFIG.DEFAULT_CENTER, MAP_CONFIG.DEFAULT_ZOOM);
+    // Make map non-interactive (read-only guide)
+    this.map = L.map(mapDiv, {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      tap: false,
+      touchZoom: false
+    }).setView(MAP_CONFIG.DEFAULT_CENTER, MAP_CONFIG.DEFAULT_ZOOM);
 
     L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
       attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
       subdomains: 'abcd',
       maxZoom: 20,
     }).addTo(this.map);
-
-    this.map.on('click', (e) => {
-      const { lat, lng } = e.latlng;
-      this.actualizarMarcador(lat, lng, true);
-    });
   }
 
   actualizarMarcador(lat, lng, triggerGeocode = false) {
-    if (!this.map) return;
-
     const latVal = parseFloat(lat).toFixed(6);
     const lngVal = parseFloat(lng).toFixed(6);
 
-    this.dirLatInput.value = latVal;
-    this.dirLngInput.value = lngVal;
+    if (this.dirLatInput) this.dirLatInput.value = latVal;
+    if (this.dirLngInput) this.dirLngInput.value = lngVal;
     this.coords = { lat: parseFloat(latVal), lng: parseFloat(lngVal) };
 
-    if (this.marker) {
-      this.marker.setLatLng([lat, lng]);
-    } else {
-      this.marker = L.marker([lat, lng], { draggable: true }).addTo(this.map);
-      this.marker.on('dragend', (e) => {
-        const pos = e.target.getLatLng();
-        this.actualizarMarcador(pos.lat, pos.lng, true);
-      });
+    if (this.map) {
+      if (this.marker) {
+        this.marker.setLatLng([lat, lng]);
+      } else {
+        // Marker no arrastrable
+        this.marker = L.marker([lat, lng], { draggable: false }).addTo(this.map);
+      }
+      this.map.setView([lat, lng], 16);
     }
 
     if (triggerGeocode) {
@@ -366,9 +372,6 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   async autofillDesdeCoordenadas(lat, lng) {
-    const mapLoader = this.querySelector('#mapLoader');
-    if (mapLoader) mapLoader.classList.remove('d-none');
-
     try {
       const data = await UbicacionesService.reverseGeocode(lat, lng);
       const address = data.address || {};
@@ -471,8 +474,6 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
     } catch (e) {
       console.warn('Error autofilling from reverse geocoding:', e);
-    } finally {
-      if (mapLoader) mapLoader.classList.add('d-none');
     }
   }
 
@@ -727,17 +728,22 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   actualizarIndicadorMinimalista() {
-    const paisId = this.dirPaisSelect.value;
-    const paisNombre = this.paisesList.find((p) => p.id == paisId)?.nombre || '';
     const detalle = this.dirDetalleInput.value;
-    const cp = this.dirCodigoPostalInput.value;
-    const lat = this.coords?.lat || '';
-    const lng = this.coords?.lng || '';
+    const n3Select = this.querySelector('#dirNivel3');
+    let parroquiaNombre = '';
+    
+    if (n3Select && n3Select.options.length > 0 && n3Select.selectedIndex > 0) {
+      parroquiaNombre = n3Select.options[n3Select.selectedIndex].text;
+    }
 
     const txt = this.querySelector('#txtInfoUbicacion');
     if (txt) {
       if (detalle) {
-        txt.innerHTML = `<strong>País:</strong> ${paisNombre} | <strong>Dirección:</strong> ${detalle} | <strong>C.P.:</strong> ${cp || 'N/A'} | <strong>Coordenadas:</strong> (${lat}, ${lng})`;
+        let txtInfo = `<strong>Dirección:</strong> ${detalle}`;
+        if (parroquiaNombre) {
+          txtInfo += ` | <strong>Parroquia:</strong> ${parroquiaNombre}`;
+        }
+        txt.innerHTML = txtInfo;
       } else {
         txt.textContent = 'Ninguna ubicación seleccionada.';
       }
@@ -758,40 +764,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     });
   }
 
-  async buscarDireccionText() {
-    const query = this.direccionSearchInput.value.trim();
-    if (!query) return;
 
-    const mapLoader = this.querySelector('#mapLoader');
-    if (mapLoader) mapLoader.classList.remove('d-none');
-
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (data && data.length > 0) {
-        const item = data[0];
-        const lat = parseFloat(item.lat);
-        const lng = parseFloat(item.lon);
-
-        this.actualizarMarcador(lat, lng, false);
-        this.map.setView([lat, lng], 14);
-
-        // Populate fields
-        this.dirDetalleInput.value = item.display_name;
-        // Trigger autofill detail based on the coordinates
-        await this.autofillDesdeCoordenadas(lat, lng);
-      } else {
-        ToastService.error('No se encontraron resultados para la dirección buscada.');
-      }
-    } catch (e) {
-      console.error(e);
-      ToastService.error('Error al buscar dirección.');
-    } finally {
-      if (mapLoader) mapLoader.classList.add('d-none');
-    }
-  }
 
   // --- CATALOGS AND DATA ---
   async cargarCatalogosIniciales() {
@@ -1292,16 +1265,22 @@ export class IncidenciaFormComponent extends BaseComponent {
         recursos: this.recursosFiles.filter((f) => !f.id).map((f) => f.base64),
       };
 
+      let redirectId = id;
       if (id) {
         await IncidenciaService.update(id, incPayload);
         ToastService.success('Incidencia actualizada con éxito.');
       } else {
-        await IncidenciaService.create(incPayload);
+        const result = await IncidenciaService.create(incPayload);
+        redirectId = result?.data?.id || result?.id || null;
         ToastService.success('Incidencia registrada con éxito.');
       }
 
       setTimeout(() => {
-        window.location.hash = '#/incidencias';
+        if (redirectId) {
+          window.location.hash = `#/tramites/estado-individual?id=${redirectId}`;
+        } else {
+          window.location.hash = '#/incidencias';
+        }
       }, 1500);
     } catch (err) {
       console.error(err);
