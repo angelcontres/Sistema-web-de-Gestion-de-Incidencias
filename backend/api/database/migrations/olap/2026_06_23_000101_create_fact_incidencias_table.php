@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('metrics.fact_incidencias', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedInteger('tiempo_id')->index();
+            $table->unsignedBigInteger('tiempo_id')->index();
             $table->foreign('tiempo_id')->references('id')->on('metrics.dim_tiempo')->cascadeOnDelete();
 
             $table->foreignId('territorio_id')->constrained('metrics.dim_territorio')->cascadeOnDelete();

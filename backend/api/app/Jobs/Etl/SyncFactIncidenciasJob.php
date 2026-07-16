@@ -44,7 +44,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
         $records = [];
         foreach ($incidencias as $inc) {
             $createdTime = TimezoneService::toLocal($inc->created_at);
-            $tiempoId = (int)$createdTime->format('YmdH');
+            $tiempoId = (int)$createdTime->format('YmdHis');
 
             // Asegurarse de que el tiempo_id exista en dim_tiempo, si no, crear uno rápido
             $this->ensureTiempoIdExists($tiempoId, $createdTime);

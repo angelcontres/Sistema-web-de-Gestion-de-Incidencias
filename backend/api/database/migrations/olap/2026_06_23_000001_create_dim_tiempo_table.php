@@ -12,7 +12,7 @@ return new class extends Migration
         DB::statement('CREATE SCHEMA IF NOT EXISTS metrics');
 
         Schema::create('metrics.dim_tiempo', function (Blueprint $table) {
-            $table->unsignedInteger('id')->primary(); // formato YYYYMMDDHH
+            $table->unsignedBigInteger('id')->primary(); // formato YYYYMMDDHHMMSS
             $table->timestamp('fecha');
             $table->unsignedSmallInteger('anio');
             $table->unsignedTinyInteger('mes');
