@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Solo ejecutamos la alteración si las tablas de OLAP ya existen (como en producción)
         if (Schema::hasTable('metrics.dim_tiempo') && Schema::hasTable('metrics.fact_incidencias')) {
             
@@ -30,6 +34,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         if (Schema::hasTable('metrics.dim_tiempo') && Schema::hasTable('metrics.fact_incidencias')) {
             Schema::table('metrics.fact_incidencias', function (Blueprint $table) {
                 $table->dropForeign(['tiempo_id']);
