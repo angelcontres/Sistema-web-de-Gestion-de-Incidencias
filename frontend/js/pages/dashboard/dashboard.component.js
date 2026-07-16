@@ -158,9 +158,9 @@ export class DashboardComponent extends BaseComponent {
     // Usamos kiosk=1 para ocultar menús nativos de Grafana, u opcionalmente kiosk=tv si quieres conservar la barra de variables.
     const GRAFANA_DASHBOARDS = {
       Admin: `${GRAFANA_BASE}/d/adf7t6b/prod-incidents-admin?orgId=1&from=now-6h&to=now&timezone=browser&theme=light&refresh=10s&kiosk&embed=v2`,
-      Supervisor: `${GRAFANA_BASE}/d/addt7bq/prod-incidents-supervisor?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=5m&kiosk&embed=v2`,
-      Institucion: `${GRAFANA_BASE}/d/ad6n9wt/prod-incidents-institucion?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=10s&kiosk&embed=v2&var-institucion_id=${instId}&var-usuario_asignado_id=${userId}`,
-      Ciudadano: `${GRAFANA_BASE}/d/adfds7b/prod-incidents-ciudadano?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=30s&kiosk&embed=v2&var-usuario_reporta_id=${userId}`,
+      Supervisor: `${GRAFANA_BASE}/d/addt7bq/prod-incidents-supervisor?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=5m&kiosk&embed=v2&var_usuario_asignado_id=${userId}`,
+      Institucion: `${GRAFANA_BASE}/d/ad6n9wt/prod-incidents-institucion?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=10s&kiosk&embed=v2&var_institucion_id=${instId}&var_usuario_asignado_id=${userId}`,
+      Ciudadano: `${GRAFANA_BASE}/d/adfds7b/prod-incidents-ciudadano?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=30s&kiosk&embed=v2&var_usuario_reporta_id=${userId}`,
       Default: `${GRAFANA_BASE}/d/addt7bq/prod-incidents-supervisor?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=5m&kiosk&embed=v2`,
     };
 
