@@ -80,7 +80,9 @@ export class DashboardComponent extends BaseComponent {
         if (menuStr) {
           menuList = JSON.parse(menuStr);
         }
-      } catch (e) { /* empty */ }
+      } catch (e) {
+        /* empty */
+      }
 
       if (!menuList || menuList.length === 0) {
         const response = await apiRequest('/me/menu', { method: 'GET' });
@@ -157,8 +159,9 @@ export class DashboardComponent extends BaseComponent {
     const GRAFANA_DASHBOARDS = {
       Admin: `${GRAFANA_BASE}/d/adf7t6b/prod-incidents-admin?orgId=1&from=now-6h&to=now&timezone=browser&theme=light&refresh=10s&kiosk&embed=v2`,
       Supervisor: `${GRAFANA_BASE}/d/addt7bq/prod-incidents-supervisor?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=5m&kiosk&embed=v2`,
-      Institucion: `${GRAFANA_BASE}/d/ad6n9wt/prod-incidents-institucion?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=10s&kiosk&embed=v2`,
-      Ciudadano: `${GRAFANA_BASE}/d/adfds7b/prod-incidents-ciudadano?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=30s&kiosk&embed=v2`,
+      Institucion: `${GRAFANA_BASE}/d/ad6n9wt/prod-incidents-institucion?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=10s&kiosk&embed=v2&var-institucion_id=${instId}&var-usuario_asignado_id=${userId}`,
+      Ciudadano: `${GRAFANA_BASE}/d/adfds7b/prod-incidents-ciudadano?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=30s&kiosk&embed=v2&var-usuario_reporta_id=${userId}`,
+      Default: `${GRAFANA_BASE}/d/addt7bq/prod-incidents-supervisor?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=5m&kiosk&embed=v2`,
     };
 
     // Si tuvieras un único dashboard unificado con pestañas (tabs) controladas por una variable 'dtab':
@@ -192,7 +195,7 @@ export class DashboardComponent extends BaseComponent {
     const iframeProvincia = this.querySelector('#iframe-provincia-chart');
     if (provinciaChartContainer && iframeProvincia && (role === 'Supervisor' || role === 'Admin')) {
       provinciaChartContainer.style.display = 'block';
-      iframeProvincia.src = `${GRAFANA_BASE}/d-solo/ad79j7w/incidents-dashboards?orgId=1&from=1783884717625&to=1783971317625&timezone=browser&dtab=Supervisor&var-custom0=&var-query0=&refresh=10s&theme=light&panelId=panel-25`;
+      iframeProvincia.src = `${dashboardUrl}`;
     }
   }
 
