@@ -405,12 +405,21 @@
                 O haga clic para explorar sus archivos locales (formatos JPG, PNG, WEBP)
               </p>
               <input type="file" id="fileInput" class="d-none" multiple accept="image/*" />
-              <button
-                type="button"
-                class="btn btn-outline-primary btn-sm fw-semibold rounded-2 px-3"
-              >
-                Seleccionar Imágenes
-              </button>
+              <div class="d-flex gap-2 justify-content-center flex-wrap">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm fw-semibold rounded-2 px-3"
+                >
+                  Seleccionar Imágenes
+                </button>
+                <button
+                  type="button"
+                  id="btnTestImagen"
+                  class="btn btn-outline-secondary btn-sm fw-semibold rounded-2 px-3"
+                >
+                  <i class="bi bi-bug me-1"></i> Cargar Imagen de Prueba
+                </button>
+              </div>
             </div>
 
             <!-- Listado de Archivos Adjuntos / Previsualizaciones -->
@@ -427,7 +436,7 @@
                 <i class="bi bi-database-check text-info fs-5"></i>
                 <div class="small">
                   <span class="fw-semibold">Compresión de imágenes:</span> Por favor, suba imágenes
-                  con un máximo de 5MB
+                  con un máximo de 10MB
                 </div>
               </div>
             </div>

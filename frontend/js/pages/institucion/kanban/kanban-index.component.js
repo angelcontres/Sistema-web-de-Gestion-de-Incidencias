@@ -8,6 +8,7 @@ export class KanbanIndexComponent extends BaseComponent {
   constructor() {
     super('js/pages/institucion/kanban/kanban-index.component.html');
     this.incidencias = [];
+    this.recursosFiles = [];
   }
 
   async onInit() {
@@ -34,6 +35,14 @@ export class KanbanIndexComponent extends BaseComponent {
     const btnConfirmar = this.querySelector('#btn-confirmar-resolver');
     if (btnConfirmar) {
       btnConfirmar.addEventListener('click', () => this.resolverIncidencia());
+    }
+
+    const dropzone = this.querySelector('#dropzoneContainerKanban');
+    const fileInput = this.querySelector('#fileInputKanban');
+    if (dropzone && fileInput) {
+      dropzone.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => this.handleFileSelection(e));
+      this.setupDropzoneDragAndDrop(dropzone);
     }
   }
 
@@ -131,6 +140,8 @@ export class KanbanIndexComponent extends BaseComponent {
     this.querySelector('#resolver-incidencia-version').value = version;
     this.querySelector('#resolver-comentario').value = '';
     this.querySelector('#char-count').textContent = '0';
+    this.recursosFiles = [];
+    this.renderThumbnails();
 
     const modalEl = this.querySelector('#modalResolver');
     if (modalEl && window.bootstrap) {
@@ -149,6 +160,11 @@ export class KanbanIndexComponent extends BaseComponent {
       return;
     }
 
+    if (this.recursosFiles.length === 0) {
+      ToastService.warning('Debes adjuntar al menos una imagen de evidencia.');
+      return;
+    }
+
     try {
       const btnConfirmar = this.querySelector('#btn-confirmar-resolver');
       const originalText = btnConfirmar.innerHTML;
@@ -156,10 +172,13 @@ export class KanbanIndexComponent extends BaseComponent {
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
       btnConfirmar.disabled = true;
 
+      const base64Recursos = this.recursosFiles.map((f) => f.base64);
+
       await IncidenciaService.update(id, {
         estado_id: 4, // Resuelto
         version: version,
-        comentario_estado: comentario,
+        comentario_estado: '[RESOLUCIÓN] ' + comentario,
+        recursos: base64Recursos,
       });
 
       ToastService.success('Incidencia marcada como resuelta.');
@@ -206,6 +225,174 @@ export class KanbanIndexComponent extends BaseComponent {
       errorAlert.classList.remove('d-none');
       setTimeout(() => errorAlert.classList.add('d-none'), 5000);
     }
+  }
+
+  // --- EVIDENCE FILE UPLOAD LOGIC ---
+  setupDropzoneDragAndDrop(dropzone) {
+    ['dragenter', 'dragover'].forEach((eventName) => {
+      dropzone.addEventListener(
+        eventName,
+        (e) => {
+          e.preventDefault();
+          dropzone.classList.add('border-primary', 'bg-primary-soft');
+        },
+        false
+      );
+    });
+
+    ['dragleave', 'drop'].forEach((eventName) => {
+      dropzone.addEventListener(
+        eventName,
+        (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('border-primary', 'bg-primary-soft');
+        },
+        false
+      );
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      this.processFiles(files);
+    });
+  }
+
+  handleFileSelection(e) {
+    const files = e.target.files;
+    this.processFiles(files);
+    e.target.value = ''; // Reset input to allow selecting the same file again
+  }
+
+  async processFiles(files) {
+    const validFiles = Array.from(files).filter((file) => {
+      if (!file.type.startsWith('image/')) {
+        ToastService.warning('Solo se permiten archivos de imagen.');
+        return false;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        ToastService.warning('La imagen no debe superar el límite de 10 MB.');
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    for (const file of validFiles) {
+      try {
+        const base64Data = await this.convertToWebP(file);
+        let fileName = file.name;
+        const dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex !== -1) {
+          fileName = fileName.substring(0, dotIndex) + '.webp';
+        } else {
+          fileName += '.webp';
+        }
+
+        const fileObj = {
+          name: fileName,
+          size: Math.round(base64Data.length * 0.75),
+          type: 'image/webp',
+          base64: base64Data,
+          compressed: true,
+        };
+
+        this.recursosFiles.push(fileObj);
+      } catch (e) {
+        console.error('Error al comprimir la imagen:', e);
+        // Fallback
+        await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            this.recursosFiles.push({
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              base64: reader.result,
+              compressed: false,
+            });
+            resolve();
+          };
+        });
+      }
+    }
+    this.renderThumbnails();
+  }
+
+  convertToWebP(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1080;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
+          resolve(webpDataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  }
+
+  renderThumbnails() {
+    const container = this.querySelector('#thumbnailsContainerKanban');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    this.recursosFiles.forEach((file, index) => {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = `
+        <div class="card h-100 border rounded-3 overflow-hidden position-relative shadow-sm">
+          <img src="\${file.base64}" class="card-img-top object-fit-cover" style="height: 120px;" alt="\${file.name}" />
+          <div class="card-body p-2 d-flex flex-column justify-content-between">
+            <div class="text-truncate small fw-medium" title="\${file.name}">\${file.name}</div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span class="badge bg-success-soft text-success" style="font-size: 0.7rem;">.webp</span>
+              <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-file" data-index="\${index}">
+                <i class="bi bi-trash small"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      col.querySelector('.btn-delete-file').addEventListener('click', (e) => {
+        const idx = parseInt(e.currentTarget.getAttribute('data-index'));
+        this.recursosFiles.splice(idx, 1);
+        this.renderThumbnails();
+      });
+
+      container.appendChild(col);
+    });
   }
 }
 

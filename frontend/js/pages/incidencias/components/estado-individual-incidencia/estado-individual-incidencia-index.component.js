@@ -85,6 +85,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   async cargarDetalles() {
     try {
       const inc = await IncidenciaService.getById(this.incidenciaId);
+      this.currentIncidencia = inc;
       this.renderDetalles(inc);
     } catch (error) {
       console.error('Error cargando detalles:', error);
@@ -374,10 +375,42 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       editadoHtml = '<span class="ms-2 fst-italic" style="font-size: 0.7em;">(Editado)</span>';
     }
 
+    let isStateChange = (comentario === 'Cambio de estado' || comentario === 'Resolución confirmada por el solicitante/operador.');
+    
+    if (comentario.startsWith('[RESOLUCIÓN] ')) {
+      isStateChange = true;
+      comentario = comentario.substring(13);
+    }
+
     // Badge for state change if applicable
     let estadoBadge = '';
-    if (item.estado && comentario === 'Cambio de estado') {
-      estadoBadge = `<div class="mt-1"><span class="text-dark small fw-bold">${item.estado.nombre}</span></div>`;
+    if (item.estado && isStateChange) {
+      let evidenciaHtml = '';
+      if (
+        item.estado.nombre === 'Resuelto' &&
+        this.currentIncidencia &&
+        this.currentIncidencia.recursos
+      ) {
+        const imagenes = this.currentIncidencia.recursos.filter((r) =>
+          r.url.match(/\.(jpeg|jpg|gif|png|webp)$/i)
+        );
+        if (imagenes.length > 0) {
+          const lastImage = imagenes[imagenes.length - 1];
+          const fileName =
+            lastImage.url.substring(lastImage.url.lastIndexOf('/') + 1) || 'evidencia';
+          evidenciaHtml = `
+            <div class="mt-2">
+              <a href="${lastImage.url}" target="_blank" class="text-decoration-none text-dark d-inline-block">
+                <div class="border rounded p-2 text-center bg-light" style="width: 100px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
+                  <i class="bi bi-image text-muted mb-1" style="font-size: 1.5rem;"></i>
+                  <div class="small text-truncate" style="font-size: 0.7rem;" title="${fileName}">Evidencia</div>
+                </div>
+              </a>
+            </div>
+          `;
+        }
+      }
+      estadoBadge = `<div class="mt-1"><span class="text-dark small fw-bold">${item.estado.nombre}</span>${evidenciaHtml}</div>`;
     }
 
     div.className = `d-flex flex-column ${alignClass} mb-2`;

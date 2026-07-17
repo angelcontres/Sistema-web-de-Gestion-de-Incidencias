@@ -212,9 +212,20 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     // Resources/Upload events
     if (this.dropzoneContainer && this.fileInput) {
-      this.dropzoneContainer.addEventListener('click', () => this.fileInput.click());
+      this.dropzoneContainer.addEventListener('click', (e) => {
+        if (e.target.closest('#btnTestImagen')) return;
+        this.fileInput.click();
+      });
       this.fileInput.addEventListener('change', (e) => this.handleFileSelection(e));
       this.setupDropzoneDragAndDrop();
+
+      const btnTestImagen = this.querySelector('#btnTestImagen');
+      if (btnTestImagen) {
+        btnTestImagen.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.cargarImagenDePrueba();
+        });
+      }
     }
 
     // Load initial dropdown data
@@ -1379,15 +1390,14 @@ export class IncidenciaFormComponent extends BaseComponent {
     const files = e.target.files;
     this.processFiles(files);
   }
-
   async processFiles(files) {
     const validFiles = Array.from(files).filter((file) => {
       if (!file.type.startsWith('image/')) {
         ToastService.warning('Solo se permiten archivos de imagen.');
         return false;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        ToastService.warning('La imagen no debe superar el límite de 5 MB.');
+      if (file.size > 10 * 1024 * 1024) {
+        ToastService.warning('La imagen no debe superar el límite de 10 MB.');
         return false;
       }
       return true;
@@ -1415,21 +1425,85 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     if (!isConfirmed) return;
 
-    validFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
+    for (const file of validFiles) {
+      try {
+        const base64Data = await this.convertToWebP(file);
+        let fileName = file.name;
+        const dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex !== -1) {
+          fileName = fileName.substring(0, dotIndex) + '.webp';
+        } else {
+          fileName += '.webp';
+        }
+
         const fileObj = {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          base64: reader.result,
-          compressed: true, // Mock compression flag (representing .webp automatic client compression)
+          name: fileName,
+          size: Math.round(base64Data.length * 0.75),
+          type: 'image/webp',
+          base64: base64Data,
+          compressed: true,
         };
 
         this.recursosFiles.push(fileObj);
-        this.renderThumbnails();
+      } catch (e) {
+        console.error('Error al comprimir la imagen:', e);
+        // Fallback to original file read
+        await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            this.recursosFiles.push({
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              base64: reader.result,
+              compressed: false,
+            });
+            resolve();
+          };
+        });
+      }
+    }
+    this.renderThumbnails();
+  }
+
+  convertToWebP(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1080;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
+          resolve(webpDataUrl);
+        };
+        img.onerror = (err) => reject(err);
       };
+      reader.onerror = (err) => reject(err);
     });
   }
 
@@ -1462,6 +1536,29 @@ export class IncidenciaFormComponent extends BaseComponent {
 
       this.thumbnailsContainer.appendChild(col);
     });
+  }
+
+  cargarImagenDePrueba() {
+    const mockBase64 = 'data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==';
+    const fileObj = {
+      name: 'imagen-de-prueba.webp',
+      size: 40,
+      type: 'image/webp',
+      base64: mockBase64,
+      compressed: true,
+    };
+    
+    // Check limit
+    const currentUser = AuthService.getCurrentUser();
+    const maxFiles = currentUser?.max_files || 5;
+    if (this.recursosFiles.length >= maxFiles) {
+      ToastService.warning(`No puede subir más de ${maxFiles} archivos.`);
+      return;
+    }
+
+    this.recursosFiles.push(fileObj);
+    this.renderThumbnails();
+    ToastService.success('Imagen de prueba cargada. Listo para guardar.');
   }
 
   limpiarErrores() {

@@ -65,6 +65,18 @@
             <textarea class="form-control" id="resolver-comentario" rows="3" placeholder="Detalla cómo se resolvió la incidencia..." required maxlength="200"></textarea>
             <div class="form-text text-end"><span id="char-count">0</span>/200</div>
           </div>
+          <!-- Adjuntar evidencias -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Evidencias (Obligatorio)</label>
+            <div id="dropzoneContainerKanban" class="border rounded-3 p-4 text-center cursor-pointer mb-2" style="border-style: dashed !important; background-color: #f8f9fa;">
+              <i class="bi bi-cloud-arrow-up display-6 text-primary mb-2"></i>
+              <p class="mb-0 text-dark fw-medium">Arrastra tus imágenes aquí o haz clic para seleccionar</p>
+              <span class="text-muted small mt-1">Máx. 10 MB por archivo. (Se comprimirán a WebP)</span>
+              <input type="file" id="fileInputKanban" class="d-none" accept="image/*" multiple />
+            </div>
+            <!-- Contenedor para previsualizaciones -->
+            <div id="thumbnailsContainerKanban" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2 mt-3"></div>
+          </div>
         </form>
       </div>
       <div class="modal-footer border-0">
