@@ -99,6 +99,10 @@ class RoleSeeder extends Seeder
                 PermissionsEnum::READ_INCIDENCIAS,
                 PermissionsEnum::CREATE_INCIDENCIAS,
                 PermissionsEnum::READ_HISTORIAL,
+                PermissionsEnum::READ_PAISES,
+                PermissionsEnum::READ_TERRITORIOS,
+                PermissionsEnum::READ_DIRECCIONES,
+                PermissionsEnum::CREATE_DIRECCIONES,
             ]);
         }
 

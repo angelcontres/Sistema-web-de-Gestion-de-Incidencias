@@ -133,8 +133,14 @@ export class IncidenciaFormComponent extends BaseComponent {
         (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
       );
     if (isCitizen) {
-      const detContainer = this.querySelector('#detallesDireccionContainer');
-      if (detContainer) detContainer.classList.add('d-none');
+      const colNivel1 = this.querySelector('#colDirNivel1');
+      if (colNivel1) colNivel1.style.setProperty('display', 'none', 'important');
+
+      const colNivel2 = this.querySelector('#colDirNivel2');
+      if (colNivel2) colNivel2.style.setProperty('display', 'none', 'important');
+
+      const colNivel3 = this.querySelector('#colDirNivel3');
+      if (colNivel3) colNivel3.style.setProperty('display', 'none', 'important');
 
       const colMapa = this.querySelector('#colMapaContainer');
       if (colMapa) {
@@ -480,8 +486,8 @@ export class IncidenciaFormComponent extends BaseComponent {
           );
 
           // Obtener la ubicación (y parroquia) más cercana. 
-          // Puede ajustarse un radio máximo (ej. dist <= 10) si no se desea que asigne direcciones muy lejanas.
-          if (dist < minDistance) {
+          // Ajustamos un radio máximo de 50 metros (0.05 km) para evitar asignar direcciones muy lejanas.
+          if (dist < minDistance && dist <= 0.05) {
             minDistance = dist;
             matchedDbDir = d;
           }
