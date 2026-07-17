@@ -97,13 +97,13 @@ export class DashboardComponent extends BaseComponent {
         .map(
           (menu) => `
         <div class="col-6 col-md-4 col-lg-3">
-          <a href="${menu.ruta || '#/'}" class="card border border-light shadow-sm rounded-3 text-decoration-none stat-card-hover bg-white text-dark h-100">
-            <div class="card-body p-3 d-flex align-items-center gap-3">
-              <div class="bg-primary-soft rounded-3 p-2.5 text-primary d-inline-flex">
-                <i class="${menu.icono || 'bi bi-grid'} fs-5"></i>
+          <a href="${menu.ruta || '#/'}" class="premium-card text-decoration-none d-block h-100 py-3 px-4">
+            <div class="d-flex align-items-center gap-3">
+              <div class="bg-primary-soft rounded-circle p-3 text-primary d-inline-flex justify-content-center align-items-center shadow-sm" style="width: 48px; height: 48px;">
+                <i class="${menu.icono || 'bi bi-grid'} fs-4"></i>
               </div>
               <div class="text-start">
-                <span class="fw-bold small d-block" style="letter-spacing: -0.01em; line-height: 1.2;">${menu.nombre}</span>
+                <span class="fw-bolder text-dark d-block" style="letter-spacing: -0.01em; line-height: 1.2;">${menu.nombre}</span>
               </div>
             </div>
           </a>
@@ -176,12 +176,12 @@ export class DashboardComponent extends BaseComponent {
 
     container.innerHTML = `
       <div class="w-100">
-        <div class="card border-0 shadow-sm rounded-4 bg-transparent overflow-hidden" style="height: 100vh; max-height: 100vh;">
+        <div class="premium-card p-0 bg-transparent overflow-hidden" style="height: 100vh; max-height: 100vh;">
           <iframe 
             src="${dashboardUrl}" 
             width="100%" 
             height="100%" 
-            style="border: none; display: block; width: 100%; height: 100%;" 
+            style="border: none; display: block; width: 100%; height: 100%; border-radius: var(--radius-xl);" 
             frameborder="0"
             allowtransparency="true">
           </iframe>
@@ -203,12 +203,12 @@ export class DashboardComponent extends BaseComponent {
       .map(
         (service) => `
       <div>
-        <div class="d-flex justify-content-between text-secondary small fw-bold mb-1">
-          <span>${service.nombre}</span>
-          <span class="text-dark">${service.porcentaje}%</span>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-secondary fw-semibold" style="font-size: 0.85rem;">${service.nombre}</span>
+          <span class="badge bg-secondary-soft text-dark fw-bolder">${service.porcentaje}%</span>
         </div>
-        <div class="progress rounded-pill" style="height: 8px;">
-          <div class="progress-bar bg-${service.color}" role="progressbar" style="width: ${service.porcentaje}%" aria-valuenow="${service.porcentaje}" aria-valuemin="0" aria-valuemax="100"></div>
+        <div class="progress rounded-pill shadow-sm" style="height: 6px; background-color: var(--border-light);">
+          <div class="progress-bar bg-${service.color} rounded-pill" role="progressbar" style="width: ${service.porcentaje}%" aria-valuenow="${service.porcentaje}" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
       </div>
     `

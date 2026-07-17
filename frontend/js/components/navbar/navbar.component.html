@@ -1,41 +1,39 @@
 <nav
   id="navbarContainer"
-  class="navbar navbar-expand-lg navbar-dark custom-navbar shadow-sm py-3 d-none"
+  class="navbar navbar-expand-lg navbar-dark custom-navbar shadow-sm py-2 d-none"
 >
-  <div class="container-fluid">
+  <div class="container-fluid px-3">
     <div class="d-flex align-items-center gap-2">
       <button
         id="sidebarToggleBtn"
-        class="btn btn-link text-white p-0 border-0 me-2"
+        class="btn btn-link text-white p-1 border-0 me-1"
         type="button"
         aria-label="Alternar menú lateral"
       >
         <i class="bi bi-list fs-3"></i>
       </button>
 
-      <a class="navbar-brand fw-bold d-flex align-items-center gap-2 mb-0" href="#/">
-        <span
-          class="bg-primary px-2 py-1 rounded text-white"
-          style="padding: 0.2rem 0.6rem; border-radius: 6px"
-          >G</span
-        >
-        <span>GestorIncidencias</span>
+      <a class="navbar-brand fw-bolder d-flex align-items-center gap-2 mb-0" href="#/" style="letter-spacing: -0.02em;">
+        <div class="d-flex align-items-center justify-content-center bg-primary text-white rounded-3 shadow-sm" style="width: 34px; height: 34px; font-size: 1.1rem;">
+          <i class="bi bi-shield-check"></i>
+        </div>
+        <span class="d-none d-sm-inline ms-1">GestorIncidencias</span>
       </a>
     </div>
 
     <div class="d-flex align-items-center gap-3 ms-auto">
       <!-- Notificaciones (Siempre Visibles) -->
       <a
-        class="nav-link text-white position-relative"
-        style="padding: 0.25rem;"
+        class="nav-link text-white position-relative hover-scale"
+        style="padding: 0.25rem; transition: transform 0.2s ease;"
         href="#"
         role="button"
         aria-label="Notificaciones"
         title="Notificaciones"
       >
-        <i class="bi bi-bell fs-5"></i>
+        <i class="bi bi-bell fs-5 opacity-75"></i>
         <span
-          class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"
+          class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle animate-pulse"
         >
           <span class="visually-hidden">Nuevas notificaciones</span>
         </span>
@@ -66,28 +64,30 @@
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              <i class="bi bi-person-circle fs-5"></i>
-              <span id="navUserName" class="fw-medium">Usuario</span>
+              <div class="bg-secondary-soft rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border: 1px solid rgba(255,255,255,0.1);">
+                <i class="bi bi-person-fill fs-6"></i>
+              </div>
+              <span id="navUserName" class="fw-medium small ms-1">Usuario</span>
             </a>
             <ul
-              class="dropdown-menu dropdown-menu-end shadow-sm mt-3 custom-dropdown"
+              class="dropdown-menu dropdown-menu-end shadow-lg mt-3 custom-dropdown border-0"
               aria-labelledby="navbarDropdownMenuLink"
             >
               <li>
-                <a class="dropdown-item d-flex align-items-center gap-2" href="#/"
-                  ><i class="bi bi-person"></i> Mi perfil</a
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#/"
+                  ><i class="bi bi-person text-muted"></i> Mi perfil</a
                 >
               </li>
               <li>
-                <a class="dropdown-item d-flex align-items-center gap-2" href="#/"
-                  ><i class="bi bi-gear"></i> Configuración</a
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#/"
+                  ><i class="bi bi-gear text-muted"></i> Configuración</a
                 >
               </li>
-              <li><hr class="dropdown-divider" /></li>
+              <li><hr class="dropdown-divider opacity-25" /></li>
               <li>
                 <button
                   id="logoutBtn"
-                  class="dropdown-item d-flex align-items-center gap-2 text-danger w-100 text-start border-0 bg-transparent"
+                  class="dropdown-item d-flex align-items-center gap-2 text-danger w-100 text-start py-2"
                 >
                   <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                 </button>

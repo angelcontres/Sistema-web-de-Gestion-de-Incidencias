@@ -1,12 +1,12 @@
-<div class="toast align-items-center border-0 mb-2 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+<div class="toast align-items-center border-0 mb-3 shadow-lg rounded-4 overflow-hidden" role="alert" aria-live="assertive" aria-atomic="true" style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background-color: rgba(255,255,255,0.92);">
   <div class="d-flex">
-    <div class="toast-body d-flex align-items-center gap-2 w-100">
-      <i class="bi fs-5" id="toast-icon"></i>
+    <div class="toast-body d-flex align-items-center gap-3 w-100 p-3">
+      <i class="bi fs-4" id="toast-icon"></i>
       <div class="flex-grow-1">
-        <strong id="toast-title"></strong>
-        <div class="small lh-sm mt-1" id="toast-message"></div>
+        <strong id="toast-title" class="text-dark fw-bold"></strong>
+        <div class="small lh-sm mt-1 text-secondary fw-medium" id="toast-message"></div>
       </div>
-      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" id="toast-btn-close"></button>
+      <button type="button" class="btn-close me-1 m-auto opacity-75" data-bs-dismiss="toast" aria-label="Close" id="toast-btn-close"></button>
     </div>
   </div>
 </div>
