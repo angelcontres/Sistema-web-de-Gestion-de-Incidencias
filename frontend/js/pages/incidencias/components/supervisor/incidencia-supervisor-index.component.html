@@ -1,12 +1,10 @@
 <div class="row g-3 h-100 p-3">
   <!-- Panel de Alertas Izquierdo -->
   <div class="col-md-4 col-lg-3 d-flex flex-column h-100">
-    <div class="card border-0 shadow-sm rounded-4 flex-grow-1 overflow-hidden">
-      <div
-        class="card-header bg-white border-bottom py-3 rounded-top-4 d-flex justify-content-between align-items-center"
-      >
-        <h5 class="mb-0 fw-bold"><i class="bi bi-bell text-danger me-2"></i>Alertas</h5>
-        <span class="badge bg-danger rounded-pill" id="badge-alertas">0</span>
+    <div class="premium-card flex-grow-1 overflow-hidden h-100 d-flex flex-column">
+      <div class="premium-card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-shrink-0">
+        <h5 class="premium-card-title mb-0"><i class="bi bi-bell text-danger me-2"></i>Alertas</h5>
+        <span class="badge bg-danger rounded-pill shadow-sm" id="badge-alertas">0</span>
       </div>
       <div class="card-body p-0 position-relative overflow-auto" style="height: 100%">
         <div class="list-group list-group-flush" id="alertas-container">
@@ -23,9 +21,9 @@
   <!-- Panel Principal Derecho -->
   <div class="col-md-8 col-lg-9 d-flex flex-column h-100 gap-3">
     <!-- Mapa -->
-    <div class="card border-0 shadow-sm rounded-4 flex-grow-1" style="min-height: 400px">
+    <div class="premium-card flex-grow-1 p-0" style="min-height: 400px">
       <div
-        class="card-body p-0 rounded-4 overflow-hidden position-relative"
+        class="card-body p-0 rounded-4 overflow-hidden position-relative h-100"
         id="map"
         style="z-index: 1"
       ></div>
@@ -43,11 +41,11 @@
   aria-hidden="true"
 >
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow rounded-4">
+    <div class="modal-content premium-modal-content border-0 shadow-lg">
       <div class="modal-header border-bottom-0 pb-0">
-        <h5 class="modal-title fw-bold" id="modalDetalleLabel">
+        <h5 class="modal-title fw-bold text-dark" id="modalDetalleLabel">
           <i class="bi bi-info-circle-fill text-primary me-2"></i>Detalle de Incidencia
-          <span id="modal-incidencia-id"></span>
+          <span id="modal-incidencia-id" class="text-primary opacity-75"></span>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
