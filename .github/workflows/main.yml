@@ -63,3 +63,6 @@ jobs:
 
     - name: Ejecutar pruebas automatizadas (Calidad de Software)
       run: docker exec sistema_laravel php artisan test
+
+    - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
+      run: docker image prune -f
