@@ -125,6 +125,18 @@ services:
     networks:
       - sistema_net
 
+  # Fix de permisos: Contenedor efímero que le da acceso a SonarQube sobre sus propias carpetas
+  sonarqube_init:
+    image: busybox
+    container_name: sistema_sonarqube_init
+    command: chown -R 1000:1000 /opt/sonarqube/data /opt/sonarqube/extensions /opt/sonarqube/logs
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - sistema_net
+
   # Servidor SonarQube (Calidad de Código / SQA)
   sonarqube:
     image: sonarqube:lts-community
@@ -142,6 +154,7 @@ services:
       - sonarqube_logs:/opt/sonarqube/logs
     depends_on:
       - sonarqube_db
+      - sonarqube_init
     networks:
       - sistema_net
 
