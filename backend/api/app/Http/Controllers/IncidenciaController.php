@@ -47,16 +47,11 @@ class IncidenciaController extends Controller
 
         $query = Incidencia::with([
             'direccion.territorio.pais',
-            'direccion.territorio.parent',
-            'cliente',
             'estado',
             'institucion',
             'tipo',
             'subTipo',
-            'prioridad',
-            'operadores',
-            'reportantes',
-            'recursos',
+            'prioridad'
         ]);
 
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
@@ -91,7 +86,7 @@ class IncidenciaController extends Controller
             $query->where('tipo_incidencia_id', $request->tipo_incidencia_id);
         }
 
-        return response()->json($query->orderBy('id', 'desc')->get(), 200);
+        return response()->json($query->orderBy('id', 'desc')->paginate(15), 200);
     }
 
     /**

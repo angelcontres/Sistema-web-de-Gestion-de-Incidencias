@@ -1,8 +1,8 @@
 import { apiRequest } from '../../../core/api.js';
 
 export const IncidenciaService = {
-  getAll() {
-    return apiRequest('/incidencias');
+  getAll(page = 1) {
+    return apiRequest(`/incidencias?page=${page}`);
   },
   getById(id) {
     return apiRequest(`/incidencias/${id}`);

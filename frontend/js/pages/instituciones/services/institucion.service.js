@@ -2,6 +2,9 @@ import { apiRequest } from '../../../core/api.js';
 
 export const InstitucionService = {
   getAll(params = {}) {
+    if (typeof params === 'number') {
+      params = { page: params };
+    }
     const queryParams = new URLSearchParams(params);
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
     return apiRequest(`/instituciones${queryString}`);

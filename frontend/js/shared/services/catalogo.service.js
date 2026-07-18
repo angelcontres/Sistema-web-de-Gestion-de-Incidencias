@@ -1,78 +1,92 @@
 import { apiRequest } from '../../core/api.js';
 
 /**
+ * Utilidad privada para cachear respuestas en LocalStorage
+ */
+async function withCache(key, ttlMinutes, fetcher) {
+  const cachedItem = localStorage.getItem(key);
+  
+  if (cachedItem) {
+    try {
+      const { value, expiry } = JSON.parse(cachedItem);
+      if (new Date().getTime() < expiry) {
+        return value;
+      }
+      localStorage.removeItem(key);
+    } catch (e) {
+      localStorage.removeItem(key);
+    }
+  }
+
+  const data = await fetcher();
+  if (data) {
+    const expiry = new Date().getTime() + (ttlMinutes * 60 * 1000);
+    localStorage.setItem(key, JSON.stringify({ value: data, expiry }));
+  }
+  return data;
+}
+
+/**
  * Servicio para interactuar con los catálogos del sistema (Georreferenciación y Clasificación).
  */
 export const CatalogoService = {
   /**
    * Obtiene la lista de países activos.
-   * @returns {Promise<Array>} Lista de países
    */
   async getPaises() {
-    return apiRequest('/catalogos/paises');
+    return withCache('catalogo_paises', 1440, () => apiRequest('/catalogos/paises'));
   },
 
   /**
-   * Obtiene la lista de territorios activos, opcionalmente filtrados por país y/o territorio padre.
-   * @param {number|string|null} [paisId] - ID del país
-   * @param {number|string|null} [parentId] - ID del territorio padre (puede ser 'null' o null para obtener los departamentos/estados principales)
-   * @returns {Promise<Array>} Lista de territorios
+   * Obtiene la lista de territorios activos.
    */
   async getTerritorios(paisId = null, parentId = undefined) {
     const params = new URLSearchParams();
-    if (paisId !== null && paisId !== undefined) {
-      params.append('pais_id', paisId);
-    }
-    if (parentId !== undefined) {
-      params.append('parent_id', parentId === null ? 'null' : parentId);
-    }
+    if (paisId !== null && paisId !== undefined) params.append('pais_id', paisId);
+    if (parentId !== undefined) params.append('parent_id', parentId === null ? 'null' : parentId);
 
     const queryString = params.toString();
     const endpoint = `/catalogos/territorios${queryString ? `?${queryString}` : ''}`;
-    return apiRequest(endpoint);
+    
+    // Cache key based on query string to keep different combos cached
+    const cacheKey = `catalogo_territorios_${queryString || 'all'}`;
+    return withCache(cacheKey, 1440, () => apiRequest(endpoint));
   },
 
   /**
-   * Obtiene la lista de direcciones activas, opcionalmente filtradas por territorio (último nodo/hoja).
-   * @param {number|string|null} [territorioId] - ID del territorio
-   * @returns {Promise<Array>} Lista de direcciones
+   * Obtiene la lista de direcciones activas.
    */
   async getDirecciones(territorioId = null) {
     const params = new URLSearchParams();
-    if (territorioId !== null && territorioId !== undefined) {
-      params.append('territorio_id', territorioId);
-    }
+    if (territorioId !== null && territorioId !== undefined) params.append('territorio_id', territorioId);
 
     const queryString = params.toString();
     const endpoint = `/catalogos/direcciones${queryString ? `?${queryString}` : ''}`;
-    return apiRequest(endpoint);
+    
+    // Cache key based on query string
+    const cacheKey = `catalogo_direcciones_${queryString || 'all'}`;
+    return withCache(cacheKey, 1440, () => apiRequest(endpoint));
   },
 
   /**
    * Obtiene la lista de categorías de incidencia activas.
-   * @param {number|string|null} [parentId] - ID de la categoría padre (puede ser 'null' o null para obtener las categorías principales)
-   * @param {boolean} [soloHojas=false] - Si es true, solo retorna las categorías hoja (las cuales no poseen subcategorías)
-   * @returns {Promise<Array>} Lista de categorías de incidencia
    */
   async getCategoriasIncidencia(parentId = undefined, soloHojas = false) {
     const params = new URLSearchParams();
-    if (parentId !== undefined) {
-      params.append('parent_id', parentId === null ? 'null' : parentId);
-    }
-    if (soloHojas) {
-      params.append('solo_hojas', 'true');
-    }
+    if (parentId !== undefined) params.append('parent_id', parentId === null ? 'null' : parentId);
+    if (soloHojas) params.append('solo_hojas', 'true');
 
     const queryString = params.toString();
     const endpoint = `/catalogos/categorias-incidencia${queryString ? `?${queryString}` : ''}`;
-    return apiRequest(endpoint);
+    
+    const cacheKey = `catalogo_categorias_${queryString || 'all'}`;
+    return withCache(cacheKey, 1440, () => apiRequest(endpoint));
   },
 
   /**
    * Obtiene la lista de instituciones activas.
-   * @returns {Promise<Array>} Lista de instituciones
    */
   async getInstituciones() {
-    return apiRequest('/catalogos/instituciones');
+    return withCache('catalogo_instituciones', 1440, () => apiRequest('/catalogos/instituciones'));
   },
 };

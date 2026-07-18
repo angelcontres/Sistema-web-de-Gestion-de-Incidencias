@@ -1,8 +1,8 @@
 import { apiRequest } from '../../../core/api.js';
 
 export const MenuOptionService = {
-  getAll() {
-    return apiRequest('/opciones-menu');
+  getAll(page = 1) {
+    return apiRequest(`/opciones-menu?page=${page}`);
   },
   getById(id) {
     return apiRequest(`/opciones-menu/${id}`);

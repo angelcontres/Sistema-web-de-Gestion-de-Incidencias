@@ -12,6 +12,9 @@ return new class extends Migration
     {
         // Solo aplicar en PostgreSQL con PostGIS habilitado
         if (DB::getDriverName() === 'pgsql') {
+            // Habilitar PostGIS primero en la base de datos
+            DB::statement("CREATE EXTENSION IF NOT EXISTS postgis;");
+
             // Añadir columna generada geográficamente a partir de longitud y latitud
             DB::statement("ALTER TABLE direcciones ADD COLUMN ubicacion geography(Point, 4326) GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitud, latitud), 4326)::geography) STORED;");
             

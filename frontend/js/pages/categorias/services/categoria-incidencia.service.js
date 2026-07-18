@@ -2,9 +2,15 @@ import { apiRequest } from '../../../core/api.js';
 
 export const CategoriaIncidenciaService = {
   getAll(params = {}) {
+    if (typeof params === 'number') {
+      params = { page: params };
+    }
     const queryParams = new URLSearchParams();
     if (params.parent_id !== undefined) {
       queryParams.append('parent_id', params.parent_id === null ? '' : params.parent_id);
+    }
+    if (params.page !== undefined) {
+      queryParams.append('page', params.page);
     }
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
     return apiRequest(`/categorias-incidencia${queryString}`);

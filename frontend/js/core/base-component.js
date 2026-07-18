@@ -2,9 +2,6 @@
  * Base Component for Angular-like architecture in Vanilla JS
  */
 export class BaseComponent extends HTMLElement {
-  // Objeto estático para cachear plantillas globalmente en memoria
-  static templateCache = {};
-
   /**
    * @param {string} templateUrl - Path to the component's HTML template file
    */
@@ -15,18 +12,14 @@ export class BaseComponent extends HTMLElement {
 
   async connectedCallback() {
     try {
-      // 1. Verificar si ya tenemos el HTML descargado en la caché
-      if (!BaseComponent.templateCache[this.templateUrl]) {
-        const response = await fetch(this.templateUrl);
-        if (!response.ok) {
-          throw new Error(`No se pudo cargar la plantilla: ${this.templateUrl} (HTTP ${response.status})`);
-        }
-        // 2. Guardar en memoria caché global
-        BaseComponent.templateCache[this.templateUrl] = await response.text();
+      const response = await fetch(this.templateUrl);
+      if (!response.ok) {
+        throw new Error(`No se pudo cargar la plantilla: ${this.templateUrl} (HTTP ${response.status})`);
       }
+      const downloadedHtmlTemplate = await response.text();
       
       // Render template inside light DOM to preserve global Bootstrap CSS applicability
-      this.innerHTML = BaseComponent.templateCache[this.templateUrl];
+      this.innerHTML = downloadedHtmlTemplate;
       
       // Trigger lifecycle hook similar to Angular's ngOnInit
       if (typeof this.onInit === 'function') {
@@ -40,6 +33,16 @@ export class BaseComponent extends HTMLElement {
           <br><small>${error.message}</small>
         </div>
       `;
+    }
+  }
+
+  /**
+   * Native Web Component lifecycle hook triggered when the element is removed from the DOM.
+   * Prevents memory leaks by cleaning up events, timeouts, and observers.
+   */
+  disconnectedCallback() {
+    if (typeof this.onDestroy === 'function') {
+      this.onDestroy();
     }
   }
 }

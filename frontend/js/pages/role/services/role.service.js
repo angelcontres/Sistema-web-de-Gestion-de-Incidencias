@@ -1,8 +1,8 @@
 import { apiRequest } from '../../../core/api.js';
 
 export const RoleService = {
-  getAll() {
-    return apiRequest('/roles');
+  getAll(page = 1) {
+    return apiRequest(`/roles?page=${page}`);
   },
   getById(id) {
     return apiRequest(`/roles/${id}`);
