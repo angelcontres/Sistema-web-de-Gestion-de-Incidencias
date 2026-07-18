@@ -1,68 +1,75 @@
 on:
   push:
-    branches: [ "develop" ]
+    branches: ["develop"]
 
 jobs:
   despliegue-docker:
     runs-on: self-hosted
 
     steps:
-    # 1. Apagar los contenedores anteriores para liberar los descriptores de archivos compartidos
-    - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
-      run: |
-        if [ -f "docker-compose.yml" ]; then
-          docker compose down
-        fi
+      # 1. Apagar los contenedores anteriores para liberar los descriptores de archivos compartidos
+      - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
+        run: |
+          if [ -f "docker-compose.yml" ]; then
+            docker compose down
+          fi
 
-    # 2. El truco de Docker: Usamos busybox (que corre como root interno) para fulminar la carpeta vendor y grafana anterior
-    - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
-      run: |
-        if [ -d "backend/api/vendor" ]; then
-          docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
-        fi
-        if [ -d "grafana" ]; then
-          docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
-        fi
+      # 2. El truco de Docker: Usamos busybox (que corre como root interno) para fulminar la carpeta vendor y grafana anterior
+      - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
+        run: |
+          if [ -d "backend/api/vendor" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
+          fi
+          if [ -d "grafana" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
+          fi
 
+      # 3. Ahora el checkout puede limpiar y clonar el nuevo código sin problemas de permisos
+      - name: Copiar el código a la VAIO
+        uses: actions/checkout@v4
 
-    # 3. Ahora el checkout puede limpiar y clonar el nuevo código sin problemas de permisos
-    - name: Copiar el código a la VAIO
-      uses: actions/checkout@v4
+      - name: Configurar entorno (.env) para PostgreSQL en el Servidor
+        run: |
+          cp backend/api/.env.example backend/api/.env
+          sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/' backend/api/.env
+          sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=postgres/' backend/api/.env
+          sed -i 's/# DB_PORT=3306/DB_PORT=5432/' backend/api/.env
+          sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=gestion_incidencias/' backend/api/.env
+          sed -i 's/# DB_USERNAME=root/DB_USERNAME=angeltux/' backend/api/.env
+          sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password_segura_upse/' backend/api/.env
 
-    - name: Configurar entorno (.env) para PostgreSQL en el Servidor
-      run: |
-        cp backend/api/.env.example backend/api/.env
-        sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/' backend/api/.env
-        sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=postgres/' backend/api/.env
-        sed -i 's/# DB_PORT=3306/DB_PORT=5432/' backend/api/.env
-        sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=gestion_incidencias/' backend/api/.env
-        sed -i 's/# DB_USERNAME=root/DB_USERNAME=angeltux/' backend/api/.env
-        sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password_segura_upse/' backend/api/.env
+      - name: Construir y levantar contenedores en segundo plano
+        run: docker compose up -d --build --pull always
 
-    - name: Construir y levantar contenedores en segundo plano
-      run: docker compose up -d --build --pull always
+      - name: Instalar dependencias de PHP (Composer) dentro del contenedor
+        run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
 
-    - name: Instalar dependencias de PHP (Composer) dentro del contenedor
-      run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
+      - name: Generar clave de seguridad de Laravel
+        run: docker exec sistema_laravel php artisan key:generate
 
-    - name: Generar clave de seguridad de Laravel
-      run: docker exec sistema_laravel php artisan key:generate
+      - name: Esperar a que la base de datos esté lista
+        run: |
+          until docker exec sistema_postgres pg_isready -U angeltux; do
+            echo "Esperando a postgres..."
+            sleep 2
+          done
 
-    - name: Esperar a que la base de datos esté lista
-      run: |
-        until docker exec sistema_postgres pg_isready -U angeltux; do
-          echo "Esperando a postgres..."
-          sleep 2
-        done
+      - name: Ejecutar migraciones de Laravel dentro del contenedor
+        run: docker exec sistema_laravel php artisan migrate --force
 
-    - name: Ejecutar migraciones de Laravel dentro del contenedor
-      run: docker exec sistema_laravel php artisan migrate --force
+      - name: Ejecutar migraciones de OLAP dentro del contenedor
+        run: docker exec sistema_laravel php artisan migrate --path=database/migrations/olap --force
 
-    - name: Ejecutar migraciones de OLAP dentro del contenedor
-      run: docker exec sistema_laravel php artisan migrate --path=database/migrations/olap --force
+      - name: Ejecutar pruebas automatizadas
+        run: docker exec sistema_laravel php artisan test
 
-    - name: Ejecutar pruebas automatizadas (Calidad de Software)
-      run: docker exec sistema_laravel php artisan test
+      - name: Análisis de Calidad SQA con SonarQube
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          # Se asume que el token y URL se configuraron en los secretos del repo (Settings > Secrets)
+          # SONAR_HOST_URL debe apuntar a la URL pública de SonarQube (o http://ip-de-la-vaio:9000)
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-    - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
-      run: docker image prune -f
+      - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
+        run: docker image prune -f
