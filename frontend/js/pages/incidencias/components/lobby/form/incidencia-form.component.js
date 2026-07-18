@@ -5,7 +5,6 @@ import { CatalogoService } from '../../../../../shared/services/catalogo.service
 import { ModalService } from '../../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../../shared/services/toast.service.js';
 import { AuthService } from '../../../../../core/auth.service.js';
-import { PermissionsEnum } from '../../../../../core/permissions.enum.js';
 import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../../shared/constants.js';
 
 export class IncidenciaFormComponent extends BaseComponent {
@@ -105,8 +104,8 @@ export class IncidenciaFormComponent extends BaseComponent {
     // Check if the user has permissions to modify the incident status/assignment
     const canManageIncidencia =
       isAdmin ||
-      AuthService.hasPermission(PermissionsEnum.UPDATE_INCIDENCIAS) ||
-      AuthService.hasPermission(PermissionsEnum.UPDATE_DESPACHO_INCIDENCIAS);
+      AuthService.hasPermission('UPDATE', 'incidencias') ||
+      AuthService.hasPermission('UPDATE', 'despacho_incidencias');
 
     // Hide State selector (colEstado) if user cannot manage/update incidents
     const colEstado = this.querySelector('#colEstado');

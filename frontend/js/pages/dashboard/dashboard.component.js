@@ -142,7 +142,7 @@ export class DashboardComponent extends BaseComponent {
 
     // Resolver rol por permisos o is_admin
     let role = 'Default';
-    if (AuthService.isAdmin()) {
+    if (AuthService.hasPermission('Ver Rol')) {
       role = 'Admin';
     } else if (AuthService.hasPermission('Ver Despacho de Incidencia')) {
       role = 'Supervisor';
