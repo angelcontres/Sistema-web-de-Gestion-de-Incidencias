@@ -23,6 +23,10 @@ abstract class TestCase extends BaseTestCase
         );
         $user->roles()->sync([$adminRole->id]);
 
+        $this->seed(\Database\Seeders\PermissionsSeeder::class);
+        $allPermissionsIds = \App\Models\Permiso::pluck('id')->toArray();
+        $adminRole->permisos()->sync($allPermissionsIds);
+
         return $user;
     }
 }

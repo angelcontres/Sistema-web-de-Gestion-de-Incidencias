@@ -29,6 +29,7 @@ class PermissionsSeeder extends Seeder
             'Despacho' => 'Despacho de Incidencia',
             'Tablero Kanban' => 'Kanban',
             'Historial de incidencias' => 'Historial',
+            'Mantenimiento' => 'Mantenimiento',
         ];
 
         $acciones = [
@@ -51,6 +52,7 @@ class PermissionsSeeder extends Seeder
             'Despacho' => 'despacho_de_incidencias',
             'Tablero Kanban' => 'kanban',
             'Historial de incidencias' => 'historial_incidencias',
+            'Mantenimiento' => 'mantenimiento',
         ];
 
         foreach ($opciones as $opcionPlural => $opcionSingular) {
@@ -58,41 +60,38 @@ class PermissionsSeeder extends Seeder
 
             $recursoStr = $recursoMapping[$opcionPlural] ?? strtolower(str_replace(' ', '_', $opcionPlural));
 
-            if ($opcionMenu) {
-                foreach ($acciones as $verbo => $metodo) {
-                    Permiso::updateOrCreate(
-                        ['nombre' => "{$verbo} {$opcionSingular}"],
-                        [
-                            'accion' => $metodo,
-                            'recurso' => $recursoStr,
-                            'opcion_menu_id' => $opcionMenu->id,
-                            'created_by' => $user->id,
-                        ]
-                    );
-                }
+            $opcionMenuId = $opcionMenu ? $opcionMenu->id : null;
+
+            foreach ($acciones as $verbo => $metodo) {
+                Permiso::updateOrCreate(
+                    ['nombre' => "{$verbo} {$opcionSingular}"],
+                    [
+                        'accion' => $metodo,
+                        'recurso' => $recursoStr,
+                        'opcion_menu_id' => $opcionMenuId,
+                        'created_by' => $user->id,
+                    ]
+                );
             }
         }
 
         // Seed locations sub-resources permissions under the Ubicaciones menu option
-        $ubicacionesMenu = OpcionMenu::where('nombre', 'Ubicaciones')->first();
-        if ($ubicacionesMenu) {
-            $subRecursos = [
-                'paises' => 'País',
-                'territorios' => 'Territorio',
-                'direcciones' => 'Dirección',
-            ];
-            foreach ($subRecursos as $recursoSub => $nombreSingular) {
-                foreach ($acciones as $verbo => $metodo) {
-                    Permiso::updateOrCreate(
-                        ['nombre' => "{$verbo} {$nombreSingular}"],
-                        [
-                            'accion' => $metodo,
-                            'recurso' => $recursoSub,
-                            'opcion_menu_id' => $ubicacionesMenu->id,
-                            'created_by' => $user->id,
-                        ]
-                    );
-                }
+        $subRecursos = [
+            'paises' => 'País',
+            'territorios' => 'Territorio',
+            'direcciones' => 'Dirección',
+        ];
+        foreach ($subRecursos as $recursoSub => $nombreSingular) {
+            foreach ($acciones as $verbo => $metodo) {
+                Permiso::updateOrCreate(
+                    ['nombre' => "{$verbo} {$nombreSingular}"],
+                    [
+                        'accion' => $metodo,
+                        'recurso' => $recursoSub,
+                        'opcion_menu_id' => null,
+                        'created_by' => $user->id,
+                    ]
+                );
             }
         }
 
