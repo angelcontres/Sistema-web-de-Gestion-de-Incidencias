@@ -7,7 +7,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('etl:run')->everyThirtySeconds();
+// Schedule::command('etl:run')->everyThirtySeconds(); // Eliminado para consumir en tiempo real
 
 // =========================================================================
 // Monitoreo SQA & Calidad (Carga al Data Warehouse OLAP)

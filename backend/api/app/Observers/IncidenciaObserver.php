@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
+use Illuminate\Support\Facades\Artisan;
 
 class IncidenciaObserver
 {
@@ -35,6 +36,9 @@ class IncidenciaObserver
     public function created(Incidencia $incidencia): void
     {
         $this->registrarHistorial($incidencia, 'Incidencia reportada');
+        
+        // Ejecutar ETL inmediatamente para refrescar dashboards analíticos
+        Artisan::call('etl:run');
     }
 
     /**
@@ -47,6 +51,9 @@ class IncidenciaObserver
             $comentario = request()->input('comentario_estado', 'Cambio de estado');
             $this->registrarHistorial($incidencia, $comentario);
         }
+
+        // Ejecutar ETL inmediatamente para refrescar dashboards analíticos
+        Artisan::call('etl:run');
     }
 
     /**
