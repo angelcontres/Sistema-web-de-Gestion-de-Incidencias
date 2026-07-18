@@ -279,7 +279,7 @@ El entorno de `docker-compose.yml` incluye servicios preconfigurados de SonarQub
 docker-compose up -d sonarqube
 ```
 
-El servidor estará expuesto en: **http://localhost:9010**
+El servidor estará expuesto en: **http://localhost:9009**
 - Las credenciales por defecto de un despliegue fresco de SonarQube son `admin` / `admin`.
 
 ### Configuración del Proyecto (sonar-project.properties)
