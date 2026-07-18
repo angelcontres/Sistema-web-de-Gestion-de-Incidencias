@@ -93,4 +93,10 @@ enum PermissionsEnum: string
     case CREATE_HISTORIAL = 'Crear Historial';
     case UPDATE_HISTORIAL = 'Actualizar Historial';
     case DELETE_HISTORIAL = 'Eliminar Historial';
+
+    // Mantenimiento
+    case READ_MANTENIMIENTO = 'Ver Mantenimiento';
+    case CREATE_MANTENIMIENTO = 'Crear Mantenimiento';
+    case UPDATE_MANTENIMIENTO = 'Actualizar Mantenimiento';
+    case DELETE_MANTENIMIENTO = 'Eliminar Mantenimiento';
 }
