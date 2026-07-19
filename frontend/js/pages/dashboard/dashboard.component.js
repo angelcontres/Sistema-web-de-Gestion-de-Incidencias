@@ -133,7 +133,7 @@ export class DashboardComponent extends BaseComponent {
     if (!container) return;
 
     let role = 'Default';
-    if (AuthService.isAdmin()) {
+    if (AuthService.hasPermission('Ver Rol')) {
       role = 'Admin';
     } else if (AuthService.hasPermission('Ver Despacho de Incidencia')) {
       role = 'Supervisor';

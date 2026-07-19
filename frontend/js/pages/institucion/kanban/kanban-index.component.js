@@ -2,7 +2,6 @@ import { BaseComponent } from '../../../core/base-component.js';
 import { IncidenciaService } from '../../incidencias/services/incidencia.service.js';
 import { AuthService } from '../../../core/auth.service.js';
 import { ToastService } from '../../../shared/services/toast.service.js';
-import { PermissionsEnum } from '../../../core/permissions.enum.js';
 
 export class KanbanIndexComponent extends BaseComponent {
   constructor() {
@@ -100,7 +99,7 @@ export class KanbanIndexComponent extends BaseComponent {
     div.className = 'card border-0 shadow-sm rounded-3 mb-3';
 
     let btnHtml = '';
-    if (isProceso && AuthService.hasPermission(PermissionsEnum.UPDATE_KANBAN)) {
+    if (isProceso && AuthService.hasPermission('UPDATE', 'kanban')) {
       btnHtml = `<button class="btn btn-sm btn-success w-100 rounded-pill mt-3 btn-resolver" data-id="${incidencia.id}" data-version="${incidencia.version}"><i class="bi bi-check2-circle me-1"></i> Resolver</button>`;
     }
 

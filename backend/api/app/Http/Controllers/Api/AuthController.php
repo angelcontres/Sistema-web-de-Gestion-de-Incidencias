@@ -51,7 +51,10 @@ class AuthController extends Controller
         $permisosList = collect();
         foreach ($user->roles as $role) {
             foreach ($role->permisos as $permiso) {
+                // Mantenemos el nombre literal para compatibilidad (ej: 'Ver Usuario')
                 $permisosList->push($permiso->nombre);
+                // Agregamos el formato estandarizado (ej: 'READ_USUARIOS')
+                $permisosList->push(strtoupper($permiso->accion . '_' . $permiso->recurso));
             }
         }
         $permisosList = $permisosList->unique()->values();

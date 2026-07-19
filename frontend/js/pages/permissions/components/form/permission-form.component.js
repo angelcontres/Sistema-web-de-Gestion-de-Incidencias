@@ -20,6 +20,7 @@ export class PermissionFormComponent extends BaseComponent {
     this.form = this.modalEl.querySelector('#permisoForm');
     this.permisoIdInput = this.modalEl.querySelector('#permisoId');
     this.nombreInput = this.modalEl.querySelector('#nombre');
+    this.recursoInput = this.modalEl.querySelector('#recurso');
     this.accionInput = this.modalEl.querySelector('#accion');
     this.opcionMenuSelect = this.modalEl.querySelector('#opcion_menu_id');
 
@@ -74,6 +75,7 @@ export class PermissionFormComponent extends BaseComponent {
 
     this.permisoIdInput.value = '';
     this.nombreInput.value = '';
+    this.recursoInput.value = '';
     this.accionInput.value = '';
     this.opcionMenuSelect.value = '';
 
@@ -94,6 +96,7 @@ export class PermissionFormComponent extends BaseComponent {
 
     this.permisoIdInput.value = permiso.id;
     this.nombreInput.value = permiso.nombre;
+    this.recursoInput.value = permiso.recurso || '';
     this.accionInput.value = permiso.accion || '';
     this.opcionMenuSelect.value = permiso.opcion_menu_id || '';
 
@@ -122,8 +125,9 @@ export class PermissionFormComponent extends BaseComponent {
     const permisoId = this.permisoIdInput.value;
     const payload = {
       nombre: this.nombreInput.value.trim(),
+      recurso: this.recursoInput.value.trim(),
       accion: this.accionInput.value,
-      opcion_menu_id: parseInt(this.opcionMenuSelect.value),
+      opcion_menu_id: this.opcionMenuSelect.value ? parseInt(this.opcionMenuSelect.value) : null,
     };
 
     try {
