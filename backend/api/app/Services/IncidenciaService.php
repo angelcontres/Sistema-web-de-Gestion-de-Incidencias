@@ -118,7 +118,7 @@ class IncidenciaService
                                 ->exists();
                             
                             if (! $exists) {
-                                $similar->reportantes()->attach($user->id, ['created_by' => $user->id]);
+                                $similar->reportantes()->attach($user->id, ['created_by' => $user->id, 'tipo_relacion' => 'reportante']);
                             }
 
                             HistorialIncidencia::create([
@@ -167,7 +167,7 @@ class IncidenciaService
             ]);
 
             if ($user) {
-                $incidencia->reportantes()->attach($user->id, ['created_by' => $user->id]);
+                $incidencia->reportantes()->attach($user->id, ['created_by' => $user->id, 'tipo_relacion' => 'reportante']);
             }
 
             if (!empty($data['recursos'])) {

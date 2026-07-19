@@ -115,6 +115,7 @@ class Incidencia extends Model
     public function operadores(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'usuario_incidencia', 'reporte_incidencia_id', 'user_id')
+            ->wherePivot('tipo_relacion', 'operador')
             ->withTimestamps();
     }
 
@@ -124,6 +125,7 @@ class Incidencia extends Model
     public function reportantes(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'usuario_incidencia', 'reporte_incidencia_id', 'user_id')
+            ->wherePivot('tipo_relacion', 'reportante')
             ->withTimestamps();
     }
 

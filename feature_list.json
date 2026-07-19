@@ -1,0 +1,25 @@
+{
+  "project": "sistema-gestion-incidencias",
+  "description": "Sistema web para gestionar incidencias georreferenciadas con historial de estados, asignación de responsables, y más. Backend en Laravel y Frontend VanillaJS.",
+  "rules": {
+    "one_feature_at_a_time": true,
+    "require_tests_to_close": true,
+    "require_approved_spec_to_implement": true,
+    "valid_status": ["pending", "spec_ready", "in_progress", "done", "blocked"],
+    "sdd_required_when": "feature has \"sdd\": true"
+  },
+  "features": [
+    {
+      "id": 1,
+      "name": "ejemplo_nueva_feature",
+      "title": "Ejemplo de nueva feature",
+      "description": "Agrega una descripción aquí.",
+      "acceptance": [
+        "Criterio 1",
+        "Criterio 2"
+      ],
+      "sdd": true,
+      "status": "pending"
+    }
+  ]
+}

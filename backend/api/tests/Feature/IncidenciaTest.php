@@ -238,8 +238,8 @@ class IncidenciaTest extends TestCase
         // Fetch index with userPolicia -> should see only Policia incident
         $response = $this->actingAs($userPolicia)->getJson('/api/v1/incidencias');
         $response->assertStatus(200)
-            ->assertJsonCount(1)
-            ->assertJsonPath('0.id', $incidenciaPolicia->id);
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $incidenciaPolicia->id);
 
         // Access Policia incident -> OK
         $responseShowOk = $this->actingAs($userPolicia)->getJson("/api/v1/incidencias/{$incidenciaPolicia->id}");
@@ -402,7 +402,7 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->getJson("/api/v1/incidencias?estado_id={$estadoPendiente->id}");
 
         $response->assertStatus(200);
-        $data = $response->json();
+        $data = $response->json('data');
 
         // Assert we get the one with estadoPendiente
         $containsIncidencia1 = collect($data)->contains('id', $incidencia1->id);
@@ -446,7 +446,7 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($this->admin)->getJson("/api/v1/incidencias?tipo_incidencia_id={$otroTipo->id}");
 
         $response->assertStatus(200);
-        $data = $response->json();
+        $data = $response->json('data');
 
         $containsIncidencia1 = collect($data)->contains('id', $incidencia1->id);
         $containsIncidencia2 = collect($data)->contains('id', $incidencia2->id);
@@ -578,7 +578,7 @@ class IncidenciaTest extends TestCase
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
 
-        $response->assertStatus(200); // Retorna 200 al agrupar
+        $response->assertStatus(201); // Controller always returns 201 on store
         $response->assertJsonPath('data.id', $incidenciaOriginal->id);
 
         // Verificar base de datos
@@ -689,10 +689,10 @@ class IncidenciaTest extends TestCase
             'created_by' => $ciudadano1->id,
         ]);
 
-        $incidencia->reportantes()->attach($ciudadano1->id, ['created_by' => $ciudadano1->id]);
+        $incidencia->reportantes()->attach($ciudadano1->id, ['created_by' => $ciudadano1->id, 'tipo_relacion' => 'reportante']);
 
         // Asociar Ciudadano 2 como reportante (agrupado)
-        $incidencia->reportantes()->attach($ciudadano2->id, ['created_by' => $ciudadano2->id]);
+        $incidencia->reportantes()->attach($ciudadano2->id, ['created_by' => $ciudadano2->id, 'tipo_relacion' => 'reportante']);
 
         // Ciudadano 2 intenta ver la incidencia
         $response = $this->actingAs($ciudadano2)->getJson("/api/v1/incidencias/{$incidencia->id}");
