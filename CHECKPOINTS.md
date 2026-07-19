@@ -53,6 +53,6 @@
 
 ---
 
-**Cómo usar este archivo:** un agente revisor (`.claude/agents/reviewer.md`)
+**Cómo usar este archivo:** un agente revisor (`.ias/agents/reviewer.md`)
 recorre cada checkbox, marca `[x]` o `[ ]`, y rechaza el cierre de sesión
 si quedan boxes vacíos en C1-C6.

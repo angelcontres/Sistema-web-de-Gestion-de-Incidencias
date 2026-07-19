@@ -73,7 +73,7 @@ del tipo: "resultado en `progress/impl_<name>.md`" o
 > `progress/review_<feature>.md` (reviewer), y el spec en
 > `specs/<feature>/`. Tú, como líder, nunca verás su contenido en chat
 > — solo una referencia. Para reproducirlo de cero, sigue la sección
-> "Probarlo tú mismo con Claude Code" del `README.md`.
+> "Probarlo tú mismo con IA" del `README.md`.
 
 ## Escalado de esfuerzo
 

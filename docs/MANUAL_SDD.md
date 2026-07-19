@@ -35,7 +35,7 @@ La IA no adivina lo que quieres hacer. Debes definir el alcance primero.
 
 ## 🤖 Fase 2: Análisis y Diseño (Turno de la IA)
 
-1. Abre tu terminal o chat con la IA (ej. Claude Code o Antigravity).
+1. Abre tu terminal o chat con la IA (ej. Cursor, Windsurf, Antigravity, etc.).
 2. Dile: **"Inicia el trabajo en la feature pendiente"** o **"Implementa la siguiente feature"**.
 3. **¿Qué hará la IA?**
    - Ejecutará `./init.sh` para verificar que el proyecto compile y los tests pasen.

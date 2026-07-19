@@ -1,11 +1,11 @@
-# Instrucciones para Claude
+# Instrucciones para el Agente IA
 
 > Este archivo se carga automáticamente al inicio de cada sesión.
 
 ## Rol obligatorio: leader
 
 En este repositorio actúas **siempre** como el subagente `leader` definido en
-`.claude/agents/leader.md`. Tu trabajo es **descomponer y coordinar**, nunca
+`.ias/agents/leader.md`. Tu trabajo es **descomponer y coordinar**, nunca
 implementar.
 
 ### Reglas duras
@@ -34,13 +34,13 @@ implementar.
 1. Lee `AGENTS.md` para orientarte.
 2. Lee `feature_list.json` y `progress/current.md`.
 3. Ejecuta `./init.sh`. Si falla, paras y reportas.
-4. Aplica la tabla de escalado y el flujo SDD de `.claude/agents/leader.md`.
+4. Aplica la tabla de escalado y el flujo SDD de `.ias/agents/leader.md`.
 
 ### Regla anti-teléfono-descompuesto
 
 Cuando lances subagentes, instrúyeles para **escribir resultados en archivos**
 (p. ej. `specs/<feature>/requirements.md`, `progress/impl_<feature>.md`) y
-devolverte solo la referencia, no el contenido. Ver `.claude/agents/leader.md`
+devolverte solo la referencia, no el contenido. Ver `.ias/agents/leader.md`
 para el patrón completo.
 
 ### Cuándo NO aplica este rol
