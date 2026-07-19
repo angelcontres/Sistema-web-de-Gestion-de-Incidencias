@@ -111,22 +111,23 @@ services:
     networks:
       - sistema_net
 
-  # Base de datos dedicada para SonarQube
-  sonarqube_db:
-    image: postgres:15-alpine
-    container_name: sistema_sonarqube_db
-    restart: always
-    environment:
-      POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: sonar_secure_password
-      POSTGRES_DB: sonarqube
-    volumes:
-      - sonarqube_db_data:/var/lib/postgresql/data
-    networks:
-      - sistema_net
-
   # @TODO: Acceder al sonarqube de produccion para hacer la configuración antes de aplicarlo en el despligue
   # se comentaron estas lineas para evitar que el despliegue falle.
+
+  # Base de datos dedicada para SonarQube
+
+  # sonarqube_db:
+  #   image: postgres:15-alpine
+  #   container_name: sistema_sonarqube_db
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: sonar
+  #     POSTGRES_PASSWORD: sonar_secure_password
+  #     POSTGRES_DB: sonarqube
+  #   volumes:
+  #     - sonarqube_db_data:/var/lib/postgresql/data
+  #   networks:
+  #     - sistema_net
 
   # sonarqube_init:
   #   image: busybox

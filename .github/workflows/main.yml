@@ -63,20 +63,5 @@ jobs:
       - name: Ejecutar pruebas automatizadas y generar reporte de cobertura
         run: docker exec sistema_laravel php artisan test
 
-      - name: Esperar a que SonarQube inicie por completo
-        run: |
-          echo "Esperando a que SonarQube levante (puede tomar de 1 a 3 minutos)..."
-          until curl -s http://localhost:9009/api/system/status | grep '"status":"UP"'; do
-            sleep 10
-          done
-
-      - name: Análisis de Calidad SQA con SonarQube
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          # Se asume que el token y URL se configuraron en los secretos del repo (Settings > Secrets)
-          # SONAR_HOST_URL debe apuntar a la URL pública de SonarQube (o http://ip-de-la-vaio:9000)
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
       - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
         run: docker image prune -f
