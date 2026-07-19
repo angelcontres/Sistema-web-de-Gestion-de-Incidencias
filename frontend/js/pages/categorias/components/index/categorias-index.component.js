@@ -212,7 +212,7 @@ export class CategoriasIndexComponent extends BaseComponent {
       container.classList.remove('d-none');
     } catch (error) {
       console.error('Error cargando categorías:', error);
-      UIHelper.mostrarAlerta(this, 'error', 'Error al cargar el listado de categorías.');
+      ToastService.error(`No se pudo cargar el listado de categorías: ${error.message}`);
     }
   }
 
@@ -289,10 +289,10 @@ export class CategoriasIndexComponent extends BaseComponent {
     try {
       if (id) {
         await CategoriaIncidenciaService.update(id, payload);
-        UIHelper.mostrarAlerta(this, 'success', 'Categoría de incidencia actualizada con éxito.');
+        ToastService.success(`Categoría "${payload.nombre}" actualizada con éxito.`);
       } else {
         await CategoriaIncidenciaService.create(payload);
-        UIHelper.mostrarAlerta(this, 'success', 'Categoría de incidencia creada con éxito.');
+        ToastService.success(`Categoría "${payload.nombre}" creada con éxito.`);
       }
 
       this.categoriaModalObj.hide();

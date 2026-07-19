@@ -1,7 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
-import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
 
@@ -52,8 +51,8 @@ export class UbicacionesPaisesComponent extends BaseComponent {
             <span class="badge bg-${pais.activo ? 'success' : 'danger'}-soft text-${pais.activo ? 'success' : 'danger'} rounded-pill px-2.5 py-1 small">
               ${pais.activo ? 'Activo' : 'Inactivo'}
             </span>
-          `
-        }
+          `,
+        },
       ];
 
       if (isAdmin) {
@@ -62,8 +61,8 @@ export class UbicacionesPaisesComponent extends BaseComponent {
           class: 'text-end pe-4',
           actions: [
             { name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' },
-            { name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }
-          ]
+            { name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' },
+          ],
         });
       }
 
@@ -97,13 +96,15 @@ export class UbicacionesPaisesComponent extends BaseComponent {
 
     try {
       await tblDatos.load(UbicacionesService.getPaises);
-      
+
       // Dispatch event to sync with other components
-      this.dispatchEvent(new CustomEvent('paises-updated', {
-        detail: { paises: tblDatos.items },
-        bubbles: true,
-        composed: true
-      }));
+      this.dispatchEvent(
+        new CustomEvent('paises-updated', {
+          detail: { paises: tblDatos.items },
+          bubbles: true,
+          composed: true,
+        })
+      );
     } catch (error) {
       console.error('Error al cargar países:', error);
     }
@@ -159,18 +160,17 @@ export class UbicacionesPaisesComponent extends BaseComponent {
     try {
       if (id) {
         await UbicacionesService.updatePais(id, payload);
-        UIHelper.mostrarAlerta(this, 'success', 'País actualizado con éxito.');
+        ToastService.success('País actualizado con éxito.');
       } else {
         await UbicacionesService.createPais(payload);
-        UIHelper.mostrarAlerta(this, 'success', 'País creado con éxito.');
+        ToastService.success('País creado con éxito.');
       }
 
       this.paisModalObj.hide();
       await this.cargarPaises();
     } catch (error) {
       console.error('Error al guardar país:', error);
-      errorAlert.classList.remove('d-none');
-      errorMessage.textContent = error.message || 'Error al guardar el registro.';
+      ToastService.error(error.message || 'Error al guardar el registro.');
     }
   }
 
@@ -182,7 +182,7 @@ export class UbicacionesPaisesComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (!isConfirmed) return;
 
     try {

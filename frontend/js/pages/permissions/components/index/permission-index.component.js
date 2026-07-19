@@ -24,7 +24,7 @@ export class PermissionIndexComponent extends BaseComponent {
 
     if (formComponent) {
       formComponent.addEventListener('permiso-guardado', (e) => {
-        this.mostrarAlertaExito(e.detail.mensaje);
+        ToastService.success(e.detail.mensaje);
         if (tblDatos && tblDatos.load) {
           tblDatos.load('/permisos');
         }
@@ -104,7 +104,7 @@ export class PermissionIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (!isConfirmed) return;
 
     apiRequest(`/permisos/${id}`, { method: 'DELETE' })
@@ -120,30 +120,6 @@ export class PermissionIndexComponent extends BaseComponent {
         console.error('Error al eliminar permiso:', err);
         ToastService.error(`No se pudo eliminar el permiso: ${err.message}`);
       });
-  }
-
-  mostrarAlertaExito(mensaje) {
-    const alertEl = this.querySelector('#successAlert');
-    const msgEl = this.querySelector('#successMessage');
-    if (alertEl && msgEl) {
-      msgEl.textContent = mensaje;
-      alertEl.classList.remove('d-none');
-      setTimeout(() => alertEl.classList.add('d-none'), 3000);
-    } else {
-      alert(mensaje);
-    }
-  }
-
-  mostrarAlertaError(mensaje) {
-    const alertEl = this.querySelector('#errorAlert');
-    const msgEl = this.querySelector('#errorMessage');
-    if (alertEl && msgEl) {
-      msgEl.textContent = mensaje;
-      alertEl.classList.remove('d-none');
-      setTimeout(() => alertEl.classList.add('d-none'), 4000);
-    } else {
-      alert(mensaje);
-    }
   }
 }
 

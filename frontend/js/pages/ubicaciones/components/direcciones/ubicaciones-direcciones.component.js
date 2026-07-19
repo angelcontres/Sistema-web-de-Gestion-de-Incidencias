@@ -1,7 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
-import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
 import { MAP_CONFIG } from '../../../../shared/constants.js';
@@ -10,10 +9,10 @@ import './direccion-form.component.js';
 export class UbicacionesDireccionesComponent extends BaseComponent {
   constructor() {
     super('js/pages/ubicaciones/components/direcciones/ubicaciones-direcciones.component.html');
-    
+
     this.direccionesList = [];
     this.paisesList = [];
-    
+
     // Maps
     this.map = null;
     this.mapMarkers = [];
@@ -33,7 +32,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     // Listen to form component save event
     this.addEventListener('direccion-saved', (e) => {
       const isEdit = e.detail.isEdit;
-      UIHelper.mostrarAlerta(this, 'success', `Dirección ${isEdit ? 'actualizada' : 'creada'} con éxito.`);
+      ToastService.success(`Dirección ${isEdit ? 'actualizada' : 'creada'} con éxito.`);
       this.cargarDirecciones();
     });
 
@@ -112,10 +111,11 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   llenarPaisSelect() {
     const filterSelect = this.querySelector('#filterPaisSelect');
     if (!filterSelect) return;
-    
-    const activePaises = this.paisesList.filter(p => p.activo);
-    filterSelect.innerHTML = '<option value="">Todos los Países</option>' + 
-      activePaises.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+
+    const activePaises = this.paisesList.filter((p) => p.activo);
+    filterSelect.innerHTML =
+      '<option value="">Todos los Países</option>' +
+      activePaises.map((p) => `<option value="${p.id}">${p.nombre}</option>`).join('');
   }
 
   async cargarDirecciones() {
@@ -125,7 +125,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       this.filtrarDirecciones();
     } catch (error) {
       console.error('Error cargando direcciones:', error);
-      UIHelper.mostrarAlerta(this, 'error', 'No se pudieron cargar las direcciones.');
+      ToastService.error('No se pudieron cargar las direcciones.');
     }
   }
 
@@ -156,7 +156,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
       attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
       subdomains: 'abcd',
-      maxZoom: 20
+      maxZoom: 20,
     }).addTo(this.map);
   }
 
@@ -164,7 +164,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     if (!this.map) return;
 
     // Clear previous markers
-    this.mapMarkers.forEach(m => this.map.removeLayer(m));
+    this.mapMarkers.forEach((m) => this.map.removeLayer(m));
     this.mapMarkers = [];
 
     // Recenter to default country view
@@ -185,14 +185,14 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     if (!this.map) return;
 
     // Clear previous markers
-    this.mapMarkers.forEach(m => this.map.removeLayer(m));
+    this.mapMarkers.forEach((m) => this.map.removeLayer(m));
     this.mapMarkers = [];
 
     // Create single marker
     const marker = L.marker([dir.latitud, dir.longitud]).addTo(this.map);
     const pais = dir.territorio?.pais?.nombre || '';
     const path = this.obtenerPathTerritorio(dir.territorio);
-    
+
     const popupHtml = `
       <div class="p-1">
         <h6 class="fw-bold text-dark mb-1">${dir.detalle}</h6>
@@ -201,7 +201,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
         ${dir.codigo_postal ? `<span class="badge bg-secondary-soft text-secondary small">CP: ${dir.codigo_postal}</span>` : ''}
       </div>
     `;
-    
+
     marker.bindPopup(popupHtml).openPopup();
     this.mapMarkers.push(marker);
 
@@ -219,7 +219,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     if (!territorio) return '';
     const parts = [];
     let current = territorio;
-    
+
     if (current.nombre) {
       parts.unshift(current.nombre);
     }
@@ -251,10 +251,10 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     lista.forEach((dir) => {
       const tr = document.createElement('tr');
       tr.classList.add('cursor-pointer');
-      
+
       const badgeClass = dir.activo ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger';
       const badgeText = dir.activo ? 'Activa' : 'Inactiva';
-      
+
       const paisNombre = dir.territorio?.pais?.nombre || 'N/A';
       const pathTerritorios = this.obtenerPathTerritorio(dir.territorio);
 
@@ -279,11 +279,11 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
       tr.addEventListener('click', (e) => {
         if (e.target.closest('.dropdown') || e.target.closest('button')) return;
-        
+
         if (dir.latitud && dir.longitud && this.map) {
           this.mostrarUnicoMarcadorEnMapa(dir);
         } else {
-          UIHelper.mostrarAlerta(this, 'error', 'Esta dirección no cuenta con coordenadas.');
+          ToastService.error('Esta dirección no cuenta con coordenadas.');
         }
       });
 
@@ -292,7 +292,9 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
           const formComp = this.querySelector('#direccionFormComp');
           if (formComp) formComp.abrir(dir);
         });
-        tr.querySelector('.btn-eliminar-dir').addEventListener('click', () => this.eliminarDireccion(dir.id));
+        tr.querySelector('.btn-eliminar-dir').addEventListener('click', () =>
+          this.eliminarDireccion(dir.id)
+        );
       }
 
       tbody.appendChild(tr);
@@ -317,12 +319,17 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
         const cp = (dir.codigo_postal || '').toLowerCase();
         const pais = (dir.territorio?.pais?.nombre || '').toLowerCase();
         const terr = (dir.territorio?.nombre || '').toLowerCase();
-        
-        matchesText = detalle.includes(query) || ref.includes(query) || cp.includes(query) || pais.includes(query) || terr.includes(query);
+
+        matchesText =
+          detalle.includes(query) ||
+          ref.includes(query) ||
+          cp.includes(query) ||
+          pais.includes(query) ||
+          terr.includes(query);
       }
 
       // 2. Country Filter
-      const matchesPais = !paisId || (dir.territorio?.pais_id == paisId);
+      const matchesPais = !paisId || dir.territorio?.pais_id == paisId;
 
       // 3. Status Filter
       const matchesEstado = !estado || (estado === 'activo' ? dir.activo : !dir.activo);
@@ -342,7 +349,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (!isConfirmed) return;
 
     try {

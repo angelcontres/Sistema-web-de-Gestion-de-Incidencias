@@ -80,7 +80,9 @@ export class RoleIndexComponent extends BaseComponent {
       const canDelete = AuthService.hasPermission('DELETE', 'roles');
 
       // Render cards using template literal
-      rolesGrid.innerHTML = roles.map((rol) => `
+      rolesGrid.innerHTML = roles
+        .map(
+          (rol) => `
         <div class="col-md-4 col-sm-6">
           <div class="card h-100 border shadow-sm role-card cursor-pointer" data-id="${rol.id}" style="transition: all 0.2s ease;">
             <div class="card-body d-flex align-items-center gap-3 p-3">
@@ -106,7 +108,9 @@ export class RoleIndexComponent extends BaseComponent {
             </div>
           </div>
         </div>
-      `).join('');
+      `
+        )
+        .join('');
 
       // Bind events to rendered elements
       roles.forEach((rol) => {
@@ -115,7 +119,7 @@ export class RoleIndexComponent extends BaseComponent {
           // Hover effects
           cardEl.addEventListener('mouseover', () => cardEl.classList.add('shadow'));
           cardEl.addEventListener('mouseout', () => cardEl.classList.remove('shadow'));
-          
+
           // Open permissions on click
           cardEl.addEventListener('click', () => this.abrirPanelPermisos(rol));
 
@@ -143,7 +147,7 @@ export class RoleIndexComponent extends BaseComponent {
     } catch (error) {
       console.error('Error cargando roles:', error);
       loadingSpinner.classList.add('d-none');
-      this.mostrarAlertaError(`Error al cargar roles: ${error.message}`);
+      ToastService.error(`Error al cargar roles: ${error.message}`);
     }
   }
 
@@ -251,13 +255,11 @@ export class RoleIndexComponent extends BaseComponent {
       const modal = bootstrap.Modal.getInstance(modalEl);
       if (modal) modal.hide();
 
-      this.mostrarAlertaExito(
-        roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.'
-      );
+      ToastService.success(roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.');
       await this.cargarRoles();
     } catch (error) {
       console.error('Error al guardar rol:', error);
-      this.mostrarErrorModal(error.message || 'Error al procesar el formulario.');
+      ToastService.error(error.message || 'Error al procesar el formulario.');
     }
   }
 
@@ -347,7 +349,8 @@ export class RoleIndexComponent extends BaseComponent {
       for (const [menuNombre, permisos] of Object.entries(permisosAgrupados)) {
         const headingId = `headingMenu${accordionIndex}`;
         const collapseId = `collapseMenu${accordionIndex}`;
-        const allChecked = permisos.length > 0 && permisos.every(p => permisosAsignados.includes(p.id));
+        const allChecked =
+          permisos.length > 0 && permisos.every((p) => permisosAsignados.includes(p.id));
 
         accordionHtml += `
           <div class="accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden">
@@ -362,7 +365,9 @@ export class RoleIndexComponent extends BaseComponent {
             <div id="${collapseId}" class="accordion-collapse collapse ${accordionIndex === 0 ? 'show' : ''}" aria-labelledby="${headingId}">
               <div class="accordion-body bg-light">
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-                  ${permisos.map(permiso => `
+                  ${permisos
+                    .map(
+                      (permiso) => `
                     <div class="col">
                       <div class="form-check bg-white p-3 rounded shadow-sm border h-100 d-flex align-items-center">
                         <input class="form-check-input permission-checkbox flex-shrink-0 mt-0 me-3" type="checkbox" value="${permiso.id}" id="permiso_${permiso.id}" ${permisosAsignados.includes(permiso.id) ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
@@ -375,7 +380,9 @@ export class RoleIndexComponent extends BaseComponent {
                         </label>
                       </div>
                     </div>
-                  `).join('')}
+                  `
+                    )
+                    .join('')}
                 </div>
               </div>
             </div>
@@ -402,7 +409,7 @@ export class RoleIndexComponent extends BaseComponent {
           // Toggle all checkboxes in this group
           selectAllCheckbox.addEventListener('change', (e) => {
             const isChecked = e.target.checked;
-            checkboxes.forEach(cb => {
+            checkboxes.forEach((cb) => {
               if (!cb.disabled) {
                 cb.checked = isChecked;
               }
@@ -410,19 +417,21 @@ export class RoleIndexComponent extends BaseComponent {
           });
 
           // Update select-all state when individual checkboxes change
-          checkboxes.forEach(cb => {
+          checkboxes.forEach((cb) => {
             cb.addEventListener('change', () => {
               const allCbs = Array.from(checkboxes);
-              const checkedCbs = allCbs.filter(c => c.checked);
+              const checkedCbs = allCbs.filter((c) => c.checked);
               selectAllCheckbox.checked = checkedCbs.length === allCbs.length;
-              selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+              selectAllCheckbox.indeterminate =
+                checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
             });
           });
 
           // Initialize indeterminate state
           const allCbs = Array.from(checkboxes);
-          const checkedCbs = allCbs.filter(c => c.checked);
-          selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+          const checkedCbs = allCbs.filter((c) => c.checked);
+          selectAllCheckbox.indeterminate =
+            checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
         }
         accordionIndex++;
       }
@@ -456,7 +465,7 @@ export class RoleIndexComponent extends BaseComponent {
         body: JSON.stringify({ permisos: permisosIds }),
       });
 
-      this.mostrarAlertaExito('Permisos asignados correctamente.');
+      ToastService.success('Permisos asignados correctamente.');
 
       // Opcionalmente, subir el scroll arriba
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -466,37 +475,6 @@ export class RoleIndexComponent extends BaseComponent {
     } finally {
       btnAssignSubmit.innerHTML = btnText;
       btnAssignSubmit.disabled = false;
-    }
-  }
-
-  /**
-   * Métodos helpers de Alertas
-   */
-  mostrarAlertaExito(message) {
-    const successAlert = this.querySelector('#successAlert');
-    const successMessage = this.querySelector('#successMessage');
-    if (successAlert && successMessage) {
-      successMessage.textContent = message;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 4000);
-    }
-  }
-
-  mostrarAlertaError(message) {
-    const errorAlert = this.querySelector('#errorAlert');
-    const errorMessage = this.querySelector('#errorMessage');
-    if (errorAlert && errorMessage) {
-      errorMessage.textContent = message;
-      errorAlert.classList.remove('d-none');
-    }
-  }
-
-  mostrarErrorModal(message) {
-    const modalErrorAlert = this.querySelector('#modalErrorAlert');
-    const modalErrorMessage = this.querySelector('#modalErrorMessage');
-    if (modalErrorAlert && modalErrorMessage) {
-      modalErrorMessage.textContent = message;
-      modalErrorAlert.classList.remove('d-none');
     }
   }
 

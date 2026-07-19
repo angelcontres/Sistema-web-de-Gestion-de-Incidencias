@@ -53,7 +53,7 @@ export class KanbanIndexComponent extends BaseComponent {
       this.incidencias = response.data || response;
       this.renderKanban();
     } catch (error) {
-      this.mostrarAlertaError('No se pudieron cargar las incidencias: ' + error.message);
+      ToastService.error('No se pudieron cargar las incidencias: ' + error.message);
     } finally {
       this.mostrarSpinners(false);
     }
@@ -205,26 +205,6 @@ export class KanbanIndexComponent extends BaseComponent {
       if (show) s.classList.remove('d-none');
       else s.classList.add('d-none');
     });
-  }
-
-  mostrarAlertaExito(message) {
-    const successAlert = this.querySelector('#successAlert');
-    const successMessage = this.querySelector('#successMessage');
-    if (successAlert && successMessage) {
-      successMessage.textContent = message;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 4000);
-    }
-  }
-
-  mostrarAlertaError(message) {
-    const errorAlert = this.querySelector('#errorAlert');
-    const errorMessage = this.querySelector('#errorMessage');
-    if (errorAlert && errorMessage) {
-      errorMessage.textContent = message;
-      errorAlert.classList.remove('d-none');
-      setTimeout(() => errorAlert.classList.add('d-none'), 5000);
-    }
   }
 
   // --- EVIDENCE FILE UPLOAD LOGIC ---

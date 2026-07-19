@@ -66,8 +66,19 @@ export class UserIndexComponent extends BaseComponent {
             header: 'Acciones',
             class: 'text-center',
             actions: [
-              ...(AuthService.hasPermission('UPDATE', 'usuarios') ? [{ name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' }] : []),
-              ...(AuthService.hasPermission('DELETE', 'usuarios') ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }] : []),
+              ...(AuthService.hasPermission('UPDATE', 'usuarios')
+                ? [
+                    {
+                      name: 'editar',
+                      label: 'Editar',
+                      icon: 'bi-pencil-square',
+                      class: 'text-primary',
+                    },
+                  ]
+                : []),
+              ...(AuthService.hasPermission('DELETE', 'usuarios')
+                ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }]
+                : []),
             ],
           },
         ],
@@ -99,7 +110,7 @@ export class UserIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (isConfirmed) {
       try {
         await UserService.delete(id);
@@ -112,28 +123,6 @@ export class UserIndexComponent extends BaseComponent {
         console.error('Error al eliminar usuario:', error);
         ToastService.error(`Error al eliminar: ${error.message}`);
       }
-    }
-  }
-
-  /**
-   * Helpers de alertas
-   */
-  mostrarAlertaExito(message) {
-    const successAlert = this.querySelector('#successAlert');
-    const successMessage = this.querySelector('#successMessage');
-    if (successAlert && successMessage) {
-      successMessage.textContent = message;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 4000);
-    }
-  }
-
-  mostrarAlertaError(message) {
-    const errorAlert = this.querySelector('#errorAlert');
-    const errorMessage = this.querySelector('#errorMessage');
-    if (errorAlert && errorMessage) {
-      errorMessage.textContent = message;
-      errorAlert.classList.remove('d-none');
     }
   }
 }
