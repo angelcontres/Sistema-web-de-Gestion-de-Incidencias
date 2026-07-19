@@ -267,6 +267,28 @@ En producción, debes configurar el **Cron** del sistema operativo para que ejec
    * * * * * cd /ruta/a/tu/proyecto && php artisan schedule:run >> /dev/null 2>&1
    ```
 
+## Análisis de Calidad de Código SQA (SonarQube)
+
+El proyecto cuenta con una integración lista para su ejecución local y en entornos de integración continua (CI/CD) para la validación estática, seguridad y calidad de código a través de SonarQube.
+
+### Levantamiento Rápido (Local)
+
+El entorno de `docker-compose.yml` incluye servicios preconfigurados de SonarQube y una base de datos PostgreSQL 15 aislada para preservar los históricos de análisis de código de tu proyecto:
+
+```bash
+docker-compose up -d sonarqube
+```
+
+El servidor estará expuesto en: **http://localhost:9009**
+- Las credenciales por defecto de un despliegue fresco de SonarQube son `admin` / `admin`.
+
+### Configuración del Proyecto (sonar-project.properties)
+
+El archivo en la raíz `sonar-project.properties` contiene la huella y configuración general del proyecto, con soporte directo para Producción y Pipelines:
+
+- **Autenticación segura**: Mediante el uso de un token que puede ser inyectado por CLI (`-Dsonar.token=$SONAR_TOKEN`), evitas subir contraseñas planas al repositorio.
+- **Mapeo de cobertura**: Ya está preconfigurado para leer la salida XML (Clover) generada por PHPUnit, y el archivo `lcov.info` de las métricas Frontend, de manera que la cobertura de código se centralice en los dashboards SQA.
+
 ---
 
 ## Contribuir

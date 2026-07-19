@@ -23,11 +23,14 @@ class PermisoController extends Controller
      */
     public function store(Request $request)
     {
-        $opcionMenu = OpcionMenu::findOrFail($request->opcion_menu_id);
+        $opcionMenu = $request->opcion_menu_id ? OpcionMenu::find($request->opcion_menu_id) : null;
 
-        // Derivar recurso a partir de la ruta (ej. "#/opciones-menu" -> "opciones_menu")
-        $recursoStr = str_replace(['#/', '/'], '', $opcionMenu->ruta);
-        $recursoStr = str_replace('-', '_', $recursoStr);
+        // Derivar recurso a partir de la ruta (ej. "#/opciones-menu" -> "opciones_menu") si no se pasa explícitamente
+        $recursoStr = $request->recurso;
+        if (empty($recursoStr) && $opcionMenu) {
+            $recursoStr = str_replace(['#/', '/'], '', $opcionMenu->ruta);
+            $recursoStr = str_replace('-', '_', $recursoStr);
+        }
 
         $permiso = Permiso::create([
             'nombre' => $request->nombre,
@@ -65,10 +68,13 @@ class PermisoController extends Controller
     {
         $permiso = Permiso::findOrFail($id);
 
-        $recurso = $permiso->recurso;
-        if ($request->has('opcion_menu_id') && $request->opcion_menu_id != $permiso->opcion_menu_id) {
-            $opcionMenu = OpcionMenu::findOrFail($request->opcion_menu_id);
-            $recurso = $opcionMenu->nombre;
+        $recurso = $request->recurso ?? $permiso->recurso;
+        if (empty($request->recurso) && $request->has('opcion_menu_id') && $request->opcion_menu_id != $permiso->opcion_menu_id) {
+            $opcionMenu = OpcionMenu::find($request->opcion_menu_id);
+            if ($opcionMenu) {
+                $recursoStr = str_replace(['#/', '/'], '', $opcionMenu->ruta);
+                $recurso = str_replace('-', '_', $recursoStr);
+            }
         }
 
         $permiso->update([

@@ -5,7 +5,6 @@ import { CatalogoService } from '../../../../../shared/services/catalogo.service
 import { ModalService } from '../../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../../shared/services/toast.service.js';
 import { AuthService } from '../../../../../core/auth.service.js';
-import { PermissionsEnum } from '../../../../../core/permissions.enum.js';
 import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../../shared/constants.js';
 
 export class IncidenciaFormComponent extends BaseComponent {
@@ -105,8 +104,8 @@ export class IncidenciaFormComponent extends BaseComponent {
     // Check if the user has permissions to modify the incident status/assignment
     const canManageIncidencia =
       isAdmin ||
-      AuthService.hasPermission(PermissionsEnum.UPDATE_INCIDENCIAS) ||
-      AuthService.hasPermission(PermissionsEnum.UPDATE_DESPACHO_INCIDENCIAS);
+      AuthService.hasPermission('UPDATE', 'incidencias') ||
+      AuthService.hasPermission('UPDATE', 'despacho_incidencias');
 
     // Hide State selector (colEstado) if user cannot manage/update incidents
     const colEstado = this.querySelector('#colEstado');
@@ -292,11 +291,13 @@ export class IncidenciaFormComponent extends BaseComponent {
       if (isLoading) {
         this.btnObtenerUbicacionIcon?.classList.add('d-none');
         this.btnObtenerUbicacionSpinner?.classList.remove('d-none');
-        if (this.btnObtenerUbicacionText) this.btnObtenerUbicacionText.textContent = 'Obteniendo ubicación...';
+        if (this.btnObtenerUbicacionText)
+          this.btnObtenerUbicacionText.textContent = 'Obteniendo ubicación...';
       } else {
         this.btnObtenerUbicacionIcon?.classList.remove('d-none');
         this.btnObtenerUbicacionSpinner?.classList.add('d-none');
-        if (this.btnObtenerUbicacionText) this.btnObtenerUbicacionText.textContent = 'Obtener mi ubicación';
+        if (this.btnObtenerUbicacionText)
+          this.btnObtenerUbicacionText.textContent = 'Obtener mi ubicación';
       }
     };
 
@@ -311,13 +312,13 @@ export class IncidenciaFormComponent extends BaseComponent {
         this.actualizarMarcador(latitude, longitude, false);
         await this.autofillDesdeCoordenadas(latitude, longitude);
         toggleLoading(false);
-        ToastService.success(`Ubicación obtenida con éxito (Precisión: ${accuracy.toFixed(1)}m).`);
+        ToastService.success(`Ubicación obtenida con éxito.`);
       },
       (error) => {
         toggleLoading(false);
         let msg = 'Error al obtener la geolocalización.';
         if (error.code === error.PERMISSION_DENIED) {
-          msg = 'Permiso denegado por el usuario para obtener geolocalización.';
+          msg = 'Permiso denegado. Active la Ubicación en su navegador.';
         } else if (error.code === error.POSITION_UNAVAILABLE) {
           msg = 'La ubicación no está disponible.';
         } else if (error.code === error.TIMEOUT) {
@@ -347,7 +348,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       boxZoom: false,
       keyboard: false,
       tap: false,
-      touchZoom: false
+      touchZoom: false,
     }).setView(MAP_CONFIG.DEFAULT_CENTER, MAP_CONFIG.DEFAULT_ZOOM);
 
     L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
@@ -392,8 +393,10 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.actualizarMarcador(lat, lng, true);
     });
 
-    ToastService.info('Mapa habilitado. Haga clic o arrastre el marcador para seleccionar la ubicación.');
-    
+    ToastService.info(
+      'Mapa habilitado. Haga clic o arrastre el marcador para seleccionar la ubicación.'
+    );
+
     if (this.btnSeleccionarMapa) {
       this.btnSeleccionarMapa.classList.replace('btn-outline-primary', 'btn-primary');
       this.btnSeleccionarMapa.disabled = true;
@@ -434,8 +437,10 @@ export class IncidenciaFormComponent extends BaseComponent {
     const dLon = (lon2 - lon1) * (Math.PI / 180);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distancia en km
   }
@@ -485,7 +490,7 @@ export class IncidenciaFormComponent extends BaseComponent {
             parseFloat(d.longitud)
           );
 
-          // Obtener la ubicación (y parroquia) más cercana. 
+          // Obtener la ubicación (y parroquia) más cercana.
           // Ajustamos un radio máximo de 50 metros (0.05 km) para evitar asignar direcciones muy lejanas.
           if (dist < minDistance && dist <= 0.05) {
             minDistance = dist;
@@ -622,7 +627,7 @@ export class IncidenciaFormComponent extends BaseComponent {
           const opt2 = this.findOptionMatchingText(this.modalDirNivel2, n2Name);
           if (opt2) {
             this.modalDirNivel2.value = opt2.value;
-            
+
             // 3. Siempre cargar Nivel 3 en el modal
             await this.cargarModalDropdownNivel3(paisId, opt2.value);
 
@@ -800,7 +805,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     const detalle = this.dirDetalleInput.value;
     const n3Select = this.querySelector('#dirNivel3');
     let parroquiaNombre = '';
-    
+
     if (n3Select && n3Select.options.length > 0 && n3Select.selectedIndex > 0) {
       parroquiaNombre = n3Select.options[n3Select.selectedIndex].text;
     }
@@ -832,8 +837,6 @@ export class IncidenciaFormComponent extends BaseComponent {
       return optNorm.includes(normalized) || normalized.includes(optNorm);
     });
   }
-
-
 
   // --- CATALOGS AND DATA ---
   async cargarCatalogosIniciales() {
@@ -1553,7 +1556,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       base64: mockBase64,
       compressed: true,
     };
-    
+
     // Check limit
     const currentUser = AuthService.getCurrentUser();
     const maxFiles = currentUser?.max_files || 5;

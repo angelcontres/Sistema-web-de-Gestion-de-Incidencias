@@ -101,9 +101,7 @@ class AuthTest extends TestCase
     public function test_admin_can_delete_user_and_removes_roles_and_tokens()
     {
         // 1. Crear el usuario Admin para autenticar la petición
-        $admin = User::factory()->create();
-        $rolAdmin = Role::firstOrCreate(['nombre' => 'Admin'], ['descripcion' => 'Admin', 'created_by' => $admin->id]);
-        $admin->roles()->sync([$rolAdmin->id]);
+        $admin = $this->createAdminUser();
 
         // 2. Crear el usuario que será eliminado (con roles y tokens)
         $targetUser = User::factory()->create();

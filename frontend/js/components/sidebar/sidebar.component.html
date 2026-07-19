@@ -1,10 +1,13 @@
-<nav class="px-3 py-3 d-flex flex-column" aria-label="Navegación secundaria" style="min-height: calc(100vh - 72px);">
+<nav class="px-3 py-4 d-flex flex-column h-100" aria-label="Navegación secundaria">
   <div>
-    <p class="text-uppercase text-muted small fw-semibold px-2 mb-2">Secciones</p>
-    <div id="dynamicMenuContainer" class="nav flex-column gap-1">
-      <div class="d-flex justify-content-center py-3" id="menuLoader">
-        <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
+    <div id="dynamicMenuContainer" class="nav flex-column gap-2">
+      <div class="d-flex justify-content-center py-5" id="menuLoader">
+        <div
+          class="spinner-grow text-primary opacity-75"
+          style="width: 2rem; height: 2rem"
+          role="status"
+        >
+          <span class="visually-hidden">Cargando menú...</span>
         </div>
       </div>
     </div>

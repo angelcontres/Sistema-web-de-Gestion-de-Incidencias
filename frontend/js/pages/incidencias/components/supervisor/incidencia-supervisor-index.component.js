@@ -73,14 +73,14 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       const color = inc.prioridad ? inc.prioridad.color_hex : '#6c757d';
 
       a.innerHTML = `
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold text-truncate" style="max-width: 70%;">${icon} #${inc.id} - ${inc.incidencia_descripcion || 'Sin descripción'}</h6>
-          <span class="badge rounded-pill" style="background-color: ${color}20; color: ${color}; border: 1px solid ${color}; font-size: 0.65rem;">${prioridad}</span>
+        <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+          <h6 class="mb-0 fw-bold text-truncate text-dark" style="max-width: 70%;">${icon} #${inc.id} - ${inc.incidencia_descripcion || 'Sin descripción'}</h6>
+          <span class="badge rounded-pill shadow-sm" style="background-color: ${color}15; color: ${color}; border: 1px solid ${color}40; font-size: 0.65rem; font-weight: 700;">${prioridad}</span>
         </div>
-        <div class="small text-muted mb-1"><i class="bi bi-geo-alt me-1"></i> ${inc.direccion ? inc.direccion.detalle : 'Desconocida'}</div>
-        <div class="small text-muted d-flex justify-content-between">
-          <span><i class="bi bi-clock me-1"></i> ${new Date(inc.created_at).toLocaleDateString()}</span>
-          <span class="fw-bold text-${getTextColorClass(inc.estado)}">${inc.estado ? inc.estado.nombre : ''}</span>
+        <div class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-primary me-1"></i> ${inc.direccion ? inc.direccion.detalle : 'Desconocida'}</div>
+        <div class="small text-muted d-flex justify-content-between align-items-center">
+          <span class="d-flex align-items-center gap-1"><i class="bi bi-clock-history"></i> ${new Date(inc.created_at).toLocaleDateString()}</span>
+          <span class="badge bg-${getTextColorClass(inc.estado)}-soft text-${getTextColorClass(inc.estado)} rounded-pill px-2 py-1 fw-bold">${inc.estado ? inc.estado.nombre : ''}</span>
         </div>
       `;
 
