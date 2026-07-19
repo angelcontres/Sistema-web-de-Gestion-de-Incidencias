@@ -12,11 +12,24 @@
       <span id="error-message"></span>
     </div>
 
-    <!-- Loading State -->
-    <div id="loading-spinner" class="d-flex justify-content-center align-items-center py-5 d-none">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Cargando...</span>
-      </div>
+    <!-- Loading State (Skeleton Loaders) -->
+    <div id="loading-spinner" class="d-none w-100">
+      <table class="table table-borderless mb-0 w-100">
+        <tbody>
+          <tr>
+            <td class="p-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
+          </tr>
+          <tr>
+            <td class="px-4 pb-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
+          </tr>
+          <tr>
+            <td class="px-4 pb-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
+          </tr>
+          <tr>
+            <td class="px-4 pb-4"><div class="skeleton-box w-75" style="height: 40px;"></div></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Empty State -->
@@ -37,6 +50,21 @@
           <!-- Dynamic rows will be inserted here -->
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Paginación (Card Footer) -->
+  <div class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center d-none" id="pagination-container">
+    <div class="small text-muted" id="pagination-info">
+      Mostrando <span class="fw-semibold text-dark" id="page-current">0</span> de <span class="fw-semibold text-dark" id="page-total">0</span> páginas
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-sm btn-outline-secondary" id="btn-prev-page" disabled>
+        <i class="bi bi-chevron-left"></i> Anterior
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" id="btn-next-page" disabled>
+        Siguiente <i class="bi bi-chevron-right"></i>
+      </button>
     </div>
   </div>
 </div>

@@ -1,8 +1,8 @@
 import { apiRequest } from '../../../core/api.js';
 
 export const UserService = {
-  getAll() {
-    return apiRequest('/usuarios');
+  getAll(page = 1) {
+    return apiRequest(`/usuarios?page=${page}`);
   },
   getById(id) {
     return apiRequest(`/usuarios/${id}`);

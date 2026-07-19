@@ -16,10 +16,10 @@ export class BaseComponent extends HTMLElement {
       if (!response.ok) {
         throw new Error(`No se pudo cargar la plantilla: ${this.templateUrl} (HTTP ${response.status})`);
       }
-      const htmlText = await response.text();
+      const downloadedHtmlTemplate = await response.text();
       
       // Render template inside light DOM to preserve global Bootstrap CSS applicability
-      this.innerHTML = htmlText;
+      this.innerHTML = downloadedHtmlTemplate;
       
       // Trigger lifecycle hook similar to Angular's ngOnInit
       if (typeof this.onInit === 'function') {
@@ -33,6 +33,16 @@ export class BaseComponent extends HTMLElement {
           <br><small>${error.message}</small>
         </div>
       `;
+    }
+  }
+
+  /**
+   * Native Web Component lifecycle hook triggered when the element is removed from the DOM.
+   * Prevents memory leaks by cleaning up events, timeouts, and observers.
+   */
+  disconnectedCallback() {
+    if (typeof this.onDestroy === 'function') {
+      this.onDestroy();
     }
   }
 }

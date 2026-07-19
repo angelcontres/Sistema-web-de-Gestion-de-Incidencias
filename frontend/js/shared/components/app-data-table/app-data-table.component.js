@@ -13,11 +13,24 @@ export class AppDataTableComponent extends BaseComponent {
     this.columns = [];
     this.data = [];
 
-    // Promise to handle the async template loading race condition
     this.isReady = false;
     this.readyPromise = new Promise(resolve => {
       this.resolveReady = resolve;
     });
+
+    this.currentPage = 1;
+    this.lastPage = 1;
+    this.currentEndpointOrService = null;
+
+    // Read page from URL hash if present
+    const hashParts = window.location.hash.split('?');
+    if (hashParts.length > 1) {
+      const urlParams = new URLSearchParams(hashParts[1]);
+      const pageParam = urlParams.get('page');
+      if (pageParam && !isNaN(pageParam)) {
+        this.currentPage = parseInt(pageParam, 10);
+      }
+    }
   }
 
   async connectedCallback() {
@@ -74,6 +87,27 @@ export class AppDataTableComponent extends BaseComponent {
     if (this.emptyState) {
       const p = this.emptyState.querySelector('p');
       if (p) p.textContent = emptyText;
+    }
+
+    this.paginationContainer = this.querySelector('#pagination-container');
+    this.btnPrevPage = this.querySelector('#btn-prev-page');
+    this.btnNextPage = this.querySelector('#btn-next-page');
+    this.pageCurrentLabel = this.querySelector('#page-current');
+    this.pageTotalLabel = this.querySelector('#page-total');
+
+    if (this.btnPrevPage && this.btnNextPage) {
+      this.btnPrevPage.addEventListener('click', () => {
+        if (this.currentPage > 1) {
+          this.currentPage--;
+          this.updateUrlAndLoad();
+        }
+      });
+      this.btnNextPage.addEventListener('click', () => {
+        if (this.currentPage < this.lastPage) {
+          this.currentPage++;
+          this.updateUrlAndLoad();
+        }
+      });
     }
 
     // Render table headers dynamically if columns are already defined
@@ -144,12 +178,27 @@ export class AppDataTableComponent extends BaseComponent {
   }
 
   /**
+   * Helper to update browser URL silently and trigger load
+   */
+  updateUrlAndLoad() {
+    const hashPath = window.location.hash.split('?')[0];
+    const newHash = `${hashPath}?page=${this.currentPage}`;
+    // Updates URL without triggering router reload
+    history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+    
+    this.load(this.currentEndpointOrService);
+  }
+
+  /**
    * Automatically load data from backend endpoint
    * Handles showing spinner, counting badges, empty state, and API error formatting.
-   * @param {string} endpoint
+   * @param {string|Function} endpointOrService
    * @returns {Promise<void>}
    */
   async load(endpointOrService) {
+    if (!endpointOrService) return;
+    this.currentEndpointOrService = endpointOrService;
+
     // Wait for the HTML template to load and onInit to cache references
     await this.readyPromise;
 
@@ -158,15 +207,33 @@ export class AppDataTableComponent extends BaseComponent {
     this.emptyState.classList.add('d-none');
     this.errorAlert.classList.add('d-none');
     this.totalBadge.classList.add('d-none');
+    if (this.paginationContainer) this.paginationContainer.classList.add('d-none');
 
     try {
       let response;
       if (typeof endpointOrService === 'function') {
-        response = await endpointOrService();
+        response = await endpointOrService(this.currentPage);
       } else {
-        response = await apiRequest(endpointOrService);
+        const sep = endpointOrService.includes('?') ? '&' : '?';
+        response = await apiRequest(`${endpointOrService}${sep}page=${this.currentPage}`);
       }
+      
       const list = Array.isArray(response) ? response : (response.data || []);
+      
+      // Update pagination metadata if available
+      if (response && response.current_page !== undefined) {
+        this.currentPage = response.current_page;
+        this.lastPage = response.last_page || 1;
+        
+        if (this.paginationContainer && response.last_page > 1) {
+          this.paginationContainer.classList.remove('d-none');
+          this.pageCurrentLabel.textContent = this.currentPage;
+          this.pageTotalLabel.textContent = this.lastPage;
+          
+          this.btnPrevPage.disabled = this.currentPage <= 1;
+          this.btnNextPage.disabled = this.currentPage >= this.lastPage;
+        }
+      }
       
       this.data = list;
       this.loadingSpinner.classList.add('d-none');
