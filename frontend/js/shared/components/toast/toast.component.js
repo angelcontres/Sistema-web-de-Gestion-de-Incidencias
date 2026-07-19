@@ -23,42 +23,36 @@ export class ToastComponent extends BaseComponent {
     const closeBtn = this.querySelector('#toast-btn-close');
 
     let icon;
-    let bgClass;
-    let textClass = 'text-white';
+    let colorClass;
     
     switch (type) {
       case 'success':
         icon = 'bi-check-circle-fill';
-        bgClass = 'bg-success';
+        colorClass = 'text-success';
         title = title || 'Éxito';
         break;
       case 'error':
         icon = 'bi-exclamation-triangle-fill';
-        bgClass = 'bg-danger';
+        colorClass = 'text-danger';
         title = title || 'Error';
         break;
       case 'warning':
         icon = 'bi-exclamation-circle-fill';
-        bgClass = 'bg-warning';
-        textClass = 'text-dark';
+        colorClass = 'text-warning';
         title = title || 'Advertencia';
         break;
       case 'info':
       default:
         icon = 'bi-info-circle-fill';
-        bgClass = 'bg-info';
+        colorClass = 'text-primary';
         title = title || 'Información';
         break;
     }
 
-    toastEl.classList.add(bgClass, textClass);
-    iconEl.classList.add(icon);
+    iconEl.classList.add(icon, colorClass);
+    titleEl.classList.add(colorClass);
     titleEl.textContent = title;
     messageEl.innerHTML = message;
-
-    if (textClass === 'text-white') {
-      closeBtn.classList.add('btn-close-white');
-    }
 
     const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
     

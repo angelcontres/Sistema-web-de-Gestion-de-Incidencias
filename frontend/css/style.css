@@ -643,3 +643,143 @@ main#app {
     font-size: 0.8rem !important;
   }
 }
+
+/* ==========================================
+   PREMIUM CENTRALIZED COMPONENTS (DESIGN SYSTEM)
+   ========================================== */
+
+/* Page Headers */
+.page-header-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 576px) {
+  .page-header-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.page-title {
+  font-size: 1.5rem; /* h3 */
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  color: var(--text-muted);
+  font-size: 0.875rem; /* small */
+  margin-bottom: 0;
+}
+
+/* Premium Cards */
+.premium-card {
+  background-color: var(--card-bg);
+  border: none !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 1.5rem; /* p-4 equivalent */
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.premium-card:hover {
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.premium-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.premium-card-title {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Premium Modals */
+.premium-modal-content {
+  border: none !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-lg) !important;
+  overflow: hidden;
+}
+
+.premium-modal-header {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 1.5rem 1.5rem 1rem 1.5rem !important;
+}
+
+.premium-modal-title {
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.premium-modal-body {
+  padding: 1.5rem !important;
+}
+
+/* Premium Forms */
+.premium-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.premium-form-group {
+  margin-bottom: 1.25rem;
+}
+
+/* Premium Tables */
+.premium-table-wrapper {
+  background-color: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.premium-table {
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+
+.premium-table thead th {
+  background-color: var(--secondary-soft);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem !important;
+  border-bottom: none;
+}
+
+.premium-table tbody td {
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.875rem;
+}
+
+/* Premium Alerts */
+.premium-alert {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+

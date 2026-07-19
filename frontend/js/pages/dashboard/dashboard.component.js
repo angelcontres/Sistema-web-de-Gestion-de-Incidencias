@@ -24,7 +24,7 @@ export class DashboardComponent extends BaseComponent {
     setTimeout(() => {
       this.initDashboardMap();
       this.loadDashboardData();
-      this.initGrafanaDashboards();
+      this.initDashboards();
     }, 50);
 
     // 4. Renderizar menú dinámico
@@ -97,13 +97,13 @@ export class DashboardComponent extends BaseComponent {
         .map(
           (menu) => `
         <div class="col-6 col-md-4 col-lg-3">
-          <a href="${menu.ruta || '#/'}" class="card border border-light shadow-sm rounded-3 text-decoration-none stat-card-hover bg-white text-dark h-100">
-            <div class="card-body p-3 d-flex align-items-center gap-3">
-              <div class="bg-primary-soft rounded-3 p-2.5 text-primary d-inline-flex">
-                <i class="${menu.icono || 'bi bi-grid'} fs-5"></i>
+          <a href="${menu.ruta || '#/'}" class="premium-card text-decoration-none d-block h-100 py-3 px-4">
+            <div class="d-flex align-items-center gap-3">
+              <div class="bg-primary-soft rounded-circle p-3 text-primary d-inline-flex justify-content-center align-items-center shadow-sm" style="width: 48px; height: 48px;">
+                <i class="${menu.icono || 'bi bi-grid'} fs-4"></i>
               </div>
               <div class="text-start">
-                <span class="fw-bold small d-block" style="letter-spacing: -0.01em; line-height: 1.2;">${menu.nombre}</span>
+                <span class="fw-bolder text-dark d-block" style="letter-spacing: -0.01em; line-height: 1.2;">${menu.nombre}</span>
               </div>
             </div>
           </a>
@@ -128,19 +128,10 @@ export class DashboardComponent extends BaseComponent {
     }
   }
 
-  initGrafanaDashboards() {
+  async initDashboards() {
     const container = this.querySelector('#grafanaKpisContainer');
     if (!container) return;
 
-    const GRAFANA_BASE = 'https://grafana.dihm-muertos.site';
-
-    const user = AuthService.getCurrentUser();
-    const instId = user && user.institucion_id ? user.institucion_id : '';
-    const userId = user && user.id ? user.id : '';
-    console.log('ID usuario institucion: ' + instId);
-    console.log('ID usuario actual (sesion): ' + userId);
-
-    // Resolver rol por permisos o is_admin
     let role = 'Default';
     if (AuthService.isAdmin()) {
       role = 'Admin';
@@ -152,42 +143,80 @@ export class DashboardComponent extends BaseComponent {
       role = 'Ciudadano';
     }
 
-    // URLs de dashboards completos por rol
-    // Usamos el formato /d/{dashboard_uid}/ en lugar de /d-solo/ para incrustar el dashboard completo.
-    // Usamos kiosk=1 para ocultar menús nativos de Grafana, u opcionalmente kiosk=tv si quieres conservar la barra de variables.
-    const GRAFANA_DASHBOARDS = {
-      Admin: `${GRAFANA_BASE}/d/adf7t6b/prod-incidents-admin?orgId=1&from=now-7d&to=now&timezone=browser&theme=light&refresh=10s&kiosk&embed=v2`,
-      Supervisor: `${GRAFANA_BASE}/d/addt7bq/prod-incidents-supervisor?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=5m&kiosk&embed=v2&var-usuario_asignado_id=${userId}`,
-      Institucion: `${GRAFANA_BASE}/d/ad6n9wt/prod-incidents-institucion?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=10s&kiosk&embed=v2&var-institucion_id=${instId}&var-usuario_asignado_id=${userId}`,
-      Ciudadano: `${GRAFANA_BASE}/d/adfds7b/prod-incidents-ciudadano?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=30s&kiosk&embed=v2&var-usuario_reporta_id=${userId}`,
-      Default: `${GRAFANA_BASE}/d/addt7bq/prod-incidents-supervisor?orgId=1&from=now-24h&to=now&timezone=browser&theme=light&refresh=5m&kiosk&embed=v2`,
-    };
+    container.innerHTML =
+      '<div class="text-center p-5 w-100"><div class="spinner-border text-primary" role="status"></div><p class="mt-3 text-muted">Cargando métricas...</p></div>';
 
-    // Si tuvieras un único dashboard unificado con pestañas (tabs) controladas por una variable 'dtab':
-    // const GRAFANA_DASHBOARDS = {
-    //   Admin: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=Admin`,
-    //   Supervisor: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=Supervisor`,
-    //   Institucion: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=Institucion&var-institucion_id=${instId}`,
-    //   Ciudadano: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=Ciudadano&var-usuario_id=${userId}`,
-    //   Default: `${GRAFANA_BASE}/d/ad79j7w/incidents-dashboards?orgId=1&theme=light&kiosk=1&var-dtab=General`,
-    // };
+    // Cargar ECharts vía CDN y el CSS de las tarjetas
+    await Promise.all([this.loadECharts(), this.loadDashboardStyles()]);
 
-    const dashboardUrl = GRAFANA_DASHBOARDS[role] || GRAFANA_DASHBOARDS['Default'];
+    let data;
+    try {
+      const response = await apiRequest(`/dashboard/metrics?role=${role}`);
+      data = response.data || response;
+    } catch (e) {
+      console.error('Error cargando métricas:', e);
+      // Fallback a un objeto vacío para ser tolerante a fallos
+      data = {
+        kpis: {},
+        distribucion_estado: [],
+        distribucion_prioridad: [],
+        incidencias_institucion: [],
+        tendencia_temporal: [],
+      };
+    }
 
-    container.innerHTML = `
-      <div class="w-100">
-        <div class="card border-0 shadow-sm rounded-4 bg-transparent overflow-hidden" style="height: 100vh; max-height: 100vh;">
-          <iframe 
-            src="${dashboardUrl}" 
-            width="100%" 
-            height="100%" 
-            style="border: none; display: block; width: 100%; height: 100%;" 
-            frameborder="0"
-            allowtransparency="true">
-          </iframe>
-        </div>
-      </div>
-    `;
+    container.innerHTML = ''; // clear loading
+
+    try {
+      if (role === 'Ciudadano') {
+        await import('./components/dashboard-ciudadano/dashboard-ciudadano.component.js');
+        const dashEl = document.createElement('app-dashboard-ciudadano');
+        dashEl.data = data;
+        container.appendChild(dashEl);
+      } else if (role === 'Institucion') {
+        await import('./components/dashboard-institucion/dashboard-institucion.component.js');
+        const dashEl = document.createElement('app-dashboard-institucion');
+        dashEl.data = data;
+        container.appendChild(dashEl);
+      } else if (role === 'Supervisor') {
+        await import('./components/dashboard-supervisor/dashboard-supervisor.component.js');
+        const dashEl = document.createElement('app-dashboard-supervisor');
+        dashEl.data = data;
+        container.appendChild(dashEl);
+      } else {
+        await import('./components/dashboard-admin/dashboard-admin.component.js');
+        const dashEl = document.createElement('app-dashboard-admin');
+        dashEl.data = data;
+        container.appendChild(dashEl);
+      }
+    } catch (e) {
+      console.error('Error instanciando el componente del dashboard:', e);
+      container.innerHTML =
+        '<div class="alert alert-danger w-100">Error cargando la vista del dashboard.</div>';
+    }
+  }
+
+  loadECharts() {
+    return new Promise((resolve) => {
+      if (window.echarts) return resolve();
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js';
+      script.onload = resolve;
+      document.head.appendChild(script);
+    });
+  }
+
+  loadDashboardStyles() {
+    return new Promise((resolve) => {
+      if (document.getElementById('dashboard-cards-css')) return resolve();
+      const link = document.createElement('link');
+      link.id = 'dashboard-cards-css';
+      link.rel = 'stylesheet';
+      link.href = 'js/pages/dashboard/components/dashboard-cards.css';
+      link.onload = resolve;
+      link.onerror = resolve; // Continue even if it fails to avoid blocking the UI completely
+      document.head.appendChild(link);
+    });
   }
 
   renderTopServices(services) {
@@ -203,12 +232,12 @@ export class DashboardComponent extends BaseComponent {
       .map(
         (service) => `
       <div>
-        <div class="d-flex justify-content-between text-secondary small fw-bold mb-1">
-          <span>${service.nombre}</span>
-          <span class="text-dark">${service.porcentaje}%</span>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-secondary fw-semibold" style="font-size: 0.85rem;">${service.nombre}</span>
+          <span class="badge bg-secondary-soft text-dark fw-bolder">${service.porcentaje}%</span>
         </div>
-        <div class="progress rounded-pill" style="height: 8px;">
-          <div class="progress-bar bg-${service.color}" role="progressbar" style="width: ${service.porcentaje}%" aria-valuenow="${service.porcentaje}" aria-valuemin="0" aria-valuemax="100"></div>
+        <div class="progress rounded-pill shadow-sm" style="height: 6px; background-color: var(--border-light);">
+          <div class="progress-bar bg-${service.color} rounded-pill" role="progressbar" style="width: ${service.porcentaje}%" aria-valuenow="${service.porcentaje}" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
       </div>
     `

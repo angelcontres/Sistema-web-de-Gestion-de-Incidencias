@@ -131,11 +131,11 @@ export class TrpDashboardComponent extends BaseComponent {
     slowest.forEach((item) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="ps-4"><span class="badge bg-light text-dark border">${item.endpoint}</span></td>
-        <td><span class="badge ${this.getMethodColor(item.metodo)}">${item.metodo}</span></td>
-        <td class="fw-bold text-danger">${item.avg_trp} ms</td>
-        <td class="text-warning fw-semibold">${item.max_trp} ms</td>
-        <td>${item.total_requests}</td>
+        <td class="ps-4"><span class="badge bg-secondary-soft text-dark border-0 px-2 py-1">${item.endpoint}</span></td>
+        <td><span class="badge ${this.getMethodColor(item.metodo)} px-2 py-1 shadow-sm">${item.metodo}</span></td>
+        <td class="fw-bolder text-danger">${item.avg_trp} ms</td>
+        <td class="text-warning fw-bold">${item.max_trp} ms</td>
+        <td class="text-secondary fw-medium">${item.total_requests}</td>
       `;
       tbody.appendChild(tr);
     });
