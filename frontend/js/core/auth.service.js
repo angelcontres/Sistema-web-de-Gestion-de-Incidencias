@@ -122,19 +122,19 @@ export const AuthService = {
     const hashWithoutQuery = hash.split('?')[0];
 
     const routePermissions = {
-      '#/opciones-menu': { action: 'READ', resource: 'opciones_menu' },
+      '#/opciones-menu': { action: 'READ', resource: 'opciones' },
       '#/roles': { action: 'READ', resource: 'roles' },
       '#/permisos': { action: 'READ', resource: 'permisos' },
       '#/trp-dashboard': { action: 'READ', resource: 'trp' },
       '#/usuarios': { action: 'READ', resource: 'usuarios' },
       '#/ubicaciones': { action: 'READ', resource: 'ubicaciones' },
-      '#/categorias': { action: 'READ', resource: 'categorias_incidencia' },
+      '#/categorias': { action: 'READ', resource: 'categorias' },
       '#/incidencias': { action: 'READ', resource: 'incidencias' },
-      '#/incidencias/despacho': { action: 'READ', resource: 'despacho_de_incidencias' },
+      '#/incidencias/despacho': { action: 'READ', resource: 'despacho' },
       '#/instituciones': { action: 'READ', resource: 'instituciones' },
       '#/instituciones/kanban': { action: 'READ', resource: 'kanban' },
       '#/mantenimiento': { action: 'READ', resource: 'mantenimiento' },
-      '#/tramites/historial': { action: 'READ', resource: 'historial_incidencias' },
+      '#/tramites/historial': { action: 'READ', resource: 'historial' },
       '#/administracion': { action: 'READ', resource: 'roles' },
     };
 

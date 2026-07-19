@@ -56,23 +56,20 @@ class CheckResourcePermission
             return $next($request);
         }
 
-        // Replace hyphens with underscores to match db convention
+        // Map specific API URL segments to their single-word DB resource names
+        $recursoMap = [
+            'opciones-menu' => 'opciones',
+            'categorias-incidencia' => 'categorias',
+        ];
+        
+        $recurso = $recursoMap[$recurso] ?? $recurso;
+
+        // Replace hyphens with underscores just in case for any other resource, though we prefer single words
         $recurso = str_replace('-', '_', $recurso);
 
         // Validation
-        $user->load('roles.permisos');
-        $hasPermission = false;
-
-        foreach ($user->roles as $role) {
-            foreach ($role->permisos as $permiso) {
-                if ($permiso->accion === $accion && $permiso->recurso === $recurso) {
-                    $hasPermission = true;
-                    break 2;
-                }
-
-
-            }
-        }
+        $permissionKey = strtoupper($accion . '_' . $recurso);
+        $hasPermission = $user->hasPermission($permissionKey);
 
         if (! $hasPermission) {
 

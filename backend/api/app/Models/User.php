@@ -74,9 +74,17 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permissionName): bool
     {
-        foreach ($this->roles()->with('permisos')->get() as $role) {
+        $permissionName = strtoupper($permissionName);
+
+        // Optionally, Admin bypasses all permission checks in some systems, 
+        // but we'll stick to strictly checking the assigned permissions.
+        
+        $this->loadMissing('roles.permisos');
+
+        foreach ($this->roles as $role) {
             foreach ($role->permisos as $permiso) {
-                if (strtolower($permiso->nombre) === strtolower($permissionName)) {
+                $key = strtoupper($permiso->accion . '_' . $permiso->recurso);
+                if ($key === $permissionName) {
                     return true;
                 }
             }

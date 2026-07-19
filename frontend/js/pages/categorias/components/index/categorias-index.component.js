@@ -26,7 +26,7 @@ export class CategoriasIndexComponent extends BaseComponent {
 
     // Check permissions
     if (btnNuevaCategoria) {
-      if (!AuthService.hasPermission('CREATE', 'categorias_incidencia')) {
+      if (!AuthService.hasPermission('CREATE', 'categorias')) {
         btnNuevaCategoria.classList.add('d-none');
       } else {
         btnNuevaCategoria.addEventListener('click', () => this.abrirModalCategoria());
@@ -63,9 +63,9 @@ export class CategoriasIndexComponent extends BaseComponent {
       const mainCategories = this.categoriasList.filter((c) => c.parent_id === null);
       const subCategories = this.categoriasList.filter((c) => c.parent_id !== null);
 
-      const canEdit = AuthService.hasPermission('UPDATE', 'categorias_incidencia');
-      const canDelete = AuthService.hasPermission('DELETE', 'categorias_incidencia');
-      const canCreate = AuthService.hasPermission('CREATE', 'categorias_incidencia');
+      const canEdit = AuthService.hasPermission('UPDATE', 'categorias');
+      const canDelete = AuthService.hasPermission('DELETE', 'categorias');
+      const canCreate = AuthService.hasPermission('CREATE', 'categorias');
 
       let rowsHtml = '';
 

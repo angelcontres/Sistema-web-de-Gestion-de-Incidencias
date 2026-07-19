@@ -136,7 +136,7 @@ export class DashboardComponent extends BaseComponent {
     let role = 'Default';
     if (AuthService.hasPermission('READ', 'roles')) {
       role = 'Admin';
-    } else if (AuthService.hasPermission('READ', 'despacho_de_incidencias')) {
+    } else if (AuthService.hasPermission('READ', 'despacho')) {
       role = 'Supervisor';
     } else if (AuthService.hasPermission('READ', 'kanban')) {
       role = 'Institucion';

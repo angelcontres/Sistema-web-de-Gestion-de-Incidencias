@@ -48,7 +48,7 @@ function navigate() {
 
     // Redirect Operador/Supervisor from general incidents page to their own dispatcher dashboard
     if (hash === '#/incidencias') {
-      if (AuthService.hasPermission('READ', 'despacho_de_incidencias')) {
+      if (AuthService.hasPermission('READ', 'despacho')) {
         window.location.hash = '#/incidencias/despacho';
         return;
       }
