@@ -82,6 +82,8 @@ class RoleSeeder extends Seeder
         $institucionRole = Role::where('nombre', 'Institucion')->first();
         if ($institucionRole) {
             $permissionService->grantPermissionsToRole($institucionRole, [
+                PermissionsEnum::READ_INCIDENCIAS,
+                PermissionsEnum::UPDATE_INCIDENCIAS,
                 PermissionsEnum::READ_PAISES,
                 PermissionsEnum::READ_TERRITORIOS,
                 PermissionsEnum::READ_DIRECCIONES,

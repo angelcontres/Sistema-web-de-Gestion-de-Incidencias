@@ -23,10 +23,7 @@ class CheckResourcePermission
             return response()->json(['message' => 'No autorizado'], 401);
         }
 
-        // Admins bypass all permissions
-        if ($user->roles()->where('nombre', 'Admin')->exists()) {
-            return $next($request);
-        }
+
 
         // Action Mapping
         $method = $request->method();
@@ -73,17 +70,7 @@ class CheckResourcePermission
                     break 2;
                 }
 
-                // If accessing incidencias, allow READ/UPDATE if the user has corresponding kanban permissions
-                if ($recurso === 'incidencias') {
-                    if ($accion === 'READ' && $permiso->accion === 'READ' && $permiso->recurso === 'kanban') {
-                        $hasPermission = true;
-                        break 2;
-                    }
-                    if ($accion === 'UPDATE' && $permiso->accion === 'UPDATE' && $permiso->recurso === 'kanban') {
-                        $hasPermission = true;
-                        break 2;
-                    }
-                }
+
             }
         }
 

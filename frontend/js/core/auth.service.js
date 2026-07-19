@@ -1,5 +1,5 @@
 import { apiRequest } from './api.js';
-import { PermissionsEnum } from './permissions.enum.js';
+// PermissionsEnum ha sido eliminado para tener verificación completamente dinámica
 
 export const AuthService = {
   async login(email, password) {
@@ -37,6 +37,18 @@ export const AuthService = {
         localStorage.setItem('user', JSON.stringify(response.user));
         window.dispatchEvent(new CustomEvent('auth-change'));
       }
+      
+      // Always fetch the menu tree globally on login/refresh
+      try {
+        const menuResp = await apiRequest('/me/menu', { method: 'GET' });
+        const menuList = menuResp.data || menuResp;
+        if (menuList) {
+          localStorage.setItem('user_menu', JSON.stringify(menuList));
+        }
+      } catch (err) {
+        console.error('Error fetching menu profile:', err);
+      }
+
       return response.user;
     } catch (error) {
       console.error('Error refreshing user profile:', error);
@@ -66,37 +78,27 @@ export const AuthService = {
     try {
       const userStr = localStorage.getItem('user');
       return userStr ? JSON.parse(userStr) : null;
-    } catch {
+    } catch (e) {
       return null;
     }
   },
 
   hasPermission(action, resource = null) {
-    if (this.isAdmin()) return true;
-
     const user = this.getCurrentUser();
     if (!user || !Array.isArray(user.permisos)) return false;
 
     if (resource) {
       const key = `${action.toUpperCase()}_${resource.toUpperCase()}`;
-      const permissionName = PermissionsEnum[key];
-      if (!permissionName) {
-        console.warn(`Permission key not found in PermissionsEnum: ${key}`);
-        return false;
+      
+      // 2. Verificación dinámica
+      if (user.permisos.includes(key)) {
+        return true;
       }
-      return user.permisos.some(
-        (p) => p && typeof p === 'string' && p.toLowerCase() === permissionName.toLowerCase()
-      );
+
+      return false;
     }
 
     // Direct permission string check
-    const isValid = Object.values(PermissionsEnum).some(
-      (val) => val.toLowerCase() === action.toLowerCase()
-    );
-    if (!isValid) {
-      console.warn(`Direct permission name not found in PermissionsEnum values: ${action}`);
-    }
-
     return user.permisos.some(
       (p) => p && typeof p === 'string' && p.toLowerCase() === action.toLowerCase()
     );
@@ -111,4 +113,37 @@ export const AuthService = {
     const user = this.getCurrentUser();
     return user ? user.pais_id : null;
   },
+
+  canAccessRoute(hash) {
+    if (!hash || hash === '#/' || hash === '#/login' || hash === '#/public') return true;
+
+    const hashWithoutQuery = hash.split('?')[0];
+
+    const routePermissions = {
+      '#/opciones-menu': 'READ_OPCIONES_MENU',
+      '#/roles': 'READ_ROLES',
+      '#/permisos': 'READ_PERMISOS',
+      '#/trp-dashboard': 'READ_TRP',
+      '#/usuarios': 'READ_USUARIOS',
+      '#/ubicaciones': 'READ_UBICACIONES',
+      '#/categorias': 'READ_CATEGORIAS_INCIDENCIA',
+      '#/incidencias': 'READ_INCIDENCIAS',
+      '#/incidencias/despacho': 'READ_DESPACHO_INCIDENCIAS',
+      '#/instituciones': 'READ_INSTITUCIONES',
+      '#/instituciones/kanban': 'READ_KANBAN',
+      '#/mantenimiento': 'READ_MANTENIMIENTO',
+      '#/tramites/historial': 'READ_HISTORIAL',
+      '#/administracion': 'READ_ROLES',
+    };
+
+    const basePath = hashWithoutQuery.replace(/\/form$/, '').replace(/\/historial$/, '').replace(/\/despacho$/, '').replace(/\/kanban$/, '').replace(/\/estado-individual$/, '');
+    const requiredPermission = routePermissions[hashWithoutQuery] || routePermissions[basePath];
+
+    if (requiredPermission) {
+      return this.hasPermission(requiredPermission);
+    }
+
+    // Por defecto permitimos si no hay un mapeo estricto, ya que el backend lo protegerá.
+    return true;
+  }
 };
