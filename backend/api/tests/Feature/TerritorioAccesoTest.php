@@ -143,7 +143,7 @@ class TerritorioAccesoTest extends TestCase
 
         // 6. Assertions
         $response->assertStatus(200);
-        $data = $response->json();
+        $data = $response->json('data');
 
         // Supervisor should see the Azuay incident (which transitioned to "En Revisión" = 2)
         $this->assertTrue(

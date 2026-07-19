@@ -38,7 +38,9 @@ class IncidenciaObserver
         $this->registrarHistorial($incidencia, 'Incidencia reportada');
         
         // Ejecutar ETL inmediatamente para refrescar dashboards analíticos
-        Artisan::call('etl:run');
+        if (!app()->runningUnitTests()) {
+            Artisan::call('etl:run');
+        }
     }
 
     /**
@@ -53,7 +55,9 @@ class IncidenciaObserver
         }
 
         // Ejecutar ETL inmediatamente para refrescar dashboards analíticos
-        Artisan::call('etl:run');
+        if (!app()->runningUnitTests()) {
+            Artisan::call('etl:run');
+        }
     }
 
     /**
