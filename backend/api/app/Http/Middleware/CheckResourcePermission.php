@@ -23,8 +23,6 @@ class CheckResourcePermission
             return response()->json(['message' => 'No autorizado'], 401);
         }
 
-
-
         // Action Mapping
         $method = $request->method();
         $accion = match ($method) {
@@ -61,43 +59,28 @@ class CheckResourcePermission
             'opciones-menu' => 'opciones',
             'categorias-incidencia' => 'categorias',
         ];
-        
+
         $recurso = $recursoMap[$recurso] ?? $recurso;
 
         // Replace hyphens with underscores just in case for any other resource, though we prefer single words
         $recurso = str_replace('-', '_', $recurso);
 
         // Validation
-        $permissionKey = strtoupper($accion . '_' . $recurso);
+        $permissionKey = strtoupper($accion.'_'.$recurso);
         $hasPermission = $user->hasPermission($permissionKey);
 
         if (! $hasPermission) {
 
             $strAccionLower = strtolower($accion);
-
-            if ($strAccionLower == 'read') {
-                return response()->json([
-                    'message' => 'No tiene permisos para consultar este recurso: '.strtolower($recurso),
-                ], 403);
-            }
-            if ($strAccionLower == 'create') {
-                return response()->json([
-                    'message' => 'No tiene permisos para crear este recurso: '.strtolower($recurso),
-                ], 403);
-            }
-            if ($strAccionLower == 'update') {
-                return response()->json([
-                    'message' => 'No tiene permisos para actualizar este recurso: '.strtolower($recurso),
-                ], 403);
-            }
-            if ($strAccionLower == 'delete') {
-                return response()->json([
-                    'message' => 'No tiene permisos para eliminar este recurso'.strtolower($recurso),
-                ], 403);
-            }
+            $mensaje = match ($strAccionLower) {
+                'read' => 'No tiene permisos para consultar este recurso: '.strtolower($recurso),
+                'create' => 'No tiene permisos para crear este recurso: '.strtolower($recurso),
+                'update' => 'No tiene permisos para actualizar este recurso: '.strtolower($recurso),
+                'delete' => 'No tiene permisos para eliminar este recurso: '.strtolower($recurso),
+            };
 
             return response()->json([
-                'message' => 'No tiene permisos '.strtolower($recurso).':'.strtolower($accion),
+                'message' => $mensaje,
             ], 403);
         }
 

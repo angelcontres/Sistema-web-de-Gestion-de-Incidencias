@@ -2,25 +2,16 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
+#[Signature('sqa:tep {--file=tests/results.xml}')]
+#[Description('Calcula la Tasa de Éxito de Pruebas (TEP) a partir del XML de PHPUnit y genera un archivo JSON para Grafana')]
 class CalculateTep extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'sqa:tep {--file=tests/results.xml}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Calcula la Tasa de Éxito de Pruebas (TEP) a partir del XML de PHPUnit y genera un archivo JSON para Grafana';
-
     /**
      * Execute the console command.
      */
@@ -70,7 +61,7 @@ class CalculateTep extends Command
         $tiempoId = (int) $now->format('YmdH');
 
         // Asegurar que la dimensión tiempo exista
-        \Illuminate\Support\Facades\DB::table('metrics.dim_tiempo')->updateOrInsert(
+        DB::table('metrics.dim_tiempo')->updateOrInsert(
             ['id' => $tiempoId],
             [
                 'fecha' => $now->toDateTimeString(),
@@ -86,7 +77,7 @@ class CalculateTep extends Command
         );
 
         // Insertar en la tabla de hechos de testing
-        \Illuminate\Support\Facades\DB::table('metrics.fact_testing')->insert([
+        DB::table('metrics.fact_testing')->insert([
             'tiempo_id' => $tiempoId,
             'total_pruebas' => $totalPruebas,
             'pruebas_aprobadas' => $aprobadas,

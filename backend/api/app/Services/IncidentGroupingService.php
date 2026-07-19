@@ -24,9 +24,9 @@ class IncidentGroupingService
 
         if (DB::getDriverName() === 'pgsql') {
             // PostGIS nativo: utiliza el índice espacial (ST_DWithin toma la distancia en metros)
-            $query->whereRaw("ST_DWithin(direcciones.ubicacion, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)", [$lng, $lat, $radiusKm * 1000])
-                  ->selectRaw('ST_Distance(direcciones.ubicacion, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography) AS distance', [$lng, $lat])
-                  ->orderBy('distance', 'asc');
+            $query->whereRaw('ST_DWithin(direcciones.ubicacion, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)', [$lng, $lat, $radiusKm * 1000])
+                ->selectRaw('ST_Distance(direcciones.ubicacion, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography) AS distance', [$lng, $lat])
+                ->orderBy('distance', 'asc');
         } else {
             // SQLite (Testing) Fallback
             if (DB::getDriverName() === 'sqlite') {
@@ -45,12 +45,12 @@ class IncidentGroupingService
                 )) AS distance',
                 [$lat, $lng, $lat]
             )
-            ->whereRaw('(6371 * acos(
+                ->whereRaw('(6371 * acos(
                 cos(radians(?)) * cos(radians(direcciones.latitud)) *
                 cos(radians(direcciones.longitud) - radians(?)) +
                 sin(radians(?)) * sin(radians(direcciones.latitud))
             )) <= CAST(? AS REAL)', [$lat, $lng, $lat, $radiusKm])
-            ->orderBy('distance', 'asc');
+                ->orderBy('distance', 'asc');
         }
 
         return $query->first();

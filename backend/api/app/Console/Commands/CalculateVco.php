@@ -2,25 +2,16 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
+#[Signature('sqa:vco {--path=../../}')]
+#[Description('Calcula las Vulnerabilidades Críticas (OWASP) (VCO)')]
 class CalculateVco extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'sqa:vco {--path=../../}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Calcula las Vulnerabilidades Críticas (OWASP) (VCO)';
-
     /**
      * Execute the console command.
      */
@@ -102,7 +93,7 @@ class CalculateVco extends Command
         $tiempoId = (int) $now->format('YmdH');
 
         // Asegurar que la dimensión tiempo exista
-        \Illuminate\Support\Facades\DB::table('metrics.dim_tiempo')->updateOrInsert(
+        DB::table('metrics.dim_tiempo')->updateOrInsert(
             ['id' => $tiempoId],
             [
                 'fecha' => $now->toDateTimeString(),
@@ -118,11 +109,11 @@ class CalculateVco extends Command
         );
 
         // Asegurar que las capas existan
-        \Illuminate\Support\Facades\DB::table('metrics.dim_capa')->updateOrInsert(
+        DB::table('metrics.dim_capa')->updateOrInsert(
             ['id' => 1],
             ['nombre' => 'Backend', 'created_at' => now(), 'updated_at' => now()]
         );
-        \Illuminate\Support\Facades\DB::table('metrics.dim_capa')->updateOrInsert(
+        DB::table('metrics.dim_capa')->updateOrInsert(
             ['id' => 2],
             ['nombre' => 'Frontend', 'created_at' => now(), 'updated_at' => now()]
         );
@@ -131,10 +122,10 @@ class CalculateVco extends Command
         foreach ($backendIssues as $issue) {
             $titulo = $issue['title'] ?? 'Vulnerabilidad Desconocida';
             $severidad = strtolower($issue['severity'] ?? 'unknown');
-            $hash = hash('sha256', $titulo . '_' . $severidad);
+            $hash = hash('sha256', $titulo.'_'.$severidad);
 
             // Asegurar vulnerabilidad en dim_vulnerabilidad
-            \Illuminate\Support\Facades\DB::table('metrics.dim_vulnerabilidad')->updateOrInsert(
+            DB::table('metrics.dim_vulnerabilidad')->updateOrInsert(
                 ['hash_identificador' => $hash],
                 [
                     'titulo' => $titulo,
@@ -144,12 +135,12 @@ class CalculateVco extends Command
                 ]
             );
 
-            $vulnId = \Illuminate\Support\Facades\DB::table('metrics.dim_vulnerabilidad')
+            $vulnId = DB::table('metrics.dim_vulnerabilidad')
                 ->where('hash_identificador', $hash)
                 ->value('id');
 
             // Insertar en la tabla de hechos
-            \Illuminate\Support\Facades\DB::table('metrics.fact_security')->insert([
+            DB::table('metrics.fact_security')->insert([
                 'tiempo_id' => $tiempoId,
                 'capa_id' => 1, // Backend
                 'vulnerabilidad_id' => $vulnId,
@@ -165,10 +156,10 @@ class CalculateVco extends Command
         foreach ($frontendIssues as $issue) {
             $titulo = $issue['type'] ?? 'Vulnerabilidad Desconocida';
             $severidad = strtolower($issue['severity'] ?? 'unknown');
-            $hash = hash('sha256', $titulo . '_' . $severidad);
+            $hash = hash('sha256', $titulo.'_'.$severidad);
 
             // Asegurar vulnerabilidad en dim_vulnerabilidad
-            \Illuminate\Support\Facades\DB::table('metrics.dim_vulnerabilidad')->updateOrInsert(
+            DB::table('metrics.dim_vulnerabilidad')->updateOrInsert(
                 ['hash_identificador' => $hash],
                 [
                     'titulo' => $titulo,
@@ -178,12 +169,12 @@ class CalculateVco extends Command
                 ]
             );
 
-            $vulnId = \Illuminate\Support\Facades\DB::table('metrics.dim_vulnerabilidad')
+            $vulnId = DB::table('metrics.dim_vulnerabilidad')
                 ->where('hash_identificador', $hash)
                 ->value('id');
 
             // Insertar en la tabla de hechos
-            \Illuminate\Support\Facades\DB::table('metrics.fact_security')->insert([
+            DB::table('metrics.fact_security')->insert([
                 'tiempo_id' => $tiempoId,
                 'capa_id' => 2, // Frontend
                 'vulnerabilidad_id' => $vulnId,

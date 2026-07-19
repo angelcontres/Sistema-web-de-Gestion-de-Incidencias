@@ -72,6 +72,7 @@ class PrioridadController extends Controller
      */
     public function destroy($id): JsonResponse
     {
+        /** @var Prioridad $prioridad */
         $prioridad = Prioridad::findOrFail($id);
 
         if (auth()->check()) {

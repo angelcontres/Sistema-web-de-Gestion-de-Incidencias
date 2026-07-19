@@ -2,25 +2,16 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
+#[Signature('sqa:dd {--path=../../} {--months=3}')]
+#[Description('Calcula la Densidad de Defectos (DD) usando cloc y git log')]
 class CalculateDd extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'sqa:dd {--path=../../} {--months=3}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Calcula la Densidad de Defectos (DD) usando cloc y git log';
-
     /**
      * Execute the console command.
      */
@@ -144,7 +135,7 @@ class CalculateDd extends Command
         $tiempoId = (int) $now->format('YmdH');
 
         // Asegurar que la dimensión tiempo exista
-        \Illuminate\Support\Facades\DB::table('metrics.dim_tiempo')->updateOrInsert(
+        DB::table('metrics.dim_tiempo')->updateOrInsert(
             ['id' => $tiempoId],
             [
                 'fecha' => $now->toDateTimeString(),
@@ -160,12 +151,12 @@ class CalculateDd extends Command
         );
 
         // Asegurar que la métrica exista en dim_metric y obtener su ID
-        $metricId = \Illuminate\Support\Facades\DB::table('metrics.dim_metric')
+        $metricId = DB::table('metrics.dim_metric')
             ->where('codigo', 'DD')
             ->value('id');
 
-        if (!$metricId) {
-            $metricId = \Illuminate\Support\Facades\DB::table('metrics.dim_metric')->insertGetId([
+        if (! $metricId) {
+            $metricId = DB::table('metrics.dim_metric')->insertGetId([
                 'nombre' => 'Densidad de Defectos',
                 'codigo' => 'DD',
                 'tipo' => 'Calidad',
@@ -176,17 +167,17 @@ class CalculateDd extends Command
         }
 
         // Insertar en la tabla de hechos de calidad
-        \Illuminate\Support\Facades\DB::table('metrics.fact_quality')->insert([
+        DB::table('metrics.fact_quality')->insert([
             'tiempo_id' => $tiempoId,
             'metric_id' => $metricId,
             // Guardamos el valor DD en la columna valor_porcentaje
-            'valor_porcentaje' => round($dd, 2), 
+            'valor_porcentaje' => round($dd, 2),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         $this->info("\nMétrica de Densidad de Defectos (DD) guardada exitosamente en el esquema OLAP (fact_quality).");
-        $this->info("KLOC: " . round($kloc, 3) . " | Defectos: $defectos | DD: " . round($dd, 2));
+        $this->info('KLOC: '.round($kloc, 3)." | Defectos: $defectos | DD: ".round($dd, 2));
 
         return 0;
     }

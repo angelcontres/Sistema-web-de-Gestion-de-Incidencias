@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['nombre', 'codigo_iso', 'activo'])]
 class Pais extends Model
 {
-    use HasLocalTimezone;
     use HasFactory;
+    use HasLocalTimezone;
 
     protected $table = 'paises';
 

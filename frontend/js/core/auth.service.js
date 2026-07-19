@@ -41,10 +41,8 @@ export const AuthService = {
       // Always fetch the menu tree globally on login/refresh
       try {
         const menuResp = await apiRequest('/me/menu', { method: 'GET' });
-        const menuList = menuResp.data || menuResp;
-        if (menuList) {
-          localStorage.setItem('user_menu', JSON.stringify(menuList));
-        }
+        const menuList = Array.isArray(menuResp) ? menuResp : (menuResp.data || []);
+        localStorage.setItem('user_menu', JSON.stringify(menuList));
       } catch (err) {
         console.error('Error fetching menu profile:', err);
       }

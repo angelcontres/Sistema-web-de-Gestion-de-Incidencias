@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -15,7 +15,7 @@ return new class extends Migration
 
         // Solo ejecutamos la alteración si las tablas de OLAP ya existen (como en producción)
         if (Schema::hasTable('metrics.dim_tiempo') && Schema::hasTable('metrics.fact_incidencias')) {
-            
+
             // 1. Dropear llave foránea temporalmente
             Schema::table('metrics.fact_incidencias', function (Blueprint $table) {
                 $table->dropForeign(['tiempo_id']);

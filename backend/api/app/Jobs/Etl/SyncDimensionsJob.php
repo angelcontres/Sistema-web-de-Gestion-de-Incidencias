@@ -2,14 +2,14 @@
 
 namespace App\Jobs\Etl;
 
+use App\Services\TimezoneService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Services\TimezoneService;
+use Illuminate\Support\Facades\File;
 
 class SyncDimensionsJob implements ShouldQueue
 {
@@ -35,7 +35,7 @@ class SyncDimensionsJob implements ShouldQueue
 
         $records = [];
         for ($date = $start->copy(); $date->lte($end); $date->addHour()) {
-            $id = (int)$date->format('YmdH');
+            $id = (int) $date->format('YmdH');
             $records[] = [
                 'id' => $id,
                 'fecha' => $date->toDateTimeString(),
@@ -55,7 +55,7 @@ class SyncDimensionsJob implements ShouldQueue
             }
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             DB::table('metrics.dim_tiempo')->upsert($records, ['id'], ['fecha', 'anio', 'mes', 'dia', 'hora', 'trimestre', 'dia_semana', 'updated_at']);
         }
     }
@@ -65,8 +65,8 @@ class SyncDimensionsJob implements ShouldQueue
         // 1. Cargar datos de Ecuador desde ecuador.json
         $jsonPath = database_path('seeders/data/ecuador.json');
         $ecuadorData = [];
-        if (\Illuminate\Support\Facades\File::exists($jsonPath)) {
-            $ecuadorData = json_decode(\Illuminate\Support\Facades\File::get($jsonPath), true);
+        if (File::exists($jsonPath)) {
+            $ecuadorData = json_decode(File::get($jsonPath), true);
         }
 
         // 2. Traer todos los territorios de la base de datos indexados por código para cruzar IDs
@@ -79,13 +79,15 @@ class SyncDimensionsJob implements ShouldQueue
         $records = [];
 
         // 3. Procesar datos del JSON de Ecuador
-        if (!empty($ecuadorData)) {
+        if (! empty($ecuadorData)) {
             foreach ($ecuadorData as $provId => $provData) {
-                if (!isset($provData['provincia'])) continue;
+                if (! isset($provData['provincia'])) {
+                    continue;
+                }
                 $provName = mb_convert_case($provData['provincia'], MB_CASE_TITLE, 'UTF-8');
 
                 // Resolver ID de la provincia en la DB
-                $dbProv = $dbTerritoriosByCodigo->get((string)$provId);
+                $dbProv = $dbTerritoriosByCodigo->get((string) $provId);
                 if ($dbProv) {
                     $records[] = [
                         'id' => $dbProv->id,
@@ -93,21 +95,25 @@ class SyncDimensionsJob implements ShouldQueue
                         'provincia' => $provName,
                         'canton' => 'N/A',
                         'parroquia' => 'N/A',
-                        'codigo' => (string)$provId,
+                        'codigo' => (string) $provId,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
                     $processedIds[$dbProv->id] = true;
                 }
 
-                if (!isset($provData['cantones']) || !is_array($provData['cantones'])) continue;
+                if (! isset($provData['cantones']) || ! is_array($provData['cantones'])) {
+                    continue;
+                }
 
                 foreach ($provData['cantones'] as $cantId => $cantData) {
-                    if (!isset($cantData['canton'])) continue;
+                    if (! isset($cantData['canton'])) {
+                        continue;
+                    }
                     $cantName = mb_convert_case($cantData['canton'], MB_CASE_TITLE, 'UTF-8');
 
                     // Resolver ID del cantón en la DB
-                    $dbCant = $dbTerritoriosByCodigo->get((string)$cantId);
+                    $dbCant = $dbTerritoriosByCodigo->get((string) $cantId);
                     if ($dbCant) {
                         $records[] = [
                             'id' => $dbCant->id,
@@ -115,20 +121,22 @@ class SyncDimensionsJob implements ShouldQueue
                             'provincia' => $provName,
                             'canton' => $cantName,
                             'parroquia' => 'N/A',
-                            'codigo' => (string)$cantId,
+                            'codigo' => (string) $cantId,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
                         $processedIds[$dbCant->id] = true;
                     }
 
-                    if (!isset($cantData['parroquias']) || !is_array($cantData['parroquias'])) continue;
+                    if (! isset($cantData['parroquias']) || ! is_array($cantData['parroquias'])) {
+                        continue;
+                    }
 
                     foreach ($cantData['parroquias'] as $parrId => $parrNameRaw) {
                         $parrName = mb_convert_case($parrNameRaw, MB_CASE_TITLE, 'UTF-8');
 
                         // Resolver ID de la parroquia en la DB
-                        $dbParr = $dbTerritoriosByCodigo->get((string)$parrId);
+                        $dbParr = $dbTerritoriosByCodigo->get((string) $parrId);
                         if ($dbParr) {
                             $records[] = [
                                 'id' => $dbParr->id,
@@ -136,7 +144,7 @@ class SyncDimensionsJob implements ShouldQueue
                                 'provincia' => $provName,
                                 'canton' => $cantName,
                                 'parroquia' => $parrName,
-                                'codigo' => (string)$parrId,
+                                'codigo' => (string) $parrId,
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ];
@@ -149,7 +157,9 @@ class SyncDimensionsJob implements ShouldQueue
 
         // 4. Procesar otros territorios de la DB que no estaban en el JSON (o de otros países como Perú/México)
         foreach ($dbTerritorios as $t) {
-            if (isset($processedIds[$t->id])) continue;
+            if (isset($processedIds[$t->id])) {
+                continue;
+            }
 
             $paisName = isset($paises[$t->pais_id]) ? $paises[$t->pais_id]->nombre : null;
             $provincia = null;
@@ -166,9 +176,9 @@ class SyncDimensionsJob implements ShouldQueue
                 } elseif (in_array($tipoLower, ['parroquia', 'distrito', 'leaf'])) {
                     $parroquia = $curr->nombre;
                 }
-                
-                $curr = $curr->parent_id && isset($dbTerritoriosById[$curr->parent_id]) 
-                    ? $dbTerritoriosById[$curr->parent_id] 
+
+                $curr = $curr->parent_id && isset($dbTerritoriosById[$curr->parent_id])
+                    ? $dbTerritoriosById[$curr->parent_id]
                     : null;
             }
 
@@ -189,7 +199,7 @@ class SyncDimensionsJob implements ShouldQueue
         }
 
         // 5. Cargar en la BD metrics.dim_territorio
-        if (!empty($records)) {
+        if (! empty($records)) {
             foreach (array_chunk($records, 500) as $chunk) {
                 DB::table('metrics.dim_territorio')->upsert($chunk, ['id'], ['pais', 'provincia', 'canton', 'parroquia', 'codigo', 'updated_at']);
             }
@@ -203,8 +213,8 @@ class SyncDimensionsJob implements ShouldQueue
 
         $records = [];
         foreach ($categorias as $c) {
-            $parentName = $c->parent_id && isset($categoriasMap[$c->parent_id]) 
-                ? $categoriasMap[$c->parent_id]->nombre 
+            $parentName = $c->parent_id && isset($categoriasMap[$c->parent_id])
+                ? $categoriasMap[$c->parent_id]->nombre
                 : 'N/A';
 
             $records[] = [
@@ -217,7 +227,7 @@ class SyncDimensionsJob implements ShouldQueue
             ];
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             DB::table('metrics.dim_categoria')->upsert($records, ['id'], ['nombre', 'categoria_padre', 'descripcion', 'updated_at']);
         }
     }
@@ -235,7 +245,7 @@ class SyncDimensionsJob implements ShouldQueue
             ];
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             DB::table('metrics.dim_estado')->upsert($records, ['id'], ['nombre', 'updated_at']);
         }
     }
@@ -253,7 +263,7 @@ class SyncDimensionsJob implements ShouldQueue
             ];
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             DB::table('metrics.dim_prioridad')->upsert($records, ['id'], ['nombre', 'updated_at']);
         }
     }
@@ -272,7 +282,7 @@ class SyncDimensionsJob implements ShouldQueue
             ];
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             DB::table('metrics.dim_institucion')->upsert($records, ['id'], ['nombre', 'siglas', 'updated_at']);
         }
     }
@@ -288,7 +298,7 @@ class SyncDimensionsJob implements ShouldQueue
                 ->where('roles_users.user_id', $u->id)
                 ->select('roles.nombre')
                 ->first();
-            
+
             $rolPrincipal = $roleUser ? $roleUser->nombre : ($u->created_by === null ? 'Administrador' : 'Usuario');
 
             $records[] = [
@@ -302,7 +312,7 @@ class SyncDimensionsJob implements ShouldQueue
             ];
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             DB::table('metrics.dim_usuario')->upsert($records, ['id'], ['username', 'name', 'email', 'rol_principal', 'updated_at']);
         }
     }
@@ -344,7 +354,7 @@ class SyncDimensionsJob implements ShouldQueue
         foreach ($metrics as $m) {
             $records[] = array_merge($m, [
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         }
 

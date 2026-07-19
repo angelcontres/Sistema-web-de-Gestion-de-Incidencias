@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EstadoIncidencia extends Model
 {
-    use HasLocalTimezone;
     use HasFactory, SoftDeletes;
+    use HasLocalTimezone;
 
     protected $table = 'estados_incidencia';
 

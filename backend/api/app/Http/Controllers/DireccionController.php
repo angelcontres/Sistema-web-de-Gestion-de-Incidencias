@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DireccionesRequest;
 use App\Models\Direccion;
 use App\Models\Territorio;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -65,8 +66,9 @@ class DireccionController extends Controller
     {
         $direccion = Direccion::with(['territorio.pais'])->findOrFail($id);
 
+        /** @var User|null $user */
         $user = auth()->user();
-        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio->pais_id != $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio?->pais_id != $user->pais_id) {
             return response()->json(['message' => 'No autorizado para ver esta dirección.'], 403);
         }
 
@@ -80,9 +82,10 @@ class DireccionController extends Controller
     {
         $direccion = Direccion::findOrFail($id);
 
+        /** @var User|null $user */
         $user = auth()->user();
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
-            if ($direccion->territorio->pais_id != $user->pais_id) {
+            if ($direccion->territorio?->pais_id != $user->pais_id) {
                 return response()->json(['message' => 'No autorizado para modificar esta dirección.'], 403);
             }
             if ($request->has('territorio_id')) {
@@ -108,8 +111,9 @@ class DireccionController extends Controller
     {
         $direccion = Direccion::findOrFail($id);
 
+        /** @var User|null $user */
         $user = auth()->user();
-        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio->pais_id != $user->pais_id) {
+        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio?->pais_id != $user->pais_id) {
             return response()->json(['message' => 'No autorizado para eliminar esta dirección.'], 403);
         }
 

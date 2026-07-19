@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OpcionMenu;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserMenuController extends Controller
@@ -14,6 +15,7 @@ class UserMenuController extends Controller
     public function index(Request $request)
     {
         $query = OpcionMenu::query();
+        /** @var User|null $user */
         $user = $request->user();
 
         if (! $user) {
@@ -65,7 +67,7 @@ class UserMenuController extends Controller
                 $allowedIds->push($dashboardId);
             }
 
-            // Excepción: El rol Institución necesita permisos de incidencias por el API, 
+            // Excepción: El rol Institución necesita permisos de incidencias por el API,
             // pero no debe ver el menú general de "Incidencias"
             if ($user->roles()->where('nombre', 'Institucion')->exists()) {
                 $incidenciasMenuId = OpcionMenu::where('nombre', 'Incidencias')->value('id');

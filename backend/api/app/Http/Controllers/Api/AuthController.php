@@ -45,6 +45,7 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
+        /** @var User $user */
         $user = clone $request->user();
         $user->load('roles.permisos');
 
@@ -52,7 +53,7 @@ class AuthController extends Controller
         foreach ($user->roles as $role) {
             foreach ($role->permisos as $permiso) {
                 // Agregamos el formato estandarizado (ej: 'READ_USUARIOS')
-                $permisosList->push(strtoupper($permiso->accion . '_' . $permiso->recurso));
+                $permisosList->push(strtoupper($permiso->accion.'_'.$permiso->recurso));
             }
         }
         $permisosList = $permisosList->unique()->values();

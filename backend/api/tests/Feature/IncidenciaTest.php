@@ -737,10 +737,11 @@ class IncidenciaTest extends TestCase
             'institucion_id' => $this->subcategoriaAlta->institucion_id,
         ]);
     }
+
     public function test_system_applies_local_timezone_on_creation()
     {
         $fechaLocal = '2026-12-31 23:59:59';
-        
+
         $payload = [
             'fecha_local' => $fechaLocal,
             'incidencia_descripcion' => 'Incidencia con fecha local de prueba',
@@ -770,4 +771,3 @@ class IncidenciaTest extends TestCase
         ]);
     }
 }
-

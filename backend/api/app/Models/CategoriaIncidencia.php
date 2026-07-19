@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['parent_id', 'prioridad_id', 'institucion_id', 'nombre', 'descripcion', 'activo'])]
 class CategoriaIncidencia extends Model
 {
-    use HasLocalTimezone;
     use HasFactory;
+    use HasLocalTimezone;
 
     protected $table = 'categorias_incidencia';
 

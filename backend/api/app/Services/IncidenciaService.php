@@ -6,7 +6,6 @@ use App\Models\CategoriaIncidencia;
 use App\Models\Direccion;
 use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
-use App\Models\Territorio;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -33,9 +32,15 @@ class IncidenciaService
         $basePriorityId = $subtipo->prioridad_id;
 
         if ($afectados >= 10) {
-            if ($basePriorityId == 2) return 1; // Alta -> Crítica
-            if ($basePriorityId == 3) return 2; // Media -> Alta
-            if ($basePriorityId == 4) return 3; // Baja -> Media
+            if ($basePriorityId == 2) {
+                return 1;
+            } // Alta -> Crítica
+            if ($basePriorityId == 3) {
+                return 2;
+            } // Media -> Alta
+            if ($basePriorityId == 4) {
+                return 3;
+            } // Baja -> Media
         }
 
         return $basePriorityId;
@@ -68,18 +73,20 @@ class IncidenciaService
 
             // Permitir solo formatos de imagen seguros
             $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-            if (!in_array($mimeType, $allowedMimeTypes)) {
+            if (! in_array($mimeType, $allowedMimeTypes)) {
                 continue; // Archivo no permitido o código malicioso inyectado
             }
 
             // Mapear mime type a extensión segura
             $extension = str_replace('image/', '', $mimeType);
-            if ($extension === 'jpeg') $extension = 'jpg';
+            if ($extension === 'jpeg') {
+                $extension = 'jpg';
+            }
 
-            $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
-            
+            $fileName = 'incidencias/'.Str::uuid().'.'.$extension;
+
             Storage::disk($disk)->put($fileName, $imageDecoded);
-            
+
             $incidencia->recursos()->create([
                 'url' => $fileName,
                 'tipo' => 'imagen',
@@ -94,7 +101,7 @@ class IncidenciaService
     {
         return DB::transaction(function () use ($data, $user) {
             $direccionId = $data['direccion_id'] ?? null;
-            
+
             // Lógica de agrupamiento
             if ($direccionId) {
                 $direccion = Direccion::find($direccionId);
@@ -116,7 +123,7 @@ class IncidenciaService
                                 ->where('user_id', $user->id)
                                 ->where('reporte_incidencia_id', $similar->id)
                                 ->exists();
-                            
+
                             if (! $exists) {
                                 $similar->reportantes()->attach($user->id, ['created_by' => $user->id, 'tipo_relacion' => 'reportante']);
                             }
@@ -125,7 +132,7 @@ class IncidenciaService
                                 'incidencia_id' => $similar->id,
                                 'estado_id' => $similar->estado_id,
                                 'usuario_id' => $user->id,
-                                'comentario' => '[VINCULADO] ' . $data['incidencia_descripcion'],
+                                'comentario' => '[VINCULADO] '.$data['incidencia_descripcion'],
                             ]);
                         }
 
@@ -136,7 +143,7 @@ class IncidenciaService
 
                         return [
                             'message' => 'Incidencia agrupada con éxito con reporte similar existente.',
-                            'data' => $similar->load(['direccion.territorio.pais', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes'])
+                            'data' => $similar->load(['direccion.territorio.pais', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes']),
                         ];
                     }
                 }
@@ -170,13 +177,13 @@ class IncidenciaService
                 $incidencia->reportantes()->attach($user->id, ['created_by' => $user->id, 'tipo_relacion' => 'reportante']);
             }
 
-            if (!empty($data['recursos'])) {
+            if (! empty($data['recursos'])) {
                 $this->processBase64Resources($incidencia, $data['recursos']);
             }
 
             return [
                 'message' => 'Incidencia creada con éxito',
-                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos'])
+                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
             ];
         });
     }
@@ -212,13 +219,13 @@ class IncidenciaService
                 'updated_by' => $user ? $user->id : null,
             ]);
 
-            if (!empty($data['recursos'])) {
+            if (! empty($data['recursos'])) {
                 $this->processBase64Resources($incidencia, $data['recursos']);
             }
 
             return [
                 'message' => 'Incidencia actualizada con éxito',
-                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos'])
+                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
             ];
         });
     }

@@ -2,14 +2,14 @@
 
 namespace App\Jobs\Etl;
 
+use App\Services\TimezoneService;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Services\TimezoneService;
 
 class SyncPerformanceLogsJob implements ShouldQueue
 {
@@ -46,10 +46,12 @@ class SyncPerformanceLogsJob implements ShouldQueue
             $key = "{$log->endpoint}.{$log->metodo}";
             $endpointId = $endpointMap[$key] ?? null;
 
-            if (!$endpointId) continue;
+            if (! $endpointId) {
+                continue;
+            }
 
             $loggedAt = TimezoneService::toLocal($log->logged_at);
-            $tiempoId = (int)$loggedAt->format('YmdH');
+            $tiempoId = (int) $loggedAt->format('YmdH');
 
             $this->ensureTiempoIdExists($tiempoId, $loggedAt);
 
@@ -75,7 +77,7 @@ class SyncPerformanceLogsJob implements ShouldQueue
             }
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             DB::table('metrics.fact_performance')->upsert(
                 $records,
                 ['id'],
@@ -87,7 +89,7 @@ class SyncPerformanceLogsJob implements ShouldQueue
     private function ensureTiempoIdExists(int $tiempoId, Carbon $date): void
     {
         $exists = DB::table('metrics.dim_tiempo')->where('id', $tiempoId)->exists();
-        if (!$exists) {
+        if (! $exists) {
             DB::table('metrics.dim_tiempo')->insert([
                 'id' => $tiempoId,
                 'fecha' => $date->toDateTimeString(),

@@ -27,7 +27,7 @@ class DashboardController extends Controller
     private function calculateKpis()
     {
         $now = TimezoneService::nowLocal();
-        
+
         $activas = Incidencia::whereIn('estado_id', [1, 2])->count();
 
         $nuevasActivas = Incidencia::whereIn('estado_id', [1, 2])
@@ -90,7 +90,7 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
-            ->map(function ($incidencia) {
+            ->map(function (Incidencia $incidencia) {
                 return [
                     'id' => $incidencia->id,
                     'descripcion' => $incidencia->incidencia_descripcion,
@@ -110,10 +110,10 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
-            ->filter(function ($incidencia) {
+            ->filter(function (Incidencia $incidencia) {
                 return $incidencia->direccion && $incidencia->direccion->latitud && $incidencia->direccion->longitud;
             })
-            ->map(function ($incidencia) {
+            ->map(function (Incidencia $incidencia) {
                 return [
                     'id' => $incidencia->id,
                     'lat' => $incidencia->direccion->latitud,
@@ -128,7 +128,7 @@ class DashboardController extends Controller
     {
         $role = $request->query('role', 'Ciudadano');
         $user = $request->user();
-        
+
         $now = TimezoneService::nowLocal()->setTimezone('UTC');
         $startOfRange = $now->copy()->subDays(30);
         $data = [];
@@ -170,7 +170,7 @@ class DashboardController extends Controller
 
         } elseif ($role === 'Institucion') {
             $institucionId = $user->institucion_id;
-            
+
             $data['kpis'] = [
                 'asignadas' => DB::table('metrics.fact_incidencias')->where('institucion_id', $institucionId)->count(),
                 'en_proceso' => DB::table('metrics.fact_incidencias')
@@ -184,7 +184,7 @@ class DashboardController extends Controller
                     ->where('metrics.dim_estado.nombre', 'Resuelto')
                     ->count(),
             ];
-            
+
             $data['distribucion_estado'] = DB::table('metrics.fact_incidencias')
                 ->where('institucion_id', $institucionId)
                 ->join('metrics.dim_estado', 'metrics.fact_incidencias.estado_id', '=', 'metrics.dim_estado.id')
@@ -192,7 +192,7 @@ class DashboardController extends Controller
                 ->groupBy('metrics.dim_estado.nombre')
                 ->orderByDesc('value')
                 ->get();
-                
+
             $data['tendencia_temporal'] = DB::table('metrics.fact_incidencias')
                 ->where('institucion_id', $institucionId)
                 ->join('metrics.dim_tiempo', 'metrics.fact_incidencias.tiempo_id', '=', 'metrics.dim_tiempo.id')
@@ -201,7 +201,7 @@ class DashboardController extends Controller
                 ->groupBy(DB::raw('DATE(metrics.dim_tiempo.fecha)'))
                 ->orderBy('metric', 'ASC')
                 ->get();
-                
+
         } elseif ($role === 'Supervisor' || $role === 'Admin') {
             $data['kpis'] = [
                 'totales' => DB::table('metrics.fact_incidencias')->count(),
@@ -215,21 +215,21 @@ class DashboardController extends Controller
                     ->where('metrics.dim_estado.nombre', 'Pendiente')
                     ->count(),
             ];
-            
+
             $data['distribucion_estado'] = DB::table('metrics.fact_incidencias')
                 ->join('metrics.dim_estado', 'metrics.fact_incidencias.estado_id', '=', 'metrics.dim_estado.id')
                 ->select('metrics.dim_estado.nombre as metric', DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
                 ->groupBy('metrics.dim_estado.nombre')
                 ->orderByDesc('value')
                 ->get();
-                
+
             $data['incidencias_institucion'] = DB::table('metrics.fact_incidencias')
                 ->leftJoin('metrics.dim_institucion', 'metrics.fact_incidencias.institucion_id', '=', 'metrics.dim_institucion.id')
                 ->select(DB::raw('COALESCE(metrics.dim_institucion.nombre, \'Sin Asignar\') as metric'), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
                 ->groupBy('metrics.dim_institucion.nombre')
                 ->orderByDesc('value')
                 ->get();
-                
+
             $data['tendencia_temporal'] = DB::table('metrics.fact_incidencias')
                 ->join('metrics.dim_tiempo', 'metrics.fact_incidencias.tiempo_id', '=', 'metrics.dim_tiempo.id')
                 ->select(DB::raw('DATE(metrics.dim_tiempo.fecha) as metric'), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))

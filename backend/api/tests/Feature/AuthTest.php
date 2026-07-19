@@ -107,18 +107,18 @@ class AuthTest extends TestCase
         $targetUser = User::factory()->create();
         $rolCiudadano = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano', 'created_by' => $admin->id]);
         $targetUser->roles()->sync([$rolCiudadano->id]);
-        
+
         // Crear un token de Sanctum para el usuario a eliminar
         $targetUser->createToken('test-token');
 
         // Verificar que el usuario tiene roles y tokens antes de eliminar
         $this->assertDatabaseHas('roles_users', [
             'user_id' => $targetUser->id,
-            'rol_id' => $rolCiudadano->id
+            'rol_id' => $rolCiudadano->id,
         ]);
         $this->assertDatabaseHas('personal_access_tokens', [
             'tokenable_id' => $targetUser->id,
-            'tokenable_type' => User::class
+            'tokenable_type' => User::class,
         ]);
 
         // 3. Ejecutar la petición DELETE actuando como Admin
@@ -136,7 +136,7 @@ class AuthTest extends TestCase
         $this->assertDatabaseMissing('roles_users', ['user_id' => $targetUser->id]);
         $this->assertDatabaseMissing('personal_access_tokens', [
             'tokenable_id' => $targetUser->id,
-            'tokenable_type' => User::class
+            'tokenable_type' => User::class,
         ]);
     }
 }

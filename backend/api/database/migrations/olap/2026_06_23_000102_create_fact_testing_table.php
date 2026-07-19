@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('metrics.fact_testing', function (Blueprint $table) {
             $table->id();
-            
+
             $table->unsignedInteger('tiempo_id')->index();
             $table->foreign('tiempo_id')->references('id')->on('metrics.dim_tiempo')->cascadeOnDelete();
-            
+
             $table->integer('total_pruebas');
             $table->integer('pruebas_aprobadas');
             $table->integer('pruebas_fallidas');
