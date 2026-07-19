@@ -19,7 +19,26 @@
         "Criterio 2"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "blocked"
+    },
+    {
+      "id": 3,
+      "name": "exportar_bd_sql",
+      "title": "Implementar Herramienta de Exportación de Base de Datos",
+      "description": "El sistema debe proveer un mecanismo automatizado (ya sea mediante un comando personalizado de Artisan o un script ejecutable) que genere un volcado (dump) SQL completo de la base de datos actual. Este archivo es un entregable crítico requerido al finalizar el proyecto (UC-12).",
+      "acceptance": [
+        "Existe un comando Artisan (ej. 'php artisan db:dump') o un script automatizado que ejecute el volcado.",
+        "El comando interactúa correctamente con el contenedor de la base de datos definido en 'docker-compose.yml'.",
+        "El archivo resultante es un volcado SQL (.sql) válido, estructurado y autocontenido (datos y esquema).",
+        "El archivo generado se almacena en una ruta segura y parametrizada (ej. 'storage/app/backups/') o se descarga directamente si se expone un endpoint administrativo."
+      ],
+      "sdd": true,
+      "status": "done",
+      "references": [
+        "docs/01_analisis/casos_uso_descripcion.md",
+        "docker-compose.yml"
+      ],
+      "priority": "low"
     }
   ]
 }
