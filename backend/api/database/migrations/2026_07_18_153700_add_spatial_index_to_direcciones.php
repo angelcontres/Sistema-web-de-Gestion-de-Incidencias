@@ -10,15 +10,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Solo aplicar en PostgreSQL con PostGIS habilitado
         if (DB::getDriverName() === 'pgsql') {
-            // Habilitar PostGIS primero en la base de datos
+            // Habilitar PostGIS si no está habilitado
             DB::statement("CREATE EXTENSION IF NOT EXISTS postgis;");
 
-            // Añadir columna generada geográficamente a partir de longitud y latitud
+            // Añadir columna generada y almacenada para búsquedas geográficas rápidas
             DB::statement("ALTER TABLE direcciones ADD COLUMN ubicacion geography(Point, 4326) GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitud, latitud), 4326)::geography) STORED;");
             
-            // Crear el índice espacial GIST para consultas ultrarrápidas
+            // Crear índice espacial GIST
             DB::statement("CREATE INDEX direcciones_ubicacion_gist ON direcciones USING GIST (ubicacion);");
         }
     }

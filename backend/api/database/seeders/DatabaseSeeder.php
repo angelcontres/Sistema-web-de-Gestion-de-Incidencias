@@ -18,6 +18,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Asegurarse de que el esquema OLAP se reconstruya siempre en un entorno fresh
+        \Illuminate\Support\Facades\Artisan::call('migrate', [
+            '--path' => 'database/migrations/olap',
+            '--force' => true,
+        ]);
+
         // User::factory(10)->create();
 
         $user = User::where('email', 'test@example.com')->first();
@@ -275,5 +281,8 @@ class DatabaseSeeder extends Seeder
         if ($supervisorRole) {
             $roleService->syncRolesToUser($supervisorUser, [$supervisorRole->id]);
         }
+
+        // Ejecutar ETL inicial para asegurar que las dimensiones del Data Warehouse estén pobladas
+        \Illuminate\Support\Facades\Artisan::call('etl:run');
     }
 }
