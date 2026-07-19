@@ -78,13 +78,14 @@ export class DashboardComponent extends BaseComponent {
       try {
         const menuStr = localStorage.getItem('user_menu');
         if (menuStr) {
-          menuList = JSON.parse(menuStr);
+          const parsed = JSON.parse(menuStr);
+          menuList = Array.isArray(parsed) ? parsed : (parsed.data || null);
         }
       } catch (e) {
         /* empty */
       }
 
-      if (!menuList || menuList.length === 0) {
+      if (!menuList || !Array.isArray(menuList) || menuList.length === 0) {
         const response = await apiRequest('/me/menu', { method: 'GET' });
         menuList = response.data || response;
         localStorage.setItem('user_menu', JSON.stringify(menuList));
@@ -133,13 +134,13 @@ export class DashboardComponent extends BaseComponent {
     if (!container) return;
 
     let role = 'Default';
-    if (AuthService.hasPermission('Ver Rol')) {
+    if (AuthService.hasPermission('READ', 'roles')) {
       role = 'Admin';
-    } else if (AuthService.hasPermission('Ver Despacho de Incidencia')) {
+    } else if (AuthService.hasPermission('READ', 'despacho_de_incidencias')) {
       role = 'Supervisor';
-    } else if (AuthService.hasPermission('Ver Kanban')) {
+    } else if (AuthService.hasPermission('READ', 'kanban')) {
       role = 'Institucion';
-    } else if (AuthService.hasPermission('Crear Incidencia')) {
+    } else if (AuthService.hasPermission('CREATE', 'incidencias')) {
       role = 'Ciudadano';
     }
 

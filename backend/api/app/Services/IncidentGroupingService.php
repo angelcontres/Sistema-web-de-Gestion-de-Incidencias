@@ -14,7 +14,7 @@ class IncidentGroupingService
     public function findSimilarIncident(int $tipoId, int $subTipoId, float $lat, float $lng): ?Incidencia
     {
         $radiusKm = 0.05; // 50 meters
-        
+
         $query = Incidencia::select('reporte_incidencias.*')
             ->join('direcciones', 'reporte_incidencias.direccion_id', '=', 'direcciones.id')
             ->where('reporte_incidencias.tipo_incidencia_id', $tipoId)

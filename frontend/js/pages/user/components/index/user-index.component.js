@@ -12,7 +12,7 @@ export class UserIndexComponent extends BaseComponent {
     console.log('Página de mantenimiento de usuarios inicializada.');
 
     const btnNuevoRegistro = this.querySelector('#btn-nuevo-registro');
-    if (btnNuevoRegistro && !AuthService.hasPermission('Crear Usuario')) {
+    if (btnNuevoRegistro && !AuthService.hasPermission('CREATE', 'usuarios')) {
       btnNuevoRegistro.classList.add('d-none');
     }
 
@@ -66,8 +66,8 @@ export class UserIndexComponent extends BaseComponent {
             header: 'Acciones',
             class: 'text-center',
             actions: [
-              ...(AuthService.hasPermission('Actualizar Usuario') ? [{ name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' }] : []),
-              ...(AuthService.hasPermission('Eliminar Usuario') ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }] : []),
+              ...(AuthService.hasPermission('UPDATE', 'usuarios') ? [{ name: 'editar', label: 'Editar', icon: 'bi-pencil-square', class: 'text-primary' }] : []),
+              ...(AuthService.hasPermission('DELETE', 'usuarios') ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }] : []),
             ],
           },
         ],

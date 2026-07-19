@@ -16,7 +16,7 @@ return new class extends Migration
 
             // Añadir columna generada y almacenada para búsquedas geográficas rápidas
             DB::statement("ALTER TABLE direcciones ADD COLUMN ubicacion geography(Point, 4326) GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitud, latitud), 4326)::geography) STORED;");
-            
+
             // Crear índice espacial GIST
             DB::statement("CREATE INDEX direcciones_ubicacion_gist ON direcciones USING GIST (ubicacion);");
         }

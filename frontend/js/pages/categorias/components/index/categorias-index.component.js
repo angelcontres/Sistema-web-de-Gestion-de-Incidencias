@@ -23,11 +23,10 @@ export class CategoriasIndexComponent extends BaseComponent {
     }
 
     const btnNuevaCategoria = this.querySelector('#btnNuevaCategoria');
-    const isAdmin = AuthService.isAdmin();
 
     // Check permissions
     if (btnNuevaCategoria) {
-      if (!AuthService.hasPermission('Crear Categoría de Incidencia')) {
+      if (!AuthService.hasPermission('CREATE', 'categorias_incidencia')) {
         btnNuevaCategoria.classList.add('d-none');
       } else {
         btnNuevaCategoria.addEventListener('click', () => this.abrirModalCategoria());
@@ -54,23 +53,24 @@ export class CategoriasIndexComponent extends BaseComponent {
       this.categoriasList = response || [];
 
       if (this.categoriasList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">No se encontraron categorías de incidencias registradas.</td></tr>';
+        tbody.innerHTML =
+          '<tr><td colspan="4" class="text-center py-5 text-muted">No se encontraron categorías de incidencias registradas.</td></tr>';
         container.classList.remove('d-none');
         return;
       }
 
       // Group categories: Main (parent_id is null) and Subcategories
-      const mainCategories = this.categoriasList.filter(c => c.parent_id === null);
-      const subCategories = this.categoriasList.filter(c => c.parent_id !== null);
+      const mainCategories = this.categoriasList.filter((c) => c.parent_id === null);
+      const subCategories = this.categoriasList.filter((c) => c.parent_id !== null);
 
-      const canEdit = AuthService.hasPermission('Actualizar Categoría de Incidencia');
-      const canDelete = AuthService.hasPermission('Eliminar Categoría de Incidencia');
-      const canCreate = AuthService.hasPermission('Crear Categoría de Incidencia');
+      const canEdit = AuthService.hasPermission('UPDATE', 'categorias_incidencia');
+      const canDelete = AuthService.hasPermission('DELETE', 'categorias_incidencia');
+      const canCreate = AuthService.hasPermission('CREATE', 'categorias_incidencia');
 
       let rowsHtml = '';
 
-      mainCategories.forEach(main => {
-        const subs = subCategories.filter(sub => sub.parent_id === main.id);
+      mainCategories.forEach((main) => {
+        const subs = subCategories.filter((sub) => sub.parent_id === main.id);
         const hasChildren = subs.length > 0;
 
         // Render Parent Row
@@ -78,9 +78,10 @@ export class CategoriasIndexComponent extends BaseComponent {
           <tr class="parent-row cursor-pointer" data-id="${main.id}">
             <td class="ps-4 fw-bold text-dark">
               <div class="d-flex align-items-center">
-                ${hasChildren 
-                  ? `<i class="bi bi-chevron-right me-2 text-primary toggle-chevron fs-6 rotate-transition" data-id="${main.id}"></i>` 
-                  : `<i class="bi bi-dot me-2 text-muted fs-5"></i>`
+                ${
+                  hasChildren
+                    ? `<i class="bi bi-chevron-right me-2 text-primary toggle-chevron fs-6 rotate-transition" data-id="${main.id}"></i>`
+                    : `<i class="bi bi-dot me-2 text-muted fs-5"></i>`
                 }
                 <span>${main.nombre}</span>
               </div>
@@ -107,7 +108,7 @@ export class CategoriasIndexComponent extends BaseComponent {
         `;
 
         // Render Children Rows (initially collapsed)
-        subs.forEach(sub => {
+        subs.forEach((sub) => {
           rowsHtml += `
             <tr class="child-row d-none table-row-child" data-parent-id="${main.id}" data-id="${sub.id}">
               <td class="ps-5 text-dark">
@@ -141,7 +142,7 @@ export class CategoriasIndexComponent extends BaseComponent {
       tbody.innerHTML = rowsHtml;
 
       // Bind Toggle Collapse and Action events
-      mainCategories.forEach(main => {
+      mainCategories.forEach((main) => {
         const parentRow = tbody.querySelector(`tr.parent-row[data-id="${main.id}"]`);
         const chevron = parentRow.querySelector('.toggle-chevron');
         const childRows = tbody.querySelectorAll(`tr.child-row[data-parent-id="${main.id}"]`);
@@ -150,7 +151,7 @@ export class CategoriasIndexComponent extends BaseComponent {
         if (parentRow && childRows.length > 0) {
           const toggleCollapse = () => {
             const isCollapsed = childRows[0].classList.contains('d-none');
-            childRows.forEach(row => {
+            childRows.forEach((row) => {
               if (isCollapsed) {
                 row.classList.remove('d-none');
               } else {
@@ -190,8 +191,8 @@ export class CategoriasIndexComponent extends BaseComponent {
         }
 
         // Action buttons on subcategories
-        const subs = subCategories.filter(sub => sub.parent_id === main.id);
-        subs.forEach(sub => {
+        const subs = subCategories.filter((sub) => sub.parent_id === main.id);
+        subs.forEach((sub) => {
           const childRow = tbody.querySelector(`tr.child-row[data-id="${sub.id}"]`);
           if (childRow) {
             const btnEditSub = childRow.querySelector('[data-action="editar"]');
@@ -220,10 +221,10 @@ export class CategoriasIndexComponent extends BaseComponent {
     if (!select) return;
 
     // Filter out the category itself (if editing) to prevent circular parenting
-    const filtered = this.categoriasList.filter(c => c.activo && c.id != excludeId);
+    const filtered = this.categoriasList.filter((c) => c.activo && c.id != excludeId);
 
     const optionsHtml = filtered
-      .map(c => `<option value="${c.id}">${c.nombre}</option>`)
+      .map((c) => `<option value="${c.id}">${c.nombre}</option>`)
       .join('');
 
     select.innerHTML = `<option value="">-- Ninguna (Categoría Raíz) --</option>${optionsHtml}`;
@@ -311,7 +312,7 @@ export class CategoriasIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (!isConfirmed) return;
 
     try {

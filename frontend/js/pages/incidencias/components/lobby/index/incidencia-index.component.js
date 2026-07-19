@@ -13,7 +13,7 @@ export class IncidenciaIndexComponent extends BaseComponent {
     console.log('Página de mantenimiento de incidencias inicializada.');
 
     const btnNuevoRegistro = this.querySelector('#btn-nuevo-registro');
-    if (btnNuevoRegistro && !AuthService.hasPermission('Crear Incidencia')) {
+    if (btnNuevoRegistro && !AuthService.hasPermission('CREATE', 'incidencias')) {
       btnNuevoRegistro.classList.add('d-none');
     }
 
@@ -99,7 +99,7 @@ export class IncidenciaIndexComponent extends BaseComponent {
             header: 'Acciones',
             class: 'text-center pe-4',
             actions: [
-              ...(AuthService.hasPermission('Actualizar Incidencia')
+              ...(AuthService.hasPermission('UPDATE', 'incidencias')
                 ? [
                     {
                       name: 'editar',
@@ -109,7 +109,7 @@ export class IncidenciaIndexComponent extends BaseComponent {
                     },
                   ]
                 : []),
-              ...(AuthService.hasPermission('Eliminar Incidencia')
+              ...(AuthService.hasPermission('DELETE', 'incidencias')
                 ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }]
                 : []),
             ],
@@ -150,25 +150,6 @@ export class IncidenciaIndexComponent extends BaseComponent {
         console.error('Error al eliminar incidencia:', error);
         ToastService.error(`Error al eliminar: ${error.message}`);
       }
-    }
-  }
-
-  mostrarAlertaExito(message) {
-    const successAlert = this.querySelector('#successAlert');
-    const successMessage = this.querySelector('#successMessage');
-    if (successAlert && successMessage) {
-      successMessage.textContent = message;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 4000);
-    }
-  }
-
-  mostrarAlertaError(message) {
-    const errorAlert = this.querySelector('#errorAlert');
-    const errorMessage = this.querySelector('#errorMessage');
-    if (errorAlert && errorMessage) {
-      errorMessage.textContent = message;
-      errorAlert.classList.remove('d-none');
     }
   }
 }

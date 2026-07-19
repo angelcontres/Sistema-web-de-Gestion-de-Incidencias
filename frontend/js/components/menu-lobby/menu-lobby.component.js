@@ -28,11 +28,12 @@ export class MenuLobbyComponent extends BaseComponent {
     try {
       const menuStr = localStorage.getItem('user_menu');
       if (menuStr) {
-        menuList = JSON.parse(menuStr);
+        const parsed = JSON.parse(menuStr);
+        menuList = Array.isArray(parsed) ? parsed : (parsed.data || null);
       }
     } catch(e) { /* empty */ }
 
-    if (!menuList || menuList.length === 0) {
+    if (!menuList || !Array.isArray(menuList) || menuList.length === 0) {
       try {
         const response = await apiRequest('/me/menu', { method: 'GET' });
         menuList = response.data || response;

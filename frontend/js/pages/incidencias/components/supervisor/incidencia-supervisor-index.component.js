@@ -35,7 +35,8 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   async cargarDatos() {
     this.mostrarSpinners(true);
     try {
-      this.incidencias = await IncidenciaService.getAll();
+      const response = await IncidenciaService.getAll();
+      this.incidencias = response.data || response;
       this.renderAlertas();
       this.initOrUpdateMap();
     } catch (error) {

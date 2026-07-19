@@ -65,6 +65,17 @@ class UserMenuController extends Controller
                 $allowedIds->push($dashboardId);
             }
 
+            // Excepción: El rol Institución necesita permisos de incidencias por el API, 
+            // pero no debe ver el menú general de "Incidencias"
+            if ($user->roles()->where('nombre', 'Institucion')->exists()) {
+                $incidenciasMenuId = OpcionMenu::where('nombre', 'Incidencias')->value('id');
+                if ($incidenciasMenuId) {
+                    $allowedIds = $allowedIds->reject(function ($id) use ($incidenciasMenuId) {
+                        return $id == $incidenciasMenuId;
+                    });
+                }
+            }
+
             $query->whereIn('id', $allowedIds->values());
         }
 

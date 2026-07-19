@@ -86,12 +86,12 @@ export class IncidenciaFormComponent extends BaseComponent {
     const incidenciaId = urlParams.get('id');
 
     // Verify permissions
-    if (incidenciaId && !AuthService.hasPermission('Actualizar Incidencia')) {
+    if (incidenciaId && !AuthService.hasPermission('UPDATE', 'incidencias')) {
       ToastService.error('No tiene permiso para editar incidencias.');
       window.location.hash = '#/incidencias';
       return;
     }
-    if (!incidenciaId && !AuthService.hasPermission('Crear Incidencia')) {
+    if (!incidenciaId && !AuthService.hasPermission('CREATE', 'incidencias')) {
       ToastService.error('No tiene permiso para registrar incidencias.');
       window.location.hash = '#/incidencias';
       return;
