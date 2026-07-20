@@ -26,14 +26,14 @@ class CachePerformanceTest extends TestCase
         Cache::flush();
 
         DB::enableQueryLog();
-        $this->getJson('/api/v1/catalogos/paises');
+        $this->getJson('/api/v1/catalogs/countries');
         $queriesFirstCall = count(DB::getQueryLog());
         
         $this->assertGreaterThan(0, $queriesFirstCall, 'Debería haber consultas a BD en la primera llamada');
         
         DB::flushQueryLog();
         
-        $this->getJson('/api/v1/catalogos/paises');
+        $this->getJson('/api/v1/catalogs/countries');
         $queriesSecondCall = count(DB::getQueryLog());
         
         $this->assertEquals(0, $queriesSecondCall, 'No debería haber consultas a BD en la segunda llamada (caché)');

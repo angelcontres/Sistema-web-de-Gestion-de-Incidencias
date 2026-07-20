@@ -90,7 +90,12 @@ class IncidenciaController extends Controller
             $query->where('tipo_incidencia_id', $request->tipo_incidencia_id);
         }
 
-        return response()->json($query->orderBy('id', 'desc')->cursorPaginate(15), 200);
+        if ($request->query('all') === 'true' || $request->query('all') === '1') {
+            return response()->json($query->orderBy('id', 'desc')->get(), 200);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->orderBy('id', 'desc')->cursorPaginate($perPage), 200);
     }
 
     /**
@@ -196,7 +201,8 @@ class IncidenciaController extends Controller
             return response()->json(['message' => 'No autorizado.'], 403);
         }
 
-        $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate(10);
+        $perPage = request()->input('per_page', 15);
+        $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($historial, 200);
     }

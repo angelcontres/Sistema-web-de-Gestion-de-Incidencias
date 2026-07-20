@@ -63,8 +63,8 @@ export class RoleIndexComponent extends BaseComponent {
     if (emptyState) emptyState.classList.add('d-none');
 
     try {
-      const response = await apiRequest('/roles');
-      const roles = response || [];
+      const response = await apiRequest('/roles?all=true');
+      const roles = Array.isArray(response) ? response : (response.data || []);
 
       if (totalRolesBadge) {
         totalRolesBadge.textContent = `${roles.length} Registros`;
@@ -186,8 +186,9 @@ export class RoleIndexComponent extends BaseComponent {
     this.querySelector('#btnText').textContent = 'Guardar Rol';
 
     try {
-      const response = await apiRequest('/roles');
-      this.llenarSelectPadre(response || []);
+      const response = await apiRequest('/roles?all=true');
+      const roles = Array.isArray(response) ? response : (response.data || []);
+      this.llenarSelectPadre(roles);
     } catch (error) {
       console.error('Error cargando roles para select:', error);
     }
@@ -312,11 +313,11 @@ export class RoleIndexComponent extends BaseComponent {
 
     try {
       const [todosPermisosResponse, rolDetalle] = await Promise.all([
-        apiRequest('/permisos'),
+        apiRequest('/permissions?all=true'),
         apiRequest(`/roles/${rol.id}`),
       ]);
 
-      const todosPermisos = todosPermisosResponse || [];
+      const todosPermisos = Array.isArray(todosPermisosResponse) ? todosPermisosResponse : (todosPermisosResponse.data || []);
       const permisosAsignados = rolDetalle.permisos ? rolDetalle.permisos.map((p) => p.id) : [];
 
       accordionMenus.innerHTML = '';
@@ -451,7 +452,7 @@ export class RoleIndexComponent extends BaseComponent {
     btnAssignSubmit.disabled = true;
 
     try {
-      await apiRequest(`/roles/${roleId}/permisos`, {
+      await apiRequest(`/roles/${roleId}/permissions`, {
         method: 'POST',
         body: JSON.stringify({ permisos: permisosIds }),
       });

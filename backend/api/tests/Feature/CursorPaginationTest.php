@@ -21,7 +21,7 @@ class CursorPaginationTest extends TestCase
         $user = User::where('email', 'test@example.com')->first();
         $this->actingAs($user);
 
-        $response = $this->getJson('/api/v1/incidencias');
+        $response = $this->getJson('/api/v1/incidents');
         
         $response->assertStatus(200);
         

@@ -19,6 +19,7 @@ export class AppDataTableComponent extends BaseComponent {
     });
 
     this.currentPage = 1;
+    this.perPage = 15;
     this.lastPage = 1;
     this.currentEndpointOrService = null;
     
@@ -35,6 +36,10 @@ export class AppDataTableComponent extends BaseComponent {
       const pageParam = urlParams.get('page');
       if (pageParam && !isNaN(pageParam)) {
         this.currentPage = parseInt(pageParam, 10);
+      }
+      const perPageParam = urlParams.get('per_page');
+      if (perPageParam && !isNaN(perPageParam)) {
+        this.perPage = parseInt(perPageParam, 10);
       }
     }
   }
@@ -129,6 +134,16 @@ export class AppDataTableComponent extends BaseComponent {
     // Render table headers dynamically if columns are already defined
     this.renderHeaders();
 
+    this.selectPerPage = this.querySelector('#select-per-page');
+    if (this.selectPerPage) {
+      this.selectPerPage.value = this.perPage;
+      this.selectPerPage.addEventListener('change', (e) => {
+        this.perPage = parseInt(e.target.value, 10);
+        this.currentPage = 1;
+        this.updateUrlAndLoad();
+      });
+    }
+
     // Setup action click delegation
     if (this.tbody) {
       this.tbody.addEventListener('click', (e) => {
@@ -198,7 +213,7 @@ export class AppDataTableComponent extends BaseComponent {
    */
   updateUrlAndLoad() {
     const hashPath = window.location.hash.split('?')[0];
-    const newHash = `${hashPath}?page=${this.currentPage}`;
+    const newHash = `${hashPath}?page=${this.currentPage}&per_page=${this.perPage}`;
     // Updates URL without triggering router reload
     history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
     
@@ -228,14 +243,14 @@ export class AppDataTableComponent extends BaseComponent {
     try {
       let response;
       if (typeof endpointOrService === 'function') {
-        response = await endpointOrService(this.currentPage, this.currentCursor);
+        response = await endpointOrService(this.currentPage, this.perPage, this.currentCursor);
       } else {
         const sep = endpointOrService.includes('?') ? '&' : '?';
         let url = `${endpointOrService}${sep}`;
         if (this.isCursorPagination && this.currentCursor) {
-            url += `cursor=${this.currentCursor}`;
+            url += `cursor=${this.currentCursor}&per_page=${this.perPage}`;
         } else {
-            url += `page=${this.currentPage}`;
+            url += `page=${this.currentPage}&per_page=${this.perPage}`;
         }
         response = await apiRequest(url);
       }
@@ -262,7 +277,7 @@ export class AppDataTableComponent extends BaseComponent {
         this.currentPage = response.current_page;
         this.lastPage = response.last_page || 1;
         
-        if (this.paginationContainer && response.last_page > 1) {
+        if (this.paginationContainer) {
           this.paginationContainer.classList.remove('d-none');
           this.pageCurrentLabel.textContent = this.currentPage;
           this.pageTotalLabel.textContent = this.lastPage;

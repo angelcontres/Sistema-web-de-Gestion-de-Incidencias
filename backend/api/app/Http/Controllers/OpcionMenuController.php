@@ -16,18 +16,20 @@ class OpcionMenuController extends Controller
     {
         $query = OpcionMenu::query();
 
-        // If tree=true is passed, retrieve hierarchical structure (root-level options only, with children loaded)
-        if ($request->boolean('tree')) {
-            $opciones = $query->with('hijos')->whereNull('padre_id')->get();
-        } else {
-            // Flat list, loaded with parent info
-            $opciones = $query->with('padre')->get();
+        if ($request->boolean('tree') || $request->query('all') === 'true' || $request->query('all') === '1') {
+            if ($request->boolean('tree')) {
+                $opciones = $query->with('hijos')->whereNull('padre_id')->get();
+            } else {
+                $opciones = $query->with('padre')->get();
+            }
+            return response()->json([
+                'status' => 'success',
+                'data' => $opciones,
+            ]);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $opciones,
-        ]);
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->with('padre')->paginate($perPage));
     }
 
     /**

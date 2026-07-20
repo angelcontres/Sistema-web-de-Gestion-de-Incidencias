@@ -8,6 +8,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   constructor() {
     super('js/pages/incidencias/components/supervisor/incidencia-supervisor-index.component.html');
     this.map = null;
+    this.clusterGroup = null;
     this.markers = [];
     this.chart = null;
     this.incidencias = [];
@@ -101,10 +102,19 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(this.map);
+
+      // Initialize the cluster group ONCE
+      this.clusterGroup = L.markerClusterGroup({
+        chunkedLoading: true, // Optimizes performance for 1000+ markers
+        maxClusterRadius: 50,
+      });
+      this.map.addLayer(this.clusterGroup);
     }
 
     // Limpiar marcadores anteriores
-    this.markers.forEach((m) => this.map.removeLayer(m));
+    if (this.clusterGroup) {
+      this.clusterGroup.clearLayers();
+    }
     this.markers = [];
 
     const conCoordenadas = this.incidencias.filter(
@@ -129,7 +139,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
         shadowSize: [41, 41],
       });
 
-      const m = L.marker([lat, lng], { icon: customIcon }).addTo(this.map);
+      const m = L.marker([lat, lng], { icon: customIcon });
 
       // Creamos un botón para el popup en lugar de un enlace href simple
       const popupContent = document.createElement('div');
@@ -149,10 +159,11 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       this.markers.push(m);
     });
 
-    // Centrar mapa si hay incidencias
+    // Add all markers to the cluster group efficiently
     if (this.markers.length > 0) {
-      const group = new L.featureGroup(this.markers);
-      this.map.fitBounds(group.getBounds().pad(0.1));
+      this.clusterGroup.addLayers(this.markers);
+      // Fit bounds to show all clusters
+      this.map.fitBounds(this.clusterGroup.getBounds().pad(0.1));
     }
   }
 

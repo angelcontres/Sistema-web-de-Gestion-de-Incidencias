@@ -47,10 +47,10 @@ class DireccionTest extends TestCase
             'activo' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/v1/direcciones');
+        $response = $this->actingAs($this->user)->getJson('/api/v1/addresses');
 
         $response->assertStatus(200)
-            ->assertJsonCount(1)
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'detalle' => 'Av. Arequipa 1111',
             ]);
@@ -68,7 +68,7 @@ class DireccionTest extends TestCase
             'activo' => true,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/v1/direcciones', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/v1/addresses', $payload);
 
         $response->assertStatus(201)
             ->assertJsonPath('data.detalle', 'Calle Las Magnolias 123');
@@ -87,7 +87,7 @@ class DireccionTest extends TestCase
             'latitud' => 100, // between -90 and 90
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/v1/direcciones', $payload);
+        $response = $this->actingAs($this->user)->postJson('/api/v1/addresses', $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['territorio_id', 'detalle', 'latitud']);
@@ -105,7 +105,7 @@ class DireccionTest extends TestCase
             'detalle' => 'Calle Verdadera 456',
         ];
 
-        $response = $this->actingAs($this->user)->putJson("/api/v1/direcciones/{$direccion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson("/api/v1/addresses/{$direccion->id}", $payload);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.detalle', 'Calle Verdadera 456');
@@ -124,7 +124,7 @@ class DireccionTest extends TestCase
             'activo' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson("/api/v1/direcciones/{$direccion->id}");
+        $response = $this->actingAs($this->user)->deleteJson("/api/v1/addresses/{$direccion->id}");
 
         $response->assertStatus(200);
 

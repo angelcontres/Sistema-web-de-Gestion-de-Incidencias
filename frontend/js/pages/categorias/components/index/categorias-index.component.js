@@ -50,8 +50,8 @@ export class CategoriasIndexComponent extends BaseComponent {
     if (!container || !tbody) return;
 
     try {
-      const response = await CategoriaIncidenciaService.getAll();
-      this.categoriasList = response || [];
+      const resp = await CategoriaIncidenciaService.getAll(1, 15, null, undefined, { all: true });
+      this.categoriasList = Array.isArray(resp) ? resp : (resp.data || []);
 
       if (this.categoriasList.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">No se encontraron categorías de incidencias registradas.</td></tr>';

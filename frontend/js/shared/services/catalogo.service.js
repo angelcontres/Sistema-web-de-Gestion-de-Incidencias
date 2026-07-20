@@ -34,7 +34,7 @@ export const CatalogoService = {
    * Obtiene la lista de países activos.
    */
   async getPaises() {
-    return withCache('catalogo_paises', 1440, () => apiRequest('/catalogos/paises'));
+    return withCache('catalogo_paises', 1440, () => apiRequest('/catalogs/countries'));
   },
 
   /**
@@ -46,7 +46,7 @@ export const CatalogoService = {
     if (parentId !== undefined) params.append('parent_id', parentId === null ? 'null' : parentId);
 
     const queryString = params.toString();
-    const endpoint = `/catalogos/territorios${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/catalogs/territories${queryString ? `?${queryString}` : ''}`;
     
     // Cache key based on query string to keep different combos cached
     const cacheKey = `catalogo_territorios_${queryString || 'all'}`;
@@ -61,7 +61,7 @@ export const CatalogoService = {
     if (territorioId !== null && territorioId !== undefined) params.append('territorio_id', territorioId);
 
     const queryString = params.toString();
-    const endpoint = `/catalogos/direcciones${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/catalogs/addresses${queryString ? `?${queryString}` : ''}`;
     
     // Cache key based on query string
     const cacheKey = `catalogo_direcciones_${queryString || 'all'}`;
@@ -77,7 +77,7 @@ export const CatalogoService = {
     if (soloHojas) params.append('solo_hojas', 'true');
 
     const queryString = params.toString();
-    const endpoint = `/catalogos/categorias-incidencia${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/catalogs/incident-categories${queryString ? `?${queryString}` : ''}`;
     
     const cacheKey = `catalogo_categorias_${queryString || 'all'}`;
     return withCache(cacheKey, 1440, () => apiRequest(endpoint));
@@ -87,6 +87,6 @@ export const CatalogoService = {
    * Obtiene la lista de instituciones activas.
    */
   async getInstituciones() {
-    return withCache('catalogo_instituciones', 1440, () => apiRequest('/catalogos/instituciones'));
+    return withCache('catalogo_instituciones', 1440, () => apiRequest('/catalogs/institutions'));
   },
 };

@@ -41,7 +41,9 @@ export async function apiRequest(endpoint, options = {}) {
   if (response.status === 401 && !endpoint.includes('/login')) {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
-    window.location.hash = '#/login';
+    if (window.location.hash !== '#/login') {
+      window.location.hash = '#/login';
+    }
     throw new Error('Sesión expirada o no autorizada.');
   }
 
@@ -54,7 +56,24 @@ export async function apiRequest(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(data.message || `Error del servidor (HTTP ${response.status})`);
+    let errMsg = data.message || `Error del servidor (HTTP ${response.status})`;
+    
+    // Extract validation errors if present (HTTP 422)
+    if (response.status === 422 && data.errors) {
+      const firstErrorKey = Object.keys(data.errors)[0];
+      errMsg = data.errors[firstErrorKey][0];
+    }
+
+    // Mask raw SQL errors
+    if (typeof errMsg === 'string' && errMsg.includes('SQLSTATE')) {
+      if (errMsg.includes('23505') || errMsg.includes('unique constraint') || errMsg.includes('Duplicate')) {
+        errMsg = 'Error de integridad: Ya existe un registro con esa información única (ej. email duplicado).';
+      } else {
+        errMsg = 'Ocurrió un error en el servidor al intentar procesar los datos (Operación abortada por seguridad).';
+      }
+    }
+
+    throw new Error(errMsg);
   }
 
   return data;

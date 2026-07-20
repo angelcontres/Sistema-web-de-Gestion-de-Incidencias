@@ -50,7 +50,7 @@ export class PermissionFormComponent extends BaseComponent {
       '<option value="" disabled selected>Seleccione una opción...</option>';
 
     try {
-      const response = await apiRequest('/opciones-menu');
+      const response = await apiRequest('/menu-options');
       const opciones = Array.isArray(response) ? response : response.data || [];
 
       opciones.forEach((opcion) => {
@@ -131,7 +131,7 @@ export class PermissionFormComponent extends BaseComponent {
     };
 
     try {
-      const endpoint = permisoId ? `/v1/permisos/${permisoId}` : '/v1/permisos';
+      const endpoint = permisoId ? `/v1/permissions/${permisoId}` : '/v1/permissions';
       const method = permisoId ? 'PUT' : 'POST';
 
       await apiRequest(endpoint, {

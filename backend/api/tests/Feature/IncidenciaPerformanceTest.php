@@ -32,7 +32,7 @@ class IncidenciaPerformanceTest extends TestCase
         }
 
         DB::enableQueryLog();
-        $resp = $this->getJson('/api/v1/incidencias');
+        $resp = $this->getJson('/api/v1/incidents');
         $resp->assertStatus(200);
         $queries2 = count(DB::getQueryLog());
         DB::flushQueryLog();
@@ -46,11 +46,11 @@ class IncidenciaPerformanceTest extends TestCase
         }
         
         DB::flushQueryLog();
-        $this->getJson('/api/v1/incidencias');
+        $this->getJson('/api/v1/incidents');
         $queries12 = count(DB::getQueryLog());
         DB::flushQueryLog();
 
-        $this->assertEquals($queries2, $queries12, "Se detectó N+1 en /api/v1/incidencias. $queries2 vs $queries12");
+        $this->assertEquals($queries2, $queries12, "Se detectó N+1 en /api/v1/incidents. $queries2 vs $queries12");
     }
 
     public function test_dashboard_stats_no_n_plus_one()
@@ -92,7 +92,7 @@ class IncidenciaPerformanceTest extends TestCase
         $user = User::where('email', 'test@example.com')->first();
         $this->actingAs($user);
 
-        $resp = $this->getJson('/api/v1/incidencias');
+        $resp = $this->getJson('/api/v1/incidents');
         $resp->assertStatus(200);
         
         $data = $resp->json();

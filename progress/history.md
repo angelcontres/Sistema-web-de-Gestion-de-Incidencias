@@ -35,3 +35,9 @@
 - Se agregó índice espacial GiST a la columna coordenadas de las direcciones para acelerar búsquedas en PostGIS.
 - Se verificó mediante tests con EXPLAIN que PostgreSQL realmente utiliza dichos índices en sus planes de ejecución.
 - Se verificó que todos los tests automatizados corran en verde con ./init.sh.
+
+## Sesión: Feature perf_frontend_vanillajs (ID 6)
+- Feature completada: perf_frontend_vanillajs (Optimización de Rendimiento - Frontend VanillaJS).
+- Se implementó Marker Clustering (Leaflet.markercluster) en los mapas de Dashboard y Supervisor para renderizar eficientemente grandes volúmenes de incidencias.
+- Se añadió soporte de Lazy Loading (`loading="lazy"`) a las imágenes de evidencias renderizadas dinámicamente en Formularios y Kanban.
+- Se omitió explícitamente el uso de empaquetadores (bundlers/minifiers) por decisión del usuario para mantener el stack 100% puro y Vanilla.

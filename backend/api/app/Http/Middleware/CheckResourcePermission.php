@@ -56,8 +56,28 @@ class CheckResourcePermission
             return $next($request);
         }
 
+        // Resource Translation for Permission checking (Endpoints are English, Permissions are Spanish)
+        $resourceMap = [
+            'users' => 'usuarios',
+            'roles' => 'roles',
+            'permissions' => 'permisos',
+            'countries' => 'paises',
+            'territories' => 'territorios',
+            'addresses' => 'direcciones',
+            'incident_categories' => 'categorias_incidencia',
+            'incident-categories' => 'categorias_incidencia',
+            'incidents' => 'incidencias',
+            'institutions' => 'instituciones',
+            'priorities' => 'prioridades',
+            'menu_options' => 'opciones_menu',
+            'menu-options' => 'opciones_menu',
+        ];
+
         // Replace hyphens with underscores to match db convention
         $recurso = str_replace('-', '_', $recurso);
+        
+        // Translate to Spanish if exists in map
+        $recurso = $resourceMap[$recurso] ?? $recurso;
 
         // Validation
         $user->load('roles.permisos');

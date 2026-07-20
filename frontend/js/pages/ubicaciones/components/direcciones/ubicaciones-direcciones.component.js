@@ -120,8 +120,8 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
   async cargarDirecciones() {
     try {
-      const list = await UbicacionesService.getDirecciones();
-      this.direccionesList = list || [];
+      const response = await UbicacionesService.getDirecciones(1, 1000, null, { all: true });
+      this.direccionesList = Array.isArray(response) ? response : (response.data || []);
       this.filtrarDirecciones();
     } catch (error) {
       console.error('Error cargando direcciones:', error);

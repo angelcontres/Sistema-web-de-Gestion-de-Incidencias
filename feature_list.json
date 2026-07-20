@@ -92,7 +92,7 @@
       ],
       "sdd": false,
       "priority": "high",
-      "status": "pending",
+      "status": "done",
       "references": [
         "public/js/",
         "public/css/"
@@ -115,6 +115,21 @@
         "docker-compose.yml",
         "docker/nginx/nginx.conf"
       ]
+    },
+    {
+      "id": 8,
+      "name": "global_pagination",
+      "title": "Implementación Global de Paginación en Backend y Frontend",
+      "description": "Estandarizar e implementar la paginación de datos (simplePaginate o cursorPaginate) en todos los controladores REST del backend (Usuarios, Roles, Permisos, Instituciones, etc.) y adaptar los componentes VanillaJS del frontend para soportar controles de navegación (Siguiente, Anterior).",
+      "acceptance": [
+        "Todos los listados masivos en el backend devuelven respuestas paginadas en lugar de colecciones completas (get()).",
+        "Los servicios del frontend (ej. userService, roleService) admiten parámetros de paginación o cursor en el query string.",
+        "Los componentes UI del frontend renderizan controles de 'Siguiente' y 'Anterior' cuando existan múltiples páginas.",
+        "El componente Kanban sigue funcionando correctamente (si carga la data en bulk) o se adaptó para lazy-loading."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "done"
     }
   ]
 }

@@ -13,9 +13,16 @@ class PermisoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Permiso::with('opcionMenu')->get(), 200);
+        $query = Permiso::with('opcionMenu');
+
+        if ($request->query('all') === 'true' || $request->query('all') === '1') {
+            return response()->json($query->get(), 200);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->paginate($perPage), 200);
     }
 
     /**
