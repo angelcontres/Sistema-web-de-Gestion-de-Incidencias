@@ -92,7 +92,7 @@ export class DashboardComponent extends BaseComponent {
       }
 
       if (!menuList || !Array.isArray(menuList) || menuList.length === 0) {
-        const response = DashboardService.getMyMenus();
+        const response = await DashboardService.getMyMenus();
         menuList = response.data || response;
         localStorage.setItem('user_menu', JSON.stringify(menuList));
       }

@@ -4,16 +4,22 @@ import { DashboardInstitucionComponent } from './dashboard-institucion.component
 describe('DashboardInstitucionComponent', () => {
   let originalEcharts;
 
+  // Creamos variables para guardar las referencias de los gráficos creados en el test
+  let mockChartEstado;
+  let mockChartTendencia;
+
   beforeEach(() => {
     originalEcharts = window.echarts;
+
+    // Inicializamos los mocks individuales con sus funciones espía (jest.fn())
+    mockChartEstado = { setOption: jest.fn(), resize: jest.fn() };
+    mockChartTendencia = { setOption: jest.fn(), resize: jest.fn() };
+
     window.echarts = {
-      init: jest.fn(() => ({
-        setOption: jest.fn(),
-        resize: jest.fn(),
-      })),
+      init: jest.fn().mockReturnValueOnce(mockChartEstado).mockReturnValueOnce(mockChartTendencia),
       graphic: {
         LinearGradient: jest.fn(),
-      }
+      },
     };
     jest.useFakeTimers();
   });
@@ -37,7 +43,7 @@ describe('DashboardInstitucionComponent', () => {
       }
       return fakeElements[selector];
     };
-    
+
     return { component, fakeElements };
   }
 
@@ -52,12 +58,12 @@ describe('DashboardInstitucionComponent', () => {
   it('set data - debería actualizar dashboardData y llamar a renderData si la vista está lista', () => {
     const { component, fakeElements } = createMockComponent();
     component.renderData = jest.fn();
-    
+
     const mockData = { kpis: { asignadas: 10 } };
     fakeElements['#val-asignadas'] = {}; // Simulamos que el elemento existe
-    
+
     component.data = mockData;
-    
+
     expect(component.dashboardData).toEqual(mockData);
     expect(component.renderData).toHaveBeenCalled();
   });
@@ -68,10 +74,10 @@ describe('DashboardInstitucionComponent', () => {
       kpis: {
         asignadas: 20,
         en_proceso: 5,
-        resueltas: 15
+        resueltas: 15,
       },
       distribucion_estado: [{ metric: 'Pendiente', value: 10 }],
-      tendencia_temporal: [{ metric: '2023-01-01', value: 5 }]
+      tendencia_temporal: [{ metric: '2023-01-01', value: 5 }],
     };
 
     component.renderData();
@@ -82,7 +88,29 @@ describe('DashboardInstitucionComponent', () => {
 
     // Avanzar temporizadores para que se ejecute el setTimeout de echarts
     jest.runAllTimers();
-    
+
     expect(window.echarts.init).toHaveBeenCalledTimes(2); // chartEstado, chartTendencia
+  });
+
+  it('debería redimensionar los gráficos cuando la ventana cambia de tamaño (resize)', () => {
+    const { component } = createMockComponent();
+    component.dashboardData = {
+      kpis: { asignadas: 1, en_proceso: 1, resueltas: 1 },
+      distribucion_estado: [],
+      tendencia_temporal: [],
+    };
+
+    // Ejecuta renderData para que entre en el flujo del setTimeout
+    component.renderData();
+
+    // Importante: Ejecuta los timers para que se registre el callback en el window 'resize'
+    jest.runAllTimers();
+
+    // Simulamos el disparo del evento resize global de la ventana
+    window.dispatchEvent(new Event('resize'));
+
+    // Verificamos que se haya invocado la función .resize() de ambos gráficos mockeados
+    expect(mockChartEstado.resize).toHaveBeenCalledTimes(1);
+    expect(mockChartTendencia.resize).toHaveBeenCalledTimes(1);
   });
 });
