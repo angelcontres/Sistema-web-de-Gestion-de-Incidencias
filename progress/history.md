@@ -28,3 +28,10 @@
 - Se refactorizaron y probaron con éxito los comandos de optimización (route:cache, etc).
 - Se trazaron las requirements R1-R8 con tests correspondientes.
 - Todos los tests pasan correctamente (verificado vía init.sh).
+
+## Sesión: Feature perf_database_postgres (ID 5)
+- Feature completada: perf_database_postgres (Optimización de Rendimiento - Base de Datos).
+- Se añadieron índices B-Tree a estado_id, categoria_id y created_at para acelerar filtrado.
+- Se agregó índice espacial GiST a la columna coordenadas de las direcciones para acelerar búsquedas en PostGIS.
+- Se verificó mediante tests con EXPLAIN que PostgreSQL realmente utiliza dichos índices en sus planes de ejecución.
+- Se verificó que todos los tests automatizados corran en verde con ./init.sh.

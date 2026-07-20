@@ -72,7 +72,7 @@
       ],
       "sdd": true,
       "priority": "high",
-      "status": "pending",
+      "status": "done",
       "references": [
         "database/migrations/",
         "docker-compose.yml"
