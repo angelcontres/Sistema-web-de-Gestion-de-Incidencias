@@ -110,7 +110,7 @@
       ],
       "sdd": true,
       "priority": "high",
-      "status": "pending",
+      "status": "spec_ready",
       "references": [
         "docker-compose.yml",
         "docker/nginx/nginx.conf"
