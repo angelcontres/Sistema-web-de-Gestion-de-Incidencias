@@ -24,4 +24,10 @@ export const RoleService = {
       method: 'DELETE',
     });
   },
+  assignPermissions(id, payload) {
+    return apiRequest(`/roles/${id}/permisos`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
 };

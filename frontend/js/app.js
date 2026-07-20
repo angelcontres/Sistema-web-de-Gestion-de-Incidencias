@@ -19,6 +19,7 @@ import './pages/user/components/index/user-index.component.js';
 import './pages/user/components/form/user-form.component.js';
 
 import './pages/role/component/index/role-index.component.js';
+import './pages/role/component/form/role-form.component.js';
 import './pages/permissions/components/index/permission-index.component.js';
 import './pages/trp-dashboard/trp-dashboard.component.js';
 import './pages/permissions/components/form/permission-form.component.js';

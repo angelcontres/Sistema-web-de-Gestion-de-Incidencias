@@ -1,8 +1,9 @@
 import { BaseComponent } from '../../../../core/base-component.js';
-import { apiRequest } from '../../../../core/api.js';
+import { PermissionService } from '../../../permissions/services/permissions.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
+import { RoleService } from '../../services/role.service.js';
 
 export class RoleIndexComponent extends BaseComponent {
   constructor() {
@@ -11,24 +12,25 @@ export class RoleIndexComponent extends BaseComponent {
 
   async onInit() {
     console.log('Página de roles inicializada.');
+    const formComponent = this.querySelector('#app-role-form');
+    const btnNuevoRol = this.querySelector('#btnNuevoRol');
 
     // 1. Cargar los roles inicialmente
     await this.cargarRoles();
 
-    // Hide create button if user lacks permission
-    const btnNuevoRol = this.querySelector('#btnNuevoRol');
+    if (formComponent) {
+      formComponent.addEventListener('rol-guardado', (e) => {
+        ToastService.success(e.detail.mensaje);
+        this.cargarRoles();
+      });
+    }
+
     if (btnNuevoRol) {
       if (!AuthService.hasPermission('CREATE', 'roles')) {
         btnNuevoRol.classList.add('d-none');
-      } else {
-        btnNuevoRol.addEventListener('click', () => this.abrirModalCrear());
+      } else if (formComponent) {
+        btnNuevoRol.addEventListener('click', () => formComponent.abrirModalCrear());
       }
-    }
-
-    // 3. Escuchar el submit del formulario del modal
-    const form = this.querySelector('#roleForm');
-    if (form) {
-      form.addEventListener('submit', (e) => this.guardarRol(e));
     }
 
     // 4. Escuchar el submit del formulario de asignación de permisos
@@ -63,8 +65,9 @@ export class RoleIndexComponent extends BaseComponent {
     if (emptyState) emptyState.classList.add('d-none');
 
     try {
-      const response = await apiRequest('/roles');
-      const roles = response || [];
+      const response = await RoleService.getAll();
+      this.rolesData = response || [];
+      const roles = this.rolesData;
 
       if (totalRolesBadge) {
         totalRolesBadge.textContent = `${roles.length} Registros`;
@@ -124,11 +127,12 @@ export class RoleIndexComponent extends BaseComponent {
           cardEl.addEventListener('click', () => this.abrirPanelPermisos(rol));
 
           // Action buttons
+          const formComponent = this.querySelector('#app-role-form');
           const btnEdit = cardEl.querySelector('[data-action="editar"]');
-          if (btnEdit) {
+          if (btnEdit && formComponent) {
             btnEdit.addEventListener('click', (e) => {
               e.stopPropagation();
-              this.abrirModalEditar(rol, roles);
+              formComponent.abrirModalEditar(rol, this.rolesData);
             });
           }
 
@@ -152,118 +156,6 @@ export class RoleIndexComponent extends BaseComponent {
   }
 
   /**
-   * Llena las opciones del select "padre_id" en el formulario del modal
-   */
-  llenarSelectPadre(roles, excluirId = null, valorSeleccionado = null) {
-    const selectPadre = this.querySelector('#padre_id');
-    if (!selectPadre) return;
-
-    selectPadre.innerHTML = '<option value="" selected>Ninguno (Rol Principal)</option>';
-
-    roles.forEach((rol) => {
-      if (excluirId && rol.id == excluirId) return;
-
-      const option = document.createElement('option');
-      option.value = rol.id;
-      option.textContent = rol.nombre;
-      selectPadre.appendChild(option);
-    });
-
-    if (valorSeleccionado) {
-      selectPadre.value = valorSeleccionado;
-    }
-  }
-
-  /**
-   * Abre el modal en modo Creación
-   */
-  async abrirModalCrear() {
-    this.limpiarErroresModal();
-    this.querySelector('#roleForm').classList.remove('was-validated');
-
-    this.querySelector('#roleId').value = '';
-    this.querySelector('#nombre').value = '';
-    this.querySelector('#descripcion').value = '';
-    this.querySelector('#padre_id').value = '';
-
-    this.querySelector('#roleModalLabel').textContent = 'Nuevo Rol';
-    this.querySelector('#btnText').textContent = 'Guardar Rol';
-
-    try {
-      const response = await apiRequest('/roles');
-      this.llenarSelectPadre(response || []);
-    } catch (error) {
-      console.error('Error cargando roles para select:', error);
-    }
-
-    const modalEl = this.querySelector('#roleModal');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
-  }
-
-  /**
-   * Abre el modal en modo Edición
-   */
-  async abrirModalEditar(rol, todosLosRoles) {
-    this.limpiarErroresModal();
-    this.querySelector('#roleForm').classList.remove('was-validated');
-
-    this.querySelector('#roleId').value = rol.id;
-    this.querySelector('#nombre').value = rol.nombre;
-    this.querySelector('#descripcion').value = rol.descripcion || '';
-
-    this.querySelector('#roleModalLabel').textContent = 'Editar Rol';
-    this.querySelector('#btnText').textContent = 'Actualizar Rol';
-
-    this.llenarSelectPadre(todosLosRoles, rol.id, rol.padre_id);
-
-    const modalEl = this.querySelector('#roleModal');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
-  }
-
-  /**
-   * Guarda el rol (POST para crear, PUT para editar)
-   */
-  async guardarRol(e) {
-    e.preventDefault();
-    const form = this.querySelector('#roleForm');
-
-    if (!form.checkValidity()) {
-      form.classList.add('was-validated');
-      return;
-    }
-
-    const roleId = this.querySelector('#roleId').value;
-    const nombre = this.querySelector('#nombre').value.trim();
-    const descripcion = this.querySelector('#descripcion').value.trim();
-    const padreSelectVal = this.querySelector('#padre_id').value;
-    const padre_id = padreSelectVal ? parseInt(padreSelectVal) : null;
-
-    const payload = { nombre, descripcion, padre_id };
-
-    try {
-      const endpoint = roleId ? `/roles/${roleId}` : '/roles';
-      const method = roleId ? 'PUT' : 'POST';
-
-      await apiRequest(endpoint, {
-        method,
-        body: JSON.stringify(payload),
-      });
-
-      const modalEl = this.querySelector('#roleModal');
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      ToastService.success(roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.');
-      await this.cargarRoles();
-    } catch (error) {
-      console.error('Error al guardar rol:', error);
-      ToastService.error(error.message || 'Error al procesar el formulario.');
-    }
-  }
-
-  /**
    * Elimina un rol
    */
   async eliminarRol(id, nombre) {
@@ -276,7 +168,7 @@ export class RoleIndexComponent extends BaseComponent {
     );
     if (isConfirmed) {
       try {
-        await apiRequest(`/roles/${id}`, { method: 'DELETE' });
+        await RoleService.delete(id);
         ToastService.success(`Rol "${nombre}" eliminado con éxito.`);
         await this.cargarRoles();
       } catch (error) {
@@ -314,8 +206,8 @@ export class RoleIndexComponent extends BaseComponent {
 
     try {
       const [todosPermisosResponse, rolDetalle] = await Promise.all([
-        apiRequest('/permisos'),
-        apiRequest(`/roles/${rol.id}`),
+        PermissionService.getAll(true),
+        RoleService.getById(rol.id),
       ]);
 
       const todosPermisos = todosPermisosResponse || [];
@@ -460,10 +352,7 @@ export class RoleIndexComponent extends BaseComponent {
     btnAssignSubmit.disabled = true;
 
     try {
-      await apiRequest(`/roles/${roleId}/permisos`, {
-        method: 'POST',
-        body: JSON.stringify({ permisos: permisosIds }),
-      });
+      await RoleService.assignPermissions(roleId, { permisos: permisosIds });
 
       ToastService.success('Permisos asignados correctamente.');
 
@@ -476,11 +365,6 @@ export class RoleIndexComponent extends BaseComponent {
       btnAssignSubmit.innerHTML = btnText;
       btnAssignSubmit.disabled = false;
     }
-  }
-
-  limpiarErroresModal() {
-    const modalErrorAlert = this.querySelector('#modalErrorAlert');
-    if (modalErrorAlert) modalErrorAlert.classList.add('d-none');
   }
 }
 
