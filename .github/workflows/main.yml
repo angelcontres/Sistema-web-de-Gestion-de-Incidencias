@@ -4,7 +4,7 @@ on:
 
 jobs:
   despliegue-docker:
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux, x64]
 
     steps:
       # 1.  Apagar los contenedores anteriores para liberar los descriptores de archivos compartidos
