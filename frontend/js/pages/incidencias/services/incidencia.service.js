@@ -1,7 +1,8 @@
 import { apiRequest } from '../../../core/api.js';
 
 export const IncidenciaService = {
-  getAll(page = 1) {
+  getAll(page = 1, cursor = null) {
+    if (cursor) return apiRequest(`/incidencias?cursor=${cursor}`);
     return apiRequest(`/incidencias?page=${page}`);
   },
   getById(id) {
@@ -24,7 +25,8 @@ export const IncidenciaService = {
       method: 'DELETE',
     });
   },
-  getHistorial(id, page = 1) {
+  getHistorial(id, page = 1, cursor = null) {
+    if (cursor) return apiRequest(`/incidencias/${id}/historial?cursor=${cursor}`);
     return apiRequest(`/incidencias/${id}/historial?page=${page}`);
   },
   addComment(id, comentario) {

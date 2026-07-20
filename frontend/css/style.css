@@ -188,8 +188,8 @@ app-sidebar nav {
   }
 
   app-sidebar.collapsed {
-    width: 0 !important;
-    min-width: 0 !important;
+    width: 72px !important;
+    min-width: 72px !important;
   }
   
   app-sidebar nav {
@@ -207,7 +207,30 @@ app-sidebar nav {
   }
 
   app-sidebar.collapsed nav {
-    transform: translateX(-260px);
+    transform: translateX(0);
+    width: 72px;
+    min-width: 72px;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  app-sidebar.collapsed .sidebar-link span,
+  app-sidebar.collapsed .collapse {
+    display: none !important;
+  }
+
+  app-sidebar.collapsed .sidebar-link {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+  }
+
+  app-sidebar.collapsed .sidebar-link i {
+    font-size: 1.25rem;
+    margin-right: 0 !important;
   }
 
   /* Navbar spans 100% width at the top (Conventional) */

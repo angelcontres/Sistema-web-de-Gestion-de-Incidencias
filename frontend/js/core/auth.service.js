@@ -127,13 +127,10 @@ export const AuthService = {
       '#/usuarios': 'READ_USUARIOS',
       '#/ubicaciones': 'READ_UBICACIONES',
       '#/categorias': 'READ_CATEGORIAS_INCIDENCIA',
-      '#/incidencias': 'READ_INCIDENCIAS',
       '#/incidencias/despacho': 'READ_DESPACHO_INCIDENCIAS',
       '#/instituciones': 'READ_INSTITUCIONES',
       '#/instituciones/kanban': 'READ_KANBAN',
-      '#/mantenimiento': 'READ_MANTENIMIENTO',
       '#/tramites/historial': 'READ_HISTORIAL',
-      '#/administracion': 'READ_ROLES',
     };
 
     const basePath = hashWithoutQuery.replace(/\/form$/, '').replace(/\/historial$/, '').replace(/\/despacho$/, '').replace(/\/kanban$/, '').replace(/\/estado-individual$/, '');

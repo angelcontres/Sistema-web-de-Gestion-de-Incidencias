@@ -51,7 +51,11 @@ class IncidenciaController extends Controller
             'institucion',
             'tipo',
             'subTipo',
-            'prioridad'
+            'prioridad',
+            'cliente',
+            'operadores',
+            'reportantes',
+            'recursos'
         ]);
 
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
@@ -86,7 +90,7 @@ class IncidenciaController extends Controller
             $query->where('tipo_incidencia_id', $request->tipo_incidencia_id);
         }
 
-        return response()->json($query->orderBy('id', 'desc')->paginate(15), 200);
+        return response()->json($query->orderBy('id', 'desc')->cursorPaginate(15), 200);
     }
 
     /**

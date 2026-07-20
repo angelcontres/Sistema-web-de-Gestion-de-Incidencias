@@ -48,8 +48,8 @@ export class KanbanIndexComponent extends BaseComponent {
   async cargarIncidencias() {
     this.mostrarSpinners(true);
     try {
-      // Por defecto la API devuelve filtrado para 'Institucion' role
-      this.incidencias = await IncidenciaService.getAll();
+      const response = await IncidenciaService.getAll();
+      this.incidencias = Array.isArray(response) ? response : (response.data || []);
       this.renderKanban();
     } catch (error) {
       this.mostrarAlertaError('No se pudieron cargar las incidencias: ' + error.message);

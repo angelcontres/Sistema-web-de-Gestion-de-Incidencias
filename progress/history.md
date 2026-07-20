@@ -19,3 +19,12 @@
 - Se añadió prueba en `DatabaseDumpCommandTest.php` comprobando exit codes válidos.
 - Las tareas T1-T6 fueron completadas exitosamente y se generó la matriz de trazabilidad R1-R5 en `progress/impl_exportar_bd_sql.md`.
 - El entorno se verificó exitosamente con `./init.sh`.
+
+## Sesión: Feature perf_backend_laravel (ID 4)
+- Feature completada: perf_backend_laravel (Optimización de Rendimiento - Backend Laravel).
+- Se resolvieron consultas N+1 utilizando Eager Loading con `cursorPaginate()`.
+- Se implementó el Patrón Query Object (`DashboardMetricsQuery`) usando `DB::table()` para agregaciones masivas.
+- Se configuró la fachada Cache de Laravel para resultados pesados.
+- Se refactorizaron y probaron con éxito los comandos de optimización (route:cache, etc).
+- Se trazaron las requirements R1-R8 con tests correspondientes.
+- Todos los tests pasan correctamente (verificado vía init.sh).

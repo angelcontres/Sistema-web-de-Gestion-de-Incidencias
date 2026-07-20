@@ -21,6 +21,12 @@ export class AppDataTableComponent extends BaseComponent {
     this.currentPage = 1;
     this.lastPage = 1;
     this.currentEndpointOrService = null;
+    
+    // Cursor pagination support
+    this.isCursorPagination = false;
+    this.currentCursor = null;
+    this.nextCursor = null;
+    this.prevCursor = null;
 
     // Read page from URL hash if present
     const hashParts = window.location.hash.split('?');
@@ -97,13 +103,23 @@ export class AppDataTableComponent extends BaseComponent {
 
     if (this.btnPrevPage && this.btnNextPage) {
       this.btnPrevPage.addEventListener('click', () => {
-        if (this.currentPage > 1) {
+        if (this.isCursorPagination) {
+          if (this.prevCursor) {
+            this.currentCursor = this.prevCursor;
+            this.load(this.currentEndpointOrService);
+          }
+        } else if (this.currentPage > 1) {
           this.currentPage--;
           this.updateUrlAndLoad();
         }
       });
       this.btnNextPage.addEventListener('click', () => {
-        if (this.currentPage < this.lastPage) {
+        if (this.isCursorPagination) {
+          if (this.nextCursor) {
+            this.currentCursor = this.nextCursor;
+            this.load(this.currentEndpointOrService);
+          }
+        } else if (this.currentPage < this.lastPage) {
           this.currentPage++;
           this.updateUrlAndLoad();
         }
@@ -212,16 +228,37 @@ export class AppDataTableComponent extends BaseComponent {
     try {
       let response;
       if (typeof endpointOrService === 'function') {
-        response = await endpointOrService(this.currentPage);
+        response = await endpointOrService(this.currentPage, this.currentCursor);
       } else {
         const sep = endpointOrService.includes('?') ? '&' : '?';
-        response = await apiRequest(`${endpointOrService}${sep}page=${this.currentPage}`);
+        let url = `${endpointOrService}${sep}`;
+        if (this.isCursorPagination && this.currentCursor) {
+            url += `cursor=${this.currentCursor}`;
+        } else {
+            url += `page=${this.currentPage}`;
+        }
+        response = await apiRequest(url);
       }
       
       const list = Array.isArray(response) ? response : (response.data || []);
       
-      // Update pagination metadata if available
-      if (response && response.current_page !== undefined) {
+      // Check if it's cursor pagination
+      if (response && (response.next_cursor !== undefined || response.prev_cursor !== undefined)) {
+        this.isCursorPagination = true;
+        this.nextCursor = response.next_cursor;
+        this.prevCursor = response.prev_cursor;
+        
+        if (this.paginationContainer && (this.nextCursor || this.prevCursor || list.length > 0)) {
+            this.paginationContainer.classList.remove('d-none');
+            this.pageCurrentLabel.textContent = "Dinámica";
+            this.pageTotalLabel.textContent = "Cursor";
+            this.btnPrevPage.disabled = !this.prevCursor;
+            this.btnNextPage.disabled = !this.nextCursor;
+        }
+      } 
+      // Update standard pagination metadata if available
+      else if (response && response.current_page !== undefined) {
+        this.isCursorPagination = false;
         this.currentPage = response.current_page;
         this.lastPage = response.last_page || 1;
         
