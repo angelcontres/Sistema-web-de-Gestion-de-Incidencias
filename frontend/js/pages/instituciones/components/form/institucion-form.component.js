@@ -1,6 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { InstitucionService } from '../../services/institucion.service.js';
-import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 
 export class InstitucionFormComponent extends BaseComponent {
   constructor() {
@@ -9,12 +8,12 @@ export class InstitucionFormComponent extends BaseComponent {
 
   async onInit() {
     this.modalElement = this.querySelector('#institucionModal');
-    
+
     // Mover el modal al body para evitar problemas de z-index (sombra por encima)
     if (this.modalElement) {
       document.body.appendChild(this.modalElement);
     }
-    
+
     this.bsModal = new bootstrap.Modal(this.modalElement);
 
     this.form = this.modalElement.querySelector('#institucionForm');

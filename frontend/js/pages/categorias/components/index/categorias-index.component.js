@@ -1,7 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { CategoriaIncidenciaService } from '../../services/categoria-incidencia.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
-import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
 

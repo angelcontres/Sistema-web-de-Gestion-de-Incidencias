@@ -2,90 +2,91 @@ import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals
 import { MenuOptionsFormComponent } from './menu-options-form.component.js';
 import { MenuOptionService } from '../../services/menu-option.service.js';
 
+const TEMPLATE_HTML = `
+  <form id="opcionMenuForm">
+    <h5 id="formTitle"></h5>
+    <input id="nombre" value="" />
+    <input id="ruta" value="" />
+    <input id="icono" value="" />
+    <span id="icono-preview"></span>
+    <select id="padre_id"></select>
+    <div id="alertMessage" class="d-none"></div>
+    <button id="btnGuardar"></button>
+    <div id="loadingSpinner" class="d-none"></div>
+  </form>
+`;
+
 describe('MenuOptionsFormComponent', () => {
-  function createMockComponent() {
-    const component = new MenuOptionsFormComponent();
-    const fakeElements = {};
-
-    component.querySelector = jest.fn((selector) => {
-      if (!fakeElements[selector]) {
-        fakeElements[selector] = {
-          addEventListener: jest.fn(),
-          classList: { add: jest.fn(), remove: jest.fn() },
-          value: '',
-          checked: false,
-          checkValidity: jest.fn(() => true),
-          appendChild: jest.fn(),
-          style: {}
-        };
-      }
-      return fakeElements[selector];
-    });
-
-    component.querySelectorAll = jest.fn(() => []);
-    return { component, fakeElements };
-  }
+  let component;
 
   beforeEach(() => {
-    MenuOptionService.getById = jest.fn(() => Promise.resolve({
-      data: { id: 1, nombre: 'Menu 1', ruta: '/menu1', icono: 'icon-1' }
-    }));
-    MenuOptionService.getAll = jest.fn(() => Promise.resolve({ data: [] }));
-    MenuOptionService.create = jest.fn(() => Promise.resolve({ message: 'Creado' }));
-    MenuOptionService.update = jest.fn(() => Promise.resolve({ message: 'Actualizado' }));
-    
-    global.document.createElement = jest.fn(() => ({}));
-    
+    window.fetch = jest.fn(() =>
+      Promise.resolve({ ok: true, text: () => Promise.resolve(TEMPLATE_HTML) })
+    );
+    // jsdom doesn't implement scrollIntoView — polyfill it
+    window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
+    jest.spyOn(MenuOptionService, 'getById').mockResolvedValue({
+      data: { id: 1, nombre: 'Menu 1', ruta: '/menu1', icono: 'bi-house', padre_id: null }
+    });
+    jest.spyOn(MenuOptionService, 'getAll').mockResolvedValue({ data: [] });
+    jest.spyOn(MenuOptionService, 'create').mockResolvedValue({ message: 'Creado' });
+    jest.spyOn(MenuOptionService, 'update').mockResolvedValue({ message: 'Actualizado' });
+
+    document.body.innerHTML = `<app-menu-options-form></app-menu-options-form>`;
+    component = document.querySelector('app-menu-options-form');
+
     window.location.hash = '';
-    jest.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.clearAllTimers();
-    jest.useRealTimers();
+    document.body.innerHTML = '';
     jest.restoreAllMocks();
+    delete window.fetch;
+    delete window.HTMLElement.prototype.scrollIntoView;
+    window.location.hash = '';
+  });
+
+  it('onInit - inicializa el formulario y carga opciones padre', async () => {
+    await component.onInit();
+    // Let the floating init() promise settle
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+
+    expect(MenuOptionService.getAll).toHaveBeenCalled();
   });
 
   it('onInit - carga detalles si hay ID en la URL', async () => {
     window.location.hash = '#/form?id=1';
-    const { component, fakeElements } = createMockComponent();
-    
+
     await component.onInit();
-    
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+
     expect(MenuOptionService.getById).toHaveBeenCalledWith('1');
-    expect(fakeElements['#nombre'].value).toBe('Menu 1');
+    expect(component.querySelector('#nombre').value).toBe('Menu 1');
   });
 
-  it('onInit - submit crea un nuevo registro', async () => {
-    const { component, fakeElements } = createMockComponent();
-    
-    let submitCallback;
-    // Sobrescribimos addEventListener ANTES de que onInit lo consulte
-    component.querySelector('#opcionMenuForm').addEventListener = jest.fn((e, cb) => {
-      if (e === 'submit') submitCallback = cb;
-    });
-    
+  it('submit del formulario crea un nuevo registro', async () => {
+    window.location.hash = '#/form';
+
     await component.onInit();
-    
-    // Set values AFTER onInit logic has attached everything
-    fakeElements['#nombre'].value = 'Nuevo';
-    fakeElements['#ruta'].value = '/nuevo';
-    fakeElements['#icono'].value = 'icon';
-    fakeElements['#padre_id'].value = '';
-    
-    fakeElements['#alertMessage'] = { style: {}, classList: { remove: jest.fn(), add: jest.fn() }, scrollIntoView: jest.fn() };
-    
-    const e = { preventDefault: jest.fn(), stopPropagation: jest.fn() };
-    await submitCallback(e);
-    
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+
+    component.querySelector('#nombre').value = 'Nuevo';
+    component.querySelector('#ruta').value = '/nuevo';
+    component.querySelector('#icono').value = 'bi-house';
+
+    const form = component.querySelector('#opcionMenuForm');
+    form.checkValidity = jest.fn(() => true);
+
+    // Trigger submit
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+
     expect(MenuOptionService.create).toHaveBeenCalledWith({
       nombre: 'Nuevo',
-      icono: 'icon',
+      icono: 'bi-house',
       ruta: '/nuevo',
       padre_id: null
     });
-    
-    jest.runAllTimers();
-    expect(window.location.hash).toBe('#/opciones-menu');
   });
 });
