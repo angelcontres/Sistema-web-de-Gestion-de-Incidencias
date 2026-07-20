@@ -221,6 +221,11 @@ Las migraciones del esquema analítico están aisladas en la carpeta:
 
 #### En Desarrollo Local (Ejecución y Reset)
 
+Para reiniciar **todo** el sistema (tablas de negocio y OLAP) de forma segura desde cero, puedes usar el comando estándar con seed. Gracias a la configuración del `DatabaseSeeder`, las tablas del Data Warehouse se reconstruyen y pueblan automáticamente sin crashear el sistema:
+```bash
+php artisan migrate:fresh --seed
+```
+
 Para ejecutar, revertir o refrescar **únicamente** el esquema OLAP sin alterar las tablas de negocio:
 
 ```bash

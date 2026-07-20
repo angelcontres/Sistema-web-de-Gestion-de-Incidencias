@@ -27,7 +27,7 @@ class DashboardController extends Controller
     private function calculateKpis()
     {
         $now = TimezoneService::nowLocal();
-        
+
         $activas = Incidencia::whereIn('estado_id', [1, 2])->count();
 
         $nuevasActivas = Incidencia::whereIn('estado_id', [1, 2])
@@ -90,7 +90,7 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
-            ->map(function ($incidencia) {
+            ->map(function (Incidencia $incidencia) {
                 return [
                     'id' => $incidencia->id,
                     'descripcion' => $incidencia->incidencia_descripcion,
@@ -110,10 +110,10 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
-            ->filter(function ($incidencia) {
+            ->filter(function (Incidencia $incidencia) {
                 return $incidencia->direccion && $incidencia->direccion->latitud && $incidencia->direccion->longitud;
             })
-            ->map(function ($incidencia) {
+            ->map(function (Incidencia $incidencia) {
                 return [
                     'id' => $incidencia->id,
                     'lat' => $incidencia->direccion->latitud,

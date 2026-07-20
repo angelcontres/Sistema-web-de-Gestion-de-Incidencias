@@ -2,26 +2,17 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use SimpleXMLElement;
 
+#[Signature('sqa:cf {--xml=tests/results.xml}')]
+#[Description('Calcula la Cobertura Funcional (CF) basándose en historias de usuario y tests BDD (Gherkin)')]
 class CalculateCf extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'sqa:cf {--xml=tests/results.xml}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Calcula la Cobertura Funcional (CF) basándose en historias de usuario y tests BDD (Gherkin)';
-
     /**
      * Execute the console command.
      */
@@ -141,7 +132,7 @@ class CalculateCf extends Command
         $tiempoId = (int) $now->format('YmdH');
 
         // Asegurar que la dimensión tiempo exista
-        \Illuminate\Support\Facades\DB::table('metrics.dim_tiempo')->updateOrInsert(
+        DB::table('metrics.dim_tiempo')->updateOrInsert(
             ['id' => $tiempoId],
             [
                 'fecha' => $now->toDateTimeString(),
@@ -157,12 +148,12 @@ class CalculateCf extends Command
         );
 
         // Asegurar que la métrica exista en dim_metric y obtener su ID
-        $metricId = \Illuminate\Support\Facades\DB::table('metrics.dim_metric')
+        $metricId = DB::table('metrics.dim_metric')
             ->where('codigo', 'CF')
             ->value('id');
 
-        if (!$metricId) {
-            $metricId = \Illuminate\Support\Facades\DB::table('metrics.dim_metric')->insertGetId([
+        if (! $metricId) {
+            $metricId = DB::table('metrics.dim_metric')->insertGetId([
                 'nombre' => 'Cobertura Funcional',
                 'codigo' => 'CF',
                 'tipo' => 'Calidad',
@@ -173,7 +164,7 @@ class CalculateCf extends Command
         }
 
         // Insertar en la tabla de hechos de calidad
-        \Illuminate\Support\Facades\DB::table('metrics.fact_quality')->insert([
+        DB::table('metrics.fact_quality')->insert([
             'tiempo_id' => $tiempoId,
             'metric_id' => $metricId,
             'valor_porcentaje' => round($cf, 2),
@@ -184,7 +175,7 @@ class CalculateCf extends Command
         // Procesar historias de usuario detalladas para fact_cobertura
         foreach ($detalleHUs as $info) {
             // Asegurar HU en la dimensión
-            \Illuminate\Support\Facades\DB::table('metrics.dim_historia_usuario')->updateOrInsert(
+            DB::table('metrics.dim_historia_usuario')->updateOrInsert(
                 ['codigo' => $info['id']],
                 [
                     'nombre' => $info['nombre'],
@@ -193,12 +184,12 @@ class CalculateCf extends Command
                 ]
             );
 
-            $huDbId = \Illuminate\Support\Facades\DB::table('metrics.dim_historia_usuario')
+            $huDbId = DB::table('metrics.dim_historia_usuario')
                 ->where('codigo', $info['id'])
                 ->value('id');
 
             // Insertar en la tabla de hechos de cobertura
-            \Illuminate\Support\Facades\DB::table('metrics.fact_cobertura')->insert([
+            DB::table('metrics.fact_cobertura')->insert([
                 'tiempo_id' => $tiempoId,
                 'hu_id' => $huDbId,
                 'aprobada' => $info['aprobada'] ? 1 : 0,

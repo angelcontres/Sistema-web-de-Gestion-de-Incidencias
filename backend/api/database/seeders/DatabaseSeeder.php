@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Contracts\RoleServiceInterface;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -18,10 +19,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Asegurarse de que el esquema OLAP se reconstruya siempre en un entorno fresh
+        Artisan::call('migrate', [
+            '--path' => 'database/migrations/olap',
+            '--force' => true,
+        ]);
+
         // User::factory(10)->create();
 
         $user = User::where('email', 'test@example.com')->first();
-        if (!$user) {
+        if (! $user) {
             $user = User::factory()->create([
                 'name' => 'Test User',
                 'username' => 'Admin Administrador',
@@ -275,5 +282,8 @@ class DatabaseSeeder extends Seeder
         if ($supervisorRole) {
             $roleService->syncRolesToUser($supervisorUser, [$supervisorRole->id]);
         }
+
+        // Ejecutar ETL inicial para asegurar que las dimensiones del Data Warehouse estén pobladas
+        Artisan::call('etl:run');
     }
 }

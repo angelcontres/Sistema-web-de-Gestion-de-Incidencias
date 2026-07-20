@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class HistorialIncidencia extends Model
 {
     use HasLocalTimezone;
+
     protected $table = 'historial_incidencias';
 
     protected $fillable = [

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Pais;
 use App\Models\Role;
 use App\Models\Territorio;
 use App\Models\User;
@@ -19,7 +20,7 @@ class SupervisoresTerritorialesSeeder extends Seeder
         $roleService = app(RoleServiceInterface::class);
         $supervisorRole = Role::where('nombre', 'Supervisor')->first();
 
-        if (!$supervisorRole) {
+        if (! $supervisorRole) {
             return;
         }
 
@@ -32,8 +33,8 @@ class SupervisoresTerritorialesSeeder extends Seeder
                 'password' => 'sierra123',
                 'provincias' => [
                     'Azuay', 'Bolivar', 'Bolívar', 'Cañar', 'Carchi', 'Chimborazo',
-                    'Cotopaxi', 'Imbabura', 'Loja', 'Pichincha', 'Tungurahua'
-                ]
+                    'Cotopaxi', 'Imbabura', 'Loja', 'Pichincha', 'Tungurahua',
+                ],
             ],
             [
                 'name' => 'Supervisor Costa',
@@ -43,8 +44,8 @@ class SupervisoresTerritorialesSeeder extends Seeder
                 'provincias' => [
                     'Guayas', 'Manabi', 'Manabí', 'Esmeraldas', 'El Oro', 'Los Rios', 'Los Ríos',
                     'Santa Elena', 'Santo Domingo De Los Tsachilas', 'Santo Domingo De Los Tsáchilas',
-                    'Santo Domingo de los Tsáchilas', 'Santo Domingo de los Tsachilas'
-                ]
+                    'Santo Domingo de los Tsáchilas', 'Santo Domingo de los Tsachilas',
+                ],
             ],
             [
                 'name' => 'Supervisor Amazonía',
@@ -53,13 +54,13 @@ class SupervisoresTerritorialesSeeder extends Seeder
                 'password' => 'amazonia123',
                 'provincias' => [
                     'Sucumbios', 'Sucumbíos', 'Napo', 'Orellana', 'Pastaza',
-                    'Morona Santiago', 'Zamora Chinchipe'
-                ]
-            ]
+                    'Morona Santiago', 'Zamora Chinchipe',
+                ],
+            ],
         ];
 
-        $ecuadorId = \App\Models\Pais::where('codigo_iso', 'EC')->value('id');
-        if (!$ecuadorId) {
+        $ecuadorId = Pais::where('codigo_iso', 'EC')->value('id');
+        if (! $ecuadorId) {
             return;
         }
 

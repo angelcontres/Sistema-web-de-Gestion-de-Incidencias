@@ -1,18 +1,27 @@
+import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { IncidenciaFormComponent } from './incidencia-form.component.js';
 import { AuthService } from '../../../../../core/auth.service.js';
+import { ToastService } from '../../../../../shared/services/toast.service.js';
 
 describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
   let component;
 
   beforeEach(async () => {
-    // 1. Simular sesión del usuario con rol Ciudadano
+    // 1. Simular sesión del usuario con rol Ciudadano y permisos requeridos
     AuthService.getCurrentUser = () => ({
       name: 'Ciudadano Ejemplo',
       email: 'ciudadano@example.com',
       roles: [{ nombre: 'Ciudadano' }],
     });
+    AuthService.hasPermission = () => true;
+    AuthService.isAdmin = () => false;
 
-    // Mockear la respuesta de la plantilla HTML
+    // Mockear ToastService para evitar errores en DOM
+    ToastService.error = jest.fn();
+    ToastService.success = jest.fn();
+    ToastService.show = jest.fn();
+
+    // Mockear la plantilla HTML
     const mockHtml = `
       <form id="incidenciaForm" class="needs-validation" novalidate>
         <div id="sectionAsignacion"></div>
@@ -50,26 +59,40 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
       </form>
     `;
 
-    // Mock de fetch para retornar la plantilla simulada
-    window.fetch = () =>
-      Promise.resolve({
-        text: () => Promise.resolve(mockHtml),
-      });
+    // Mock de window.fetch para retornar la plantilla HTML y JSON vacíos para endpoints API
+    window.fetch = jest.fn(async (url) => {
+      if (typeof url === 'string' && url.endsWith('.html')) {
+        return {
+          ok: true,
+          status: 200,
+          text: async () => mockHtml,
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true, data: [] }),
+      };
+    });
 
     // Instanciar el componente
     component = new IncidenciaFormComponent();
-    document.body.appendChild(component);
-
-    // Mockear métodos del ciclo de vida externos para evitar errores de librerías (Leaflet, APIs)
+    
+    // Mockear métodos del ciclo de vida externos
     component.initMap = () => {};
     component.cargarCatalogosIniciales = () => Promise.resolve();
 
-    // Ejecutar la inicialización
-    await component.onInit();
+    // appendChild ejecutará automáticamente connectedCallback() que carga la plantilla y llama a onInit()
+    document.body.appendChild(component);
+
+    // Esperar un microtick para que los microtasks asíncronos de connectedCallback culminen
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   afterEach(() => {
-    document.body.removeChild(component);
+    if (component && component.parentNode) {
+      document.body.removeChild(component);
+    }
   });
 
   test('debe ocultar el contenedor de detalle de ubicación para Ciudadano', () => {

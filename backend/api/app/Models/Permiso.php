@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,11 +12,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
 
+/**
+ * @property int $id
+ * @property string $nombre
+ * @property string $accion
+ * @property string $recurso
+ * @property int|null $opcion_menu_id
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property int|null $deleted_by
+ * @property Collection<int, Role> $roles
+ * @property OpcionMenu|null $opcionMenu
+ */
 #[Fillable(['nombre', 'accion', 'recurso', 'opcion_menu_id', 'created_by', 'updated_by', 'deleted_by'])]
 class Permiso extends Model
 {
-    use HasLocalTimezone;
     use HasFactory, SoftDeletes;
+    use HasLocalTimezone;
 
     #[Override]
     protected function casts(): array

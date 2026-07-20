@@ -48,7 +48,7 @@ function navigate() {
 
     // Redirect Operador/Supervisor from general incidents page to their own dispatcher dashboard
     if (hash === '#/incidencias') {
-      if (AuthService.hasPermission('READ', 'despacho_de_incidencias')) {
+      if (AuthService.hasPermission('READ', 'despacho')) {
         window.location.hash = '#/incidencias/despacho';
         return;
       }
@@ -81,15 +81,17 @@ function navigate() {
 /**
  * Initializes the routing listeners.
  */
-export function initRouter() {
+export async function initRouter() {
   // Listen for hash changes
   window.addEventListener('hashchange', navigate);
 
   // Refresh user profile details if authenticated on load
   if (AuthService.isAuthenticated()) {
-    AuthService.refreshUser().catch((err) => {
+    try {
+      await AuthService.refreshUser();
+    } catch (err) {
       console.error('Error refreshing session from endpoint /me:', err);
-    });
+    }
   }
 
   // Trigger initial navigation in case page was loaded with a hash

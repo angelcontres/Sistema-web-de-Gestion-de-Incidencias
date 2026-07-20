@@ -7,19 +7,34 @@ use App\Traits\HasLocalTimezone;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $username
+ * @property string $email
+ * @property bool $activo
+ * @property int|null $pais_id
+ * @property int|null $institucion_id
+ * @property Collection<int, Role> $roles
+ * @property Collection<int, Territorio> $territorios
+ * @property Pais|null $pais
+ * @property Institucion|null $institucion
+ */
 #[Fillable(['name', 'username', 'email', 'password', 'activo', 'pais_id', 'institucion_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    use HasLocalTimezone;
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    use HasLocalTimezone;
 
     /**
      * Get the attributes that should be cast.
@@ -74,9 +89,17 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permissionName): bool
     {
-        foreach ($this->roles()->with('permisos')->get() as $role) {
+        $permissionName = strtoupper($permissionName);
+
+        // Optionally, Admin bypasses all permission checks in some systems,
+        // but we'll stick to strictly checking the assigned permissions.
+
+        $this->loadMissing('roles.permisos');
+
+        foreach ($this->roles as $role) {
             foreach ($role->permisos as $permiso) {
-                if (strtolower($permiso->nombre) === strtolower($permissionName)) {
+                $key = strtoupper($permiso->accion.'_'.$permiso->recurso);
+                if ($key === $permissionName) {
                     return true;
                 }
             }

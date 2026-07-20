@@ -15,7 +15,7 @@ class DatabaseDumpCommandTest extends TestCase
     public function test_database_dump_command_executes_safely()
     {
         $exitCode = Artisan::call('db:dump');
-        
+
         $this->assertContains($exitCode, [0, 1], 'El comando debe retornar 0 (éxito) o 1 (fallo esperado).');
     }
 }

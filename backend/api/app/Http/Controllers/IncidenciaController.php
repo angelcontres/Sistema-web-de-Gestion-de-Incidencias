@@ -3,17 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\IncidenciasRequest;
-use App\Models\CategoriaIncidencia;
-use App\Models\Direccion;
 use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
 use App\Models\Territorio;
-use App\Services\IncidentGroupingService;
 use App\Services\IncidenciaService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class IncidenciaController extends Controller
 {
@@ -104,7 +99,7 @@ class IncidenciaController extends Controller
     public function store(IncidenciasRequest $request, IncidenciaService $service)
     {
         $result = $service->createIncidencia($request->validated() + $request->all(), auth()->user());
-        
+
         return response()->json([
             'message' => $result['message'],
             'data' => $result['data'],

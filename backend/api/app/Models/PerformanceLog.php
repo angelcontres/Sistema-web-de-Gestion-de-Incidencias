@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PerformanceLog extends Model
 {
-    use HasLocalTimezone;
     use HasFactory, SoftDeletes;
+    use HasLocalTimezone;
 
     protected $table = 'performance_logs';
 

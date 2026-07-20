@@ -10,12 +10,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $nombre
+ * @property string|null $siglas
+ * @property bool $activo
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property int|null $deleted_by
+ */
 #[Table('instituciones')]
 #[Fillable(['nombre', 'siglas', 'activo', 'created_by', 'updated_by', 'deleted_by'])]
 class Institucion extends Model
 {
-    use HasLocalTimezone;
     use HasFactory, SoftDeletes;
+    use HasLocalTimezone;
 
     public function creador(): BelongsTo
     {

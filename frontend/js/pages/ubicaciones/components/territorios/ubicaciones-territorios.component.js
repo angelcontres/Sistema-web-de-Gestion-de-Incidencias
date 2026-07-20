@@ -1,7 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
-import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
 import { COUNTRY_LEVELS } from '../../../../shared/constants.js';
@@ -9,17 +8,17 @@ import { COUNTRY_LEVELS } from '../../../../shared/constants.js';
 export class UbicacionesTerritoriosComponent extends BaseComponent {
   constructor() {
     super('js/pages/ubicaciones/components/territorios/ubicaciones-territorios.component.html');
-    
+
     // State management
     this.selectedPaisId = null;
     this.selectedNivel1Id = null;
     this.selectedNivel2Id = null;
-    
+
     this.paisesList = [];
     this.territoriosNivel1 = [];
     this.territoriosNivel2 = [];
     this.territoriosNivel3 = [];
-    
+
     this.territorioModalObj = null;
   }
 
@@ -99,16 +98,16 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
   llenarPaisSelect() {
     const select = this.querySelector('#explorerPaisSelect');
     if (!select) return;
-    
+
     const currentVal = select.value;
-    const activePaises = this.paisesList.filter(p => p.activo);
+    const activePaises = this.paisesList.filter((p) => p.activo);
 
     const optionsHtml = activePaises
-      .map(p => `<option value="${p.id}">${p.nombre}</option>`)
+      .map((p) => `<option value="${p.id}">${p.nombre}</option>`)
       .join('');
-      
+
     select.innerHTML = `<option value="">-- Selecciona un País --</option>${optionsHtml}`;
-    
+
     if (activePaises.length === 1) {
       select.value = activePaises[0].id;
       this.selectedPaisId = activePaises[0].id;
@@ -128,11 +127,12 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const btnAdd3 = this.querySelector('#btnAddNivel3');
     const isAdmin = AuthService.isAdmin();
 
-    const pais = this.paisesList.find(p => p.id == this.selectedPaisId);
+    const pais = this.paisesList.find((p) => p.id == this.selectedPaisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
-    list1.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
+    list1.innerHTML =
+      '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
     list2.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel1}</div>`;
     list3.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel2}</div>`;
 
@@ -141,7 +141,8 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     if (btnAdd3 && isAdmin) btnAdd3.classList.add('d-none');
 
     if (!this.selectedPaisId) {
-      list1.innerHTML = '<div class="text-center py-4 text-muted small">Selecciona un país para comenzar</div>';
+      list1.innerHTML =
+        '<div class="text-center py-4 text-muted small">Selecciona un país para comenzar</div>';
       return;
     }
 
@@ -167,7 +168,8 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     list.innerHTML = '';
 
     if (this.territoriosNivel1.length === 0) {
-      list.innerHTML = '<div class="text-center py-4 text-muted small">No hay territorios en este nivel.</div>';
+      list.innerHTML =
+        '<div class="text-center py-4 text-muted small">No hay territorios en este nivel.</div>';
       return;
     }
 
@@ -175,11 +177,14 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
     this.territoriosNivel1.forEach((t) => {
       const item = document.createElement('div');
-      item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
+      item.className =
+        'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
       item.style.cursor = 'pointer';
       item.setAttribute('data-id', t.id);
 
-      const labelText = t.tipo ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>` : '';
+      const labelText = t.tipo
+        ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>`
+        : '';
       const activeText = t.activo ? '' : ' <span class="text-danger small">(Inactivo)</span>';
 
       item.innerHTML = `
@@ -195,8 +200,10 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
       item.addEventListener('click', (e) => {
         if (e.target.closest('button')) return;
-        
-        list.querySelectorAll('.list-group-item').forEach(el => el.classList.remove('active-item'));
+
+        list
+          .querySelectorAll('.list-group-item')
+          .forEach((el) => el.classList.remove('active-item'));
         item.classList.add('active-item');
 
         this.selectedNivel1Id = t.id;
@@ -205,8 +212,12 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       });
 
       if (isAdmin) {
-        item.querySelector('.btn-edit-t').addEventListener('click', () => this.abrirModalTerritorio(1, t));
-        item.querySelector('.btn-delete-t').addEventListener('click', () => this.eliminarTerritorio(t.id, t.nombre, 1));
+        item
+          .querySelector('.btn-edit-t')
+          .addEventListener('click', () => this.abrirModalTerritorio(1, t));
+        item
+          .querySelector('.btn-delete-t')
+          .addEventListener('click', () => this.eliminarTerritorio(t.id, t.nombre, 1));
       }
 
       list.appendChild(item);
@@ -220,11 +231,12 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const btnAdd3 = this.querySelector('#btnAddNivel3');
     const isAdmin = AuthService.isAdmin();
 
-    const pais = this.paisesList.find(p => p.id == this.selectedPaisId);
+    const pais = this.paisesList.find((p) => p.id == this.selectedPaisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
-    list2.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
+    list2.innerHTML =
+      '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
     list3.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel2}</div>`;
 
     if (btnAdd2 && isAdmin) btnAdd2.classList.add('d-none');
@@ -252,7 +264,8 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     list.innerHTML = '';
 
     if (this.territoriosNivel2.length === 0) {
-      list.innerHTML = '<div class="text-center py-4 text-muted small">No hay territorios en este nivel.</div>';
+      list.innerHTML =
+        '<div class="text-center py-4 text-muted small">No hay territorios en este nivel.</div>';
       return;
     }
 
@@ -260,11 +273,14 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
     this.territoriosNivel2.forEach((t) => {
       const item = document.createElement('div');
-      item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
+      item.className =
+        'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
       item.style.cursor = 'pointer';
       item.setAttribute('data-id', t.id);
 
-      const labelText = t.tipo ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>` : '';
+      const labelText = t.tipo
+        ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>`
+        : '';
       const activeText = t.activo ? '' : ' <span class="text-danger small">(Inactivo)</span>';
 
       item.innerHTML = `
@@ -280,8 +296,10 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
       item.addEventListener('click', (e) => {
         if (e.target.closest('button')) return;
-        
-        list.querySelectorAll('.list-group-item').forEach(el => el.classList.remove('active-item'));
+
+        list
+          .querySelectorAll('.list-group-item')
+          .forEach((el) => el.classList.remove('active-item'));
         item.classList.add('active-item');
 
         this.selectedNivel2Id = t.id;
@@ -289,8 +307,12 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       });
 
       if (isAdmin) {
-        item.querySelector('.btn-edit-t').addEventListener('click', () => this.abrirModalTerritorio(2, t));
-        item.querySelector('.btn-delete-t').addEventListener('click', () => this.eliminarTerritorio(t.id, t.nombre, 2));
+        item
+          .querySelector('.btn-edit-t')
+          .addEventListener('click', () => this.abrirModalTerritorio(2, t));
+        item
+          .querySelector('.btn-delete-t')
+          .addEventListener('click', () => this.eliminarTerritorio(t.id, t.nombre, 2));
       }
 
       list.appendChild(item);
@@ -302,7 +324,8 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const btnAdd3 = this.querySelector('#btnAddNivel3');
     const isAdmin = AuthService.isAdmin();
 
-    list3.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
+    list3.innerHTML =
+      '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
     if (btnAdd3 && isAdmin) btnAdd3.classList.add('d-none');
 
     try {
@@ -327,7 +350,8 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     list.innerHTML = '';
 
     if (this.territoriosNivel3.length === 0) {
-      list.innerHTML = '<div class="text-center py-4 text-muted small">No hay territorios en este nivel.</div>';
+      list.innerHTML =
+        '<div class="text-center py-4 text-muted small">No hay territorios en este nivel.</div>';
       return;
     }
 
@@ -335,11 +359,14 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
     this.territoriosNivel3.forEach((t) => {
       const item = document.createElement('div');
-      item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
+      item.className =
+        'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
       item.style.cursor = 'default';
       item.setAttribute('data-id', t.id);
 
-      const labelText = t.tipo ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>` : '';
+      const labelText = t.tipo
+        ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>`
+        : '';
       const activeText = t.activo ? '' : ' <span class="text-danger small">(Inactivo)</span>';
 
       item.innerHTML = `
@@ -353,8 +380,12 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       `;
 
       if (isAdmin) {
-        item.querySelector('.btn-edit-t').addEventListener('click', () => this.abrirModalTerritorio(3, t));
-        item.querySelector('.btn-delete-t').addEventListener('click', () => this.eliminarTerritorio(t.id, t.nombre, 3));
+        item
+          .querySelector('.btn-edit-t')
+          .addEventListener('click', () => this.abrirModalTerritorio(3, t));
+        item
+          .querySelector('.btn-delete-t')
+          .addEventListener('click', () => this.eliminarTerritorio(t.id, t.nombre, 3));
       }
 
       list.appendChild(item);
@@ -382,7 +413,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
     inputPaisId.value = this.selectedPaisId;
 
-    const pais = this.paisesList.find(p => p.id == this.selectedPaisId);
+    const pais = this.paisesList.find((p) => p.id == this.selectedPaisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
@@ -402,7 +433,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       nivelName = config.nivel2;
       art = config.nivel2_art;
       inputParentId.value = this.selectedNivel1Id;
-      const parentObj = this.territoriosNivel1.find(t => t.id == this.selectedNivel1Id);
+      const parentObj = this.territoriosNivel1.find((t) => t.id == this.selectedNivel1Id);
       parentName = `${paisNombre} > ${parentObj?.nombre || config.nivel1}`;
       inputTipo.placeholder = `Ej: ${config.nivel2}`;
       inputNombre.placeholder = 'Ej: Quito, Miraflores, Guadalajara';
@@ -410,8 +441,8 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       nivelName = config.nivel3;
       art = config.nivel3_art;
       inputParentId.value = this.selectedNivel2Id;
-      const parentObj1 = this.territoriosNivel1.find(t => t.id == this.selectedNivel1Id);
-      const parentObj2 = this.territoriosNivel2.find(t => t.id == this.selectedNivel2Id);
+      const parentObj1 = this.territoriosNivel1.find((t) => t.id == this.selectedNivel1Id);
+      const parentObj2 = this.territoriosNivel2.find((t) => t.id == this.selectedNivel2Id);
       parentName = `${paisNombre} > ${parentObj1?.nombre || config.nivel1} > ${parentObj2?.nombre || config.nivel2}`;
       inputTipo.placeholder = `Ej: ${config.nivel3}`;
       inputNombre.placeholder = 'Ej: Iñaquito, San Isidro, Chapultepec';
@@ -460,7 +491,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
     const id = document.querySelector('#territorioId').value;
     const parentId = document.querySelector('#territorioParentId').value;
-    
+
     const payload = {
       pais_id: parseInt(document.querySelector('#territorioPaisId').value),
       parent_id: parentId ? parseInt(parentId) : null,
@@ -472,14 +503,14 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     try {
       if (id) {
         await UbicacionesService.updateTerritorio(id, payload);
-        UIHelper.mostrarAlerta(this, 'success', 'Territorio actualizado con éxito.');
+        ToastService.success('Territorio actualizado con éxito.');
       } else {
         await UbicacionesService.createTerritorio(payload);
-        UIHelper.mostrarAlerta(this, 'success', 'Territorio creado con éxito.');
+        ToastService.success('Territorio creado con éxito.');
       }
 
       this.territorioModalObj.hide();
-      
+
       if (!parentId) {
         await this.cargarTerritoriosColumna1();
       } else if (parentId == this.selectedNivel1Id) {
@@ -487,12 +518,14 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       } else if (parentId == this.selectedNivel2Id) {
         await this.cargarTerritoriosColumna3();
       }
-      
+
       // Dispatch event to notify addresses component that territories might have changed
-      this.dispatchEvent(new CustomEvent('territorios-updated', {
-        bubbles: true,
-        composed: true
-      }));
+      this.dispatchEvent(
+        new CustomEvent('territorios-updated', {
+          bubbles: true,
+          composed: true,
+        })
+      );
     } catch (error) {
       console.error('Error al guardar territorio:', error);
       errorAlert.classList.remove('d-none');
@@ -508,13 +541,13 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (!isConfirmed) return;
 
     try {
       await UbicacionesService.deleteTerritorio(id);
       ToastService.success(`Territorio "${nombre}" eliminado con éxito.`);
-      
+
       if (columnaNivel === 1) {
         this.selectedNivel1Id = null;
         this.selectedNivel2Id = null;
@@ -526,10 +559,12 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
         await this.cargarTerritoriosColumna3();
       }
 
-      this.dispatchEvent(new CustomEvent('territorios-updated', {
-        bubbles: true,
-        composed: true
-      }));
+      this.dispatchEvent(
+        new CustomEvent('territorios-updated', {
+          bubbles: true,
+          composed: true,
+        })
+      );
     } catch (error) {
       console.error('Error al eliminar territorio:', error);
       ToastService.error(`No se pudo eliminar: ${error.message}`);
@@ -537,7 +572,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
   }
 
   actualizarEtiquetasColumnas(paisId) {
-    const pais = this.paisesList.find(p => p.id == paisId);
+    const pais = this.paisesList.find((p) => p.id == paisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
@@ -570,10 +605,10 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const list2 = this.querySelector('#listNivel2');
     const list3 = this.querySelector('#listNivel3');
 
-    if (list2 && (!this.selectedNivel1Id)) {
+    if (list2 && !this.selectedNivel1Id) {
       list2.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel1}</div>`;
     }
-    if (list3 && (!this.selectedNivel2Id)) {
+    if (list3 && !this.selectedNivel2Id) {
       list3.innerHTML = `<div class="text-center py-4 text-muted small">Selecciona un(a) ${config.nivel2}</div>`;
     }
   }

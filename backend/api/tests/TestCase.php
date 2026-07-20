@@ -2,8 +2,10 @@
 
 namespace Tests;
 
+use App\Models\Permiso;
 use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -23,8 +25,8 @@ abstract class TestCase extends BaseTestCase
         );
         $user->roles()->sync([$adminRole->id]);
 
-        $this->seed(\Database\Seeders\PermissionsSeeder::class);
-        $allPermissionsIds = \App\Models\Permiso::pluck('id')->toArray();
+        $this->seed(PermissionsSeeder::class);
+        $allPermissionsIds = Permiso::pluck('id')->toArray();
         $adminRole->permisos()->sync($allPermissionsIds);
 
         return $user;

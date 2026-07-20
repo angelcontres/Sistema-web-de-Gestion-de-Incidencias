@@ -83,6 +83,7 @@ class InstitucionController extends Controller
      */
     public function destroy($id): JsonResponse
     {
+        /** @var Institucion $institucion */
         $institucion = Institucion::findOrFail($id);
 
         if (auth()->check()) {

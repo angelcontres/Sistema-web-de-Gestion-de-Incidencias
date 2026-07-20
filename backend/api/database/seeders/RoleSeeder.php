@@ -18,7 +18,7 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         $user = User::where('email', 'admin@admin.com')->first();
-        if (!$user) {
+        if (! $user) {
             $user = User::factory()->create([
                 'name' => 'Admin',
                 'email' => 'admin@admin.com',
@@ -91,6 +91,8 @@ class RoleSeeder extends Seeder
                 PermissionsEnum::CREATE_KANBAN,
                 PermissionsEnum::UPDATE_KANBAN,
                 PermissionsEnum::DELETE_KANBAN,
+                PermissionsEnum::READ_HISTORIAL,
+                PermissionsEnum::UPDATE_HISTORIAL,
             ]);
         }
 

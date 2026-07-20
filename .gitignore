@@ -7,3 +7,5 @@ dependency-check.zip
 dependency-check-report.*
 .scannerwork/
 .eslintcache
+coverage/
+frontend/coverage

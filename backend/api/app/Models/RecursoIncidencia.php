@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 class RecursoIncidencia extends Model
 {
     use HasLocalTimezone;
+
     protected $table = 'recurso_incidencias';
 
     protected $fillable = [

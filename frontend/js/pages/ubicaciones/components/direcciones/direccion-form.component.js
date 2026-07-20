@@ -1,8 +1,8 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
-import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { MAP_CONFIG, COUNTRY_LEVELS } from '../../../../shared/constants.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class DireccionFormComponent extends BaseComponent {
   constructor() {
@@ -35,17 +35,17 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     const resolveRadios = modalEl.querySelectorAll('input[name="territoryResolveOption"]');
-    resolveRadios.forEach(radio => {
+    resolveRadios.forEach((radio) => {
       radio.addEventListener('change', (e) => {
         if (!this.pendingGeography) return;
-        
+
         const selectPais = document.querySelector('#dirPaisSelect');
         const selectN1 = document.querySelector('#dirNivel1Select');
         const selectN2 = document.querySelector('#dirNivel2Select');
         const selectN3 = document.querySelector('#dirNivel3Select');
 
         if (e.target.value === 'existing') {
-          [selectPais, selectN1, selectN2, selectN3].forEach(sel => {
+          [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
             if (sel) {
               sel.disabled = false;
               const newOpt = sel.querySelector('option[value="__new__"]');
@@ -53,11 +53,11 @@ export class DireccionFormComponent extends BaseComponent {
             }
           });
         } else {
-          [selectPais, selectN1, selectN2, selectN3].forEach(sel => {
+          [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
             if (sel) sel.disabled = true;
           });
         }
-        
+
         this.actualizarFeedbackResolver();
       });
     });
@@ -73,7 +73,7 @@ export class DireccionFormComponent extends BaseComponent {
       dirPaisSelect.addEventListener('change', (e) => {
         this.actualizarEtiquetasNiveles(e.target.value);
         this.cargarDireccionDropdownNivel1(e.target.value);
-        
+
         // Clear coordinates and marker when country changes to prevent geo-incoherence
         const inputLat = document.querySelector('#direccionLatitud');
         const inputLng = document.querySelector('#direccionLongitud');
@@ -133,10 +133,11 @@ export class DireccionFormComponent extends BaseComponent {
   llenarPaisSelect() {
     const select = document.querySelector('#dirPaisSelect');
     if (!select) return;
-    
-    const activePaises = this.paisesList.filter(p => p.activo);
-    select.innerHTML = '<option value="">-- Seleccione --</option>' + 
-      activePaises.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+
+    const activePaises = this.paisesList.filter((p) => p.activo);
+    select.innerHTML =
+      '<option value="">-- Seleccione --</option>' +
+      activePaises.map((p) => `<option value="${p.id}">${p.nombre}</option>`).join('');
   }
 
   async abrir(direccion = null) {
@@ -145,7 +146,7 @@ export class DireccionFormComponent extends BaseComponent {
     const form = document.querySelector('#direccionForm');
     const errorAlert = document.querySelector('#direccionModalErrorAlert');
     const gpsInfo = document.querySelector('#gpsLocationInfo');
-    
+
     if (form) {
       form.classList.remove('was-validated');
       form.reset();
@@ -178,11 +179,14 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     // Reset dropdowns
-    document.querySelector('#dirNivel1Select').innerHTML = '<option value="">-- Seleccione País primero --</option>';
+    document.querySelector('#dirNivel1Select').innerHTML =
+      '<option value="">-- Seleccione País primero --</option>';
     document.querySelector('#dirNivel1Select').disabled = true;
-    document.querySelector('#dirNivel2Select').innerHTML = '<option value="">-- Seleccione Nivel 1 primero --</option>';
+    document.querySelector('#dirNivel2Select').innerHTML =
+      '<option value="">-- Seleccione Nivel 1 primero --</option>';
     document.querySelector('#dirNivel2Select').disabled = true;
-    document.querySelector('#dirNivel3Select').innerHTML = '<option value="">-- Seleccione Nivel 2 primero --</option>';
+    document.querySelector('#dirNivel3Select').innerHTML =
+      '<option value="">-- Seleccione Nivel 2 primero --</option>';
     document.querySelector('#dirNivel3Select').disabled = true;
 
     this.ocultarCampo('#colDirNivel1');
@@ -213,7 +217,7 @@ export class DireccionFormComponent extends BaseComponent {
       await this.cargarDireccionDropdownNivel1(paisId, direccion.territorio);
     } else {
       document.querySelector('#direccionModalLabel').textContent = 'Nueva Dirección';
-      
+
       // Pre-fill country if operator
       const user = AuthService.getCurrentUser();
       if (user && user.pais_id) {
@@ -244,7 +248,7 @@ export class DireccionFormComponent extends BaseComponent {
     L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
       attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
       subdomains: 'abcd',
-      maxZoom: 20
+      maxZoom: 20,
     }).addTo(this.modalMap);
 
     this.modalMap.on('click', (e) => {
@@ -290,7 +294,7 @@ export class DireccionFormComponent extends BaseComponent {
     const paisId = selectPais ? selectPais.value : '';
     if (!paisId || !this.modalMap) return;
 
-    const pais = this.paisesList.find(p => p.id == paisId);
+    const pais = this.paisesList.find((p) => p.id == paisId);
     if (!pais) return;
 
     const config = MAP_CONFIG.COUNTRY_CENTERS[pais.codigo_iso];
@@ -299,7 +303,7 @@ export class DireccionFormComponent extends BaseComponent {
   }
 
   async cargarDireccionDropdownNivel1(paisId, selectedTerritorio = null) {
-    const pais = this.paisesList.find(p => p.id == paisId);
+    const pais = this.paisesList.find((p) => p.id == paisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
@@ -325,8 +329,13 @@ export class DireccionFormComponent extends BaseComponent {
     try {
       const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: null });
       if (list.length > 0) {
-        s1.innerHTML = `<option value="">-- Selecciona ${config.nivel1} --</option>` + 
-          list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+        s1.innerHTML =
+          `<option value="">-- Selecciona ${config.nivel1} --</option>` +
+          list
+            .map(
+              (t) => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`
+            )
+            .join('');
         s1.disabled = false;
         this.mostrarCampo('#colDirNivel1');
       } else {
@@ -364,7 +373,7 @@ export class DireccionFormComponent extends BaseComponent {
   }
 
   async cargarDireccionDropdownNivel2(paisId, parentId, selectVal = null, selectValNivel3 = null) {
-    const pais = this.paisesList.find(p => p.id == paisId);
+    const pais = this.paisesList.find((p) => p.id == paisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
@@ -384,10 +393,18 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     try {
-      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
+      const list = await UbicacionesService.getTerritorios({
+        pais_id: paisId,
+        parent_id: parentId,
+      });
       if (list.length > 0) {
-        s2.innerHTML = `<option value="">-- Selecciona ${config.nivel2} --</option>` + 
-          list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+        s2.innerHTML =
+          `<option value="">-- Selecciona ${config.nivel2} --</option>` +
+          list
+            .map(
+              (t) => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`
+            )
+            .join('');
         s2.disabled = false;
         this.mostrarCampo('#colDirNivel2');
       } else {
@@ -408,7 +425,7 @@ export class DireccionFormComponent extends BaseComponent {
   }
 
   async cargarDireccionDropdownNivel3(paisId, parentId, selectVal = null) {
-    const pais = this.paisesList.find(p => p.id == paisId);
+    const pais = this.paisesList.find((p) => p.id == paisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 
@@ -423,10 +440,18 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     try {
-      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: parentId });
+      const list = await UbicacionesService.getTerritorios({
+        pais_id: paisId,
+        parent_id: parentId,
+      });
       if (list.length > 0) {
-        s3.innerHTML = `<option value="">-- Selecciona ${config.nivel3} --</option>` + 
-          list.map(t => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`).join('');
+        s3.innerHTML =
+          `<option value="">-- Selecciona ${config.nivel3} --</option>` +
+          list
+            .map(
+              (t) => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`
+            )
+            .join('');
         s3.disabled = false;
         this.mostrarCampo('#colDirNivel3');
       } else {
@@ -477,7 +502,8 @@ export class DireccionFormComponent extends BaseComponent {
     if (btnSubmit) {
       originalText = btnSubmit.innerHTML;
       btnSubmit.disabled = true;
-      btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Guardando...';
+      btnSubmit.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Guardando...';
     }
 
     try {
@@ -487,21 +513,25 @@ export class DireccionFormComponent extends BaseComponent {
 
         // 1. Registrar País si es nuevo
         if (!this.pendingGeography.pais.exists) {
-          if (btnSubmit) btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando País...';
+          if (btnSubmit)
+            btnSubmit.innerHTML =
+              '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando País...';
           const res = await UbicacionesService.createPais({
             nombre: this.pendingGeography.pais.nombre,
             codigo_iso: this.pendingGeography.pais.codigo_iso,
-            activo: true
+            activo: true,
           });
           const newObj = res.data || res;
           currentCountryId = newObj.id;
-          
+
           // Despachar evento para notificar al explorador de países
-          this.dispatchEvent(new CustomEvent('paises-updated', {
-            detail: { paises: this.paisesList },
-            bubbles: true,
-            composed: true
-          }));
+          this.dispatchEvent(
+            new CustomEvent('paises-updated', {
+              detail: { paises: this.paisesList },
+              bubbles: true,
+              composed: true,
+            })
+          );
         }
 
         let parentId = null;
@@ -509,13 +539,14 @@ export class DireccionFormComponent extends BaseComponent {
         // 2. Registrar Provincia si es nueva
         if (this.pendingGeography.nivel1.nombre) {
           if (!this.pendingGeography.nivel1.exists) {
-            if (btnSubmit) btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel1.tipo}...`;
+            if (btnSubmit)
+              btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel1.tipo}...`;
             const res = await UbicacionesService.createTerritorio({
               pais_id: currentCountryId,
               parent_id: null,
               nombre: this.pendingGeography.nivel1.nombre,
               tipo: this.pendingGeography.nivel1.tipo,
-              activo: true
+              activo: true,
             });
             const newObj = res.data || res;
             parentId = newObj.id;
@@ -527,13 +558,14 @@ export class DireccionFormComponent extends BaseComponent {
         // 3. Registrar Cantón si es nuevo
         if (this.pendingGeography.nivel2.nombre) {
           if (!this.pendingGeography.nivel2.exists) {
-            if (btnSubmit) btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel2.tipo}...`;
+            if (btnSubmit)
+              btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel2.tipo}...`;
             const res = await UbicacionesService.createTerritorio({
               pais_id: currentCountryId,
               parent_id: parentId,
               nombre: this.pendingGeography.nivel2.nombre,
               tipo: this.pendingGeography.nivel2.tipo,
-              activo: true
+              activo: true,
             });
             const newObj = res.data || res;
             parentId = newObj.id;
@@ -545,13 +577,14 @@ export class DireccionFormComponent extends BaseComponent {
         // 4. Registrar Parroquia si es nueva
         if (this.pendingGeography.nivel3.nombre) {
           if (!this.pendingGeography.nivel3.exists) {
-            if (btnSubmit) btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel3.tipo}...`;
+            if (btnSubmit)
+              btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel3.tipo}...`;
             const res = await UbicacionesService.createTerritorio({
               pais_id: currentCountryId,
               parent_id: parentId,
               nombre: this.pendingGeography.nivel3.nombre,
               tipo: this.pendingGeography.nivel3.tipo,
-              activo: true
+              activo: true,
             });
             const newObj = res.data || res;
             parentId = newObj.id;
@@ -563,10 +596,12 @@ export class DireccionFormComponent extends BaseComponent {
         finalTerritorioId = parentId;
 
         // Despachar evento para notificar al explorador de territorios
-        this.dispatchEvent(new CustomEvent('territorios-updated', {
-          bubbles: true,
-          composed: true
-        }));
+        this.dispatchEvent(
+          new CustomEvent('territorios-updated', {
+            bubbles: true,
+            composed: true,
+          })
+        );
       }
 
       if (!finalTerritorioId) {
@@ -597,13 +632,15 @@ export class DireccionFormComponent extends BaseComponent {
       }
 
       this.direccionModalObj.hide();
-      
+
       // Dispatch custom event to notify parent component to reload the list
-      this.dispatchEvent(new CustomEvent('direccion-saved', {
-        bubbles: true,
-        composed: true,
-        detail: { isEdit: !!id }
-      }));
+      this.dispatchEvent(
+        new CustomEvent('direccion-saved', {
+          bubbles: true,
+          composed: true,
+          detail: { isEdit: !!id },
+        })
+      );
     } catch (error) {
       console.error('Error al guardar dirección:', error);
       errorAlert.classList.remove('d-none');
@@ -619,7 +656,7 @@ export class DireccionFormComponent extends BaseComponent {
   async autofillUbicacionDesdeCoords(lat, lng) {
     const statusContainer = document.querySelector('#autofillStatus');
     const statusText = document.querySelector('#autofillStatusText');
-    
+
     if (statusContainer && statusText) {
       statusContainer.classList.remove('d-none');
       statusText.textContent = 'Autorellenando ubicación...';
@@ -639,10 +676,11 @@ export class DireccionFormComponent extends BaseComponent {
           address.suburb || address.neighbourhood || address.parish || address.quarter,
           address.city || address.town || address.village,
           address.state,
-          address.country
+          address.country,
         ].filter(Boolean);
-        
-        gpsText.textContent = addressParts.join(', ') || data.display_name || 'Ubicación desconocida';
+
+        gpsText.textContent =
+          addressParts.join(', ') || data.display_name || 'Ubicación desconocida';
         gpsInfo.classList.remove('d-none');
       }
 
@@ -650,16 +688,18 @@ export class DireccionFormComponent extends BaseComponent {
       const missingAlert = document.querySelector('#missingTerritoryAlert');
       const missingMsg = document.querySelector('#missingTerritoryMessage');
       const btnRegisterMissing = document.querySelector('#btnRegistrarTerritorioFaltante');
-      
+
       if (missingAlert) missingAlert.classList.add('d-none');
       if (btnRegisterMissing) btnRegisterMissing.classList.add('d-none');
       this.pendingTerritory = null;
 
       // 1. Detalle de dirección (Calle + número)
-      const street = address.road || address.pedestrian || address.suburb || address.neighbourhood || '';
+      const street =
+        address.road || address.pedestrian || address.suburb || address.neighbourhood || '';
       const houseNumber = address.house_number || '';
-      const detalleText = [street, houseNumber].filter(Boolean).join(' ') || data.display_name || '';
-      
+      const detalleText =
+        [street, houseNumber].filter(Boolean).join(' ') || data.display_name || '';
+
       const inputDetalle = document.querySelector('#direccionDetalle');
       if (inputDetalle && detalleText) {
         inputDetalle.value = detalleText;
@@ -674,17 +714,25 @@ export class DireccionFormComponent extends BaseComponent {
       // 3. País y Niveles Geográficos (Búsqueda e integración)
       const countryCode = (address.country_code || '').toUpperCase();
       const countryName = this.capitalizeWords(address.country || countryCode);
-      
+
       let matchedPais = null;
       if (countryCode && this.paisesList.length > 0) {
-        matchedPais = this.paisesList.find(p => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode);
+        matchedPais = this.paisesList.find(
+          (p) => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode
+        );
       }
 
       this.pendingGeography = {
-        pais: { nombre: countryName, codigo_iso: countryCode, exists: !!matchedPais, id: matchedPais ? matchedPais.id : null, tipo: 'País' },
+        pais: {
+          nombre: countryName,
+          codigo_iso: countryCode,
+          exists: !!matchedPais,
+          id: matchedPais ? matchedPais.id : null,
+          tipo: 'País',
+        },
         nivel1: { nombre: '', exists: false, id: null, tipo: 'Provincia' },
         nivel2: { nombre: '', exists: false, id: null, tipo: 'Cantón' },
-        nivel3: { nombre: '', exists: false, id: null, tipo: 'Parroquia' }
+        nivel3: { nombre: '', exists: false, id: null, tipo: 'Parroquia' },
       };
 
       const selectPais = document.querySelector('#dirPaisSelect');
@@ -695,7 +743,7 @@ export class DireccionFormComponent extends BaseComponent {
       // Determinar etiquetas de niveles basadas en el país (si existe) o usar default
       const iso = matchedPais ? (matchedPais.codigo_iso || '').toUpperCase() : countryCode;
       const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
-      
+
       this.pendingGeography.nivel1.tipo = config.nivel1;
       this.pendingGeography.nivel2.tipo = config.nivel2;
       this.pendingGeography.nivel3.tipo = config.nivel3;
@@ -704,19 +752,24 @@ export class DireccionFormComponent extends BaseComponent {
       if (matchedPais) {
         if (selectPais) selectPais.value = matchedPais.id;
         this.actualizarEtiquetasNiveles(matchedPais.id);
-        
+
         // A. Procesar Nivel 1
-        const possibleNivel1Names = [address.state, address.region, address.province, address.state_district].filter(Boolean);
+        const possibleNivel1Names = [
+          address.state,
+          address.region,
+          address.province,
+          address.state_district,
+        ].filter(Boolean);
         const n1Name = this.capitalizeWords(possibleNivel1Names[0] || '');
         this.pendingGeography.nivel1.nombre = n1Name;
 
         if (n1Name) {
           if (statusText) statusText.textContent = `Buscando ${config.nivel1}...`;
           await this.cargarDireccionDropdownNivel1(matchedPais.id);
-          
+
           const cleanN1Name = this.normalizeText(n1Name);
           const optionsN1 = Array.from(selectN1.options);
-          const foundN1 = optionsN1.find(opt => {
+          const foundN1 = optionsN1.find((opt) => {
             const optText = this.normalizeText(opt.text);
             return optText.includes(cleanN1Name) || cleanN1Name.includes(optText);
           });
@@ -728,17 +781,23 @@ export class DireccionFormComponent extends BaseComponent {
             this.mostrarCampo('#colDirNivel1');
 
             // B. Procesar Nivel 2
-            const possibleNivel2Names = [address.county, address.city, address.town, address.municipality, address.city_district].filter(Boolean);
+            const possibleNivel2Names = [
+              address.county,
+              address.city,
+              address.town,
+              address.municipality,
+              address.city_district,
+            ].filter(Boolean);
             const n2Name = this.capitalizeWords(possibleNivel2Names[0] || '');
             this.pendingGeography.nivel2.nombre = n2Name;
 
             if (n2Name) {
               if (statusText) statusText.textContent = `Buscando ${config.nivel2}...`;
               await this.cargarDireccionDropdownNivel2(matchedPais.id, foundN1.value);
-              
+
               const cleanN2Name = this.normalizeText(n2Name);
               const optionsN2 = Array.from(selectN2.options);
-              const foundN2 = optionsN2.find(opt => {
+              const foundN2 = optionsN2.find((opt) => {
                 const optText = this.normalizeText(opt.text);
                 return optText.includes(cleanN2Name) || cleanN2Name.includes(optText);
               });
@@ -758,7 +817,7 @@ export class DireccionFormComponent extends BaseComponent {
                   address.village,
                   address.town,
                   address.city_district,
-                  address.hamlet
+                  address.hamlet,
                 ].filter(Boolean);
                 const n3Name = this.capitalizeWords(possibleNivel3Names[0] || '');
                 this.pendingGeography.nivel3.nombre = n3Name;
@@ -766,10 +825,10 @@ export class DireccionFormComponent extends BaseComponent {
                 if (n3Name) {
                   if (statusText) statusText.textContent = `Buscando ${config.nivel3}...`;
                   await this.cargarDireccionDropdownNivel3(matchedPais.id, foundN2.value);
-                  
+
                   const cleanN3Name = this.normalizeText(n3Name);
                   const optionsN3 = Array.from(selectN3.options);
-                  const foundN3 = optionsN3.find(opt => {
+                  const foundN3 = optionsN3.find((opt) => {
                     const optText = this.normalizeText(opt.text);
                     return optText.includes(cleanN3Name) || cleanN3Name.includes(optText);
                   });
@@ -783,12 +842,15 @@ export class DireccionFormComponent extends BaseComponent {
                     // Buscar cabecera cantonal como fallback
                     const cantonName = n2Name;
                     const cleanCantonName = this.normalizeText(cantonName);
-                    const cabeceraOpt = optionsN3.find(opt => {
+                    const cabeceraOpt = optionsN3.find((opt) => {
                       const optText = this.normalizeText(opt.text);
                       return optText.includes(cleanCantonName) || cleanCantonName.includes(optText);
                     });
                     if (cabeceraOpt) {
-                      this.pendingGeography.nivel3.fallbackNombre = cabeceraOpt.text.replace(/^\[.*?\]\s*/, '');
+                      this.pendingGeography.nivel3.fallbackNombre = cabeceraOpt.text.replace(
+                        /^\[.*?\]\s*/,
+                        ''
+                      );
                       this.pendingGeography.nivel3.fallbackId = cabeceraOpt.value;
                     }
                     this.mostrarCampo('#colDirNivel3');
@@ -804,10 +866,11 @@ export class DireccionFormComponent extends BaseComponent {
         }
       }
 
-      const hasMissing = !this.pendingGeography.pais.exists || 
-                         (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) || 
-                         (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) || 
-                         (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists);
+      const hasMissing =
+        !this.pendingGeography.pais.exists ||
+        (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) ||
+        (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) ||
+        (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists);
 
       // Mostrar resolvedor si hay algún territorio faltante detectado
       const resolverCard = document.querySelector('#missingTerritoryResolver');
@@ -816,15 +879,16 @@ export class DireccionFormComponent extends BaseComponent {
         const registerRadio = document.querySelector('#resolveOptRegister');
         const fallbackRadio = document.querySelector('#resolveOptFallback');
         const existingRadio = document.querySelector('#resolveOptExisting');
-        
+
         const isAdmin = AuthService.isAdmin();
 
         // 1. Configurar opción de Cabecera/Fallback (Solo si el único faltante es Nivel 3 y tiene fallback)
-        const onlyN3Missing = this.pendingGeography.pais.exists && 
-                               this.pendingGeography.nivel1.exists && 
-                               this.pendingGeography.nivel2.exists && 
-                               !this.pendingGeography.nivel3.exists;
-                               
+        const onlyN3Missing =
+          this.pendingGeography.pais.exists &&
+          this.pendingGeography.nivel1.exists &&
+          this.pendingGeography.nivel2.exists &&
+          !this.pendingGeography.nivel3.exists;
+
         if (onlyN3Missing && this.pendingGeography.nivel3.fallbackId && fallbackContainer) {
           fallbackContainer.classList.remove('d-none');
           const fallbackSpan = document.querySelector('#fallbackParishNameSpan');
@@ -839,14 +903,24 @@ export class DireccionFormComponent extends BaseComponent {
 
         // 2. Construir lista de lo que se va a registrar
         const toCreateList = [];
-        if (!this.pendingGeography.pais.exists) toCreateList.push(`País "${this.pendingGeography.pais.nombre}"`);
-        if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) toCreateList.push(`${this.pendingGeography.nivel1.tipo} "${this.pendingGeography.nivel1.nombre}"`);
-        if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) toCreateList.push(`${this.pendingGeography.nivel2.tipo} "${this.pendingGeography.nivel2.nombre}"`);
-        if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists) toCreateList.push(`${this.pendingGeography.nivel3.tipo} "${this.pendingGeography.nivel3.nombre}"`);
+        if (!this.pendingGeography.pais.exists)
+          toCreateList.push(`País "${this.pendingGeography.pais.nombre}"`);
+        if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists)
+          toCreateList.push(
+            `${this.pendingGeography.nivel1.tipo} "${this.pendingGeography.nivel1.nombre}"`
+          );
+        if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists)
+          toCreateList.push(
+            `${this.pendingGeography.nivel2.tipo} "${this.pendingGeography.nivel2.nombre}"`
+          );
+        if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists)
+          toCreateList.push(
+            `${this.pendingGeography.nivel3.tipo} "${this.pendingGeography.nivel3.nombre}"`
+          );
 
         const labelRegister = document.querySelector('label[for="resolveOptRegister"]');
         const labelExisting = document.querySelector('label[for="resolveOptExisting"]');
-        
+
         if (labelExisting) {
           labelExisting.innerHTML = `<strong>Seleccionar existente:</strong> Elegir manualmente de la lista de ubicaciones`;
         }
@@ -895,10 +969,14 @@ export class DireccionFormComponent extends BaseComponent {
     if (!resolverCard) return;
 
     const cardDiv = resolverCard.querySelector('.card');
-    const icon = resolverCard.querySelector('.bi-exclamation-triangle-fill, .bi-info-circle-fill, .bi-check-circle-fill');
+    const icon = resolverCard.querySelector(
+      '.bi-exclamation-triangle-fill, .bi-info-circle-fill, .bi-check-circle-fill'
+    );
     const titleSpan = resolverCard.querySelector('.fw-bold');
     const descSpan = resolverCard.querySelector('.text-secondary');
-    const activeOption = document.querySelector('input[name="territoryResolveOption"]:checked')?.value;
+    const activeOption = document.querySelector(
+      'input[name="territoryResolveOption"]:checked'
+    )?.value;
 
     const selectPais = document.querySelector('#dirPaisSelect');
     const selectN1 = document.querySelector('#dirNivel1Select');
@@ -908,7 +986,7 @@ export class DireccionFormComponent extends BaseComponent {
     if (!cardDiv || !titleSpan) return;
 
     // Limpiar cualquier opción de "Nuevo/a" previa en todos los selects
-    [selectPais, selectN1, selectN2, selectN3].forEach(sel => {
+    [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
       if (sel) {
         const existingNewOpt = sel.querySelector('option[value="__new__"]');
         if (existingNewOpt) existingNewOpt.remove();
@@ -922,16 +1000,19 @@ export class DireccionFormComponent extends BaseComponent {
       if (selectN2) selectN2.disabled = false;
       if (selectN3) selectN3.disabled = false;
 
-      cardDiv.className = 'card border-success border-opacity-25 bg-success bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
+      cardDiv.className =
+        'card border-success border-opacity-25 bg-success bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
       if (icon) icon.className = 'bi bi-check-circle-fill text-success fs-5';
       titleSpan.textContent = 'Resolución Manual';
       titleSpan.className = 'fw-bold text-success d-block';
       if (descSpan) {
-        descSpan.innerHTML = 'Por favor, selecciona las ubicaciones correspondientes de las listas desplegables.';
+        descSpan.innerHTML =
+          'Por favor, selecciona las ubicaciones correspondientes de las listas desplegables.';
       }
     } else if (activeOption === 'fallback') {
       // Estado: Resuelto por Cabecera (Solo Nivel 3)
-      cardDiv.className = 'card border-info border-opacity-25 bg-info bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
+      cardDiv.className =
+        'card border-info border-opacity-25 bg-info bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
       if (icon) icon.className = 'bi bi-info-circle-fill text-info fs-5';
       titleSpan.textContent = 'Ubicación Sugerida';
       titleSpan.className = 'fw-bold text-info d-block';
@@ -944,16 +1025,27 @@ export class DireccionFormComponent extends BaseComponent {
       }
     } else {
       // Estado: Registro Automático de todos los niveles faltantes
-      cardDiv.className = 'card border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
+      cardDiv.className =
+        'card border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
       if (icon) icon.className = 'bi bi-exclamation-triangle-fill text-warning fs-5';
       titleSpan.textContent = 'Registro Automático Activado';
       titleSpan.className = 'fw-bold text-dark d-block';
-      
+
       const missingNames = [];
-      if (!this.pendingGeography.pais.exists) missingNames.push(`País "${this.pendingGeography.pais.nombre}"`);
-      if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) missingNames.push(`${this.pendingGeography.nivel1.tipo} "${this.pendingGeography.nivel1.nombre}"`);
-      if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) missingNames.push(`${this.pendingGeography.nivel2.tipo} "${this.pendingGeography.nivel2.nombre}"`);
-      if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists) missingNames.push(`${this.pendingGeography.nivel3.tipo} "${this.pendingGeography.nivel3.nombre}"`);
+      if (!this.pendingGeography.pais.exists)
+        missingNames.push(`País "${this.pendingGeography.pais.nombre}"`);
+      if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists)
+        missingNames.push(
+          `${this.pendingGeography.nivel1.tipo} "${this.pendingGeography.nivel1.nombre}"`
+        );
+      if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists)
+        missingNames.push(
+          `${this.pendingGeography.nivel2.tipo} "${this.pendingGeography.nivel2.nombre}"`
+        );
+      if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists)
+        missingNames.push(
+          `${this.pendingGeography.nivel3.tipo} "${this.pendingGeography.nivel3.nombre}"`
+        );
 
       if (descSpan) {
         descSpan.innerHTML = `Se registrarán automáticamente al guardar: <strong>${missingNames.join(', ')}</strong>.`;
@@ -1000,7 +1092,8 @@ export class DireccionFormComponent extends BaseComponent {
 
   normalizeText(str) {
     if (!str) return '';
-    return str.toLowerCase()
+    return str
+      .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^\w\s]/g, '')
@@ -1033,13 +1126,14 @@ export class DireccionFormComponent extends BaseComponent {
 
   async registrarTerritorioFaltante() {
     if (!this.pendingTerritory) return;
-    
+
     const btn = document.querySelector('#btnRegistrarTerritorioFaltante');
     let originalText = '';
     if (btn) {
       originalText = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Registrando...';
+      btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Registrando...';
     }
 
     try {
@@ -1048,13 +1142,15 @@ export class DireccionFormComponent extends BaseComponent {
         parent_id: this.pendingTerritory.parent_id,
         nombre: this.pendingTerritory.nombre,
         tipo: this.pendingTerritory.tipo,
-        activo: true
+        activo: true,
       };
 
       const res = await UbicacionesService.createTerritorio(payload);
       const newTerritory = res.data || res;
 
-      UIHelper.mostrarAlerta(this, 'success', `${this.pendingTerritory.tipo} "${this.pendingTerritory.nombre}" registrada con éxito.`);
+      ToastService.success(
+        `${this.pendingTerritory.tipo} "${this.pendingTerritory.nombre}" registrada con éxito.`
+      );
 
       // Ocultar alerta de territorio faltante
       const missingAlert = document.querySelector('#missingTerritoryAlert');
@@ -1062,7 +1158,7 @@ export class DireccionFormComponent extends BaseComponent {
 
       const paisId = this.pendingTerritory.pais_id;
       const level = this.pendingTerritory.nivel;
-      
+
       if (level === 1) {
         await this.cargarDireccionDropdownNivel1(paisId);
         document.querySelector('#dirNivel1Select').value = newTerritory.id;
@@ -1081,14 +1177,15 @@ export class DireccionFormComponent extends BaseComponent {
       this.pendingTerritory = null;
 
       // Despachar evento para notificar al explorador de territorios
-      this.dispatchEvent(new CustomEvent('territorios-updated', {
-        bubbles: true,
-        composed: true
-      }));
-
+      this.dispatchEvent(
+        new CustomEvent('territorios-updated', {
+          bubbles: true,
+          composed: true,
+        })
+      );
     } catch (e) {
       console.error('Error al registrar territorio faltante:', e);
-      UIHelper.mostrarAlerta(this, 'error', `No se pudo registrar: ${e.message}`);
+      ToastService.error(e.message);
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -1099,11 +1196,15 @@ export class DireccionFormComponent extends BaseComponent {
 
   capitalizeWords(str) {
     if (!str) return '';
-    return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   actualizarEtiquetasNiveles(paisId) {
-    const pais = this.paisesList.find(p => p.id == paisId);
+    const pais = this.paisesList.find((p) => p.id == paisId);
     const iso = pais ? (pais.codigo_iso || '').toUpperCase() : '';
     const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
 

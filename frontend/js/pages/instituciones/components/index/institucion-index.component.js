@@ -1,6 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { InstitucionService } from '../../services/institucion.service.js';
-import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
@@ -112,7 +111,7 @@ export class InstitucionIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (!isConfirmed) return;
 
     try {

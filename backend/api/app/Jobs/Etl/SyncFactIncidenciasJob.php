@@ -2,14 +2,14 @@
 
 namespace App\Jobs\Etl;
 
+use App\Services\TimezoneService;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Services\TimezoneService;
 
 class SyncFactIncidenciasJob implements ShouldQueue
 {
@@ -44,7 +44,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
         $records = [];
         foreach ($incidencias as $inc) {
             $createdTime = TimezoneService::toLocal($inc->created_at);
-            $tiempoId = (int)$createdTime->format('YmdHis');
+            $tiempoId = (int) $createdTime->format('YmdHis');
 
             // Asegurarse de que el tiempo_id exista en dim_tiempo, si no, crear uno rápido
             $this->ensureTiempoIdExists($tiempoId, $createdTime);
@@ -59,13 +59,13 @@ class SyncFactIncidenciasJob implements ShouldQueue
                 // Primer cambio a En Proceso
                 $enProcesoLog = $historialDeIncidencia->firstWhere('estado_id', 3);
                 if ($enProcesoLog) {
-                    $tiempoRespuesta = (int)$createdTime->diffInMinutes(TimezoneService::toLocal($enProcesoLog->created_at));
+                    $tiempoRespuesta = (int) $createdTime->diffInMinutes(TimezoneService::toLocal($enProcesoLog->created_at));
                 }
 
                 // Primer cambio a Resuelto
                 $resueltoLog = $historialDeIncidencia->firstWhere('estado_id', 4);
                 if ($resueltoLog) {
-                    $tiempoResolucion = (int)$createdTime->diffInMinutes(TimezoneService::toLocal($resueltoLog->created_at));
+                    $tiempoResolucion = (int) $createdTime->diffInMinutes(TimezoneService::toLocal($resueltoLog->created_at));
                 }
             }
 
@@ -97,7 +97,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
             }
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             DB::table('metrics.fact_incidencias')->upsert(
                 $records,
                 ['id'],
@@ -109,7 +109,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
     private function ensureTiempoIdExists(int $tiempoId, Carbon $date): void
     {
         $exists = DB::table('metrics.dim_tiempo')->where('id', $tiempoId)->exists();
-        if (!$exists) {
+        if (! $exists) {
             DB::table('metrics.dim_tiempo')->insert([
                 'id' => $tiempoId,
                 'fecha' => $date->toDateTimeString(),

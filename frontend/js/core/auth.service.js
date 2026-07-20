@@ -41,14 +41,12 @@ export const AuthService = {
         localStorage.setItem('user', JSON.stringify(response.user));
         window.dispatchEvent(new CustomEvent('auth-change'));
       }
-      
+
       // Always fetch the menu tree globally on login/refresh
       try {
         const menuResp = await apiRequest('/me/menu', { method: 'GET' });
-        const menuList = menuResp.data || menuResp;
-        if (menuList) {
-          localStorage.setItem('user_menu', JSON.stringify(menuList));
-        }
+        const menuList = Array.isArray(menuResp) ? menuResp : (menuResp.data || []);
+        localStorage.setItem('user_menu', JSON.stringify(menuList));
       } catch (err) {
         console.error('Error fetching menu profile:', err);
       }
@@ -89,23 +87,25 @@ export const AuthService = {
 
   hasPermission(action, resource = null) {
     const user = this.getCurrentUser();
-    if (!user || !Array.isArray(user.permisos)) return false;
+    if (!user || !Array.isArray(user.permisos)) {
+      // console.warn('[AuthService] hasPermission failed: User or user.permisos is missing/invalid.', user);
+      return false;
+    }
 
     if (resource) {
       const key = `${action.toUpperCase()}_${resource.toUpperCase()}`;
-      
+
       // 2. Verificación dinámica
       if (user.permisos.includes(key)) {
         return true;
       }
 
+      // console.warn(`[AuthService] hasPermission failed: User lacks permission ${key}.`, user.permisos);
       return false;
     }
 
-    // Direct permission string check
-    return user.permisos.some(
-      (p) => p && typeof p === 'string' && p.toLowerCase() === action.toLowerCase()
-    );
+    // console.warn('[AuthService] hasPermission failed: No resource provided.');
+    return false;
   },
 
   isAdmin() {
@@ -124,27 +124,43 @@ export const AuthService = {
     const hashWithoutQuery = hash.split('?')[0];
 
     const routePermissions = {
-      '#/opciones-menu': 'READ_OPCIONES_MENU',
-      '#/roles': 'READ_ROLES',
-      '#/permisos': 'READ_PERMISOS',
-      '#/trp-dashboard': 'READ_TRP',
-      '#/usuarios': 'READ_USUARIOS',
-      '#/ubicaciones': 'READ_UBICACIONES',
-      '#/categorias': 'READ_CATEGORIAS_INCIDENCIA',
-      '#/incidencias/despacho': 'READ_DESPACHO_INCIDENCIAS',
-      '#/instituciones': 'READ_INSTITUCIONES',
-      '#/instituciones/kanban': 'READ_KANBAN',
-      '#/tramites/historial': 'READ_HISTORIAL',
+      '#/opciones-menu': { action: 'READ', resource: 'opciones_menu' },
+      '#/roles': { action: 'READ', resource: 'roles' },
+      '#/permisos': { action: 'READ', resource: 'permisos' },
+      '#/trp-dashboard': { action: 'READ', resource: 'trp' },
+      '#/usuarios': { action: 'READ', resource: 'usuarios' },
+      '#/ubicaciones': { action: 'READ', resource: 'ubicaciones' },
+      '#/categorias': { action: 'READ', resource: 'categorias_incidencia' },
+      '#/incidencias': { action: 'READ', resource: 'incidencias' },
+      '#/incidencias/despacho': { action: 'READ', resource: 'despacho' },
+      '#/instituciones': { action: 'READ', resource: 'instituciones' },
+      '#/instituciones/kanban': { action: 'READ', resource: 'kanban' },
+      '#/mantenimiento': { action: 'READ', resource: 'mantenimiento' },
+      '#/tramites/historial': { action: 'READ', resource: 'historial' },
+      '#/administracion': { action: 'READ', resource: 'roles' },
     };
 
-    const basePath = hashWithoutQuery.replace(/\/form$/, '').replace(/\/historial$/, '').replace(/\/despacho$/, '').replace(/\/kanban$/, '').replace(/\/estado-individual$/, '');
+    const basePath = hashWithoutQuery
+      .replace(/\/form$/, '')
+      .replace(/\/historial$/, '')
+      .replace(/\/despacho$/, '')
+      .replace(/\/kanban$/, '')
+      .replace(/\/estado-individual$/, '');
     const requiredPermission = routePermissions[hashWithoutQuery] || routePermissions[basePath];
 
+    console.log(
+      `[AuthService] canAccessRoute: hash=${hash}, hashWithoutQuery=${hashWithoutQuery}, basePath=${basePath}`
+    );
+    console.log(`[AuthService] requiredPermission=`, requiredPermission);
+
     if (requiredPermission) {
-      return this.hasPermission(requiredPermission);
+      const hasPerm = this.hasPermission(requiredPermission.action, requiredPermission.resource);
+      console.log(`[AuthService] hasPermission result:`, hasPerm);
+      return hasPerm;
     }
 
+    console.log(`[AuthService] canAccessRoute: No route permissions matched, allowing by default.`);
     // Por defecto permitimos si no hay un mapeo estricto, ya que el backend lo protegerá.
     return true;
-  }
+  },
 };

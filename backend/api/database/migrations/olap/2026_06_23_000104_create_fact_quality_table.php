@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('metrics.fact_quality', function (Blueprint $table) {
             $table->id();
-            
+
             $table->unsignedInteger('tiempo_id')->index();
             $table->foreign('tiempo_id')->references('id')->on('metrics.dim_tiempo')->cascadeOnDelete();
-            
+
             $table->foreignId('metric_id')->constrained('metrics.dim_metric')->cascadeOnDelete();
-            
+
             $table->decimal('valor_porcentaje', 5, 2);
             $table->timestamps();
         });

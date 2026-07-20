@@ -19,4 +19,3 @@ Schedule::command('sqa:vco')->everyThirtyMinutes();
 Schedule::command('sqa:dd')->everyThirtyMinutes();  // Densidad de Defectos
 Schedule::command('sqa:cf')->everyThirtyMinutes();  // Cobertura Funcional
 Schedule::command('sqa:tep')->everyTwoHours(); // Tasa de Éxito de Pruebas
-
