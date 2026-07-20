@@ -19,3 +19,8 @@
 - Se añadió prueba en `DatabaseDumpCommandTest.php` comprobando exit codes válidos.
 - Las tareas T1-T6 fueron completadas exitosamente y se generó la matriz de trazabilidad R1-R5 en `progress/impl_exportar_bd_sql.md`.
 - El entorno se verificó exitosamente con `./init.sh`.
+
+## Sesión: Refactorización y Pruebas Unitarias del Frontend (Roles, Permisos y Ubicaciones)
+- Se completó la refactorización del módulo de Roles y Permisos en el frontend, dividiendo correctamente los componentes `index` y `form` según la arquitectura.
+- Se implementaron y pasaron al 100% las pruebas unitarias para todos los servicios y componentes de `Ubicaciones` (`paises`, `territorios`, `direcciones` y sus respectivos formularios).
+- Se resolvió un problema técnico profundo relacionado con el lifecycle de los Web Components (`BaseComponent` y su `connectedCallback` asíncrono con `fetch`), aplicando inyección limpia de HTML y stubs globales en `jest` y `jsdom` para garantizar la estabilidad de los tests sin race conditions.
