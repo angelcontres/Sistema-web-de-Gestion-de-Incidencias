@@ -1,11 +1,11 @@
-import { BaseComponent } from '../../../core/base-component.js';
-import { IncidenciaService } from '../../incidencias/services/incidencia.service.js';
-import { AuthService } from '../../../core/auth.service.js';
-import { ToastService } from '../../../shared/services/toast.service.js';
+import { BaseComponent } from '../../../../core/base-component.js';
+import { IncidenciaService } from '../../../incidencias/services/incidencia.service.js';
+import { AuthService } from '../../../../core/auth.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class KanbanIndexComponent extends BaseComponent {
   constructor() {
-    super('js/pages/institucion/kanban/kanban-index.component.html');
+    super('js/pages/instituciones/components/kanban/kanban-index.component.html');
     this.incidencias = [];
     this.recursosFiles = [];
   }
