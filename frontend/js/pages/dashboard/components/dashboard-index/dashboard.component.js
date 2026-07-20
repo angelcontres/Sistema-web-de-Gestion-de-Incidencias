@@ -5,7 +5,7 @@ import { DashboardService } from '../../services/dashboard.service.js';
 
 export class DashboardComponent extends BaseComponent {
   constructor() {
-    super('js/pages/dashboard/dashboard.component.html');
+    super('js/pages/dashboard/components/dashboard-index/dashboard.component.html');
     this.map = null;
     this.clockInterval = null;
     this.mockMarkers = []; // to keep track of added markers
