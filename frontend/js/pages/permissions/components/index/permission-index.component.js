@@ -1,5 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
-import { apiRequest } from '../../../../core/api.js';
+import { PermissionService } from '../../services/permissions.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
@@ -107,7 +107,7 @@ export class PermissionIndexComponent extends BaseComponent {
 
     if (!isConfirmed) return;
 
-    apiRequest(`/permisos/${id}`, { method: 'DELETE' })
+    PermissionService.delete(id)
       .then(() => {
         ToastService.success('Permiso eliminado correctamente.');
 

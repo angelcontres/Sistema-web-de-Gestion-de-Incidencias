@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { apiRequest } from '../../../../core/api.js';
+import { PermissionService } from '../../services/permissions.service.js';
 
 export class PermissionFormComponent extends BaseComponent {
   constructor() {
@@ -131,13 +132,11 @@ export class PermissionFormComponent extends BaseComponent {
     };
 
     try {
-      const endpoint = permisoId ? `/v1/permisos/${permisoId}` : '/v1/permisos';
-      const method = permisoId ? 'PUT' : 'POST';
-
-      await apiRequest(endpoint, {
-        method,
-        body: JSON.stringify(payload),
-      });
+      if (permisoId) {
+        await PermissionService.update(permisoId, payload);
+      } else {
+        await PermissionService.create(payload);
+      }
 
       if (this.modalEl) {
         const modal = bootstrap.Modal.getInstance(this.modalEl);

@@ -1,12 +1,11 @@
 import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { PermissionIndexComponent } from './permission-index.component.js';
+import { PermissionService } from '../../services/permissions.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 
 describe('PermissionIndexComponent', () => {
-  let originalFetch;
-
   function createMockComponent() {
     const component = new PermissionIndexComponent();
     const fakeElements = {};
@@ -30,22 +29,10 @@ describe('PermissionIndexComponent', () => {
 
   beforeEach(() => {
     AuthService.hasPermission = jest.fn(() => true);
-    
-    originalFetch = window.fetch;
-    window.fetch = jest.fn(() => 
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ data: [] })
-      })
-    );
-    if (!window.localStorage) {
-      window.localStorage = { getItem: jest.fn(), setItem: jest.fn(), removeItem: jest.fn() };
-    }
+    PermissionService.delete = jest.fn(() => Promise.resolve());
   });
 
   afterEach(() => {
-    window.fetch = originalFetch;
     jest.restoreAllMocks();
   });
 
@@ -66,20 +53,18 @@ describe('PermissionIndexComponent', () => {
     expect(fakeElements['#app-permission-form'].abrirModalEditar).toHaveBeenCalledWith({ id: 3 });
   });
 
-  it('eliminarPermiso - confirma y llama a la API con DELETE', async () => {
+  it('eliminarPermiso - confirma y llama a PermissionService.delete', async () => {
     const { component, fakeElements } = createMockComponent();
     ModalService.confirm = jest.fn(() => Promise.resolve(true));
     ToastService.success = jest.fn();
+    fakeElements['#tbl-datos-permisos'] = { load: jest.fn() };
 
     await component.eliminarPermiso(5, 'Test Permiso');
 
     expect(ModalService.confirm).toHaveBeenCalled();
-    expect(window.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/permisos/5'),
-      expect.objectContaining({ method: 'DELETE' })
-    );
+    expect(PermissionService.delete).toHaveBeenCalledWith(5);
     
-    // Permite que las promesas se resuelvan (then en eliminarPermiso)
+    // Permite que las promesas se resuelvan
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(ToastService.success).toHaveBeenCalled();
     expect(fakeElements['#tbl-datos-permisos'].load).toHaveBeenCalledWith('/permisos');
