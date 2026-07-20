@@ -1,7 +1,7 @@
-import { BaseComponent } from '../../core/base-component.js';
-import { apiRequest } from '../../core/api.js';
-import { AuthService } from '../../core/auth.service.js';
-import { getSoftClass } from '../../shared/utils/badge-states.js';
+import { BaseComponent } from '../../../../core/base-component.js';
+import { AuthService } from '../../../../core/auth.service.js';
+import { getSoftClass } from '../../../../shared/utils/badge-states.js';
+import { DashboardService } from '../../services/dashboard.service.js';
 
 export class DashboardComponent extends BaseComponent {
   constructor() {
@@ -19,6 +19,12 @@ export class DashboardComponent extends BaseComponent {
 
     // 2. Personalizar Greeting
     this.initGreeting();
+
+    // Hide admin-only sections if not admin
+    if (!AuthService.isAdmin()) {
+      const wrapper = this.querySelector('#recentIncidentsWrapper');
+      if (wrapper) wrapper.classList.add('d-none');
+    }
 
     // 3. Inicializar el Mapa en vivo (esperar un micro-tick para que el DOM esté listo)
     setTimeout(() => {
@@ -79,14 +85,14 @@ export class DashboardComponent extends BaseComponent {
         const menuStr = localStorage.getItem('user_menu');
         if (menuStr) {
           const parsed = JSON.parse(menuStr);
-          menuList = Array.isArray(parsed) ? parsed : (parsed.data || null);
+          menuList = Array.isArray(parsed) ? parsed : parsed.data || null;
         }
       } catch (e) {
         /* empty */
       }
 
       if (!menuList || !Array.isArray(menuList) || menuList.length === 0) {
-        const response = await apiRequest('/me/menu', { method: 'GET' });
+        const response = DashboardService.getMyMenus();
         menuList = response.data || response;
         localStorage.setItem('user_menu', JSON.stringify(menuList));
       }
@@ -120,7 +126,7 @@ export class DashboardComponent extends BaseComponent {
 
   async loadDashboardData() {
     try {
-      const response = await apiRequest('/dashboard/stats');
+      const response = await DashboardService.getDashboardStats();
       this.renderTopServices(response.servicios_mas_utilizados);
       this.renderRecentIncidents(response.recientes);
       this.updateMapMarkers(response.mapa_reportes);
@@ -152,7 +158,7 @@ export class DashboardComponent extends BaseComponent {
 
     let data;
     try {
-      const response = await apiRequest(`/dashboard/metrics?role=${role}`);
+      const response = await DashboardService.getDashboardMetricsByRole(role);
       data = response.data || response;
     } catch (e) {
       console.error('Error cargando métricas:', e);
@@ -170,22 +176,22 @@ export class DashboardComponent extends BaseComponent {
 
     try {
       if (role === 'Ciudadano') {
-        await import('./components/dashboard-ciudadano/dashboard-ciudadano.component.js');
+        await import('../dashboard-ciudadano/dashboard-ciudadano.component.js');
         const dashEl = document.createElement('app-dashboard-ciudadano');
         dashEl.data = data;
         container.appendChild(dashEl);
       } else if (role === 'Institucion') {
-        await import('./components/dashboard-institucion/dashboard-institucion.component.js');
+        await import('../dashboard-institucion/dashboard-institucion.component.js');
         const dashEl = document.createElement('app-dashboard-institucion');
         dashEl.data = data;
         container.appendChild(dashEl);
       } else if (role === 'Supervisor') {
-        await import('./components/dashboard-supervisor/dashboard-supervisor.component.js');
+        await import('../dashboard-supervisor/dashboard-supervisor.component.js');
         const dashEl = document.createElement('app-dashboard-supervisor');
         dashEl.data = data;
         container.appendChild(dashEl);
       } else {
-        await import('./components/dashboard-admin/dashboard-admin.component.js');
+        await import('../dashboard-admin/dashboard-admin.component.js');
         const dashEl = document.createElement('app-dashboard-admin');
         dashEl.data = data;
         container.appendChild(dashEl);
@@ -213,7 +219,7 @@ export class DashboardComponent extends BaseComponent {
       const link = document.createElement('link');
       link.id = 'dashboard-cards-css';
       link.rel = 'stylesheet';
-      link.href = 'js/pages/dashboard/components/dashboard-cards.css';
+      link.href = 'js/pages/dashboard/css/dashboard-cards.css';
       link.onload = resolve;
       link.onerror = resolve; // Continue even if it fails to avoid blocking the UI completely
       document.head.appendChild(link);
@@ -299,6 +305,12 @@ export class DashboardComponent extends BaseComponent {
   }
 
   renderRecentIncidents(incidents) {
+    const wrapper = this.querySelector('#recentIncidentsWrapper');
+    if (!AuthService.isAdmin()) {
+      if (wrapper) wrapper.classList.add('d-none');
+      return;
+    }
+
     const container = this.querySelector('#recentIncidentsList');
     if (!container || !incidents) return;
 

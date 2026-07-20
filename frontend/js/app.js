@@ -10,7 +10,7 @@ import './components/sidebar/sidebar.component.js';
 import './components/menu-lobby/menu-lobby.component.js';
 
 // Import Pages (Features)
-import './pages/dashboard/dashboard.component.js';
+import './pages/dashboard/components/dashboard-index/dashboard.component.js';
 import './pages/login/login.component.js';
 
 import './pages/menu-options/components/menu-options-list/menu-options-list.component.js';

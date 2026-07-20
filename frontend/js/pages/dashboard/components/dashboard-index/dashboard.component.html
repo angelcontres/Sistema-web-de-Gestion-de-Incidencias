@@ -11,7 +11,9 @@
     <div class="bg-white border rounded-pill px-4 py-2 shadow-sm d-flex align-items-center gap-3">
       <div class="d-flex align-items-center gap-2">
         <i class="bi bi-clock-fill text-primary"></i>
-        <span id="liveClock" class="fw-bold text-dark" style="font-variant-numeric: tabular-nums;">--:--:--</span>
+        <span id="liveClock" class="fw-bold text-dark" style="font-variant-numeric: tabular-nums"
+          >--:--:--</span
+        >
       </div>
       <span class="text-muted opacity-25">|</span>
       <span id="liveDate" class="text-secondary small fw-medium">--/--/----</span>
@@ -40,15 +42,21 @@
             </div>
             Mapa de Reportes en Vivo
           </h5>
-          <span class="badge bg-danger text-white px-3 py-1.5 rounded-pill animate-pulse small fw-bold d-flex align-items-center gap-2 shadow-sm">
-            <span class="spinner-grow spinner-grow-sm text-white opacity-75" style="width: 10px; height: 10px;" role="status"></span>
+          <span
+            class="badge bg-danger text-white px-3 py-1.5 rounded-pill animate-pulse small fw-bold d-flex align-items-center gap-2 shadow-sm"
+          >
+            <span
+              class="spinner-grow spinner-grow-sm text-white opacity-75"
+              style="width: 10px; height: 10px"
+              role="status"
+            ></span>
             Live
           </span>
         </div>
         <div
           id="dashboardMap"
           class="rounded-4 border shadow-sm"
-          style="height: 380px; z-index: 1;"
+          style="height: 380px; z-index: 1"
         ></div>
       </div>
     </div>
@@ -73,7 +81,7 @@
   </div>
 
   <!-- Fila Inferior: Listado de Reportes Recientes -->
-  <div class="premium-table-wrapper mb-5">
+  <div class="premium-table-wrapper mb-5" id="recentIncidentsWrapper">
     <div class="premium-card-header bg-white px-4 pt-4 pb-3 mb-0 border-bottom">
       <div>
         <h5 class="premium-card-title mb-1">
@@ -82,11 +90,6 @@
         <p class="text-muted small mb-0 ms-4">
           Últimos casos reportados por los ciudadanos y operadores.
         </p>
-      </div>
-      <div class="d-flex gap-2">
-        <a href="#/ubicaciones" class="btn btn-primary btn-sm fw-bold px-3 d-flex align-items-center gap-2 shadow-sm rounded-pill"
-          ><i class="bi bi-plus-lg"></i> Nueva Dirección</a
-        >
       </div>
     </div>
 

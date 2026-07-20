@@ -132,6 +132,9 @@ export class IncidenciaFormComponent extends BaseComponent {
         (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
       );
     if (isCitizen) {
+      const detallesContainer = this.querySelector('#detallesDireccionContainer');
+      if (detallesContainer) detallesContainer.classList.add('d-none');
+
       const colNivel1 = this.querySelector('#colDirNivel1');
       if (colNivel1) colNivel1.style.setProperty('display', 'none', 'important');
 
