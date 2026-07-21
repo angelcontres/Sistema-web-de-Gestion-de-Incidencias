@@ -117,7 +117,18 @@ export class NotificationCardComponent extends BaseComponent {
 
       // 4. Redirección por Hash en tu SPA
       if (url) {
-        window.location.href = url.startsWith('#') ? url : `#${url}`;
+        let targetUrl = url;
+        
+        // Si la URL ya viene completa con el hash, la respetamos
+        if (targetUrl.startsWith('#')) {
+          window.location.href = targetUrl;
+        } 
+        // Si es una ruta relativa o viene de la API
+        else {
+          // Limpiamos cualquier barra inicial duplicada
+          targetUrl = targetUrl.replace(/^\/+/, '');
+          window.location.href = `#/${targetUrl}`;
+        }
       } else {
         window.dispatchEvent(new CustomEvent('notifications-changed'));
       }

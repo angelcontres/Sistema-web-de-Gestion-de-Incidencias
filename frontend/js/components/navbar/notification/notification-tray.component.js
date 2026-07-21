@@ -89,7 +89,7 @@ export class NotificationTrayComponent extends BaseComponent {
   /**
    * 2. MÉTODO AGREGADO: Pinta la alerta que llega por WebSocket de forma instantánea
    */
-  TandleRealtimeNotification(notification) {
+  handleRealtimeNotification(notification) {
     const notifData = notification.data || notification;
     // 1. Aumentamos el contador en tiempo real
     this.incrementBadge();

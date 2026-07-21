@@ -6,9 +6,13 @@ use App\Http\Requests\IncidenciasRequest;
 use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
 use App\Models\Territorio;
+use App\Models\User;
 use App\Services\IncidenciaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+// 🟢 1. IMPORTAMOS TUS CLASES DE NOTIFICACIÓN
+use App\Notifications\IssueAssignedNotification;
+use App\Notifications\IssueStatusChangedNotification;
 
 class IncidenciaController extends Controller
 {
@@ -37,6 +41,9 @@ class IncidenciaController extends Controller
             $incidenciasTransition = $transitionQuery->get();
             foreach ($incidenciasTransition as $inc) {
                 $inc->update(['estado_id' => 2]);
+                
+                // 🟢 DISPARO AUTOMÁTICO: Notificar que el supervisor inició la revisión
+                $this->despacharNotificaciones($inc, 1, []);
             }
         }
 
@@ -67,7 +74,6 @@ class IncidenciaController extends Controller
             } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
                 $query->where('institucion_id', $user->institucion_id);
             } else {
-                // If they are regular citizens, they can only see their own reports (or ones they are attached to)
                 $query->where(function ($q) use ($user) {
                     $q->where('cliente_id', $user->id)
                         ->orWhereHas('reportantes', function ($q2) use ($user) {
@@ -99,6 +105,14 @@ class IncidenciaController extends Controller
     public function store(IncidenciasRequest $request, IncidenciaService $service)
     {
         $result = $service->createIncidencia($request->validated() + $request->all(), auth()->user());
+
+        // 🟢 DISPARO EN CREACIÓN: Si al crear ya se asignaron operadores, notificarles
+        if (isset($result['data']['id'])) {
+            $nuevaIncidencia = Incidencia::find($result['data']['id']);
+            if ($nuevaIncidencia) {
+                $this->despacharNotificaciones($nuevaIncidencia, null, []);
+            }
+        }
 
         return response()->json([
             'message' => $result['message'],
@@ -152,7 +166,16 @@ class IncidenciaController extends Controller
             ], 409);
         }
 
+        // 🟢 PRE-CAPTURAMOS: Guardamos el estado y operadores antes del cambio
+        $oldEstadoId = $incidencia->estado_id;
+        $oldOperadoresIds = $incidencia->operadores()->pluck('users.id')->toArray();
+
+        // Ejecutamos la actualización del servicio
         $result = $service->updateIncidencia($incidencia, $request->validated() + $request->all(), $user);
+
+        // 🟢 POST-DISPARO: Refrescamos el modelo y evaluamos qué cambió para notificar
+        $incidencia->refresh();
+        $this->despacharNotificaciones($incidencia, $oldEstadoId, $oldOperadoresIds);
 
         return response()->json([
             'message' => $result['message'],
@@ -181,8 +204,6 @@ class IncidenciaController extends Controller
             'message' => 'Incidencia eliminada con éxito',
         ], 200);
     }
-
-    // El método calculatePriority fue refactorizado y movido a IncidenciaService
 
     /**
      * Get the history/comments of the incident (paginated).
@@ -220,7 +241,7 @@ class IncidenciaController extends Controller
 
         $historial = HistorialIncidencia::create([
             'incidencia_id' => $incidencia->id,
-            'estado_id' => $incidencia->estado_id, // Keep current state
+            'estado_id' => $incidencia->estado_id,
             'usuario_id' => $user ? $user->id : null,
             'comentario' => $request->input('comentario'),
         ]);
@@ -262,11 +283,58 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        // Citizens can view their own reported incidences (either as creator or as an attached reportante)
         if ($incidencia->cliente_id === $user->id) {
             return true;
         }
 
         return $incidencia->reportantes()->where('usuario_incidencia.user_id', $user->id)->exists();
+    }
+
+    /**
+     * 🟢 HELPER DE NOTIFICACIONES EN TIEMPO REAL
+     * Evalúa qué cambió en la incidencia y dispara alertas vía Reverb y BD.
+     */
+    private function despacharNotificaciones(Incidencia $incidencia, $oldEstadoId = null, array $oldOperadoresIds = []): void
+    {
+        // Cargamos relaciones necesarias para construir mensajes ricos
+        $incidencia->load(['estado', 'operadores', 'cliente', 'reportantes', 'direccion']);
+
+        // 1. ¿CAMBIÓ EL ESTADO? -> Notificamos a cliente, reportantes y operadores
+        if ($oldEstadoId && $oldEstadoId !== $incidencia->estado_id) {
+            $destinatarios = collect([$incidencia->cliente])
+                ->merge($incidencia->reportantes)
+                ->merge($incidencia->operadores)
+                ->filter() // Elimina nulos
+                ->unique('id');
+
+            foreach ($destinatarios as $destinatario) {
+                $destinatario->notify(new IssueStatusChangedNotification([
+                    'title'         => "Incidencia #{$incidencia->id}: Cambio de Estado",
+                    'message'       => "El reporte ha cambiado a: " . ($incidencia->estado->nombre ?? 'Actualizado'),
+                    'url'           => "/tramites/estado-individual?id={$incidencia->id}", // 🟢 Ruta exacta para estados
+                    'type'          => 'info',
+                    'incidencia_id' => $incidencia->id,
+                ]));
+            }
+        }
+
+        // 2. ¿SE ASIGNARON NUEVOS OPERADORES? -> Alerta directa de asignación
+        $newOperadoresIds = $incidencia->operadores->pluck('id')->toArray();
+        $nuevosAsignadosIds = array_diff($newOperadoresIds, $oldOperadoresIds);
+
+        if (! empty($nuevosAsignadosIds)) {
+            $nuevosOperadores = User::whereIn('id', $nuevosAsignadosIds)->get();
+            
+            foreach ($nuevosOperadores as $operador) {
+                $operador->notify(new IssueAssignedNotification([
+                    'title'         => "Nueva Incidencia Asignada (#{$incidencia->id})",
+                    'message'       => "Se te ha despachado para atender: " . ($incidencia->direccion->calle ?? 'Ubicación registrada'),
+                    'url'           => "/instituciones/kanban", // 🟢 Ruta exacta para el tablero kanban de asignación
+                    'type'          => 'danger',
+                    'incidencia_id' => $incidencia->id,
+                    'color_hex'     => '#dc3545',
+                ]));
+            }
+        }
     }
 }
