@@ -22,6 +22,7 @@ class IncidenciasRequest extends FormRequest
      */
     public function rules(): array
     {
+        $maxFiles = (int) env('MAX_FILE_UPLOAD_LIMIT', 5);
         $rules = [
             'incidencia_descripcion' => 'nullable|string',
             'direccion_id' => 'nullable|integer|exists:direcciones,id',
@@ -30,7 +31,7 @@ class IncidenciasRequest extends FormRequest
             'cantidad_afectados_incidencia' => 'nullable|integer|min:0',
             'institucion_id' => 'nullable|integer|exists:instituciones,id',
 
-            'recursos' => 'nullable|array',
+            'recursos' => 'nullable|array|max:'.$maxFiles,
             'recursos.*' => 'string', // Cada elemento debe ser el string en base64
         ];
 
@@ -41,5 +42,17 @@ class IncidenciasRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     */
+    public function messages(): array
+    {
+        $maxFiles = (int) env('MAX_FILE_UPLOAD_LIMIT', 5);
+
+        return [
+            'recursos.max' => "No se permiten más de {$maxFiles} imágenes adjuntas.",
+        ];
     }
 }

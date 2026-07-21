@@ -1,0 +1,115 @@
+<div class="page-fade-in">
+  <!-- Header con Bienvenida y Reloj en Vivo -->
+  <div class="page-header-container">
+    <div>
+      <h1 class="page-title" id="dashboardGreeting">Bienvenido</h1>
+      <p class="page-subtitle" id="dashboardSubtitle">
+        El sistema está listo para atender incidencias. Hola border ya esta grafana como servicio
+        insano
+      </p>
+    </div>
+    <div class="bg-white border rounded-pill px-4 py-2 shadow-sm d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-clock-fill text-primary"></i>
+        <span id="liveClock" class="fw-bold text-dark" style="font-variant-numeric: tabular-nums"
+          >--:--:--</span
+        >
+      </div>
+      <span class="text-muted opacity-25">|</span>
+      <span id="liveDate" class="text-secondary small fw-medium">--/--/----</span>
+    </div>
+  </div>
+
+  <!-- Operaciones Principales Dinámicas -->
+  <div class="row g-4 mb-4" id="dashboardMenuContainer">
+    <!-- Se inyectan las tarjetas de menú aquí -->
+  </div>
+
+  <!-- Tarjetas de Estadísticas Principales (Grafana iframes por Rol) -->
+  <div class="row g-4 mb-4" id="grafanaKpisContainer">
+    <!-- Se inyectarán dinámicamente los iframes de Grafana según el rol del usuario -->
+  </div>
+
+  <!-- Fila Intermedia: Mapa de Incidencias en Vivo y Distribución de Categorías -->
+  <div class="row g-4 mb-4">
+    <!-- Mapa Live -->
+    <div class="col-lg-8">
+      <div class="premium-card h-100">
+        <div class="premium-card-header mb-3 border-0 px-0 pt-0">
+          <h5 class="premium-card-title">
+            <div class="bg-primary-soft text-primary rounded-circle p-2 d-inline-flex me-2">
+              <i class="bi bi-map fs-5"></i>
+            </div>
+            Mapa de Reportes en Vivo
+          </h5>
+          <span
+            class="badge bg-danger text-white px-3 py-1.5 rounded-pill animate-pulse small fw-bold d-flex align-items-center gap-2 shadow-sm"
+          >
+            <span
+              class="spinner-grow spinner-grow-sm text-white opacity-75"
+              style="width: 10px; height: 10px"
+              role="status"
+            ></span>
+            Live
+          </span>
+        </div>
+        <div
+          id="dashboardMap"
+          class="rounded-4 border shadow-sm"
+          style="height: 380px; z-index: 1"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Distribución de Categorías -->
+    <div class="col-lg-4">
+      <div class="premium-card h-100 d-flex flex-column">
+        <h5 class="premium-card-title mb-4">
+          <div class="bg-primary-soft text-primary rounded-circle p-2 d-inline-flex me-2">
+            <i class="bi bi-pie-chart fs-5"></i>
+          </div>
+          Servicios más utilizados
+        </h5>
+        <div
+          class="flex-grow-1 d-flex flex-column justify-content-around gap-4 mt-2"
+          id="dashboardTopServices"
+        >
+          <!-- Se inyecta dinámicamente -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila Inferior: Listado de Reportes Recientes -->
+  <div class="premium-table-wrapper mb-5" id="recentIncidentsWrapper">
+    <div class="premium-card-header bg-white px-4 pt-4 pb-3 mb-0 border-bottom">
+      <div>
+        <h5 class="premium-card-title mb-1">
+          <i class="bi bi-list-task text-primary me-2"></i> Reportes de Incidencias Recientes
+        </h5>
+        <p class="text-muted small mb-0 ms-4">
+          Últimos casos reportados por los ciudadanos y operadores.
+        </p>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table premium-table table-hover mb-0">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Incidencia</th>
+            <th scope="col">Categoría</th>
+            <th scope="col">Ubicación</th>
+            <th scope="col">Prioridad</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Reportado</th>
+          </tr>
+        </thead>
+        <tbody id="recentIncidentsList">
+          <!-- Se inyecta dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -18,9 +18,10 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $users = User::with('roles')->get();
+        $perPage = $request->input('per_page', 15);
+        $users = User::with('roles')->paginate($perPage);
 
         return response()->json($users, 200);
     }
@@ -44,6 +45,10 @@ class UserController extends Controller
             $this->roleService->syncRolesToUser($user, $datosValidados['roles']);
         }
 
+        if (isset($datosValidados['territorios'])) {
+            $user->territorios()->sync($datosValidados['territorios']);
+        }
+
         return response()->json([
             'message' => 'Usuario creado con éxito',
             'data' => $user->load('roles'),
@@ -55,7 +60,7 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $user = User::with('roles')->findOrFail($id);
+        $user = User::with(['roles', 'territorios'])->findOrFail($id);
 
         return response()->json($user, 200);
     }
@@ -86,6 +91,9 @@ class UserController extends Controller
         // Sync roles (many-to-many relationship)
         $this->roleService->syncRolesToUser($user, $datosValidados['roles'] ?? []);
 
+        // Sync territories (many-to-many relationship)
+        $user->territorios()->sync($datosValidados['territorios'] ?? []);
+
         return response()->json([
             'message' => 'Usuario actualizado con éxito',
             'data' => $user->load('roles'),
@@ -98,7 +106,16 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        $user->delete();
+
+        \DB::transaction(function () use ($user) {
+            // Detach roles to avoid foreign key constraint violations
+            $user->roles()->detach();
+
+            // Delete tokens to avoid orphan rows in personal_access_tokens
+            $user->tokens()->delete();
+
+            $user->delete();
+        });
 
         return response()->json([
             'message' => 'Usuario eliminado con éxito',

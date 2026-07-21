@@ -1,19 +1,23 @@
 import { apiRequest } from './api.js';
-import { PermissionsEnum } from './permissions.enum.js';
+import { CircuitBreaker } from './circuit-breaker.js';
+
+const loginBreaker = new CircuitBreaker(4, 30000); // 4 failures max, 30s lockout
 
 export const AuthService = {
   async login(email, password) {
-    localStorage.removeItem('user_menu');
-    const response = await apiRequest('/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
+    return loginBreaker.fire(async () => {
+      localStorage.removeItem('user_menu');
+      const response = await apiRequest('/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      if (response && response.access_token) {
+        localStorage.setItem('access_token', response.access_token);
+        // Fetch user profile and permissions from /me
+        await this.refreshUser();
+      }
+      return response;
     });
-    if (response && response.access_token) {
-      localStorage.setItem('access_token', response.access_token);
-      // Fetch user profile and permissions from /me
-      await this.refreshUser();
-    }
-    return response;
   },
 
   async logout() {
@@ -37,6 +41,16 @@ export const AuthService = {
         localStorage.setItem('user', JSON.stringify(response.user));
         window.dispatchEvent(new CustomEvent('auth-change'));
       }
+
+      // Always fetch the menu tree globally on login/refresh
+      try {
+        const menuResp = await apiRequest('/me/menu', { method: 'GET' });
+        const menuList = Array.isArray(menuResp) ? menuResp : menuResp.data || [];
+        localStorage.setItem('user_menu', JSON.stringify(menuList));
+      } catch (err) {
+        console.error('Error fetching menu profile:', err);
+      }
+
       return response.user;
     } catch (error) {
       console.error('Error refreshing user profile:', error);
@@ -66,40 +80,32 @@ export const AuthService = {
     try {
       const userStr = localStorage.getItem('user');
       return userStr ? JSON.parse(userStr) : null;
-    } catch {
+    } catch (e) {
       return null;
     }
   },
 
   hasPermission(action, resource = null) {
-    if (this.isAdmin()) return true;
-
     const user = this.getCurrentUser();
-    if (!user || !Array.isArray(user.permisos)) return false;
+    if (!user || !Array.isArray(user.permisos)) {
+      // console.warn('[AuthService] hasPermission failed: User or user.permisos is missing/invalid.', user);
+      return false;
+    }
 
     if (resource) {
       const key = `${action.toUpperCase()}_${resource.toUpperCase()}`;
-      const permissionName = PermissionsEnum[key];
-      if (!permissionName) {
-        console.warn(`Permission key not found in PermissionsEnum: ${key}`);
-        return false;
+
+      // 2. Verificación dinámica
+      if (user.permisos.includes(key)) {
+        return true;
       }
-      return user.permisos.some(
-        (p) => p && typeof p === 'string' && p.toLowerCase() === permissionName.toLowerCase()
-      );
+
+      // console.warn(`[AuthService] hasPermission failed: User lacks permission ${key}.`, user.permisos);
+      return false;
     }
 
-    // Direct permission string check
-    const isValid = Object.values(PermissionsEnum).some(
-      (val) => val.toLowerCase() === action.toLowerCase()
-    );
-    if (!isValid) {
-      console.warn(`Direct permission name not found in PermissionsEnum values: ${action}`);
-    }
-
-    return user.permisos.some(
-      (p) => p && typeof p === 'string' && p.toLowerCase() === action.toLowerCase()
-    );
+    // console.warn('[AuthService] hasPermission failed: No resource provided.');
+    return false;
   },
 
   isAdmin() {

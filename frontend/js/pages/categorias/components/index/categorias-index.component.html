@@ -1,26 +1,26 @@
 <div class="page-fade-in">
   <!-- Cabecera de Página -->
-  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+  <div class="page-header-container">
     <div>
-      <h1 class="h3 fw-bold text-dark mb-1">Categorías de Incidencias</h1>
-      <p class="text-muted small mb-0">
+      <h1 class="page-title">Categorías de Incidencias</h1>
+      <p class="page-subtitle">
         Administra la clasificación de incidencias (ej: Servicios Públicos, Seguridad, Infraestructura) y sus subcategorías.
       </p>
     </div>
-    <button id="btnNuevaCategoria" class="btn btn-sm btn-primary fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2">
+    <button id="btnNuevaCategoria" class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2">
       <i class="bi bi-plus-lg"></i> Nueva Categoría
     </button>
   </div>
 
 
   <!-- Tabla de Categorías Colapsable (Tree Table) -->
-  <div class="card custom-card border-0 shadow-sm overflow-hidden d-none" id="categoriasTableContainer">
-    <div class="card-header bg-white border-0 py-3">
-      <h5 class="card-title fw-bold mb-0 text-dark">Listado de Categorías</h5>
+  <div class="premium-table-wrapper d-none" id="categoriasTableContainer">
+    <div class="premium-card-header bg-white border-0 py-3">
+      <h5 class="premium-card-title mb-0">Listado de Categorías</h5>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" id="tbl-categorias">
+        <table class="table premium-table align-middle mb-0" id="tbl-categorias">
           <thead class="table-light">
             <tr>
               <th class="ps-4" style="width: 35%;">Nombre</th>
@@ -38,11 +38,10 @@
   </div>
 </div>
 
-<!-- MODAL CATEGORÍA -->
 <div class="modal fade" id="categoriaModal" tabindex="-1" aria-labelledby="categoriaModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+    <div class="modal-content premium-modal-content border-0 shadow-lg">
+      <div class="modal-header border-bottom-0 pt-4 px-4 pb-2">
         <h5 class="modal-title fw-bold text-dark" id="categoriaModalLabel">Nueva Categoría</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>

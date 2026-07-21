@@ -41,8 +41,12 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.dirNivel3Select = this.querySelector('#dirNivel3');
     this.dirLatInput = this.querySelector('#dirLat');
     this.dirLngInput = this.querySelector('#dirLng');
-    this.btnBuscarDireccion = this.querySelector('#btnBuscarDireccion');
-    this.direccionSearchInput = this.querySelector('#direccionSearch');
+    this.btnObtenerUbicacion = this.querySelector('#btnObtenerUbicacion');
+    this.btnObtenerUbicacionSpinner = this.querySelector('#btnObtenerUbicacionSpinner');
+    this.btnObtenerUbicacionText = this.querySelector('#btnObtenerUbicacionText');
+    this.btnObtenerUbicacionIcon = this.querySelector('#btnObtenerUbicacionIcon');
+    this.btnSeleccionarMapa = this.querySelector('#btnSeleccionarMapa');
+    this.dirPrecisionGpsInput = this.querySelector('#dirPrecisionGps');
     this.btnSubmit = this.querySelector('#btnSubmit');
     this.btnConfirmarResolucion = this.querySelector('#btnConfirmarResolucion');
     this.divInstitucion = this.querySelector('#divInstitucion');
@@ -82,29 +86,43 @@ export class IncidenciaFormComponent extends BaseComponent {
     const incidenciaId = urlParams.get('id');
 
     // Verify permissions
-    if (incidenciaId && !AuthService.hasPermission('Actualizar Incidencia')) {
+    if (incidenciaId && !AuthService.hasPermission('UPDATE', 'incidencias')) {
       ToastService.error('No tiene permiso para editar incidencias.');
       window.location.hash = '#/incidencias';
       return;
     }
-    if (!incidenciaId && !AuthService.hasPermission('Crear Incidencia')) {
+    if (!incidenciaId && !AuthService.hasPermission('CREATE', 'incidencias')) {
       ToastService.error('No tiene permiso para registrar incidencias.');
       window.location.hash = '#/incidencias';
       return;
     }
 
-    // Role-based visibility
+    // Role & Permission based field visibility and behavior
     const user = AuthService.getCurrentUser();
     const isAdmin = AuthService.isAdmin();
 
-    // Hide Institution select if not Admin
-    if (!isAdmin && this.divInstitucion) {
-      this.divInstitucion.classList.add('d-none');
-      // If it is hidden, expand the state select to full width (col-md-12)
-      const colEstado = this.querySelector('#colEstado');
-      if (colEstado) {
-        colEstado.className = 'col-md-12';
+    // Check if the user has permissions to modify the incident status/assignment
+    const canManageIncidencia =
+      isAdmin ||
+      AuthService.hasPermission('UPDATE', 'incidencias') ||
+      AuthService.hasPermission('UPDATE', 'despacho_incidencias');
+
+    // Hide State selector (colEstado) if user cannot manage/update incidents
+    const colEstado = this.querySelector('#colEstado');
+    if (colEstado) {
+      if (canManageIncidencia) {
+        colEstado.classList.remove('d-none');
+      } else {
+        colEstado.classList.add('d-none');
       }
+    }
+
+    // Institution select must be visible, but disabled for users without update permissions (e.g. Citizens)
+    if (this.divInstitucion) {
+      this.divInstitucion.classList.remove('d-none');
+    }
+    if (this.institucionSelect) {
+      this.institucionSelect.disabled = !canManageIncidencia;
     }
 
     const isCitizen =
@@ -114,9 +132,17 @@ export class IncidenciaFormComponent extends BaseComponent {
         (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
       );
     if (isCitizen) {
-      this.querySelector('#sectionAsignacion')?.classList.add('d-none');
-      const detContainer = this.querySelector('#detallesDireccionContainer');
-      if (detContainer) detContainer.classList.add('d-none');
+      const detallesContainer = this.querySelector('#detallesDireccionContainer');
+      if (detallesContainer) detallesContainer.classList.add('d-none');
+
+      const colNivel1 = this.querySelector('#colDirNivel1');
+      if (colNivel1) colNivel1.style.setProperty('display', 'none', 'important');
+
+      const colNivel2 = this.querySelector('#colDirNivel2');
+      if (colNivel2) colNivel2.style.setProperty('display', 'none', 'important');
+
+      const colNivel3 = this.querySelector('#colDirNivel3');
+      if (colNivel3) colNivel3.style.setProperty('display', 'none', 'important');
 
       const colMapa = this.querySelector('#colMapaContainer');
       if (colMapa) {
@@ -137,7 +163,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.dirNivel3Select?.removeAttribute('required');
     }
 
-    // Initialize map
+    // Initialize map in read-only mode
     this.initMap();
 
     // Event listeners
@@ -185,23 +211,63 @@ export class IncidenciaFormComponent extends BaseComponent {
       });
     }
 
-    this.btnBuscarDireccion.addEventListener('click', () => this.buscarDireccionText());
-    this.direccionSearchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.buscarDireccionText();
-      }
-    });
+    if (this.btnObtenerUbicacion) {
+      this.btnObtenerUbicacion.addEventListener('click', () => this.obtenerUbicacionActual());
+    }
+    if (this.btnSeleccionarMapa) {
+      this.btnSeleccionarMapa.addEventListener('click', () => this.habilitarMapaInteractivo());
+    }
 
     // Resources/Upload events
     if (this.dropzoneContainer && this.fileInput) {
-      this.dropzoneContainer.addEventListener('click', () => this.fileInput.click());
+      this.dropzoneContainer.addEventListener('click', (e) => {
+        if (e.target.closest('#btnTestImagen')) return;
+        this.fileInput.click();
+      });
       this.fileInput.addEventListener('change', (e) => this.handleFileSelection(e));
       this.setupDropzoneDragAndDrop();
+
+      const btnTestImagen = this.querySelector('#btnTestImagen');
+      if (btnTestImagen) {
+        btnTestImagen.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.cargarImagenDePrueba();
+        });
+      }
     }
 
     // Load initial dropdown data
     await this.cargarCatalogosIniciales();
+
+    // Display maximum files limit
+    const cantMaximaArchivosEl = this.querySelector('#cantMaximaArchivos');
+    const maxFiles = user?.max_files || 5;
+    if (cantMaximaArchivosEl) {
+      cantMaximaArchivosEl.value = maxFiles;
+      if (isAdmin) {
+        cantMaximaArchivosEl.removeAttribute('readonly');
+        cantMaximaArchivosEl.style.setProperty('border-bottom', '1px dashed #6c757d', 'important');
+        cantMaximaArchivosEl.style.pointerEvents = 'auto';
+
+        cantMaximaArchivosEl.addEventListener('change', (e) => {
+          const val = parseInt(e.target.value) || 5;
+          if (val < 1) {
+            ToastService.warning('El límite debe ser al menos 1.');
+            e.target.value = 1;
+            return;
+          }
+          user.max_files = val;
+          localStorage.setItem('user', JSON.stringify(user));
+          ToastService.success(`Límite de subida modificado a: ${val}`);
+        });
+      } else {
+        cantMaximaArchivosEl.setAttribute('readonly', 'true');
+        cantMaximaArchivosEl.style.setProperty('border-bottom', 'none', 'important');
+        cantMaximaArchivosEl.style.pointerEvents = 'none';
+        cantMaximaArchivosEl.classList.remove('text-primary');
+        cantMaximaArchivosEl.classList.add('text-dark');
+      }
+    }
 
     if (incidenciaId) {
       await this.cargarDatosEdicion(incidenciaId);
@@ -217,12 +283,76 @@ export class IncidenciaFormComponent extends BaseComponent {
     }
   }
 
-  // --- MAP LOGIC ---
+  obtenerUbicacionActual() {
+    if (!navigator.geolocation) {
+      ToastService.error('Su navegador no soporta la Geolocalización.');
+      return;
+    }
+
+    const toggleLoading = (isLoading) => {
+      if (this.btnObtenerUbicacion) this.btnObtenerUbicacion.disabled = isLoading;
+      if (isLoading) {
+        this.btnObtenerUbicacionIcon?.classList.add('d-none');
+        this.btnObtenerUbicacionSpinner?.classList.remove('d-none');
+        if (this.btnObtenerUbicacionText)
+          this.btnObtenerUbicacionText.textContent = 'Obteniendo ubicación...';
+      } else {
+        this.btnObtenerUbicacionIcon?.classList.remove('d-none');
+        this.btnObtenerUbicacionSpinner?.classList.add('d-none');
+        if (this.btnObtenerUbicacionText)
+          this.btnObtenerUbicacionText.textContent = 'Obtener mi ubicación';
+      }
+    };
+
+    toggleLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        if (this.dirPrecisionGpsInput) {
+          this.dirPrecisionGpsInput.value = accuracy.toFixed(2);
+        }
+        this.actualizarMarcador(latitude, longitude, false);
+        await this.autofillDesdeCoordenadas(latitude, longitude);
+        toggleLoading(false);
+        ToastService.success(`Ubicación obtenida con éxito.`);
+      },
+      (error) => {
+        toggleLoading(false);
+        let msg = 'Error al obtener la geolocalización.';
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = 'Permiso denegado. Active la Ubicación en su navegador.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          msg = 'La ubicación no está disponible.';
+        } else if (error.code === error.TIMEOUT) {
+          msg = 'Tiempo de espera agotado al obtener la ubicación.';
+        }
+        ToastService.error(msg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  }
+
+  // --- MAP & LOCATION LOGIC ---
   initMap() {
     const mapDiv = this.querySelector('#incidenciaMapa');
     if (!mapDiv) return;
 
-    this.map = L.map(mapDiv).setView(MAP_CONFIG.DEFAULT_CENTER, MAP_CONFIG.DEFAULT_ZOOM);
+    // Make map non-interactive (read-only guide) by default
+    this.map = L.map(mapDiv, {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      tap: false,
+      touchZoom: false,
+    }).setView(MAP_CONFIG.DEFAULT_CENTER, MAP_CONFIG.DEFAULT_ZOOM);
 
     L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
       attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
@@ -230,30 +360,73 @@ export class IncidenciaFormComponent extends BaseComponent {
       maxZoom: 20,
     }).addTo(this.map);
 
+    this.isMapInteractive = false;
+  }
+
+  habilitarMapaInteractivo() {
+    const mapDiv = this.querySelector('#incidenciaMapa');
+    if (!mapDiv) return;
+
+    if (this.map) {
+      this.map.remove();
+    }
+
+    // Initialize with all default interactions enabled
+    this.map = L.map(mapDiv).setView(
+      this.coords ? [this.coords.lat, this.coords.lng] : MAP_CONFIG.DEFAULT_CENTER,
+      this.coords ? 16 : MAP_CONFIG.DEFAULT_ZOOM
+    );
+
+    L.tileLayer(MAP_CONFIG.TILE_LAYER_URL, {
+      attribution: MAP_CONFIG.TILE_LAYER_ATTRIBUTION,
+      subdomains: 'abcd',
+      maxZoom: 20,
+    }).addTo(this.map);
+
+    this.isMapInteractive = true;
+    this.marker = null; // Reset marker reference
+
+    // Restore marker if coords exist
+    if (this.coords) {
+      this.actualizarMarcador(this.coords.lat, this.coords.lng, false);
+    }
+
     this.map.on('click', (e) => {
       const { lat, lng } = e.latlng;
       this.actualizarMarcador(lat, lng, true);
     });
+
+    ToastService.info(
+      'Mapa habilitado. Haga clic o arrastre el marcador para seleccionar la ubicación.'
+    );
+
+    if (this.btnSeleccionarMapa) {
+      this.btnSeleccionarMapa.classList.replace('btn-outline-primary', 'btn-primary');
+      this.btnSeleccionarMapa.disabled = true;
+    }
   }
 
   actualizarMarcador(lat, lng, triggerGeocode = false) {
-    if (!this.map) return;
-
     const latVal = parseFloat(lat).toFixed(6);
     const lngVal = parseFloat(lng).toFixed(6);
 
-    this.dirLatInput.value = latVal;
-    this.dirLngInput.value = lngVal;
+    if (this.dirLatInput) this.dirLatInput.value = latVal;
+    if (this.dirLngInput) this.dirLngInput.value = lngVal;
     this.coords = { lat: parseFloat(latVal), lng: parseFloat(lngVal) };
 
-    if (this.marker) {
-      this.marker.setLatLng([lat, lng]);
-    } else {
-      this.marker = L.marker([lat, lng], { draggable: true }).addTo(this.map);
-      this.marker.on('dragend', (e) => {
-        const pos = e.target.getLatLng();
-        this.actualizarMarcador(pos.lat, pos.lng, true);
-      });
+    if (this.map) {
+      if (this.marker) {
+        this.marker.setLatLng([lat, lng]);
+      } else {
+        this.marker = L.marker([lat, lng], { draggable: !!this.isMapInteractive }).addTo(this.map);
+        if (this.isMapInteractive) {
+          this.marker.on('dragend', (e) => {
+            const pos = e.target.getLatLng();
+            this.actualizarMarcador(pos.lat, pos.lng, true);
+          });
+        }
+      }
+      this.map.setView([lat, lng], 16);
     }
 
     if (triggerGeocode) {
@@ -261,10 +434,21 @@ export class IncidenciaFormComponent extends BaseComponent {
     }
   }
 
-  async autofillDesdeCoordenadas(lat, lng) {
-    const mapLoader = this.querySelector('#mapLoader');
-    if (mapLoader) mapLoader.classList.remove('d-none');
+  calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radio de la Tierra en km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distancia en km
+  }
 
+  async autofillDesdeCoordenadas(lat, lng) {
     try {
       const data = await UbicacionesService.reverseGeocode(lat, lng);
       const address = data.address || {};
@@ -293,15 +477,29 @@ export class IncidenciaFormComponent extends BaseComponent {
         await this.autofillTerritoriosCascading(matchedPais.id, address);
       }
 
-      // Check if location is already registered in DB
+      // Check if location is already registered in DB (Optimizado por proximidad)
       let matchedDbDir = null;
       try {
         const dbDirs = (await CatalogoService.getDirecciones()) || [];
-        matchedDbDir = dbDirs.find((d) => {
-          const latDiff = Math.abs(parseFloat(d.latitud) - parseFloat(lat));
-          const lngDiff = Math.abs(parseFloat(d.longitud) - parseFloat(lng));
-          return latDiff < 0.00025 && lngDiff < 0.00025;
-        });
+        let minDistance = Infinity;
+
+        for (const d of dbDirs) {
+          if (!d.latitud || !d.longitud) continue;
+
+          const dist = this.calcularDistancia(
+            parseFloat(lat),
+            parseFloat(lng),
+            parseFloat(d.latitud),
+            parseFloat(d.longitud)
+          );
+
+          // Obtener la ubicación (y parroquia) más cercana.
+          // Ajustamos un radio máximo de 50 metros (0.05 km) para evitar asignar direcciones muy lejanas.
+          if (dist < minDistance && dist <= 0.05) {
+            minDistance = dist;
+            matchedDbDir = d;
+          }
+        }
       } catch (err) {
         console.warn('Error fetching existing addresses for matching:', err);
       }
@@ -353,21 +551,23 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
     } catch (e) {
       console.warn('Error autofilling from reverse geocoding:', e);
-    } finally {
-      if (mapLoader) mapLoader.classList.add('d-none');
     }
   }
 
   async autofillTerritoriosCascading(paisId, address) {
+    // 1. Siempre cargar Nivel 1 para el país seleccionado
+    await this.cargarDropdownNivel1(paisId);
+
     const possibleNivel1Names = [address.state, address.region, address.province].filter(Boolean);
     const n1Name = possibleNivel1Names[0] || '';
 
     if (n1Name) {
-      await this.cargarDropdownNivel1(paisId);
       const opt1 = this.findOptionMatchingText(this.dirNivel1Select, n1Name);
       if (opt1) {
         this.dirNivel1Select.value = opt1.value;
-        this.querySelector('#colDirNivel1').classList.remove('d-none');
+
+        // 2. Siempre cargar Nivel 2 si se encontró y seleccionó Nivel 1
+        await this.cargarDropdownNivel2(paisId, opt1.value);
 
         const possibleNivel2Names = [
           address.county,
@@ -377,11 +577,12 @@ export class IncidenciaFormComponent extends BaseComponent {
         ].filter(Boolean);
         const n2Name = possibleNivel2Names[0] || '';
         if (n2Name) {
-          await this.cargarDropdownNivel2(paisId, opt1.value);
           const opt2 = this.findOptionMatchingText(this.dirNivel2Select, n2Name);
           if (opt2) {
             this.dirNivel2Select.value = opt2.value;
-            this.querySelector('#colDirNivel2').classList.remove('d-none');
+
+            // 3. Siempre cargar Nivel 3 si se encontró y seleccionó Nivel 2
+            await this.cargarDropdownNivel3(paisId, opt2.value);
 
             const possibleNivel3Names = [
               address.parish,
@@ -390,9 +591,7 @@ export class IncidenciaFormComponent extends BaseComponent {
               address.quarter,
             ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
-            
-            // Load and show Nivel 3 if we matched Nivel 2
-            await this.cargarDropdownNivel3(paisId, opt2.value);
+
             if (n3Name) {
               const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
               if (opt3) {
@@ -406,15 +605,19 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   async autofillModalTerritoriosCascading(paisId, address) {
+    // 1. Siempre cargar Nivel 1 en el modal
+    await this.cargarModalDropdownNivel1(paisId);
+
     const possibleNivel1Names = [address.state, address.region, address.province].filter(Boolean);
     const n1Name = possibleNivel1Names[0] || '';
 
     if (n1Name) {
-      await this.cargarModalDropdownNivel1(paisId);
       const opt1 = this.findOptionMatchingText(this.modalDirNivel1, n1Name);
       if (opt1) {
         this.modalDirNivel1.value = opt1.value;
-        this.colModalDirNivel1.classList.remove('d-none');
+
+        // 2. Siempre cargar Nivel 2 en el modal
+        await this.cargarModalDropdownNivel2(paisId, opt1.value);
 
         const possibleNivel2Names = [
           address.county,
@@ -424,21 +627,21 @@ export class IncidenciaFormComponent extends BaseComponent {
         ].filter(Boolean);
         const n2Name = possibleNivel2Names[0] || '';
         if (n2Name) {
-          await this.cargarModalDropdownNivel2(paisId, opt1.value);
           const opt2 = this.findOptionMatchingText(this.modalDirNivel2, n2Name);
           if (opt2) {
             this.modalDirNivel2.value = opt2.value;
-            this.colModalDirNivel2.classList.remove('d-none');
-             const possibleNivel3Names = [
+
+            // 3. Siempre cargar Nivel 3 en el modal
+            await this.cargarModalDropdownNivel3(paisId, opt2.value);
+
+            const possibleNivel3Names = [
               address.parish,
               address.suburb,
               address.neighbourhood,
               address.quarter,
             ].filter(Boolean);
             const n3Name = possibleNivel3Names[0] || '';
-            
-            // Load and show Nivel 3 in modal if we matched Nivel 2
-            await this.cargarModalDropdownNivel3(paisId, opt2.value);
+
             if (n3Name) {
               const opt3 = this.findOptionMatchingText(this.modalDirNivel3, n3Name);
               if (opt3) {
@@ -602,17 +805,22 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   actualizarIndicadorMinimalista() {
-    const paisId = this.dirPaisSelect.value;
-    const paisNombre = this.paisesList.find((p) => p.id == paisId)?.nombre || '';
     const detalle = this.dirDetalleInput.value;
-    const cp = this.dirCodigoPostalInput.value;
-    const lat = this.coords?.lat || '';
-    const lng = this.coords?.lng || '';
+    const n3Select = this.querySelector('#dirNivel3');
+    let parroquiaNombre = '';
+
+    if (n3Select && n3Select.options.length > 0 && n3Select.selectedIndex > 0) {
+      parroquiaNombre = n3Select.options[n3Select.selectedIndex].text;
+    }
 
     const txt = this.querySelector('#txtInfoUbicacion');
     if (txt) {
       if (detalle) {
-        txt.innerHTML = `<strong>País:</strong> ${paisNombre} | <strong>Dirección:</strong> ${detalle} | <strong>C.P.:</strong> ${cp || 'N/A'} | <strong>Coordenadas:</strong> (${lat}, ${lng})`;
+        let txtInfo = `<strong>Dirección:</strong> ${detalle}`;
+        if (parroquiaNombre) {
+          txtInfo += ` | <strong>Parroquia:</strong> ${parroquiaNombre}`;
+        }
+        txt.innerHTML = txtInfo;
       } else {
         txt.textContent = 'Ninguna ubicación seleccionada.';
       }
@@ -631,41 +839,6 @@ export class IncidenciaFormComponent extends BaseComponent {
         .replace(/[\u0300-\u036f]/g, '');
       return optNorm.includes(normalized) || normalized.includes(optNorm);
     });
-  }
-
-  async buscarDireccionText() {
-    const query = this.direccionSearchInput.value.trim();
-    if (!query) return;
-
-    const mapLoader = this.querySelector('#mapLoader');
-    if (mapLoader) mapLoader.classList.remove('d-none');
-
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (data && data.length > 0) {
-        const item = data[0];
-        const lat = parseFloat(item.lat);
-        const lng = parseFloat(item.lon);
- 
-        this.actualizarMarcador(lat, lng, false);
-        this.map.setView([lat, lng], 14);
- 
-        // Populate fields
-        this.dirDetalleInput.value = item.display_name;
-        // Trigger autofill detail based on the coordinates
-        await this.autofillDesdeCoordenadas(lat, lng);
-      } else {
-        ToastService.error('No se encontraron resultados para la dirección buscada.');
-      }
-    } catch (e) {
-      console.error(e);
-      ToastService.error('Error al buscar dirección.');
-    } finally {
-      if (mapLoader) mapLoader.classList.add('d-none');
-    }
   }
 
   // --- CATALOGS AND DATA ---
@@ -700,17 +873,16 @@ export class IncidenciaFormComponent extends BaseComponent {
 
       // 4. Populate state dropdown
       const estados = [
-        { id: 1, nombre: 'Borrador' },
-        { id: 2, nombre: 'Pendiente' },
-        { id: 3, nombre: 'En Revisión' },
-        { id: 4, nombre: 'En Proceso' },
-        { id: 5, nombre: 'Resuelto' },
-        { id: 6, nombre: 'Rechazado' },
+        { id: 1, nombre: 'Pendiente' },
+        { id: 2, nombre: 'En Revisión' },
+        { id: 3, nombre: 'En Proceso' },
+        { id: 4, nombre: 'Resuelto' },
+        { id: 5, nombre: 'Rechazado' },
       ];
       this.estadoSelect.innerHTML = estados
         .map((e) => `<option value="${e.id}">${e.nombre}</option>`)
         .join('');
-      this.estadoSelect.value = 2; // Default Pendiente
+      this.estadoSelect.value = 1; // Default Pendiente
     } catch (e) {
       console.error('Error loading initial catalog dropdowns:', e);
     }
@@ -749,17 +921,20 @@ export class IncidenciaFormComponent extends BaseComponent {
     const subTipoId = this.subTipoSelect.value;
     const afectados = parseInt(this.cantidadAfectadosInput.value) || 0;
 
-    if (!subTipoId) {
+    const resetDisplay = () => {
       this.prioridadDisplay.textContent = '-';
       this.prioridadDisplay.style.color = '';
-      this.prioridadDisplay.className = 'fw-bold fs-5 text-secondary';
+      this.prioridadDisplay.className = 'fw-bold fs-6 text-secondary';
+    };
+
+    if (!subTipoId) {
+      resetDisplay();
       return;
     }
 
     const subcat = this.categorias.find((c) => c.id == subTipoId);
     if (!subcat || !subcat.prioridad_id) {
-      this.prioridadDisplay.textContent = '-';
-      this.prioridadDisplay.style.color = '';
+      resetDisplay();
       return;
     }
 
@@ -795,7 +970,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     this.prioridadDisplay.textContent = label;
     this.prioridadDisplay.style.color = color;
-    this.prioridadDisplay.className = `fw-bold fs-5 badge bg-${badgeClass}-soft text-${badgeClass} px-3 py-1.5`;
+    this.prioridadDisplay.className = `fw-bold fs-6 badge bg-${badgeClass}-soft text-${badgeClass} px-3 py-1`;
   }
 
   actualizarEtiquetasNiveles(paisId) {
@@ -937,7 +1112,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.cantidadAfectadosInput.value = inc.cantidad_afectados_incidencia || 0;
       this.descripcionInput.value = inc.incidencia_descripcion || '';
       this.institucionSelect.value = inc.institucion_id || '';
-      this.estadoSelect.value = inc.estado_id || 2;
+      this.estadoSelect.value = inc.estado_id || 1;
 
       this.calcularPrioridadDinamica();
 
@@ -1002,8 +1177,8 @@ export class IncidenciaFormComponent extends BaseComponent {
         user && user.roles && user.roles.some((r) => r.nombre === 'Institucion');
       if (isInstitucion) {
         this.disableFormFields();
-        // If state is 'En Proceso' (4), show confirm button
-        if (inc.estado_id === 4) {
+        // If state is 'En Proceso' (3), show confirm button
+        if (inc.estado_id === 3) {
           if (this.btnConfirmarResolucion) {
             this.btnConfirmarResolucion.classList.remove('d-none');
             this.btnConfirmarResolucion.disabled = false;
@@ -1062,7 +1237,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       const inc = await IncidenciaService.getById(id);
 
       const payload = {
-        estado_id: 5, // Resuelto
+        estado_id: 4, // Resuelto
         version: inc.version,
         comentario_estado: 'Resolución confirmada por el solicitante/operador.',
       };
@@ -1085,7 +1260,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     if (!this.form.checkValidity()) {
       this.form.classList.add('was-validated');
-      this.mostrarError('Por favor complete los campos obligatorios del formulario.');
+      ToastService.error('Por favor complete los campos obligatorios del formulario.');
       return;
     }
 
@@ -1093,7 +1268,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     // Validate that we have coordinates and detailed address
     if (!this.coords) {
-      this.mostrarError('Debe marcar la ubicación en el mapa.');
+      ToastService.error('Debe marcar la ubicación en el mapa.');
       return;
     }
 
@@ -1103,7 +1278,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       const finalTerritorioId =
         this.dirNivel3Select.value || this.dirNivel2Select.value || this.dirNivel1Select.value;
       if (!finalTerritorioId) {
-        this.mostrarError(
+        ToastService.error(
           'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
         );
         return;
@@ -1121,6 +1296,9 @@ export class IncidenciaFormComponent extends BaseComponent {
           codigo_postal: this.dirCodigoPostalInput.value || null,
           latitud: this.coords.lat,
           longitud: this.coords.lng,
+          precision_gps: this.dirPrecisionGpsInput?.value
+            ? parseFloat(this.dirPrecisionGpsInput.value)
+            : null,
           activo: true,
         };
 
@@ -1135,7 +1313,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         }
       } catch (err) {
         console.error(err);
-        this.mostrarError('Error al guardar la dirección.');
+        ToastService.error('Error al guardar la dirección.');
         this.btnSubmit.disabled = false;
         this.querySelector('#loadingSpinner').classList.add('d-none');
         return;
@@ -1157,27 +1335,31 @@ export class IncidenciaFormComponent extends BaseComponent {
         institucion_id: this.institucionSelect.value
           ? parseInt(this.institucionSelect.value)
           : null,
-        estado_id: parseInt(this.estadoSelect.value) || 2,
+        estado_id: parseInt(this.estadoSelect.value) || 1,
         version: parseInt(this.versionInput.value) || 1,
-        recursos: this.recursosFiles
-          .filter((f) => !f.id)
-          .map((f) => f.base64),
+        recursos: this.recursosFiles.filter((f) => !f.id).map((f) => f.base64),
       };
 
+      let redirectId = id;
       if (id) {
         await IncidenciaService.update(id, incPayload);
-        this.mostrarAlertaExito('Incidencia actualizada con éxito.');
+        ToastService.success('Incidencia actualizada con éxito.');
       } else {
-        await IncidenciaService.create(incPayload);
-        this.mostrarAlertaExito('Incidencia registrada con éxito.');
+        const result = await IncidenciaService.create(incPayload);
+        redirectId = result?.data?.id || result?.id || null;
+        ToastService.success('Incidencia registrada con éxito.');
       }
 
       setTimeout(() => {
-        window.location.hash = '#/incidencias';
+        if (redirectId) {
+          window.location.hash = `#/tramites/estado-individual?id=${redirectId}`;
+        } else {
+          window.location.hash = '#/incidencias';
+        }
       }, 1500);
     } catch (err) {
       console.error(err);
-      this.mostrarError(err.message || 'Error al procesar la incidencia.');
+      ToastService.error(err.message || 'Error al procesar la incidencia.');
       this.btnSubmit.disabled = false;
       this.querySelector('#loadingSpinner').classList.add('d-none');
     }
@@ -1220,33 +1402,120 @@ export class IncidenciaFormComponent extends BaseComponent {
     const files = e.target.files;
     this.processFiles(files);
   }
-
-  processFiles(files) {
-    Array.from(files).forEach((file) => {
+  async processFiles(files) {
+    const validFiles = Array.from(files).filter((file) => {
       if (!file.type.startsWith('image/')) {
         ToastService.warning('Solo se permiten archivos de imagen.');
-        return;
+        return false;
       }
- 
-      if (file.size > 5 * 1024 * 1024) {
-        ToastService.warning('La imagen no debe superar el límite de 5 MB.');
-        return;
+      if (file.size > 10 * 1024 * 1024) {
+        ToastService.warning('La imagen no debe superar el límite de 10 MB.');
+        return false;
       }
+      return true;
+    });
 
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
+    if (validFiles.length === 0) return;
+
+    const currentUser = AuthService.getCurrentUser();
+    const maxFiles = currentUser?.max_files || 5;
+
+    if (this.recursosFiles.length + validFiles.length > maxFiles) {
+      ToastService.warning(
+        `No puede subir más de ${maxFiles} archivos en total. (Límite configurado: ${maxFiles})`
+      );
+      return;
+    }
+
+    const isConfirmed = await ModalService.confirm(
+      'Confirmar Subida de Imágenes',
+      '¿Está seguro de que desea adjuntar estas imágenes a la incidencia? Por favor, verifique que cumplan con las normas.',
+      'Adjuntar',
+      'Cancelar',
+      'btn-primary'
+    );
+
+    if (!isConfirmed) return;
+
+    for (const file of validFiles) {
+      try {
+        const base64Data = await this.convertToWebP(file);
+        let fileName = file.name;
+        const dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex !== -1) {
+          fileName = fileName.substring(0, dotIndex) + '.webp';
+        } else {
+          fileName += '.webp';
+        }
+
         const fileObj = {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          base64: reader.result,
-          compressed: true, // Mock compression flag (representing .webp automatic client compression)
+          name: fileName,
+          size: Math.round(base64Data.length * 0.75),
+          type: 'image/webp',
+          base64: base64Data,
+          compressed: true,
         };
 
         this.recursosFiles.push(fileObj);
-        this.renderThumbnails();
+      } catch (e) {
+        console.error('Error al comprimir la imagen:', e);
+        // Fallback to original file read
+        await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            this.recursosFiles.push({
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              base64: reader.result,
+              compressed: false,
+            });
+            resolve();
+          };
+        });
+      }
+    }
+    this.renderThumbnails();
+  }
+
+  convertToWebP(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1080;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
+          resolve(webpDataUrl);
+        };
+        img.onerror = (err) => reject(err);
       };
+      reader.onerror = (err) => reject(err);
     });
   }
 
@@ -1258,7 +1527,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       col.className = 'col';
       col.innerHTML = `
         <div class="card h-100 border rounded-3 overflow-hidden position-relative shadow-sm">
-          <img src="${file.base64}" class="card-img-top object-fit-cover" style="height: 120px;" alt="${file.name}" />
+          <img src="${file.base64}" loading="lazy" class="card-img-top object-fit-cover" style="height: 120px;" alt="${file.name}" />
           <div class="card-body p-2 d-flex flex-column justify-content-between">
             <div class="text-truncate small fw-medium" title="${file.name}">${file.name}</div>
             <div class="d-flex justify-content-between align-items-center mt-1">
@@ -1281,25 +1550,27 @@ export class IncidenciaFormComponent extends BaseComponent {
     });
   }
 
-  // --- ALERTS AND FEEDBACK ---
-  mostrarAlertaExito(message) {
-    const successAlert = this.querySelector('#formSuccessAlert');
-    const successMessage = this.querySelector('#formSuccessMessage');
-    if (successAlert && successMessage) {
-      successMessage.textContent = message;
-      successAlert.classList.remove('d-none');
-      successAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }
+  cargarImagenDePrueba() {
+    const mockBase64 = 'data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==';
+    const fileObj = {
+      name: 'imagen-de-prueba.webp',
+      size: 40,
+      type: 'image/webp',
+      base64: mockBase64,
+      compressed: true,
+    };
 
-  mostrarError(message) {
-    const errorAlert = this.querySelector('#formErrorAlert');
-    const errorMessage = this.querySelector('#formErrorMessage');
-    if (errorAlert && errorMessage) {
-      errorMessage.textContent = message;
-      errorAlert.classList.remove('d-none');
-      errorAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Check limit
+    const currentUser = AuthService.getCurrentUser();
+    const maxFiles = currentUser?.max_files || 5;
+    if (this.recursosFiles.length >= maxFiles) {
+      ToastService.warning(`No puede subir más de ${maxFiles} archivos.`);
+      return;
     }
+
+    this.recursosFiles.push(fileObj);
+    this.renderThumbnails();
+    ToastService.success('Imagen de prueba cargada. Listo para guardar.');
   }
 
   limpiarErrores() {

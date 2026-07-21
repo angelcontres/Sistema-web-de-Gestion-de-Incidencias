@@ -1,0 +1,47 @@
+\section{Diagnóstico de Mantenibilidad y Complejidad}
+
+La mantenibilidad del software dicta qué tan viable y económico resulta realizar mejoras, adaptar el código o corregir defectos. Con base en el diseño arquitectónico y las métricas arrojadas por los escáneres de código, se realizó una evaluación cualitativa de la estructura actual.
+
+\subsection{Modularidad y Acoplamiento del Backend}
+
+El sistema backend en Laravel demuestra altos estándares de modularidad y bajo acoplamiento. Un claro ejemplo de estas buenas prácticas es la delegación de procesos pesados (como el registro de métricas SQA o la transferencia de logs de rendimiento) hacia tareas en segundo plano mediante \textit{Jobs} (ej. \texttt{SyncDimensionsJob}, \texttt{LogPerformanceJob}). 
+
+Esta abstracción previene que los controladores de negocio centralicen lógica ajena a la atención de peticiones HTTP, evitando así el antipatrón de \textit{Clases Dios} (God Classes). No obstante, el escáner identificó relaciones de modelos no declaradas correctamente mediante sugerencias PHPDoc, lo cual disminuye la cohesión percibida a nivel de tipado.
+
+\subsection{Arquitectura Frontend y Complejidad Cognitiva}
+
+En el frontend, el enfoque basado en JavaScript Vanilla orientado a clases y componentes (\textit{extendiendo de} \texttt{BaseComponent}) provee una clara separación de responsabilidades entre vista y lógica.
+
+Sin embargo, a nivel microestructural, se detectaron áreas de mejora respecto a la saturación lógica. Funciones largas con múltiples manejadores de eventos y declaraciones de variables o parámetros omitidos (reportados recurrentemente como \texttt{e is defined but never used}) incrementan innecesariamente la complejidad cognitiva y el esfuerzo de lectura para nuevos desarrolladores.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-complejidad-ciclo-back.png}
+    \caption{Lista de de complejidad ciclomatica neta en backend por SonarQube.}
+    \label{fig:evidencia_complejidad_ciclo_back}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-complejidad-ciclo-front.png}
+    \caption{Lista de complejidad ciclomatica neta en frontend por SonarQube.}
+    \label{fig:evidencia_complejidad_ciclo_front}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-complejidad-cogni.png}
+    \caption{Lista de componentes con complejidad cognitiva neta por SonarQube.}
+    \label{fig:evidencia_complejidad_cogni}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-technical-debt.png}
+    \caption{Evidencia de la deuda técnica estimada por SonarQube.}
+    \label{fig:evidencia_deuda_tecnica}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-line-dups.png}
+    \caption{Evidencia del porcentaje de duplicación de líneas reportado por SonarQube.}
+    \label{fig:evidencia_duplicacion}
+\end{figure}

@@ -1,0 +1,18 @@
+\section{Auditoría vs. Plan de Calidad (E1)}
+\label{sec:auditoria_plan}
+
+Esta matriz de confrontación empírica compara de manera frontal los umbrales ideales que fueron planificados conceptualmente en el Hito 1 (Plan de Calidad) contra los resultados objetivos extraídos del Hito 4 (Ejecución y Gestión de Defectos).
+
+\begin{xltabular}{\textwidth}{>{\hsize=.8\hsize}X >{\hsize=.6\hsize}c >{\hsize=.6\hsize}c >{\hsize=1.0\hsize}X}
+    \caption{Comparativa de Indicadores Planificados vs. Resultados Reales}
+    \label{tab:auditoria_vs_plan} \\
+    \toprule
+    \textbf{Métrica de Calidad} & \textbf{Meta (E1)} & \textbf{Real (E4)} & \textbf{Dictamen y Justificación} \\
+    \midrule
+    Tasa de éxito de pruebas (TEP) & $\ge 90\%$ & $88\%$ & \textbf{[No Cumple]} Fallo marginal del 2\%. El sistema no alcanzó el mínimo exigido porque se arrastran 3 casos funcionales en los módulos de notificaciones y filtros. \\
+    Cobertura funcional (CF) & $100\%$ & $72.7\%$ & \textbf{[No Cumple]} Faltan por completar las Historias de Usuario relacionadas al sistema de Notificaciones (RF-07) y filtros (RF-03), dejando componentes base sin soporte total. \\
+    Densidad de defectos (DD) & $\le 0.1$ & $0.04$ & \textbf{[Cumple]} Excelente madurez de codificación. La proporción de fallos por ejecución fue sumamente baja, reflejando sólidas prácticas de desarrollo. \\
+    Vulnerabilidades (VCO) & $0$ & $0$ & \textbf{[Cumple]} Las validaciones de tokens JWT, sanitización de datos y roles por defecto de las librerías evitaron vulnerabilidades críticas. \\
+    Tiempo de respuesta (TRP) & $< 3\text{ s}$ & $< 1\text{ s}$ & \textbf{[Cumple]} Validado a través del Dashboard (CP-F-14), donde el TRP dinámico registró consultas veloces asíncronas y sin bloqueos transaccionales. \\
+    \bottomrule
+\end{xltabular}

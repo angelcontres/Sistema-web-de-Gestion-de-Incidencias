@@ -2,15 +2,30 @@
 
 namespace App\Models;
 
+use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'latitud', 'longitud', 'activo'])]
+/**
+ * @property int $id
+ * @property string|null $detalle
+ * @property string|null $referencia
+ * @property string|null $codigo_postal
+ * @property float|null $latitud
+ * @property float|null $longitud
+ * @property float|null $precision_gps
+ * @property int $territorio_id
+ * @property bool $activo
+ * @property int|null $pais_id
+ * @property Territorio|null $territorio
+ */
+#[Fillable(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'latitud', 'longitud', 'precision_gps', 'activo'])]
 class Direccion extends Model
 {
     use HasFactory;
+    use HasLocalTimezone;
 
     protected $table = 'direcciones';
 
@@ -21,6 +36,7 @@ class Direccion extends Model
             'activo' => 'boolean',
             'latitud' => 'float',
             'longitud' => 'float',
+            'precision_gps' => 'float',
         ];
     }
 

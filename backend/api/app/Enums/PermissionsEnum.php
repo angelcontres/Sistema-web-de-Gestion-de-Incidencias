@@ -28,11 +28,11 @@ enum PermissionsEnum: string
     case UPDATE_OPCIONES_MENU = 'Actualizar Opción de Menú';
     case DELETE_OPCIONES_MENU = 'Eliminar Opción de Menú';
 
-    // SQA
-    case READ_SQA = 'Ver SQA';
-    case CREATE_SQA = 'Crear SQA';
-    case UPDATE_SQA = 'Actualizar SQA';
-    case DELETE_SQA = 'Eliminar SQA';
+    // TRP
+    case READ_TRP = 'Ver TRP';
+    case CREATE_TRP = 'Crear TRP';
+    case UPDATE_TRP = 'Actualizar TRP';
+    case DELETE_TRP = 'Eliminar TRP';
 
     // Ubicaciones
     case READ_UBICACIONES = 'Ver Ubicación';
@@ -93,4 +93,10 @@ enum PermissionsEnum: string
     case CREATE_HISTORIAL = 'Crear Historial';
     case UPDATE_HISTORIAL = 'Actualizar Historial';
     case DELETE_HISTORIAL = 'Eliminar Historial';
+
+    // Mantenimiento
+    case READ_MANTENIMIENTO = 'Ver Mantenimiento';
+    case CREATE_MANTENIMIENTO = 'Crear Mantenimiento';
+    case UPDATE_MANTENIMIENTO = 'Actualizar Mantenimiento';
+    case DELETE_MANTENIMIENTO = 'Eliminar Mantenimiento';
 }

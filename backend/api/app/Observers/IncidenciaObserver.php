@@ -2,16 +2,45 @@
 
 namespace App\Observers;
 
+use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
+use Illuminate\Support\Facades\Artisan;
 
 class IncidenciaObserver
 {
+    /**
+     * Handle the Incidencia "creating" event.
+     */
+    public function creating(Incidencia $incidencia): void
+    {
+        if (request()->has('fecha_local')) {
+            $fechaLocal = request()->input('fecha_local');
+            $incidencia->created_at = $fechaLocal;
+            $incidencia->updated_at = $fechaLocal;
+        }
+    }
+
+    /**
+     * Handle the Incidencia "updating" event.
+     */
+    public function updating(Incidencia $incidencia): void
+    {
+        if (request()->has('fecha_local')) {
+            $incidencia->updated_at = request()->input('fecha_local');
+        }
+    }
+
     /**
      * Handle the Incidencia "created" event.
      */
     public function created(Incidencia $incidencia): void
     {
         $this->registrarHistorial($incidencia, 'Incidencia reportada');
+
+        // Ejecutar ETL inmediatamente para refrescar dashboards analíticos
+        if (! app()->runningUnitTests()) {
+            Artisan::call('etl:run');
+        }
     }
 
     /**
@@ -24,6 +53,11 @@ class IncidenciaObserver
             $comentario = request()->input('comentario_estado', 'Cambio de estado');
             $this->registrarHistorial($incidencia, $comentario);
         }
+
+        // Ejecutar ETL inmediatamente para refrescar dashboards analíticos
+        if (! app()->runningUnitTests()) {
+            Artisan::call('etl:run');
+        }
     }
 
     /**
@@ -32,13 +66,22 @@ class IncidenciaObserver
     private function registrarHistorial(Incidencia $incidencia, $comentario = null): void
     {
         $user = auth()->user();
-        
-        \App\Models\HistorialIncidencia::create([
+
+        $historial = new HistorialIncidencia([
             'incidencia_id' => $incidencia->id,
             'estado_id' => $incidencia->estado_id,
             'usuario_id' => $user ? $user->id : null,
             'comentario' => $comentario,
         ]);
+
+        if (request()->has('fecha_local')) {
+            $fechaLocal = request()->input('fecha_local');
+            $historial->created_at = $fechaLocal;
+            $historial->updated_at = $fechaLocal;
+            $historial->timestamps = false;
+        }
+
+        $historial->save();
     }
 
     /**

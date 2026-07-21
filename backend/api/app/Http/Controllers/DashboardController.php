@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Incidencia;
-use Carbon\Carbon;
+use App\Services\TimezoneService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -26,19 +26,21 @@ class DashboardController extends Controller
 
     private function calculateKpis()
     {
-        $now = Carbon::now();
-        $today = Carbon::today();
+        $now = TimezoneService::nowLocal();
 
         $activas = Incidencia::whereIn('estado_id', [1, 2])->count();
 
         $nuevasActivas = Incidencia::whereIn('estado_id', [1, 2])
-            ->where('created_at', '>=', $now->subHours(2))
+            ->where('created_at', '>=', $now->copy()->setTimezone('UTC')->subHours(2))
             ->count();
 
         $sinAsignar = Incidencia::whereNull('institucion_id')->count();
 
-        $resueltasHoy = Incidencia::where('estado_id', 3)
-            ->whereDate('updated_at', $today)
+        $startOfDay = $now->copy()->startOfDay()->setTimezone('UTC');
+        $endOfDay = $now->copy()->endOfDay()->setTimezone('UTC');
+
+        $resueltasHoy = Incidencia::where('estado_id', 4)
+            ->whereBetween('updated_at', [$startOfDay, $endOfDay])
             ->count();
 
         return [
@@ -52,7 +54,7 @@ class DashboardController extends Controller
 
     private function getTopServices($days = 30)
     {
-        $startDate = Carbon::now()->subDays($days);
+        $startDate = TimezoneService::nowLocal()->subDays($days)->startOfDay()->setTimezone('UTC');
 
         $totalIncidents = Incidencia::where('created_at', '>=', $startDate)->count();
 
@@ -88,14 +90,14 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
-            ->map(function ($incidencia) {
+            ->map(function (Incidencia $incidencia) {
                 return [
                     'id' => $incidencia->id,
                     'descripcion' => $incidencia->incidencia_descripcion,
                     'categoria' => $incidencia->tipo ? $incidencia->tipo->nombre : '-',
                     'ubicacion' => $incidencia->direccion ? $incidencia->direccion->detalle : 'Sin dirección',
                     'prioridad' => 'Media',
-                    'estado' => $incidencia->estado ? $incidencia->estado->nombre : 'Borrador',
+                    'estado' => $incidencia->estado ? $incidencia->estado->nombre : 'Pendiente',
                     'reportado' => $incidencia->created_at->diffForHumans(),
                 ];
             });
@@ -108,10 +110,10 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
-            ->filter(function ($incidencia) {
+            ->filter(function (Incidencia $incidencia) {
                 return $incidencia->direccion && $incidencia->direccion->latitud && $incidencia->direccion->longitud;
             })
-            ->map(function ($incidencia) {
+            ->map(function (Incidencia $incidencia) {
                 return [
                     'id' => $incidencia->id,
                     'lat' => $incidencia->direccion->latitud,
@@ -120,5 +122,15 @@ class DashboardController extends Controller
                     'categoria' => $incidencia->tipo ? $incidencia->tipo->nombre : '',
                 ];
             })->values();
+    }
+
+    public function metrics(Request $request, \App\Queries\DashboardMetricsQuery $metricsQuery)
+    {
+        $role = $request->query('role', 'Ciudadano');
+        $user = $request->user();
+        
+        $data = $metricsQuery->getMetrics($role, $user);
+
+        return response()->json($data);
     }
 }

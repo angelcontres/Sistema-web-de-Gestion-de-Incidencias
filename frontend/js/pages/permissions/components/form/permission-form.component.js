@@ -20,6 +20,7 @@ export class PermissionFormComponent extends BaseComponent {
     this.form = this.modalEl.querySelector('#permisoForm');
     this.permisoIdInput = this.modalEl.querySelector('#permisoId');
     this.nombreInput = this.modalEl.querySelector('#nombre');
+    this.recursoInput = this.modalEl.querySelector('#recurso');
     this.accionInput = this.modalEl.querySelector('#accion');
     this.opcionMenuSelect = this.modalEl.querySelector('#opcion_menu_id');
 
@@ -49,7 +50,7 @@ export class PermissionFormComponent extends BaseComponent {
       '<option value="" disabled selected>Seleccione una opción...</option>';
 
     try {
-      const response = await apiRequest('/opciones-menu');
+      const response = await apiRequest('/menu-options');
       const opciones = Array.isArray(response) ? response : response.data || [];
 
       opciones.forEach((opcion) => {
@@ -74,6 +75,7 @@ export class PermissionFormComponent extends BaseComponent {
 
     this.permisoIdInput.value = '';
     this.nombreInput.value = '';
+    this.recursoInput.value = '';
     this.accionInput.value = '';
     this.opcionMenuSelect.value = '';
 
@@ -94,6 +96,7 @@ export class PermissionFormComponent extends BaseComponent {
 
     this.permisoIdInput.value = permiso.id;
     this.nombreInput.value = permiso.nombre;
+    this.recursoInput.value = permiso.recurso || '';
     this.accionInput.value = permiso.accion || '';
     this.opcionMenuSelect.value = permiso.opcion_menu_id || '';
 
@@ -122,12 +125,13 @@ export class PermissionFormComponent extends BaseComponent {
     const permisoId = this.permisoIdInput.value;
     const payload = {
       nombre: this.nombreInput.value.trim(),
+      recurso: this.recursoInput.value.trim(),
       accion: this.accionInput.value,
-      opcion_menu_id: parseInt(this.opcionMenuSelect.value),
+      opcion_menu_id: this.opcionMenuSelect.value ? parseInt(this.opcionMenuSelect.value) : null,
     };
 
     try {
-      const endpoint = permisoId ? `/v1/permisos/${permisoId}` : '/v1/permisos';
+      const endpoint = permisoId ? `/v1/permissions/${permisoId}` : '/v1/permissions';
       const method = permisoId ? 'PUT' : 'POST';
 
       await apiRequest(endpoint, {

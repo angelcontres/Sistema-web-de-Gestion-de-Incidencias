@@ -26,7 +26,7 @@ export class PermissionIndexComponent extends BaseComponent {
       formComponent.addEventListener('permiso-guardado', (e) => {
         this.mostrarAlertaExito(e.detail.mensaje);
         if (tblDatos && tblDatos.load) {
-          tblDatos.load('/permisos');
+          tblDatos.load('/permissions');
         }
       });
     }
@@ -92,7 +92,7 @@ export class PermissionIndexComponent extends BaseComponent {
         }
       });
 
-      tblDatos.load('/permisos');
+      tblDatos.load('/permissions');
     }
   }
 
@@ -107,13 +107,13 @@ export class PermissionIndexComponent extends BaseComponent {
     
     if (!isConfirmed) return;
 
-    apiRequest(`/permisos/${id}`, { method: 'DELETE' })
+    apiRequest(`/permissions/${id}`, { method: 'DELETE' })
       .then(() => {
         ToastService.success('Permiso eliminado correctamente.');
 
         const tblDatos = this.querySelector('#tbl-datos-permisos');
         if (tblDatos && tblDatos.load) {
-          tblDatos.load('/permisos');
+          tblDatos.load('/permissions');
         }
       })
       .catch((err) => {

@@ -23,7 +23,7 @@ class InstitucionesSeeder extends Seeder
         ];
 
         foreach ($instituciones as $i) {
-            Institucion::create($i);
+            Institucion::firstOrCreate(['siglas' => $i['siglas']], $i);
         }
     }
 }

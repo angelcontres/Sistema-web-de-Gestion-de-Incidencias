@@ -49,6 +49,18 @@
           </div>
 
           <div class="mb-3">
+            <label for="recurso" class="form-label fw-semibold text-dark">Recurso (Módulo)</label>
+            <input
+              type="text"
+              class="form-control"
+              id="recurso"
+              required
+              placeholder="Ej: usuarios, incidencias"
+            />
+            <div class="invalid-feedback">El recurso es obligatorio.</div>
+          </div>
+
+          <div class="mb-3">
             <label for="accion" class="form-label fw-semibold text-dark">Acción</label>
             <select class="form-select" id="accion" required>
               <option value="" disabled selected>Seleccione una acción...</option>
@@ -64,7 +76,7 @@
             <label for="opcion_menu_id" class="form-label fw-semibold text-dark"
               >Opción de Menú Asociada</label
             >
-            <select class="form-select" id="opcion_menu_id" required>
+            <select class="form-select" id="opcion_menu_id">
               <option value="" disabled selected>Seleccione una opción...</option>
               <!-- Opciones dinámicas -->
             </select>

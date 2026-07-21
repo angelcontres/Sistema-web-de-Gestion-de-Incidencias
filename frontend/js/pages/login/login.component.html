@@ -1,48 +1,48 @@
-<div class="page-fade-in d-flex align-items-center justify-content-center" style="min-height: 75vh;">
-  <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
-    <div class="card custom-card border-0 shadow-lg p-2">
-      <div class="card-body p-4 p-md-5">
+<div class="page-fade-in d-flex align-items-center justify-content-center w-100 h-100" style="min-height: 80vh;">
+  <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4 position-relative">
+    
+    <!-- Background subtle glow effect -->
+    <div class="position-absolute top-50 start-50 translate-middle rounded-circle bg-primary opacity-25" style="width: 300px; height: 300px; filter: blur(80px); z-index: -1;"></div>
+
+    <div class="premium-card">
+      <div class="card-body p-2 p-md-3">
         <!-- Logo / Brand Emblem -->
         <div class="text-center mb-4">
-          <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-3 mb-3" style="width: 50px; height: 50px; font-size: 1.5rem; font-weight: 800; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
-            G
+          <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-3 mb-3 shadow-md" style="width: 56px; height: 56px; font-size: 1.75rem; font-weight: 800;">
+            <i class="bi bi-shield-check"></i>
           </div>
-          <h3 class="fw-bold text-dark mb-1">Iniciar Sesión</h3>
+          <h3 class="fw-bolder text-dark mb-1" style="letter-spacing: -0.02em;">Iniciar Sesión</h3>
           <p class="text-muted small">Ingresa tus credenciales para acceder al sistema</p>
         </div>
 
         <!-- Error Alert Container -->
-        <div id="loginErrorAlert" class="alert alert-danger d-none py-2.5 px-3 rounded-3 mb-4 small" role="alert">
-          <div class="d-flex align-items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0" viewBox="0 0 16 16">
-              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-            </svg>
-            <span id="loginErrorMessage">Credenciales incorrectas.</span>
-          </div>
+        <div id="loginErrorAlert" class="alert alert-danger premium-alert d-none" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span id="loginErrorMessage">Credenciales incorrectas.</span>
         </div>
 
         <!-- Login Form -->
         <form id="loginForm" novalidate>
-          <div class="mb-3">
-            <label for="emailInput" class="form-label fw-semibold text-secondary small">Correo Electrónico</label>
+          <div class="premium-form-group">
+            <label for="emailInput" class="premium-label">Correo Electrónico</label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
-              <input type="email" class="form-control bg-light border-start-0 py-2" id="emailInput" placeholder="correo@ejemplo.com" required>
+              <input type="email" class="form-control bg-light border-start-0 py-2.5" id="emailInput" placeholder="correo@ejemplo.com" required>
             </div>
           </div>
 
-          <div class="mb-4">
+          <div class="premium-form-group mb-4">
             <div class="d-flex justify-content-between align-items-center mb-1">
-              <label for="passwordInput" class="form-label fw-semibold text-secondary small mb-0">Contraseña</label>
+              <label for="passwordInput" class="premium-label mb-0">Contraseña</label>
             </div>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-lock"></i></span>
-              <input type="password" class="form-control bg-light border-start-0 py-2" id="passwordInput" placeholder="••••••••" required>
+              <input type="password" class="form-control bg-light border-start-0 py-2.5" id="passwordInput" placeholder="••••••••" required>
             </div>
           </div>
 
           <!-- Submit Button -->
-          <button type="submit" id="loginSubmitBtn" class="btn btn-primary w-100 py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2">
+          <button type="button" id="loginSubmitBtn" class="btn btn-primary w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm rounded-3">
             <span>Ingresar al Sistema</span>
             <div id="loginSpinner" class="spinner-border spinner-border-sm text-white d-none" role="status">
               <span class="visually-hidden">Cargando...</span>
@@ -51,8 +51,10 @@
         </form>
 
         <!-- Credentials Helper Tip (Useful for Testing) -->
-        <div class="mt-4 p-3 bg-light border rounded-3 small text-muted">
-          <p class="mb-1 fw-semibold text-dark"><i class="bi bi-info-circle-fill text-primary me-1"></i> Credenciales de Prueba:</p>
+        <div class="mt-4 p-3 bg-secondary-soft rounded-3 small text-muted border-0">
+          <p class="mb-1 fw-bold text-dark d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle-fill text-primary"></i> Credenciales de Prueba:
+          </p>
           <ul class="mb-0 ps-3">
             <li>Usuario: <code>test@example.com</code></li>
             <li>Contraseña: <code>password123</code></li>

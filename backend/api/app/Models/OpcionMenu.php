@@ -2,17 +2,32 @@
 
 namespace App\Models;
 
-use Database\Factories\OpcionMenuFactory;
+use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $nombre
+ * @property string|null $icono
+ * @property string|null $ruta
+ * @property int|null $padre_id
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property int|null $deleted_by
+ * @property OpcionMenu|null $padre
+ * @property Collection<int, OpcionMenu> $hijos
+ */
 #[Fillable(['nombre', 'icono', 'ruta', 'padre_id', 'created_by', 'updated_by', 'deleted_by'])]
 class OpcionMenu extends Model
 {
-    /** @use HasFactory<OpcionMenuFactory> */
     use HasFactory, SoftDeletes;
+    use HasLocalTimezone;
 
     /**
      * La tabla asociada con el modelo.
@@ -24,7 +39,7 @@ class OpcionMenu extends Model
     /**
      * Relacion con la opcion de menu padre.
      */
-    public function padre()
+    public function padre(): BelongsTo
     {
         return $this->belongsTo(OpcionMenu::class, 'padre_id');
     }
@@ -32,7 +47,7 @@ class OpcionMenu extends Model
     /**
      * Relacion con las opciones de menu hijo.
      */
-    public function hijos()
+    public function hijos(): HasMany
     {
         return $this->hasMany(OpcionMenu::class, 'padre_id');
     }

@@ -1,5 +1,4 @@
 import { AuthService } from './core/auth.service.js';
-import { PermissionsEnum } from './core/permissions.enum.js';
 
 const routes = {
   '#/login': 'app-login',
@@ -8,7 +7,7 @@ const routes = {
   '#/opciones-menu/form': 'app-menu-options-form',
   '#/roles': 'app-role-index',
   '#/permisos': 'app-permission-index',
-  '#/sqa-dashboard': 'app-sqa-dashboard',
+  '#/trp-dashboard': 'app-trp-dashboard',
   '#/usuarios': 'app-user-index',
   '#/usuarios/form': 'app-user-form',
   '#/ubicaciones': 'app-ubicaciones-index',
@@ -20,7 +19,8 @@ const routes = {
   '#/instituciones': 'app-institucion-index',
   '#/instituciones/kanban': 'app-kanban-institucion',
   '#/public': 'app-public',
-  '#/configuracion': 'app-menu-lobby',
+  '#/administracion': 'app-menu-lobby',
+  '#/mantenimiento': 'app-menu-lobby',
 
   '#/tramites': 'app-menu-lobby',
   '#/tramites/historial': 'app-historial-index',
@@ -48,64 +48,14 @@ function navigate() {
 
     // Redirect Operador/Supervisor from general incidents page to their own dispatcher dashboard
     if (hash === '#/incidencias') {
-      const user = AuthService.getCurrentUser();
-      const isSupervisor = user && user.roles && user.roles.some((r) => r.nombre === 'Supervisor');
-      if (isSupervisor) {
+      if (AuthService.hasPermission('READ', 'despacho')) {
         window.location.hash = '#/incidencias/despacho';
         return;
       }
     }
 
-    // RBAC: Block non-admins from accessing configuration routes
-    const adminRoutes = ['#/opciones-menu', '#/roles', '#/permisos'];
-    const basePath = hash.split('?')[0].replace(/\/form$/, '');
-
-    if (adminRoutes.includes(basePath) && !AuthService.isAdmin()) {
-      window.location.hash = '#/';
-      return;
-    }
-
-    // Protect #/ubicaciones based on 'Ver Ubicación' or any sub-resource (País, Territorio, Dirección) permission
-    if (
-      basePath === '#/ubicaciones' &&
-      !AuthService.hasPermission(PermissionsEnum.READ_UBICACIONES) &&
-      !AuthService.hasPermission(PermissionsEnum.READ_PAISES) &&
-      !AuthService.hasPermission(PermissionsEnum.READ_TERRITORIOS) &&
-      !AuthService.hasPermission(PermissionsEnum.READ_DIRECCIONES)
-    ) {
-      window.location.hash = '#/';
-      return;
-    }
-
-    // Protect #/categorias based on 'Ver Categoría de Incidencia' permission
-    if (basePath === '#/categorias' && !AuthService.hasPermission(PermissionsEnum.READ_CATEGORIAS_INCIDENCIA)) {
-      window.location.hash = '#/';
-      return;
-    }
-
-    // Protect #/incidencias based on 'Ver Incidencia' permission
-    if (
-      (basePath === '#/incidencias' || basePath === '#/incidencias/despacho') &&
-      !AuthService.hasPermission(PermissionsEnum.READ_INCIDENCIAS)
-    ) {
-      window.location.hash = '#/';
-      return;
-    }
-
-    // Protect #/tramites based on 'Ver Incidencia' permission
-    if (basePath.startsWith('#/tramites') && !AuthService.hasPermission(PermissionsEnum.READ_INCIDENCIAS)) {
-      window.location.hash = '#/';
-      return;
-    }
-
-    // Protect #/instituciones/kanban based on Kanban permissions
-    if (basePath === '#/instituciones/kanban' && !AuthService.hasPermission(PermissionsEnum.READ_KANBAN)) {
-      window.location.hash = '#/';
-      return;
-    }
-
-    // Protect #/instituciones based on 'Ver Institución' permission
-    if (basePath === '#/instituciones' && !AuthService.hasPermission(PermissionsEnum.READ_INSTITUCIONES)) {
+    // RBAC check via AuthService
+    if (!AuthService.canAccessRoute(hash)) {
       window.location.hash = '#/';
       return;
     }
@@ -131,18 +81,17 @@ function navigate() {
 /**
  * Initializes the routing listeners.
  */
-export function initRouter() {
+export async function initRouter() {
   // Listen for hash changes
   window.addEventListener('hashchange', navigate);
 
-  // Handle initial page load
-  window.addEventListener('load', navigate);
-
   // Refresh user profile details if authenticated on load
   if (AuthService.isAuthenticated()) {
-    AuthService.refreshUser().catch((err) => {
+    try {
+      await AuthService.refreshUser();
+    } catch (err) {
       console.error('Error refreshing session from endpoint /me:', err);
-    });
+    }
   }
 
   // Trigger initial navigation in case page was loaded with a hash

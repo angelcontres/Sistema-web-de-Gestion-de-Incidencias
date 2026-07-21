@@ -24,9 +24,15 @@ class RoleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json($this->roleService->getAllRoles(), 200);
+        if ($request->query('all') === 'true' || $request->query('all') === '1') {
+            return response()->json($this->roleService->getAllRoles(), 200);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        $query = \App\Models\Role::query();
+        return response()->json($query->paginate($perPage), 200);
     }
 
     /**

@@ -1,0 +1,148 @@
+{
+  "project": "sistema-gestion-incidencias",
+  "description": "Sistema web para gestionar incidencias georreferenciadas con historial de estados, asignación de responsables, y más. Backend en Laravel y Frontend VanillaJS.",
+  "rules": {
+    "one_feature_at_a_time": true,
+    "require_tests_to_close": true,
+    "require_approved_spec_to_implement": true,
+    "valid_status": ["pending", "spec_ready", "in_progress", "done", "blocked"],
+    "sdd_required_when": "feature has \"sdd\": true"
+  },
+  "features": [
+    {
+      "id": 1,
+      "name": "ejemplo_nueva_feature",
+      "title": "Ejemplo de nueva feature",
+      "description": "Agrega una descripción aquí.",
+      "acceptance": [
+        "Criterio 1",
+        "Criterio 2"
+      ],
+      "sdd": true,
+      "status": "blocked"
+    },
+    {
+      "id": 3,
+      "name": "exportar_bd_sql",
+      "title": "Implementar Herramienta de Exportación de Base de Datos",
+      "description": "El sistema debe proveer un mecanismo automatizado (ya sea mediante un comando personalizado de Artisan o un script ejecutable) que genere un volcado (dump) SQL completo de la base de datos actual. Este archivo es un entregable crítico requerido al finalizar el proyecto (UC-12).",
+      "acceptance": [
+        "Existe un comando Artisan (ej. 'php artisan db:dump') o un script automatizado que ejecute el volcado.",
+        "El comando interactúa correctamente con el contenedor de la base de datos definido en 'docker-compose.yml'.",
+        "El archivo resultante es un volcado SQL (.sql) válido, estructurado y autocontenido (datos y esquema).",
+        "El archivo generado se almacena en una ruta segura y parametrizada (ej. 'storage/app/backups/') o se descarga directamente si se expone un endpoint administrativo."
+      ],
+      "sdd": true,
+      "status": "done",
+      "references": [
+        "docs/01_analisis/casos_uso_descripcion.md",
+        "docker-compose.yml"
+      ],
+      "priority": "low"
+    },
+    {
+      "id": 4,
+      "name": "perf_backend_laravel",
+      "title": "Optimización de Rendimiento - Backend (Laravel)",
+      "description": "Auditar y optimizar la capa de la API en Laravel para reducir la latencia de los endpoints y el consumo de recursos mediante la erradicación de consultas ineficientes y estrategias de caché.",
+      "acceptance": [
+        "Se identificaron y erradicaron las consultas N+1 en los endpoints de listado de incidencias y dashboard implementando Eager Loading (with()).",
+        "Se implementó un mecanismo de caché (Redis/File) para catálogos estáticos y las consultas agregadas del esquema OLAP (metrics).",
+        "Los comandos de optimización en producción ('php artisan optimize', 'route:cache', 'config:cache', 'view:cache') se ejecutan correctamente sin romper la aplicación.",
+        "Los logs de la aplicación y herramientas de profiling no registran consultas N+1 activas."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "done",
+      "references": [
+        "app/Http/Controllers/",
+        "app/Models/"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "perf_database_postgres",
+      "title": "Optimización de Rendimiento - Base de Datos (PostgreSQL/PostGIS)",
+      "description": "Revisar los planes de ejecución de las consultas más pesadas y aplicar estrategias de indexación y paginación eficiente para optimizar las consultas espaciales y relacionales.",
+      "acceptance": [
+        "Se crearon índices B-Tree en columnas de filtrado frecuente (estado_id, categoria_id, created_at).",
+        "Se configuraron índices GiST para las geometrías y coordenadas manejadas por PostGIS.",
+        "Se reemplazó 'paginate()' por 'simplePaginate()' o 'cursorPaginate()' en los listados masivos para eliminar el costo del COUNT(*).",
+        "El análisis con 'EXPLAIN ANALYZE' demuestra una reducción significativa en el costo de escaneo de las tablas de incidencias."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "done",
+      "references": [
+        "database/migrations/",
+        "docker-compose.yml"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "perf_frontend_vanillajs",
+      "title": "Optimización de Rendimiento - Frontend (VanillaJS)",
+      "description": "Optimizar el renderizado del lado del cliente, la carga de recursos estáticos y el comportamiento del mapa interactivo para asegurar una experiencia fluida.",
+      "acceptance": [
+        "Se implementó agrupación de marcadores (Marker Clustering) en el mapa de incidencias usando una librería adecuada (ej. Leaflet.markercluster).",
+        "El mapa carga y renderiza más de 1,000 incidencias simultáneamente sin congelar el hilo principal (main thread) del navegador.",
+        "Los archivos nativos .js y .css se procesan mediante un pipeline de minificación y empaquetado para producción.",
+        "Se aplicó carga diferida (Lazy Loading) a imágenes pesadas, modales y scripts secundarios hasta que el usuario interactúe con ellos.",
+        "El frontend alcanza un puntaje de rendimiento (Performance) de 90+ en Google Lighthouse."
+      ],
+      "sdd": false,
+      "priority": "high",
+      "status": "done",
+      "references": [
+        "public/js/",
+        "public/css/"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "perf_infra_docker_nginx",
+      "title": "Optimización de Rendimiento - Infraestructura (Docker/Nginx)",
+      "description": "Ajustar las configuraciones del servidor web Nginx y las variables de entorno/parámetros de memoria del contenedor de la base de datos para soportar cargas pesadas de datos geográficos.",
+      "acceptance": [
+        "Se activó y configuró la compresión GZIP o Brotli en 'nginx.conf' para las respuestas JSON de la API y los assets estáticos.",
+        "Se modificaron los parámetros de tuning de PostgreSQL en 'docker-compose.yml' (o archivo de conf dedicado), incrementando 'shared_buffers' y 'work_mem' para acelerar el procesamiento de PostGIS.",
+        "El tiempo de respuesta promedio global para los endpoints de lectura (GET) de la API se reduce por debajo de los 250ms bajo condiciones normales de red."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "spec_ready",
+      "references": [
+        "docker-compose.yml",
+        "docker/nginx/nginx.conf"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "global_pagination",
+      "title": "Implementación Global de Paginación en Backend y Frontend",
+      "description": "Estandarizar e implementar la paginación de datos (simplePaginate o cursorPaginate) en todos los controladores REST del backend (Usuarios, Roles, Permisos, Instituciones, etc.) y adaptar los componentes VanillaJS del frontend para soportar controles de navegación (Siguiente, Anterior).",
+      "acceptance": [
+        "Todos los listados masivos en el backend devuelven respuestas paginadas en lugar de colecciones completas (get()).",
+        "Los servicios del frontend (ej. userService, roleService) admiten parámetros de paginación o cursor en el query string.",
+        "Los componentes UI del frontend renderizan controles de 'Siguiente' y 'Anterior' cuando existan múltiples páginas.",
+        "El componente Kanban sigue funcionando correctamente (si carga la data en bulk) o se adaptó para lazy-loading."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "done"
+    },
+    {
+      "id": 9,
+      "name": "rbac_implementation",
+      "title": "Implementar RBAC en toda la aplicación",
+      "description": "Aplicar controles de acceso basados en roles en todo el sistema (backend y frontend).",
+      "acceptance": [
+        "El backend valida permisos usando el middleware para las rutas correspondientes.",
+        "El frontend utiliza los permisos del usuario logueado para mostrar u ocultar opciones y botones."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "done"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+\section{Roles y Responsabilidades de Calidad}
+
+El equipo de ingeniería de software asume los siguientes roles de calidad, los cuales pueden ser compartidos o rotativos según el sprint o iteración de desarrollo. Lo más seguro es que sean compartidos debido a que son 3 integrantes:
+
+\begin{itemize}
+    \item \textbf{Revisión Técnica:}
+    \begin{itemize}
+        \item \textit{Responsabilidad:} Realizar inspecciones manuales y \textit{walkthroughs} del código fuente (Pull Requests), verificar la calidad estructural de las migraciones de bases de datos PostgreSQL y validar la idoneidad de la configuración de contenedores Docker y del servidor web Nginx.
+    \end{itemize}
+    
+    \item \textbf{Diseño de Pruebas:}
+    \begin{itemize}
+        \item \textit{Responsabilidad:} Diseñar analíticamente los escenarios de prueba y especificar detalladamente los casos de prueba (entradas, pasos y resultados esperados) basándose en las historias de usuario e interacciones de la API REST.
+    \end{itemize}
+    
+    \item \textbf{Ejecución de Pruebas:}
+    \begin{itemize}
+        \item \textit{Responsabilidad:} Ejecutar de manera rigurosa las pruebas de caja negra a nivel de la interfaz de usuario en el frontend, ejecutar pruebas de integración y verificar la ejecución automatizada de las pruebas de backend (\texttt{php artisan test}) integradas en la pipeline de integración continua de GitHub Actions.
+    \end{itemize}
+    
+    \item \textbf{Gestión de Defectos:}
+    \begin{itemize}
+        \item \textit{Responsabilidad:} Identificar, reportar y documentar los fallos o comportamientos anómalos (\textit{bugs}) en el backlog, realizar el seguimiento de su ciclo de vida (Backlog $\rightarrow$ Todo $\rightarrow$ In Progress $\rightarrow$ In Review $\rightarrow$ Staging $\rightarrow$ Done) y asegurar que ningún defecto de criticidad alta/media llegue a producción.
+    \end{itemize}
+    
+    \item \textbf{Elaboración de Métricas:}
+    \begin{itemize}
+        \item \textit{Responsabilidad:} Medir cuantitativamente los indicadores clave del software, analizar logs de errores de Nginx y Laravel, monitorear el tiempo de respuesta promedio de los endpoints y graficar los resultados del aseguramiento de calidad para la directiva técnica.
+    \end{itemize}
+\end{itemize}

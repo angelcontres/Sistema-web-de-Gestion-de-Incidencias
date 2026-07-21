@@ -22,7 +22,12 @@ class InstitucionController extends Controller
                 ->orWhere('siglas', 'like', "%{$search}%");
         }
 
-        return response()->json($query->orderBy('nombre')->get(), 200);
+        if ($request->query('all') === 'true' || $request->query('all') === '1') {
+            return response()->json($query->orderBy('nombre')->get(), 200);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->orderBy('nombre')->paginate($perPage), 200);
     }
 
     /**
@@ -78,6 +83,7 @@ class InstitucionController extends Controller
      */
     public function destroy($id): JsonResponse
     {
+        /** @var Institucion $institucion */
         $institucion = Institucion::findOrFail($id);
 
         if (auth()->check()) {

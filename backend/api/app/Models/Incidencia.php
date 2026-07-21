@@ -2,15 +2,40 @@
 
 namespace App\Models;
 
+use App\Observers\IncidenciaObserver;
+use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
-use App\Observers\IncidenciaObserver;
 
+/**
+ * @property int $id
+ * @property string $incidencia_descripcion
+ * @property int $direccion_id
+ * @property int $cliente_id
+ * @property int $estado_id
+ * @property int|null $institucion_id
+ * @property int $tipo_incidencia_id
+ * @property int|null $sub_tipo_incidencia_id
+ * @property int $prioridad_id
+ * @property int|null $cantidad_afectados_incidencia
+ * @property int $version
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property int|null $deleted_by
+ * @property int|string|null $total
+ * @property Direccion|null $direccion
+ * @property Prioridad|null $prioridad
+ * @property User|null $cliente
+ * @property EstadoIncidencia|null $estado
+ * @property Institucion|null $institucion
+ * @property CategoriaIncidencia|null $tipo
+ * @property CategoriaIncidencia|null $subTipo
+ */
 #[ObservedBy([IncidenciaObserver::class])]
 #[Fillable([
     'incidencia_descripcion',
@@ -30,6 +55,7 @@ use App\Observers\IncidenciaObserver;
 class Incidencia extends Model
 {
     use HasFactory, SoftDeletes;
+    use HasLocalTimezone;
 
     protected $table = 'reporte_incidencias';
 
@@ -113,6 +139,17 @@ class Incidencia extends Model
     public function operadores(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'usuario_incidencia', 'reporte_incidencia_id', 'user_id')
+            ->wherePivot('tipo_relacion', 'operador')
+            ->withTimestamps();
+    }
+
+    /**
+     * Relación: Usuarios que han reportado esta misma incidencia (afectados/coincidentes).
+     */
+    public function reportantes(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'usuario_incidencia', 'reporte_incidencia_id', 'user_id')
+            ->wherePivot('tipo_relacion', 'reportante')
             ->withTimestamps();
     }
 

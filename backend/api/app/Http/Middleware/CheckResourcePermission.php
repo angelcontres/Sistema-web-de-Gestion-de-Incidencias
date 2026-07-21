@@ -23,10 +23,7 @@ class CheckResourcePermission
             return response()->json(['message' => 'No autorizado'], 401);
         }
 
-        // Admins bypass all permissions
-        if ($user->roles()->where('nombre', 'Admin')->exists()) {
-            return $next($request);
-        }
+
 
         // Action Mapping
         $method = $request->method();
@@ -42,25 +39,15 @@ class CheckResourcePermission
             return response()->json(['message' => 'Método HTTP no soportado'], 405);
         }
 
-        // Resource Parsing
-        $segments = $request->segments();
-        $recurso = null;
+        $routeName = $request->route() ? $request->route()->getName() : null;
 
-        foreach ($segments as $index => $segment) {
-            if ($segment === 'v1' && isset($segments[$index + 1])) {
-                $recurso = $segments[$index + 1];
-                break;
-            }
-        }
-
-        // Some specific routes shouldn't be blocked here
-        $ignoredResources = ['login', 'logout', 'me', 'me/menu'];
-        if (! $recurso || in_array($recurso, $ignoredResources) || $request->is('api/v1/me/menu')) {
+        // Si la ruta no tiene nombre, se asume que no está protegida por recursos (ej. /v1/me, /v1/logout)
+        if (! $routeName) {
             return $next($request);
         }
 
-        // Replace hyphens with underscores to match db convention
-        $recurso = str_replace('-', '_', $recurso);
+        // Extraer el recurso base del nombre de la ruta (ej: "opciones.index" -> "opciones")
+        $recurso = explode('.', $routeName)[0];
 
         // Validation
         $user->load('roles.permisos');
@@ -73,17 +60,7 @@ class CheckResourcePermission
                     break 2;
                 }
 
-                // If accessing incidencias, allow READ/UPDATE if the user has corresponding kanban permissions
-                if ($recurso === 'incidencias') {
-                    if ($accion === 'READ' && $permiso->accion === 'READ' && $permiso->recurso === 'kanban') {
-                        $hasPermission = true;
-                        break 2;
-                    }
-                    if ($accion === 'UPDATE' && $permiso->accion === 'UPDATE' && $permiso->recurso === 'kanban') {
-                        $hasPermission = true;
-                        break 2;
-                    }
-                }
+
             }
         }
 

@@ -21,7 +21,7 @@ class PermissionsSeeder extends Seeder
             'Roles' => 'Rol',
             'Permisos' => 'Permiso',
             'Opciones de Menú' => 'Opción de Menú',
-            'SQA' => 'SQA',
+            'TRP' => 'TRP',
             'Ubicaciones' => 'Ubicación',
             'Categorías de Incidencias' => 'Categoría de Incidencia',
             'Incidencias' => 'Incidencia',
@@ -29,6 +29,7 @@ class PermissionsSeeder extends Seeder
             'Despacho' => 'Despacho de Incidencia',
             'Tablero Kanban' => 'Kanban',
             'Historial de incidencias' => 'Historial',
+            'Mantenimiento' => 'Mantenimiento',
         ];
 
         $acciones = [
@@ -42,15 +43,16 @@ class PermissionsSeeder extends Seeder
             'Usuarios' => 'usuarios',
             'Roles' => 'roles',
             'Permisos' => 'permisos',
-            'Opciones de Menú' => 'opciones_menu',
-            'SQA' => 'sqa',
+            'Opciones de Menú' => 'opciones',
+            'TRP' => 'trp',
             'Ubicaciones' => 'ubicaciones',
-            'Categorías de Incidencias' => 'categorias_incidencia',
+            'Categorías de Incidencias' => 'categorias',
             'Incidencias' => 'incidencias',
             'Instituciones' => 'instituciones',
-            'Despacho' => 'despacho_de_incidencias',
+            'Despacho' => 'despacho',
             'Tablero Kanban' => 'kanban',
-            'Historial de incidencias' => 'historial_incidencias',
+            'Historial de incidencias' => 'historial',
+            'Mantenimiento' => 'mantenimiento',
         ];
 
         foreach ($opciones as $opcionPlural => $opcionSingular) {
@@ -58,37 +60,38 @@ class PermissionsSeeder extends Seeder
 
             $recursoStr = $recursoMapping[$opcionPlural] ?? strtolower(str_replace(' ', '_', $opcionPlural));
 
-            if ($opcionMenu) {
-                foreach ($acciones as $verbo => $metodo) {
-                    Permiso::create([
-                        'nombre' => "{$verbo} {$opcionSingular}",
+            $opcionMenuId = $opcionMenu ? $opcionMenu->id : null;
+
+            foreach ($acciones as $verbo => $metodo) {
+                Permiso::updateOrCreate(
+                    ['nombre' => "{$verbo} {$opcionSingular}"],
+                    [
                         'accion' => $metodo,
                         'recurso' => $recursoStr,
-                        'opcion_menu_id' => $opcionMenu->id,
+                        'opcion_menu_id' => $opcionMenuId,
                         'created_by' => $user->id,
-                    ]);
-                }
+                    ]
+                );
             }
         }
 
         // Seed locations sub-resources permissions under the Ubicaciones menu option
-        $ubicacionesMenu = OpcionMenu::where('nombre', 'Ubicaciones')->first();
-        if ($ubicacionesMenu) {
-            $subRecursos = [
-                'paises' => 'País',
-                'territorios' => 'Territorio',
-                'direcciones' => 'Dirección',
-            ];
-            foreach ($subRecursos as $recursoSub => $nombreSingular) {
-                foreach ($acciones as $verbo => $metodo) {
-                    Permiso::create([
-                        'nombre' => "{$verbo} {$nombreSingular}",
+        $subRecursos = [
+            'paises' => 'País',
+            'territorios' => 'Territorio',
+            'direcciones' => 'Dirección',
+        ];
+        foreach ($subRecursos as $recursoSub => $nombreSingular) {
+            foreach ($acciones as $verbo => $metodo) {
+                Permiso::updateOrCreate(
+                    ['nombre' => "{$verbo} {$nombreSingular}"],
+                    [
                         'accion' => $metodo,
                         'recurso' => $recursoSub,
-                        'opcion_menu_id' => $ubicacionesMenu->id,
+                        'opcion_menu_id' => null,
                         'created_by' => $user->id,
-                    ]);
-                }
+                    ]
+                );
             }
         }
 
@@ -96,7 +99,7 @@ class PermissionsSeeder extends Seeder
         $registroMenu = OpcionMenu::where('nombre', 'Registro')->first();
         if ($registroMenu) {
             Permiso::where('nombre', 'Crear Incidencia')->update([
-                'opcion_menu_id' => $registroMenu->id
+                'opcion_menu_id' => $registroMenu->id,
             ]);
         }
     }

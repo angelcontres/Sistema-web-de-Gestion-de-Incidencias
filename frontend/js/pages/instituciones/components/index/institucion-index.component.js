@@ -1,6 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { InstitucionService } from '../../services/institucion.service.js';
-import { UIHelper } from '../../../../shared/utils/ui-helper.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
@@ -23,7 +22,7 @@ export class InstitucionIndexComponent extends BaseComponent {
         this.searchTimeout = setTimeout(() => {
           const tblDatos = this.querySelector('#tbl-datos-instituciones');
           if (tblDatos) {
-            tblDatos.load(() => InstitucionService.getAll({ search: e.target.value }));
+            tblDatos.load((page, perPage, cursor) => InstitucionService.getAll(page, perPage, cursor, { search: e.target.value }));
           }
         }, 500);
       });
@@ -82,7 +81,7 @@ export class InstitucionIndexComponent extends BaseComponent {
       });
 
       // Load initial data
-      tblDatos.load(() => InstitucionService.getAll({}));
+      tblDatos.load((page, perPage, cursor) => InstitucionService.getAll(page, perPage, cursor, {}));
     }
 
     // Listen for form save event to refresh table
@@ -90,7 +89,7 @@ export class InstitucionIndexComponent extends BaseComponent {
       if (tblDatos) {
         const searchInput = this.querySelector('#searchInput');
         const searchValue = searchInput ? searchInput.value : '';
-        tblDatos.load(() => InstitucionService.getAll({ search: searchValue }));
+        tblDatos.load((page, perPage, cursor) => InstitucionService.getAll(page, perPage, cursor, { search: searchValue }));
       }
     });
   }
@@ -112,7 +111,7 @@ export class InstitucionIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (!isConfirmed) return;
 
     try {
@@ -122,7 +121,7 @@ export class InstitucionIndexComponent extends BaseComponent {
       if (tblDatos) {
         const searchInput = this.querySelector('#searchInput');
         const searchValue = searchInput ? searchInput.value : '';
-        tblDatos.load(() => InstitucionService.getAll({ search: searchValue }));
+        tblDatos.load((page, perPage, cursor) => InstitucionService.getAll(page, perPage, cursor, { search: searchValue }));
       }
     } catch (error) {
       console.error('Error al eliminar institución:', error);

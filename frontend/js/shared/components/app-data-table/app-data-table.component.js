@@ -13,11 +13,35 @@ export class AppDataTableComponent extends BaseComponent {
     this.columns = [];
     this.data = [];
 
-    // Promise to handle the async template loading race condition
     this.isReady = false;
     this.readyPromise = new Promise(resolve => {
       this.resolveReady = resolve;
     });
+
+    this.currentPage = 1;
+    this.perPage = 15;
+    this.lastPage = 1;
+    this.currentEndpointOrService = null;
+    
+    // Cursor pagination support
+    this.isCursorPagination = false;
+    this.currentCursor = null;
+    this.nextCursor = null;
+    this.prevCursor = null;
+
+    // Read page from URL hash if present
+    const hashParts = window.location.hash.split('?');
+    if (hashParts.length > 1) {
+      const urlParams = new URLSearchParams(hashParts[1]);
+      const pageParam = urlParams.get('page');
+      if (pageParam && !isNaN(pageParam)) {
+        this.currentPage = parseInt(pageParam, 10);
+      }
+      const perPageParam = urlParams.get('per_page');
+      if (perPageParam && !isNaN(perPageParam)) {
+        this.perPage = parseInt(perPageParam, 10);
+      }
+    }
   }
 
   async connectedCallback() {
@@ -76,8 +100,49 @@ export class AppDataTableComponent extends BaseComponent {
       if (p) p.textContent = emptyText;
     }
 
+    this.paginationContainer = this.querySelector('#pagination-container');
+    this.btnPrevPage = this.querySelector('#btn-prev-page');
+    this.btnNextPage = this.querySelector('#btn-next-page');
+    this.pageCurrentLabel = this.querySelector('#page-current');
+    this.pageTotalLabel = this.querySelector('#page-total');
+
+    if (this.btnPrevPage && this.btnNextPage) {
+      this.btnPrevPage.addEventListener('click', () => {
+        if (this.isCursorPagination) {
+          if (this.prevCursor) {
+            this.currentCursor = this.prevCursor;
+            this.load(this.currentEndpointOrService);
+          }
+        } else if (this.currentPage > 1) {
+          this.currentPage--;
+          this.updateUrlAndLoad();
+        }
+      });
+      this.btnNextPage.addEventListener('click', () => {
+        if (this.isCursorPagination) {
+          if (this.nextCursor) {
+            this.currentCursor = this.nextCursor;
+            this.load(this.currentEndpointOrService);
+          }
+        } else if (this.currentPage < this.lastPage) {
+          this.currentPage++;
+          this.updateUrlAndLoad();
+        }
+      });
+    }
+
     // Render table headers dynamically if columns are already defined
     this.renderHeaders();
+
+    this.selectPerPage = this.querySelector('#select-per-page');
+    if (this.selectPerPage) {
+      this.selectPerPage.value = this.perPage;
+      this.selectPerPage.addEventListener('change', (e) => {
+        this.perPage = parseInt(e.target.value, 10);
+        this.currentPage = 1;
+        this.updateUrlAndLoad();
+      });
+    }
 
     // Setup action click delegation
     if (this.tbody) {
@@ -144,12 +209,27 @@ export class AppDataTableComponent extends BaseComponent {
   }
 
   /**
+   * Helper to update browser URL silently and trigger load
+   */
+  updateUrlAndLoad() {
+    const hashPath = window.location.hash.split('?')[0];
+    const newHash = `${hashPath}?page=${this.currentPage}&per_page=${this.perPage}`;
+    // Updates URL without triggering router reload
+    history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+    
+    this.load(this.currentEndpointOrService);
+  }
+
+  /**
    * Automatically load data from backend endpoint
    * Handles showing spinner, counting badges, empty state, and API error formatting.
-   * @param {string} endpoint
+   * @param {string|Function} endpointOrService
    * @returns {Promise<void>}
    */
   async load(endpointOrService) {
+    if (!endpointOrService) return;
+    this.currentEndpointOrService = endpointOrService;
+
     // Wait for the HTML template to load and onInit to cache references
     await this.readyPromise;
 
@@ -158,15 +238,54 @@ export class AppDataTableComponent extends BaseComponent {
     this.emptyState.classList.add('d-none');
     this.errorAlert.classList.add('d-none');
     this.totalBadge.classList.add('d-none');
+    if (this.paginationContainer) this.paginationContainer.classList.add('d-none');
 
     try {
       let response;
       if (typeof endpointOrService === 'function') {
-        response = await endpointOrService();
+        response = await endpointOrService(this.currentPage, this.perPage, this.currentCursor);
       } else {
-        response = await apiRequest(endpointOrService);
+        const sep = endpointOrService.includes('?') ? '&' : '?';
+        let url = `${endpointOrService}${sep}`;
+        if (this.isCursorPagination && this.currentCursor) {
+            url += `cursor=${this.currentCursor}&per_page=${this.perPage}`;
+        } else {
+            url += `page=${this.currentPage}&per_page=${this.perPage}`;
+        }
+        response = await apiRequest(url);
       }
+      
       const list = Array.isArray(response) ? response : (response.data || []);
+      
+      // Check if it's cursor pagination
+      if (response && (response.next_cursor !== undefined || response.prev_cursor !== undefined)) {
+        this.isCursorPagination = true;
+        this.nextCursor = response.next_cursor;
+        this.prevCursor = response.prev_cursor;
+        
+        if (this.paginationContainer && (this.nextCursor || this.prevCursor || list.length > 0)) {
+            this.paginationContainer.classList.remove('d-none');
+            this.pageCurrentLabel.textContent = "Dinámica";
+            this.pageTotalLabel.textContent = "Cursor";
+            this.btnPrevPage.disabled = !this.prevCursor;
+            this.btnNextPage.disabled = !this.nextCursor;
+        }
+      } 
+      // Update standard pagination metadata if available
+      else if (response && response.current_page !== undefined) {
+        this.isCursorPagination = false;
+        this.currentPage = response.current_page;
+        this.lastPage = response.last_page || 1;
+        
+        if (this.paginationContainer) {
+          this.paginationContainer.classList.remove('d-none');
+          this.pageCurrentLabel.textContent = this.currentPage;
+          this.pageTotalLabel.textContent = this.lastPage;
+          
+          this.btnPrevPage.disabled = this.currentPage <= 1;
+          this.btnNextPage.disabled = this.currentPage >= this.lastPage;
+        }
+      }
       
       this.data = list;
       this.loadingSpinner.classList.add('d-none');
@@ -176,7 +295,11 @@ export class AppDataTableComponent extends BaseComponent {
         return;
       }
 
-      this.totalBadge.textContent = `${this.data.length} Registros`;
+      if (response && response.total !== undefined) {
+        this.totalBadge.textContent = `${response.total} Registros en total`;
+      } else {
+        this.totalBadge.textContent = `${this.data.length} Registros`;
+      }
       this.totalBadge.classList.remove('d-none');
 
       this.renderRows();

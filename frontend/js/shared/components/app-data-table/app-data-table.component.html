@@ -1,35 +1,48 @@
-<!--Hola este es una tabla insana generica que servira para evitar escribir codigo verboso-->
-<div class="card custom-card border-0 shadow-sm overflow-hidden">
-  <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-    <h5 class="card-title fw-bold mb-0 text-dark" id="title-container">Lista de Registros</h5>
+<!-- Tabla de datos premium genérica -->
+<div class="premium-table-wrapper bg-white">
+  <div class="premium-card-header px-4 pt-4 pb-3 mb-0 border-bottom">
+    <h5 class="premium-card-title" id="title-container">Lista de Registros</h5>
     <span class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small d-none" id="total-badge"></span>
   </div>
 
   <div class="card-body p-0 position-relative">
     <!-- Alert Message Container -->
-    <div id="error-alert" class="alert alert-danger mx-4 my-2 d-none">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <div id="error-alert" class="premium-alert alert-danger mx-4 my-3 d-none">
+      <i class="bi bi-exclamation-triangle-fill"></i>
       <span id="error-message"></span>
     </div>
 
-    <!-- Loading State -->
-    <div id="loading-spinner" class="d-flex justify-content-center align-items-center py-5 d-none">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Cargando...</span>
-      </div>
+    <!-- Loading State (Skeleton Loaders) -->
+    <div id="loading-spinner" class="d-none w-100">
+      <table class="table table-borderless mb-0 w-100">
+        <tbody>
+          <tr>
+            <td class="p-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
+          </tr>
+          <tr>
+            <td class="px-4 pb-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
+          </tr>
+          <tr>
+            <td class="px-4 pb-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
+          </tr>
+          <tr>
+            <td class="px-4 pb-4"><div class="skeleton-box w-75" style="height: 40px;"></div></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Empty State -->
     <div id="empty-state" class="text-center py-5 d-none">
-      <i class="bi bi-folder-x text-muted display-4"></i>
-      <p class="text-muted mt-2" id="empty-message">No se encontraron registros.</p>
+      <i class="bi bi-folder-x text-muted display-4 opacity-50"></i>
+      <p class="text-muted mt-3 fw-medium" id="empty-message">No se encontraron registros.</p>
     </div>
 
     <!-- Table Responsive -->
     <div class="table-responsive d-none" id="table-container">
-      <table class="table align-middle table-nowrap table-hover mb-0">
-        <thead class="table-light">
-          <tr class="text-uppercase text-secondary fs-7 fw-semibold border-bottom border-light" id="table-header">
+      <table class="table premium-table table-hover mb-0">
+        <thead>
+          <tr id="table-header">
             <!-- Headers will be rendered here dynamically -->
           </tr>
         </thead>
@@ -37,6 +50,33 @@
           <!-- Dynamic rows will be inserted here -->
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Paginación (Card Footer) -->
+  <div class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center d-none" id="pagination-container">
+    <div class="small text-muted d-flex align-items-center gap-3" id="pagination-info">
+      <div>
+        Mostrando <span class="fw-semibold text-dark" id="page-current">0</span> de <span class="fw-semibold text-dark" id="page-total">0</span> páginas
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <label for="select-per-page" class="mb-0">Por página:</label>
+        <select id="select-per-page" class="form-select form-select-sm" style="width: 70px;">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15" selected>15</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-sm btn-outline-secondary" id="btn-prev-page" disabled>
+        <i class="bi bi-chevron-left"></i> Anterior
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" id="btn-next-page" disabled>
+        Siguiente <i class="bi bi-chevron-right"></i>
+      </button>
     </div>
   </div>
 </div>

@@ -9,6 +9,7 @@ use App\Models\Pais;
 use App\Models\Territorio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CatalogoController extends Controller
 {
@@ -17,7 +18,9 @@ class CatalogoController extends Controller
      */
     public function paises(): JsonResponse
     {
-        $paises = Pais::where('activo', true)->orderBy('nombre')->get();
+        $paises = Cache::remember('catalogo_paises', now()->addHours(24), function () {
+            return Pais::where('activo', true)->orderBy('nombre')->get();
+        });
 
         return response()->json($paises);
     }
@@ -27,22 +30,28 @@ class CatalogoController extends Controller
      */
     public function territorios(Request $request): JsonResponse
     {
-        $query = Territorio::where('activo', true);
+        $paisId = $request->input('pais_id', 'all');
+        $parentId = $request->input('parent_id', 'all');
+        $cacheKey = "catalogo_territorios_{$paisId}_{$parentId}";
 
-        if ($request->has('pais_id')) {
-            $query->where('pais_id', $request->input('pais_id'));
-        }
+        $territorios = Cache::remember($cacheKey, now()->addHours(24), function () use ($request) {
+            $query = Territorio::where('activo', true);
 
-        if ($request->has('parent_id')) {
-            $parentId = $request->input('parent_id');
-            if ($parentId === 'null' || $parentId === null || $parentId === '') {
-                $query->whereNull('parent_id');
-            } else {
-                $query->where('parent_id', $parentId);
+            if ($request->has('pais_id')) {
+                $query->where('pais_id', $request->input('pais_id'));
             }
-        }
 
-        $territorios = $query->orderBy('nombre')->get();
+            if ($request->has('parent_id')) {
+                $parentId = $request->input('parent_id');
+                if ($parentId === 'null' || $parentId === null || $parentId === '') {
+                    $query->whereNull('parent_id');
+                } else {
+                    $query->where('parent_id', $parentId);
+                }
+            }
+
+            return $query->orderBy('nombre')->get();
+        });
 
         return response()->json($territorios);
     }
@@ -52,13 +61,18 @@ class CatalogoController extends Controller
      */
     public function direcciones(Request $request): JsonResponse
     {
-        $query = Direccion::where('activo', true);
+        $territorioId = $request->input('territorio_id', 'all');
+        $cacheKey = "catalogo_direcciones_{$territorioId}";
 
-        if ($request->has('territorio_id')) {
-            $query->where('territorio_id', $request->input('territorio_id'));
-        }
+        $direcciones = Cache::remember($cacheKey, now()->addHours(24), function () use ($request) {
+            $query = Direccion::where('activo', true);
 
-        $direcciones = $query->get();
+            if ($request->has('territorio_id')) {
+                $query->where('territorio_id', $request->input('territorio_id'));
+            }
+
+            return $query->get();
+        });
 
         return response()->json($direcciones);
     }
@@ -69,22 +83,28 @@ class CatalogoController extends Controller
      */
     public function categoriasIncidencia(Request $request): JsonResponse
     {
-        $query = CategoriaIncidencia::where('activo', true);
+        $parentId = $request->input('parent_id', 'all');
+        $soloHojas = $request->boolean('solo_hojas') ? '1' : '0';
+        $cacheKey = "catalogo_categorias_incidencia_{$parentId}_{$soloHojas}";
 
-        if ($request->has('parent_id')) {
-            $parentId = $request->input('parent_id');
-            if ($parentId === 'null' || $parentId === null || $parentId === '') {
-                $query->whereNull('parent_id');
-            } else {
-                $query->where('parent_id', $parentId);
+        $categorias = Cache::remember($cacheKey, now()->addHours(24), function () use ($request) {
+            $query = CategoriaIncidencia::where('activo', true);
+
+            if ($request->has('parent_id')) {
+                $parentId = $request->input('parent_id');
+                if ($parentId === 'null' || $parentId === null || $parentId === '') {
+                    $query->whereNull('parent_id');
+                } else {
+                    $query->where('parent_id', $parentId);
+                }
             }
-        }
 
-        if ($request->boolean('solo_hojas')) {
-            $query->whereDoesntHave('hijos');
-        }
+            if ($request->boolean('solo_hojas')) {
+                $query->whereDoesntHave('hijos');
+            }
 
-        $categorias = $query->orderBy('nombre')->get();
+            return $query->orderBy('nombre')->get();
+        });
 
         return response()->json($categorias);
     }
@@ -94,7 +114,9 @@ class CatalogoController extends Controller
      */
     public function instituciones(): JsonResponse
     {
-        $instituciones = Institucion::where('activo', true)->orderBy('nombre')->get();
+        $instituciones = Cache::remember('catalogo_instituciones', now()->addHours(24), function () {
+            return Institucion::where('activo', true)->orderBy('nombre')->get();
+        });
 
         return response()->json($instituciones);
     }

@@ -2,6 +2,8 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { UserService } from '../../services/user.service.js';
 import { RoleService } from '../../../role/services/role.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { InstitucionService } from '../../../instituciones/services/institucion.service.js';
+import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
 
 export class UserFormComponent extends BaseComponent {
   constructor() {
@@ -16,6 +18,10 @@ export class UserFormComponent extends BaseComponent {
     this.emailInput = this.querySelector('#email');
     this.passwordInput = this.querySelector('#password');
     this.activoInput = this.querySelector('#activo');
+    this.institucionContainer = this.querySelector('#institucionContainer');
+    this.institucionSelect = this.querySelector('#institucion_id');
+    this.territorioContainer = this.querySelector('#territorioContainer');
+    this.territoriosSelect = this.querySelector('#territorios_select');
     this.rolesDisponiblesList = this.querySelector('#rolesDisponiblesList');
     this.rolesAsignadosList = this.querySelector('#rolesAsignadosList');
     this.formTitle = this.querySelector('#userModalLabel');
@@ -49,6 +55,9 @@ export class UserFormComponent extends BaseComponent {
 
     // Initialize data
     const init = async () => {
+      await this.cargarInstituciones();
+      await this.cargarTerritorios();
+
       if (userId) {
         document.title = 'Editar Usuario';
         if (this.formTitle) this.formTitle.textContent = 'Editar Usuario';
@@ -91,12 +100,13 @@ export class UserFormComponent extends BaseComponent {
       e.preventDefault();
       listEl.classList.remove('bg-opacity-75');
       listEl.style.borderColor = '';
-      
+
       const roleId = e.dataTransfer.getData('text/plain');
       const element = this.querySelector(`[data-role-id="${roleId}"]`);
       if (element) {
         listEl.appendChild(element);
         this.updateEmptyStates();
+        this.checkInstitucionRole();
       }
     });
   }
@@ -109,7 +119,8 @@ export class UserFormComponent extends BaseComponent {
     const dispEmptyIndicator = this.rolesDisponiblesList.querySelector('.empty-indicator');
     if (!hasDisponibles) {
       if (!dispEmptyIndicator) {
-        this.rolesDisponiblesList.innerHTML = '<span class="empty-indicator text-muted small text-center my-3 w-100">Sin roles disponibles</span>';
+        this.rolesDisponiblesList.innerHTML =
+          '<span class="empty-indicator text-muted small text-center my-3 w-100">Sin roles disponibles</span>';
       }
     } else if (dispEmptyIndicator) {
       dispEmptyIndicator.remove();
@@ -120,7 +131,8 @@ export class UserFormComponent extends BaseComponent {
     const asigEmptyIndicator = this.rolesAsignadosList.querySelector('.empty-indicator');
     if (!hasAsignados) {
       if (!asigEmptyIndicator) {
-        this.rolesAsignadosList.innerHTML = '<span class="empty-indicator text-muted small text-center my-3 w-100">Arrastre aquí...</span>';
+        this.rolesAsignadosList.innerHTML =
+          '<span class="empty-indicator text-muted small text-center my-3 w-100">Arrastre aquí...</span>';
       }
     } else if (asigEmptyIndicator) {
       asigEmptyIndicator.remove();
@@ -131,8 +143,8 @@ export class UserFormComponent extends BaseComponent {
     if (!this.rolesDisponiblesList || !this.rolesAsignadosList) return;
 
     try {
-      const roles = await RoleService.getAll();
-      const listRoles = roles || [];
+      const response = await RoleService.getAll(1, 15, null, { all: true });
+      const listRoles = Array.isArray(response) ? response : (response.data || []);
 
       this.rolesDisponiblesList.innerHTML = '';
       this.rolesAsignadosList.innerHTML = '';
@@ -146,12 +158,14 @@ export class UserFormComponent extends BaseComponent {
 
       listRoles.forEach((role) => {
         const item = document.createElement('div');
-        item.className = 'p-2 border rounded bg-white shadow-sm d-flex align-items-center gap-2 role-draggable-item';
+        item.className =
+          'p-2 border rounded bg-white shadow-sm d-flex align-items-center gap-2 role-draggable-item';
         item.style.cursor = 'grab';
         item.style.userSelect = 'none';
         item.setAttribute('draggable', 'true');
         item.setAttribute('data-role-id', role.id);
-        
+        item.setAttribute('data-role-name', role.nombre);
+
         item.innerHTML = `
           <i class="bi bi-grip-vertical text-muted"></i>
           <span class="fw-semibold small text-dark">${role.nombre}</span>
@@ -174,9 +188,94 @@ export class UserFormComponent extends BaseComponent {
       });
 
       this.updateEmptyStates();
+      this.checkInstitucionRole();
     } catch (error) {
       console.error('Error al cargar catálogo de roles:', error);
-      this.rolesDisponiblesList.innerHTML = '<span class="text-danger small">Error al cargar roles.</span>';
+      this.rolesDisponiblesList.innerHTML =
+        '<span class="text-danger small">Error al cargar roles.</span>';
+    }
+  }
+
+  async cargarInstituciones() {
+    try {
+      const response = await InstitucionService.getAll(1, 15, null, { all: true });
+      const list = Array.isArray(response) ? response : (response.data || []);
+
+      list.forEach((inst) => {
+        const option = document.createElement('option');
+        option.value = inst.id;
+        option.textContent = inst.nombre;
+        if (this.institucionSelect) {
+          this.institucionSelect.appendChild(option);
+        }
+      });
+    } catch (error) {
+      console.error('Error al cargar instituciones:', error);
+    }
+  }
+
+  async cargarTerritorios() {
+    try {
+      const paisId = AuthService.getPaisId();
+      const response = await CatalogoService.getTerritorios(paisId, null);
+      const territorios = response.data || response || [];
+      const list = Array.isArray(territorios) ? territorios : territorios.data || [];
+
+      if (this.territoriosSelect) {
+        this.territoriosSelect.innerHTML = '';
+        list.forEach((territorio) => {
+          const option = document.createElement('option');
+          option.value = territorio.id;
+          option.textContent = territorio.nombre;
+          this.territoriosSelect.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error('Error al cargar territorios:', error);
+    }
+  }
+
+  checkInstitucionRole() {
+    if (!this.rolesAsignadosList) return;
+
+    let isInstitucion = false;
+    let isSupervisor = false;
+
+    const assignedItems = this.rolesAsignadosList.querySelectorAll('.role-draggable-item');
+    assignedItems.forEach((item) => {
+      const roleName = item.getAttribute('data-role-name');
+      if (roleName) {
+        const nameLower = roleName.toLowerCase();
+        if (nameLower === 'institucion') {
+          isInstitucion = true;
+        } else if (nameLower === 'supervisor') {
+          isSupervisor = true;
+        }
+      }
+    });
+
+    // Institucion role toggle
+    if (this.institucionContainer && this.institucionSelect) {
+      if (isInstitucion) {
+        this.institucionContainer.classList.remove('d-none');
+        this.institucionSelect.required = true;
+      } else {
+        this.institucionContainer.classList.add('d-none');
+        this.institucionSelect.required = false;
+        this.institucionSelect.value = '';
+      }
+    }
+
+    // Supervisor role toggle
+    if (this.territorioContainer && this.territoriosSelect) {
+      if (isSupervisor) {
+        this.territorioContainer.classList.remove('d-none');
+        this.territoriosSelect.required = true;
+      } else {
+        this.territorioContainer.classList.add('d-none');
+        this.territoriosSelect.required = false;
+        Array.from(this.territoriosSelect.options).forEach((opt) => (opt.selected = false));
+      }
     }
   }
 
@@ -191,8 +290,20 @@ export class UserFormComponent extends BaseComponent {
         if (this.emailInput) this.emailInput.value = user.email || '';
         if (this.activoInput) this.activoInput.checked = !!user.activo;
 
+        if (this.institucionSelect && user.institucion_id) {
+          this.institucionSelect.value = user.institucion_id;
+        }
+
         const userRoleIds = (user.roles || []).map((r) => r.id);
         await this.cargarRolesCheckboxes(userRoleIds);
+
+        // Pre-select territorios
+        if (this.territoriosSelect && user.territorios) {
+          const userTerritorioIds = user.territorios.map((t) => String(t.id));
+          Array.from(this.territoriosSelect.options).forEach((opt) => {
+            opt.selected = userTerritorioIds.includes(opt.value);
+          });
+        }
       }
     } catch (error) {
       console.error('Error al cargar datos del usuario para edición:', error);
@@ -221,8 +332,23 @@ export class UserFormComponent extends BaseComponent {
     const password = this.passwordInput.value;
     const activo = this.activoInput.checked;
 
+    const institucion_id =
+      this.institucionSelect && !this.institucionContainer.classList.contains('d-none')
+        ? this.institucionSelect.value
+        : null;
+
     const assignedItems = this.rolesAsignadosList.querySelectorAll('[data-role-id]');
-    const roles = Array.from(assignedItems).map((item) => parseInt(item.getAttribute('data-role-id')));
+    const roles = Array.from(assignedItems).map((item) =>
+      parseInt(item.getAttribute('data-role-id'))
+    );
+
+    // Get selected territories if supervisor container is visible
+    let territorios = [];
+    if (this.territoriosSelect && !this.territorioContainer.classList.contains('d-none')) {
+      territorios = Array.from(this.territoriosSelect.selectedOptions).map((opt) =>
+        parseInt(opt.value)
+      );
+    }
 
     const payload = {
       username,
@@ -230,7 +356,12 @@ export class UserFormComponent extends BaseComponent {
       email,
       activo,
       roles,
+      territorios,
     };
+
+    if (institucion_id) {
+      payload.institucion_id = parseInt(institucion_id);
+    }
 
     if (password) {
       payload.password = password;
@@ -245,11 +376,10 @@ export class UserFormComponent extends BaseComponent {
 
       // Redirect back to users listing
       window.location.hash = '#/usuarios';
-
     } catch (error) {
       console.error('Error al guardar usuario:', error);
       this.mostrarError(error.message || 'Error al procesar el formulario.');
-      
+
       // Reset loading indicators
       if (this.btnSubmit) this.btnSubmit.disabled = false;
       if (this.loadingSpinner) this.loadingSpinner.classList.add('d-none');

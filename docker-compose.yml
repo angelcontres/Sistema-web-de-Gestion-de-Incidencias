@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Servidor Web (Nginx) - Despacha Frontend y redirige API
@@ -27,6 +27,36 @@ services:
     #user: "1000:1000"
     volumes:
       - ./backend/api:/var/www/html
+    networks:
+      - sistema_net
+
+  # Worker de Laravel para procesar tareas en segundo plano (Colas)
+  laravel-worker:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: sistema_laravel_worker
+    restart: always
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+    volumes:
+      - ./backend/api:/var/www/html
+    depends_on:
+      - postgres
+    networks:
+      - sistema_net
+
+  # Scheduler de Laravel para ejecutar tareas programadas (ETL y comandos SQA)
+  laravel-scheduler:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: sistema_laravel_scheduler
+    restart: always
+    command: php artisan schedule:work
+    volumes:
+      - ./backend/api:/var/www/html
+    depends_on:
+      - postgres
     networks:
       - sistema_net
 
@@ -60,9 +90,83 @@ services:
     networks:
       - sistema_net
 
+  # Grafana para visualización y analítica interna (Puerto 3010 libre)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sistema_grafana
+    restart: always
+    ports:
+      - "3010:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    depends_on:
+      - postgres
+    networks:
+      - sistema_net
+
+  # @TODO: Acceder al sonarqube de produccion para hacer la configuración antes de aplicarlo en el despligue
+  # Base de datos dedicada para SonarQube
+  sonarqube_db:
+    image: postgres:15-alpine
+    container_name: sistema_sonarqube_db
+    restart: always
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar_secure_password
+      POSTGRES_DB: sonarqube
+    volumes:
+      - sonarqube_db_data:/var/lib/postgresql/data
+    networks:
+      - sistema_net
+
+  sonarqube_init:
+    image: busybox
+    container_name: sistema_sonarqube_init
+    command: chown -R 1000:1000 /opt/sonarqube/data /opt/sonarqube/extensions /opt/sonarqube/logs
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - sistema_net
+
+  # Servidor SonarQube (Calidad de Código / SQA)
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sistema_sonarqube
+    restart: always
+    ports:
+      - "9009:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube_db:5432/sonarqube
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar_secure_password
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    depends_on:
+      - sonarqube_db
+      - sonarqube_init
+    networks:
+      - sistema_net
+
+      
 networks:
   sistema_net:
     driver: bridge
 
 volumes:
   postgres_data:
+  grafana_data:
+  sonarqube_db_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

@@ -53,8 +53,8 @@ export class MenuOptionsFormComponent extends BaseComponent {
     const cargarOpcionesPadre = async () => {
       if (!selectPadre) return;
       try {
-        const response = await MenuOptionService.getAll();
-        const opciones = response.data || [];
+        const response = await MenuOptionService.getAll(1, 15, null, { all: true });
+        const opciones = Array.isArray(response) ? response : (response.data || []);
 
         opciones.forEach((opcion) => {
           // Evitar que una opción sea su propio padre

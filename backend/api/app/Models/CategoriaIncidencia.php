@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class CategoriaIncidencia extends Model
 {
     use HasFactory;
+    use HasLocalTimezone;
 
     protected $table = 'categorias_incidencia';
 

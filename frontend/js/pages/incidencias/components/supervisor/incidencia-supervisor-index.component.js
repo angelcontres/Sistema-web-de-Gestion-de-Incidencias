@@ -2,11 +2,13 @@ import { BaseComponent } from '../../../../core/base-component.js';
 import { IncidenciaService } from '../../services/incidencia.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
+import { getBadgeClass, getTextColorClass } from '../../../../shared/utils/badge-states.js';
 
 export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   constructor() {
     super('js/pages/incidencias/components/supervisor/incidencia-supervisor-index.component.html');
     this.map = null;
+    this.clusterGroup = null;
     this.markers = [];
     this.chart = null;
     this.incidencias = [];
@@ -34,10 +36,10 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
   async cargarDatos() {
     this.mostrarSpinners(true);
     try {
-      this.incidencias = await IncidenciaService.getAll();
+      const response = await IncidenciaService.getAll();
+      this.incidencias = Array.isArray(response) ? response : (response.data || []);
       this.renderAlertas();
       this.initOrUpdateMap();
-      this.renderChart();
     } catch (error) {
       console.error('Error cargando dashboard:', error);
     } finally {
@@ -52,8 +54,8 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
 
     container.innerHTML = '';
 
-    // Alertas: Pendientes (2) o En Revisión (3)
-    const alertas = this.incidencias.filter((i) => i.estado_id === 2 || i.estado_id === 3);
+    // Alertas: Pendientes (1) o En Revisión (2)
+    const alertas = this.incidencias.filter((i) => i.estado_id === 1 || i.estado_id === 2);
     badge.textContent = alertas.length;
 
     if (alertas.length === 0) {
@@ -67,22 +69,20 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       a.href = 'javascript:void(0)';
       a.className = 'list-group-item list-group-item-action p-3 border-start-0 border-end-0';
 
-      const icon =
-        inc.estado_id === 2
-          ? '<i class="bi bi-circle-fill text-danger me-2" style="font-size: 0.5rem;"></i>'
-          : '<i class="bi bi-circle-fill text-warning me-2" style="font-size: 0.5rem;"></i>';
+      const textClass = getTextColorClass(inc.estado);
+      const icon = `<i class="bi bi-circle-fill text-${textClass} me-2" style="font-size: 0.5rem;"></i>`;
       const prioridad = inc.prioridad ? inc.prioridad.nombre : 'Normal';
       const color = inc.prioridad ? inc.prioridad.color_hex : '#6c757d';
 
       a.innerHTML = `
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <h6 class="mb-0 fw-bold text-truncate" style="max-width: 70%;">${icon} #${inc.id} - ${inc.incidencia_descripcion || 'Sin descripción'}</h6>
-          <span class="badge rounded-pill" style="background-color: ${color}20; color: ${color}; border: 1px solid ${color}; font-size: 0.65rem;">${prioridad}</span>
+        <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+          <h6 class="mb-0 fw-bold text-truncate text-dark" style="max-width: 70%;">${icon} #${inc.id} - ${inc.incidencia_descripcion || 'Sin descripción'}</h6>
+          <span class="badge rounded-pill shadow-sm" style="background-color: ${color}15; color: ${color}; border: 1px solid ${color}40; font-size: 0.65rem; font-weight: 700;">${prioridad}</span>
         </div>
-        <div class="small text-muted mb-1"><i class="bi bi-geo-alt me-1"></i> ${inc.direccion ? inc.direccion.detalle : 'Desconocida'}</div>
-        <div class="small text-muted d-flex justify-content-between">
-          <span><i class="bi bi-clock me-1"></i> ${new Date(inc.created_at).toLocaleDateString()}</span>
-          <span class="fw-bold text-${inc.estado_id === 2 ? 'danger' : 'warning'}">${inc.estado ? inc.estado.nombre : ''}</span>
+        <div class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-primary me-1"></i> ${inc.direccion ? inc.direccion.detalle : 'Desconocida'}</div>
+        <div class="small text-muted d-flex justify-content-between align-items-center">
+          <span class="d-flex align-items-center gap-1"><i class="bi bi-clock-history"></i> ${new Date(inc.created_at).toLocaleDateString()}</span>
+          <span class="badge bg-${getTextColorClass(inc.estado)}-soft text-${getTextColorClass(inc.estado)} rounded-pill px-2 py-1 fw-bold">${inc.estado ? inc.estado.nombre : ''}</span>
         </div>
       `;
 
@@ -102,10 +102,19 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(this.map);
+
+      // Initialize the cluster group ONCE
+      this.clusterGroup = L.markerClusterGroup({
+        chunkedLoading: true, // Optimizes performance for 1000+ markers
+        maxClusterRadius: 50,
+      });
+      this.map.addLayer(this.clusterGroup);
     }
 
     // Limpiar marcadores anteriores
-    this.markers.forEach((m) => this.map.removeLayer(m));
+    if (this.clusterGroup) {
+      this.clusterGroup.clearLayers();
+    }
     this.markers = [];
 
     const conCoordenadas = this.incidencias.filter(
@@ -117,9 +126,9 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       const lng = parseFloat(inc.direccion.longitud);
 
       let markerColor = 'blue';
-      if (inc.estado_id === 2) markerColor = 'red';
-      else if (inc.estado_id === 3) markerColor = 'orange';
-      else if (inc.estado_id === 5) markerColor = 'green';
+      if (inc.estado_id === 1) markerColor = 'red';
+      else if (inc.estado_id === 2) markerColor = 'orange';
+      else if (inc.estado_id === 4) markerColor = 'green';
 
       const customIcon = new L.Icon({
         iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${markerColor}.png`,
@@ -130,7 +139,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
         shadowSize: [41, 41],
       });
 
-      const m = L.marker([lat, lng], { icon: customIcon }).addTo(this.map);
+      const m = L.marker([lat, lng], { icon: customIcon });
 
       // Creamos un botón para el popup en lugar de un enlace href simple
       const popupContent = document.createElement('div');
@@ -150,73 +159,21 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       this.markers.push(m);
     });
 
-    // Centrar mapa si hay incidencias
+    // Add all markers to the cluster group efficiently
     if (this.markers.length > 0) {
-      const group = new L.featureGroup(this.markers);
-      this.map.fitBounds(group.getBounds().pad(0.1));
+      this.clusterGroup.addLayers(this.markers);
+      // Fit bounds to show all clusters
+      this.map.fitBounds(this.clusterGroup.getBounds().pad(0.1));
     }
-  }
-
-  renderChart() {
-    const canvas = this.querySelector('#chart-incidencias-pais');
-    if (!canvas || !window.Chart) return;
-
-    // Agrupar por país
-    const paisesMap = {};
-    this.incidencias.forEach((inc) => {
-      const paisNombre =
-        inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
-          ? inc.direccion.territorio.pais.nombre
-          : 'Desconocido';
-      if (!paisesMap[paisNombre]) paisesMap[paisNombre] = 0;
-      paisesMap[paisNombre]++;
-    });
-
-    const labels = Object.keys(paisesMap);
-    const data = Object.values(paisesMap);
-
-    if (this.chart) {
-      this.chart.destroy();
-    }
-
-    this.chart = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Total Incidencias',
-            data: data,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            borderRadius: 4,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1 },
-          },
-        },
-        plugins: {
-          legend: { display: false },
-        },
-      },
-    });
   }
 
   abrirModalDespacho(inc) {
     this.incidenciaSeleccionada = inc;
 
     this.querySelector('#modal-incidencia-id').textContent = `#${inc.id}`;
-    this.querySelector('#modal-incidencia-estado').textContent = inc.estado
-      ? inc.estado.nombre
-      : '';
+    const badgeEl = this.querySelector('#modal-incidencia-estado');
+    badgeEl.textContent = inc.estado ? inc.estado.nombre : '';
+    badgeEl.className = `badge bg-${getBadgeClass(inc.estado)}`;
     this.querySelector('#modal-incidencia-fecha').textContent = new Date(
       inc.created_at
     ).toLocaleString();
@@ -236,8 +193,8 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
 
     // Disable button if already dispatched/in process/resolved
     const btn = this.querySelector('#btn-despachar-incidencia');
-    if (inc.estado_id >= 4) {
-      // 4: En Proceso, 5: Resuelto, 6: Rechazado
+    if (inc.estado_id >= 3) {
+      // 3: En Proceso, 4: Resuelto, 5: Rechazado
       btn.disabled = true;
       btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Ya Despachada';
     } else {
@@ -261,7 +218,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-primary'
     );
-    
+
     if (!isConfirmed) return;
 
     const btn = this.querySelector('#btn-despachar-incidencia');
@@ -270,10 +227,10 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...';
 
     try {
-      // Estado ID 4 es "En Proceso"
+      // Estado ID 3 es "En Proceso"
       await IncidenciaService.update(this.incidenciaSeleccionada.id, {
         version: this.incidenciaSeleccionada.version,
-        estado_id: 4,
+        estado_id: 3,
         tipo_incidencia_id: this.incidenciaSeleccionada.tipo_incidencia_id,
         sub_tipo_incidencia_id: this.incidenciaSeleccionada.sub_tipo_incidencia_id,
       });
@@ -284,7 +241,9 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
       ToastService.success('Incidencia despachada con éxito.');
     } catch (error) {
       console.error('Error al despachar la incidencia:', error);
-      ToastService.error('Error al despachar la incidencia. Puede que alguien más la haya modificado.');
+      ToastService.error(
+        'Error al despachar la incidencia. Puede que alguien más la haya modificado.'
+      );
       btn.disabled = false;
       btn.innerHTML = '<i class="bi bi-send-check-fill me-2"></i>Despachar';
     }

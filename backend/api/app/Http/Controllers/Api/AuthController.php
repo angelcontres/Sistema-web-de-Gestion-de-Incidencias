@@ -45,13 +45,15 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
+        /** @var User $user */
         $user = clone $request->user();
         $user->load('roles.permisos');
 
         $permisosList = collect();
         foreach ($user->roles as $role) {
             foreach ($role->permisos as $permiso) {
-                $permisosList->push($permiso->nombre);
+                // Agregamos el formato estandarizado (ej: 'READ_USUARIOS')
+                $permisosList->push(strtoupper($permiso->accion.'_'.$permiso->recurso));
             }
         }
         $permisosList = $permisosList->unique()->values();
@@ -67,6 +69,14 @@ class AuthController extends Controller
                 'is_admin' => $isAdmin,
                 'permisos' => $permisosList,
                 'pais_id' => $user->pais_id,
+                'institucion_id' => $user->institucion_id,
+                'max_files' => (int) env('MAX_FILE_UPLOAD_LIMIT', 5),
+                'roles' => $user->roles->map(function ($role) {
+                    return [
+                        'id' => $role->id,
+                        'nombre' => $role->nombre,
+                    ];
+                })->toArray(),
             ],
         ], 200);
     }

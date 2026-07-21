@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL-Incidencias
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    user: angeltux
+    secureJsonData:
+      password: password_segura_upse
+    jsonData:
+      database: gestion_incidencias
+      sslmode: disable
+      postgresVersion: 1500
+    isDefault: true
