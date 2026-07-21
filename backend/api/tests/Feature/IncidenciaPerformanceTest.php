@@ -23,6 +23,10 @@ class IncidenciaPerformanceTest extends TestCase
         $user = User::where('email', 'test@example.com')->first();
         $this->actingAs($user);
 
+        // Warm up request to load any static memory caches (e.g. roles/permissions)
+        $this->getJson('/api/v1/incidents');
+
+
         for ($i=0; $i<2; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 1',
@@ -48,8 +52,6 @@ class IncidenciaPerformanceTest extends TestCase
         DB::flushQueryLog();
         $this->getJson('/api/v1/incidents');
         $queries12 = count(DB::getQueryLog());
-        DB::flushQueryLog();
-
         $this->assertEquals($queries2, $queries12, "Se detectó N+1 en /api/v1/incidents. $queries2 vs $queries12");
     }
 
@@ -57,6 +59,10 @@ class IncidenciaPerformanceTest extends TestCase
     {
         $user = User::where('email', 'test@example.com')->first();
         $this->actingAs($user);
+
+        // Warm up request to load any static memory caches
+        $this->getJson('/api/v1/dashboard/stats');
+
 
         for ($i=0; $i<2; $i++) {
             Incidencia::create([
