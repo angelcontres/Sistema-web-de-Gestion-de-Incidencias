@@ -14,11 +14,14 @@ jobs:
             docker compose down
           fi
 
-      # 2. El truco de Docker: Usamos busybox (que corre como root interno) para fulminar la carpeta vendor y grafana anterior
+      # 2. El truco de Docker: Usamos busybox para eliminar archivos creados por root (vendor, grafana y logs de test)
       - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
         run: |
           if [ -d "backend/api/vendor" ]; then
             docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
+          fi
+          if [ -d "backend/api/build" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
           fi
           if [ -d "grafana" ]; then
             docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
