@@ -62,6 +62,12 @@ jobs:
 
       - name: Ejecutar pruebas automatizadas y generar reporte de cobertura
         run: docker exec sistema_laravel php artisan test
+      - name: Esperar a que SonarQube inicie por completo
+        run: |
+              echo "Esperando a que SonarQube levante (puede tomar de 1 a 3 minutos)..."
+              until curl -s http://localhost:9009/api/system/status | grep '"status":"UP"'; do
+                sleep 10
+              done
 
       - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
         run: docker image prune -f
