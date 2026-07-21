@@ -93,13 +93,21 @@ export class DashboardComponent extends BaseComponent {
       }
 
       if (!menuList || !Array.isArray(menuList) || menuList.length === 0) {
-        const response = DashboardService.getMyMenus();
+        const response = await DashboardService.getMyMenus();
         menuList = response.data || response;
         localStorage.setItem('user_menu', JSON.stringify(menuList));
       }
 
-      // Filtrar solo los menús de nivel superior
-      const rootMenus = menuList.filter((item) => !item.padre_id);
+      // Filtrar solo los menús de nivel superior y verificar permisos
+      const rootMenus = menuList.filter((item) => {
+        if (item.padre_id) return false;
+        
+        // Check routing access rights
+        if (item.ruta && item.ruta !== '#/' && !AuthService.canAccessRoute(item.ruta)) {
+          return false;
+        }
+        return true;
+      });
 
       container.innerHTML = rootMenus
         .map(

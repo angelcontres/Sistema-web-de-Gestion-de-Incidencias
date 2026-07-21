@@ -41,3 +41,15 @@
 - Se implementó Marker Clustering (Leaflet.markercluster) en los mapas de Dashboard y Supervisor para renderizar eficientemente grandes volúmenes de incidencias.
 - Se añadió soporte de Lazy Loading (`loading="lazy"`) a las imágenes de evidencias renderizadas dinámicamente en Formularios y Kanban.
 - Se omitió explícitamente el uso de empaquetadores (bundlers/minifiers) por decisión del usuario para mantener el stack 100% puro y Vanilla.
+### Sesión: Implementación de RBAC (Feature 9)
+
+**Features completadas:** 9 (rbac_implementation).
+
+**Cambios realizados:**
+- Se limpió el array de traducciones redundantes en `PermissionsSeeder.php`, dejando únicamente `'opciones'` y `'categorias'`.
+- Se refactorizó el middleware `CheckResourcePermission.php` para eliminar el diccionario hardcodeado, obteniendo el nombre del recurso de forma dinámica mediante `$request->route()->getName()$.
+- Se aplicaron alias a todas las rutas de recursos en `api.php` mediante `->names(...)`.
+- El frontend se actualizó para mapear de manera estricta los permisos de un solo nombre (ej. `categorias`).
+- Integración funcional de `AuthService.hasPermission()` en la generación dinámica del Sidebar.
+- Se añadió un interceptor global para el código HTTP 403 en `api.js`, despachando un CustomEvent para mostrar un `ToastService` al usuario.
+

@@ -39,45 +39,15 @@ class CheckResourcePermission
             return response()->json(['message' => 'Método HTTP no soportado'], 405);
         }
 
-        // Resource Parsing
-        $segments = $request->segments();
-        $recurso = null;
+        $routeName = $request->route() ? $request->route()->getName() : null;
 
-        foreach ($segments as $index => $segment) {
-            if ($segment === 'v1' && isset($segments[$index + 1])) {
-                $recurso = $segments[$index + 1];
-                break;
-            }
-        }
-
-        // Some specific routes shouldn't be blocked here
-        $ignoredResources = ['login', 'logout', 'me', 'me/menu'];
-        if (! $recurso || in_array($recurso, $ignoredResources) || $request->is('api/v1/me/menu')) {
+        // Si la ruta no tiene nombre, se asume que no está protegida por recursos (ej. /v1/me, /v1/logout)
+        if (! $routeName) {
             return $next($request);
         }
 
-        // Resource Translation for Permission checking (Endpoints are English, Permissions are Spanish)
-        $resourceMap = [
-            'users' => 'usuarios',
-            'roles' => 'roles',
-            'permissions' => 'permisos',
-            'countries' => 'paises',
-            'territories' => 'territorios',
-            'addresses' => 'direcciones',
-            'incident_categories' => 'categorias_incidencia',
-            'incident-categories' => 'categorias_incidencia',
-            'incidents' => 'incidencias',
-            'institutions' => 'instituciones',
-            'priorities' => 'prioridades',
-            'menu_options' => 'opciones_menu',
-            'menu-options' => 'opciones_menu',
-        ];
-
-        // Replace hyphens with underscores to match db convention
-        $recurso = str_replace('-', '_', $recurso);
-        
-        // Translate to Spanish if exists in map
-        $recurso = $resourceMap[$recurso] ?? $recurso;
+        // Extraer el recurso base del nombre de la ruta (ej: "opciones.index" -> "opciones")
+        $recurso = explode('.', $routeName)[0];
 
         // Validation
         $user->load('roles.permisos');

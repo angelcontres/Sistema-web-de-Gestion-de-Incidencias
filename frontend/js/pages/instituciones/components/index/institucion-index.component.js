@@ -81,7 +81,7 @@ export class InstitucionIndexComponent extends BaseComponent {
       });
 
       // Load initial data
-      tblDatos.load(() => InstitucionService.getAll({}));
+      tblDatos.load((page, perPage, cursor) => InstitucionService.getAll(page, perPage, cursor, {}));
     }
 
     // Listen for form save event to refresh table

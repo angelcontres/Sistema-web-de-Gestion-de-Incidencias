@@ -55,6 +55,13 @@ export async function apiRequest(endpoint, options = {}) {
     data = {};
   }
 
+  // Handle 403 Forbidden globally
+  if (response.status === 403) {
+    const msg = data.message || 'No tienes permisos para realizar esta acción.';
+    window.dispatchEvent(new CustomEvent('api-forbidden', { detail: { message: msg } }));
+    throw new Error(msg);
+  }
+
   if (!response.ok) {
     let errMsg = data.message || `Error del servidor (HTTP ${response.status})`;
     

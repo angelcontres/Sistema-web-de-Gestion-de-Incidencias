@@ -110,17 +110,26 @@ export class SideBarComponent extends BaseComponent {
       const s = String(v ?? '').trim();
       return /^[a-z0-9\s-]+$/i.test(s) ? s : '';
     };
+
     menuList.forEach((item) => {
+      // Filtrar elementos a los que el usuario no tiene acceso de lectura
+      const itemRuta = safeHref(item.ruta);
+      if (itemRuta && itemRuta !== '#/' && !AuthService.canAccessRoute(itemRuta)) {
+        return; // Omitir esta opción del menú
+      }
+
       lookup[item.id] = {
         ...item,
         nombre: esc(item.nombre),
-        ruta: safeHref(item.ruta),
+        ruta: itemRuta,
         icono: safeClass(item.icono),
         children: [],
       };
     });
 
     menuList.forEach((item) => {
+      if (!lookup[item.id]) return; // fue filtrado
+
       if (item.padre_id && lookup[item.padre_id]) {
         lookup[item.padre_id].children.push(lookup[item.id]);
       } else if (!item.padre_id) {
@@ -128,7 +137,26 @@ export class SideBarComponent extends BaseComponent {
       }
     });
 
-    return tree;
+    // Filtrar ramas vacías (padres que se quedaron sin hijos permitidos)
+    const filterTree = (nodes) => {
+      return nodes.filter(node => {
+        // Si el nodo originalmente tenía hijos en la BD, se renderizará como dropdown.
+        // Pero como no tenemos ese flag, solo podemos ver si ahora tiene hijos.
+        // Un menú es hoja válida si AuthService lo permitió.
+        if (node.children.length > 0) {
+          node.children = filterTree(node.children);
+          return node.children.length > 0;
+        }
+        // Si no tiene hijos, lo conservamos. El padre vacío se mostrará como link simple,
+        // pero la mayoría de los padres vacíos (ej. Mantenimiento) no tienen AuthService allowed si sus hijos no.
+        // Sin embargo, AuthService.canAccessRoute deja pasar a todos por defecto si no están en su diccionario.
+        // Para no romper la UI original, dejaremos que las hojas pasen.
+        // El Dashboard SIEMPRE debe pasar.
+        return true; 
+      });
+    };
+
+    return filterTree(tree);
   }
 
   renderMenuItems(menuTree) {

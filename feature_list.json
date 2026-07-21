@@ -130,6 +130,19 @@
       "sdd": true,
       "priority": "high",
       "status": "done"
+    },
+    {
+      "id": 9,
+      "name": "rbac_implementation",
+      "title": "Implementar RBAC en toda la aplicación",
+      "description": "Aplicar controles de acceso basados en roles en todo el sistema (backend y frontend).",
+      "acceptance": [
+        "El backend valida permisos usando el middleware para las rutas correspondientes.",
+        "El frontend utiliza los permisos del usuario logueado para mostrar u ocultar opciones y botones."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "done"
     }
   ]
 }

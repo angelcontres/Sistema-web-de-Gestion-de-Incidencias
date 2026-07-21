@@ -43,26 +43,26 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
 
     Route::get('/v1/me/menu', [UserMenuController::class, 'index']);
 
-    Route::apiResource('v1/menu-options', OpcionMenuController::class);
-    Route::apiResource('v1/roles', RoleController::class);
-    Route::post('v1/roles/{id}/permissions', [RoleController::class, 'assignPermissions']);
-    Route::apiResource('v1/permissions', PermisoController::class);
-    Route::apiResource('v1/users', UserController::class);
+    Route::apiResource('v1/menu-options', OpcionMenuController::class)->names('opciones');
+    Route::apiResource('v1/roles', RoleController::class)->names('roles');
+    Route::post('v1/roles/{id}/permissions', [RoleController::class, 'assignPermissions'])->name('roles.assignPermissions');
+    Route::apiResource('v1/permissions', PermisoController::class)->names('permisos');
+    Route::apiResource('v1/users', UserController::class)->names('usuarios');
 
-    Route::apiResource('v1/countries', PaisController::class);
-    Route::apiResource('v1/territories', TerritorioController::class);
-    Route::apiResource('v1/addresses', DireccionController::class);
-    Route::apiResource('v1/incident-categories', CategoriaIncidenciaController::class);
-    Route::apiResource('v1/incidents', IncidenciaController::class);
-    Route::get('v1/incidents/{id}/historial', [IncidenciaController::class, 'getHistorial']);
-    Route::post('v1/incidents/{id}/comentarios', [IncidenciaController::class, 'addComment']);
+    Route::apiResource('v1/countries', PaisController::class)->names('paises');
+    Route::apiResource('v1/territories', TerritorioController::class)->names('territorios');
+    Route::apiResource('v1/addresses', DireccionController::class)->names('direcciones');
+    Route::apiResource('v1/incident-categories', CategoriaIncidenciaController::class)->names('categorias');
+    Route::apiResource('v1/incidents', IncidenciaController::class)->names('incidencias');
+    Route::get('v1/incidents/{id}/historial', [IncidenciaController::class, 'getHistorial'])->name('incidencias.historial');
+    Route::post('v1/incidents/{id}/comentarios', [IncidenciaController::class, 'addComment'])->name('incidencias.comentarios');
 
-    Route::get('/v1/trp/performance-stats', [TrpController::class, 'performanceStats']);
-    Route::get('/v1/trp/performance-logs/export', [TrpController::class, 'exportLogs']);
+    Route::get('/v1/trp/performance-stats', [TrpController::class, 'performanceStats'])->name('trp.performanceStats');
+    Route::get('/v1/trp/performance-logs/export', [TrpController::class, 'exportLogs'])->name('trp.exportLogs');
     Route::apiResource('v1/institutions', InstitucionController::class)->parameters([
         'institutions' => 'institucion',
-    ]);
+    ])->names('instituciones');
     Route::apiResource('v1/priorities', PrioridadController::class)->parameters([
         'priorities' => 'prioridad',
-    ]);
+    ])->names('prioridades');
 });
