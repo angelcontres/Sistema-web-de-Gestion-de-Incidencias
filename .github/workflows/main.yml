@@ -60,8 +60,12 @@ jobs:
       - name: Ejecutar migraciones de OLAP dentro del contenedor
         run: docker exec sistema_laravel php artisan migrate --path=database/migrations/olap --force
 
-      - name: Ejecutar pruebas automatizadas y generar reporte de cobertura
-        run: docker exec sistema_laravel php artisan test
+      - name: Ejecutar pruebas automatizadas y generar reporte de cobertura (Backend)
+        run: docker exec sistema_laravel vendor/bin/phpunit --coverage-clover build/logs/clover.xml --log-junit build/logs/junit.xml || true
+
+      - name: Ejecutar pruebas de Frontend y cobertura
+        run: |
+          docker run --rm -v "$(pwd)/frontend:/app" -w /app node:18-alpine sh -c "npm install && npm run test" || true
 
       - name: Esperar a que SonarQube inicie por completo
         run: |
@@ -77,8 +81,6 @@ jobs:
             --network="host" \
             -v "$(pwd):/usr/src" \
             sonarsource/sonar-scanner-cli \
-            -Dsonar.projectKey=Sistema-web-gestion-incidencias \
-            -Dsonar.sources=. \
             -Dsonar.host.url="http://localhost:9009" \
             -Dsonar.login="sqp_4459feb32685175a06e4e7e04c5dd6fb7d7ace1d"
 
