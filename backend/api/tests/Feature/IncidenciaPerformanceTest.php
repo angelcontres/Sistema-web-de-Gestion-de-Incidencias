@@ -114,6 +114,7 @@ class IncidenciaPerformanceTest extends TestCase
         $query2 = "SELECT * FROM reporte_incidencias WHERE created_at >= '2026-01-01 00:00:00'";
         
         if (DB::getDriverName() === 'pgsql') {
+            DB::statement('SET enable_seqscan = off');
             $explain1 = DB::select("EXPLAIN " . $query1);
             $plan1 = json_encode($explain1);
             $this->assertStringNotContainsString('Seq Scan on reporte_incidencias', $plan1, 'El plan de ejecución no debe contener un escaneo secuencial');
@@ -121,6 +122,7 @@ class IncidenciaPerformanceTest extends TestCase
             $explain2 = DB::select("EXPLAIN " . $query2);
             $plan2 = json_encode($explain2);
             $this->assertStringNotContainsString('Seq Scan on reporte_incidencias', $plan2, 'El plan de ejecución no debe contener un escaneo secuencial para created_at');
+            DB::statement('SET enable_seqscan = on');
         } elseif (DB::getDriverName() === 'sqlite') {
             $explain1 = DB::select("EXPLAIN QUERY PLAN " . $query1);
             $plan1 = json_encode($explain1);

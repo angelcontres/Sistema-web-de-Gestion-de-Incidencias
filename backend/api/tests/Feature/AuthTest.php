@@ -77,8 +77,6 @@ class AuthTest extends TestCase
         $opcion = OpcionMenu::firstOrCreate([
             'nombre' => 'Roles',
             'ruta' => '/roles',
-            'orden' => 1,
-            'activo' => true,
             'created_by' => $admin->id,
         ]);
         $permisoAdmin = Permiso::firstOrCreate(['nombre' => 'Gestionar Roles', 'recurso' => 'roles', 'accion' => 'READ', 'opcion_menu_id' => $opcion->id]);

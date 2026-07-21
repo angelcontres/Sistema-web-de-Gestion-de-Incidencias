@@ -59,12 +59,10 @@ class DashboardTest extends TestCase
         Schema::enableForeignKeyConstraints();
 
         // Tratar de sembrar algunas dimensiones si no existen para evitar foreign key errors en la inserción
-        // Ignoramos errores porque la migración podría haberlos creado ya
+        // En Postgres fallos de queries manuales en transacciones abortan toda la transacción
         try {
             if (DB::getDriverName() === 'sqlite') {
                 DB::statement("ATTACH DATABASE 'file:metrics_db?mode=memory&cache=shared' AS metrics");
-
-                // Also create the required tables in the attached database
                 DB::statement('CREATE TABLE IF NOT EXISTS metrics.dim_estado (id INTEGER PRIMARY KEY, nombre TEXT)');
                 DB::statement('CREATE TABLE IF NOT EXISTS metrics.dim_tiempo (id INTEGER PRIMARY KEY, fecha TEXT, anio INTEGER, mes INTEGER, dia INTEGER)');
                 DB::statement('CREATE TABLE IF NOT EXISTS metrics.dim_prioridad (id INTEGER PRIMARY KEY, nombre TEXT)');
@@ -72,36 +70,14 @@ class DashboardTest extends TestCase
                 DB::statement('CREATE TABLE IF NOT EXISTS metrics.fact_incidencias (id INTEGER PRIMARY KEY, usuario_reporta_id INTEGER, estado_id INTEGER, prioridad_id INTEGER, institucion_id INTEGER, tiempo_id INTEGER, territorio_id INTEGER, horas_resolucion INTEGER, created_at DATETIME, updated_at DATETIME)');
             } else {
                 DB::statement('CREATE SCHEMA IF NOT EXISTS metrics');
-            }
-
-            // Insertar datos dummy en dimensiones si la tabla está vacía
-            if (DB::table('metrics.dim_estado')->count() === 0) {
-                DB::table('metrics.dim_estado')->insert([
-                    ['id' => 1, 'nombre' => 'Pendiente'],
-                    ['id' => 2, 'nombre' => 'En Revisión'],
-                    ['id' => 3, 'nombre' => 'En Proceso'],
-                    ['id' => 4, 'nombre' => 'Resuelto'],
-                ]);
-            }
-            if (DB::table('metrics.dim_tiempo')->count() === 0) {
-                DB::table('metrics.dim_tiempo')->insert([
-                    ['id' => 1, 'fecha' => now()->format('Y-m-d'), 'anio' => now()->year, 'mes' => now()->month, 'dia' => now()->day],
-                ]);
-            }
-            if (DB::table('metrics.dim_prioridad')->count() === 0) {
-                DB::table('metrics.dim_prioridad')->insert([
-                    ['id' => 1, 'nombre' => 'Baja'],
-                    ['id' => 2, 'nombre' => 'Alta'],
-                ]);
-            }
-            if (DB::table('metrics.dim_institucion')->count() === 0) {
-                DB::table('metrics.dim_institucion')->insert([
-                    ['id' => 1, 'nombre' => 'Bomberos'],
-                ]);
+                DB::statement('CREATE TABLE IF NOT EXISTS metrics.dim_estado (id serial PRIMARY KEY, nombre varchar(255))');
+                DB::statement('CREATE TABLE IF NOT EXISTS metrics.dim_tiempo (id serial PRIMARY KEY, fecha timestamp, anio int, mes int, dia int, dia_semana int)');
+                DB::statement('CREATE TABLE IF NOT EXISTS metrics.dim_prioridad (id serial PRIMARY KEY, nombre varchar(255))');
+                DB::statement('CREATE TABLE IF NOT EXISTS metrics.dim_institucion (id serial PRIMARY KEY, nombre varchar(255))');
+                DB::statement('CREATE TABLE IF NOT EXISTS metrics.fact_incidencias (id serial PRIMARY KEY, usuario_reporta_id int, estado_id int, prioridad_id int, institucion_id int, tiempo_id int, territorio_id int, horas_resolucion int, created_at timestamp, updated_at timestamp)');
             }
         } catch (\Exception $e) {
-            // Si falla es probablemente porque la BD de test es SQLite y no soporta esquemas
-            // O porque ya existen. Ignoramos para que el test pueda continuar.
+            // Se ignora si las tablas/schemas no existen o fallan
         }
     }
 

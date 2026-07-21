@@ -46,14 +46,16 @@ class DashboardMetricsArchitectureTest extends TestCase
         \Illuminate\Support\Facades\Cache::flush();
         
         $queryExecuted = false;
-        try {
-            $queryObject->getMetrics('Ciudadano', $user);
-        } catch (QueryException $e) {
-            // En SQLite fallará porque no existe el schema metrics
-            $sql = $e->getSql();
-            if (str_contains($sql, 'metrics') && str_contains($sql, 'fact_incidencias')) {
+        \Illuminate\Support\Facades\DB::listen(function ($query) use (&$queryExecuted) {
+            if (str_contains($query->sql, 'metrics') && str_contains($query->sql, 'fact_incidencias')) {
                 $queryExecuted = true;
             }
+        });
+        
+        try {
+            $queryObject->getMetrics('Ciudadano', $user);
+        } catch (\Exception $e) {
+            // En caso de que falle por esquema no existente en sqlite
         }
         
         $this->assertTrue($queryExecuted, "La consulta debe realizarse mediante Query Builder directo (DB::table) a 'metrics.fact_incidencias'");

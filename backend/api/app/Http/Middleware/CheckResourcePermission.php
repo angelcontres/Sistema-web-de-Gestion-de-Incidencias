@@ -41,8 +41,8 @@ class CheckResourcePermission
 
         $routeName = $request->route() ? $request->route()->getName() : null;
 
-        // Si la ruta no tiene nombre, se asume que no está protegida por recursos (ej. /v1/me, /v1/logout)
-        if (! $routeName) {
+        // Si la ruta no tiene nombre explícito o es auto-generada por Laravel 11, se asume que no está protegida por recursos (ej. /v1/me, /v1/logout)
+        if (! $routeName || str_starts_with($routeName, 'generated::')) {
             return $next($request);
         }
 

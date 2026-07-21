@@ -15,20 +15,19 @@ class UbicacionesSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Paises
         $peru = Pais::updateOrCreate(
-            ['codigo_iso' => 'PE'],
-            ['nombre' => 'Perú', 'activo' => true]
+            ['id' => 1],
+            ['codigo_iso' => 'PE', 'nombre' => 'Perú', 'activo' => true]
         );
 
         $mexico = Pais::updateOrCreate(
-            ['codigo_iso' => 'MX'],
-            ['nombre' => 'México', 'activo' => true]
+            ['id' => 2],
+            ['codigo_iso' => 'MX', 'nombre' => 'México', 'activo' => true]
         );
 
         $ecuador = Pais::updateOrCreate(
-            ['codigo_iso' => 'EC'],
-            ['nombre' => 'Ecuador', 'activo' => true]
+            ['id' => 3],
+            ['codigo_iso' => 'EC', 'nombre' => 'Ecuador', 'activo' => true]
         );
 
         // 2. Territorios (Perú)
