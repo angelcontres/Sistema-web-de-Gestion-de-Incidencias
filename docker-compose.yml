@@ -92,7 +92,7 @@ services:
 
   # Grafana para visualización y analítica interna (Puerto 3010 libre)
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:10.4.2
     container_name: sistema_grafana
     restart: always
     ports:
