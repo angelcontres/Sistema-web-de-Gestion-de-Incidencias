@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\SqaController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CategoriaIncidenciaController;
 use App\Http\Controllers\DashboardController;
@@ -31,6 +32,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v1/catalogos/instituciones', [CatalogoController::class, 'instituciones']);
     Route::get('/v1/geocodificacion/reversa', [DireccionController::class, 'reverseGeocode']);
     Route::get('/v1/dashboard/stats', [DashboardController::class, 'stats']);
+    
+    // Rutas del sistema de notificaciones en tiempo real
+    Route::get('/v1/notificaciones', [NotificationController::class, 'index']);
+    Route::put('/v1/notificaciones/leer-todas', [NotificationController::class, 'markAllAsRead']);
+    Route::put('/v1/notificaciones/{id}/leer', [NotificationController::class, 'markAsRead']);
 });
 
 // Rutas protegidas por autenticación y permisos de recursos

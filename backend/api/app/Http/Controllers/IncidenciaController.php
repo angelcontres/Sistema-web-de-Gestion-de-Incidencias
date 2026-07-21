@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\IncidenciasRequest;
-use App\Models\CategoriaIncidencia;
+use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
+use App\Models\Territorio;
+use App\Services\IncidenciaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class IncidenciaController extends Controller
 {
@@ -18,44 +19,61 @@ class IncidenciaController extends Controller
     {
         $user = auth()->user();
 
-        // Automatic state transition: when Supervisor queries list, Pendiente (2) -> En Revisión (3)
+        // Automatic state transition: when Supervisor queries list, Pendiente (1) -> En Revisión (2)
         if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
-            $transitionQuery = Incidencia::where('estado_id', 2);
-            if ($user->pais_id) {
+            $transitionQuery = Incidencia::where('estado_id', 1);
+            $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+            if (! empty($territorioIds)) {
+                $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+                $transitionQuery->whereHas('direccion', function ($q) use ($descendientesIds) {
+                    $q->whereIn('territorio_id', $descendientesIds);
+                });
+            } elseif ($user->pais_id) {
                 $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
                     $q->where('pais_id', $user->pais_id);
                 });
             }
+
             $incidenciasTransition = $transitionQuery->get();
             foreach ($incidenciasTransition as $inc) {
-                $inc->update(['estado_id' => 3]);
+                $inc->update(['estado_id' => 2]);
             }
         }
 
         $query = Incidencia::with([
             'direccion.territorio.pais',
-            'cliente',
             'estado',
             'institucion',
             'tipo',
             'subTipo',
             'prioridad',
+            'cliente',
             'operadores',
-            'recursos',
+            'reportantes',
+            'recursos'
         ]);
 
         if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
             if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
-                if ($user->pais_id) {
-                    $query->whereHas('direccion.territorio', function ($q) use ($user) {
-                        $q->where('pais_id', $user->pais_id);
+                $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+                if (! empty($territorioIds)) {
+                    $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+                    $query->whereHas('direccion', function ($q) use ($descendientesIds) {
+                        $q->whereIn('territorio_id', $descendientesIds);
                     });
+                } else {
+                    $query->whereRaw('1 = 0');
                 }
             } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
                 $query->where('institucion_id', $user->institucion_id);
             } else {
-                // If they are regular citizens, they can only see their own reports
-                $query->where('cliente_id', $user->id);
+                // If they are regular citizens, they can only see their own reports (or ones they are attached to)
+                $query->where(function ($q) use ($user) {
+                    $q->where('cliente_id', $user->id)
+                        ->orWhereHas('reportantes', function ($q2) use ($user) {
+                            $q2->where('user_id', $user->id);
+                        });
+                });
             }
         }
 
@@ -67,77 +85,24 @@ class IncidenciaController extends Controller
             $query->where('tipo_incidencia_id', $request->tipo_incidencia_id);
         }
 
-        return response()->json($query->orderBy('id', 'desc')->get(), 200);
+        if ($request->query('all') === 'true' || $request->query('all') === '1') {
+            return response()->json($query->orderBy('id', 'desc')->get(), 200);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->orderBy('id', 'desc')->cursorPaginate($perPage), 200);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(IncidenciasRequest $request)
+    public function store(IncidenciasRequest $request, IncidenciaService $service)
     {
-        $user = auth()->user();
-
-        // Calculate initial priority based on subcategory and affected count
-        $afectados = (int) $request->input('cantidad_afectados_incidencia', 0);
-        $prioridadId = $this->calculatePriority(
-            $request->sub_tipo_incidencia_id,
-            $afectados
-        );
-
-        $incidencia = Incidencia::create([
-            'incidencia_descripcion' => $request->incidencia_descripcion,
-            'direccion_id' => $request->direccion_id,
-            'cliente_id' => $user ? $user->id : null,
-            'estado_id' => $request->input('estado_id', 2), // Default: En Revisión (2)
-            'institucion_id' => $request->institucion_id,
-            'tipo_incidencia_id' => $request->tipo_incidencia_id,
-            'sub_tipo_incidencia_id' => $request->sub_tipo_incidencia_id,
-            'prioridad_id' => $prioridadId,
-            'cantidad_afectados_incidencia' => $afectados,
-            'version' => 1,
-            'created_by' => $user ? $user->id : null,
-        ]);
-
-        if ($request->has('recursos')) {
-            $disk = env('FILESYSTEM_DISK', 'public');
-
-            foreach ($request->input('recursos') as $base64Image) {
-                // Procesar el formato Base64 (ej: "data:image/webp;base64,UklGRg...")
-                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-                    $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
-                    $extension = strtolower($type[1]);
-                } else {
-                    $extension = 'webp';
-                }
-                $imageDecoded = base64_decode($base64Image);
-                if ($imageDecoded === false) {
-                    continue; // Omitir si el base64 no es válido
-                }
-                // Generar nombre de archivo único
-                $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
-                // Subir al almacenamiento (S3 o Local según el .env)
-                Storage::disk($disk)->put($fileName, $imageDecoded);
-                // Registrar en la BD (guardamos la ruta relativa)
-                $incidencia->recursos()->create([
-                    'url' => $fileName,
-                    'tipo' => 'imagen'
-                ]);
-            }
-        }
+        $result = $service->createIncidencia($request->validated() + $request->all(), auth()->user());
 
         return response()->json([
-            'message' => 'Incidencia creada con éxito',
-            'data' => $incidencia->load([
-                'direccion.territorio.pais',
-                'cliente',
-                'estado',
-                'institucion',
-                'tipo',
-                'subTipo',
-                'prioridad',
-                'operadores',
-                'recursos',
-            ]),
+            'message' => $result['message'],
+            'data' => $result['data'],
         ], 201);
     }
 
@@ -148,6 +113,7 @@ class IncidenciaController extends Controller
     {
         $incidencia = Incidencia::with([
             'direccion.territorio.pais',
+            'direccion.territorio.parent',
             'cliente',
             'estado',
             'institucion',
@@ -155,6 +121,7 @@ class IncidenciaController extends Controller
             'subTipo',
             'prioridad',
             'operadores',
+            'reportantes',
             'recursos',
         ])->findOrFail($id);
 
@@ -169,7 +136,7 @@ class IncidenciaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(IncidenciasRequest $request, $id)
+    public function update(IncidenciasRequest $request, $id, IncidenciaService $service)
     {
         $incidencia = Incidencia::findOrFail($id);
         $user = auth()->user();
@@ -185,64 +152,11 @@ class IncidenciaController extends Controller
             ], 409);
         }
 
-        // Handle priority recalculation if subtipo or afectados changed
-        $subTipoId = $request->input('sub_tipo_incidencia_id', $incidencia->sub_tipo_incidencia_id);
-        $afectados = $request->input('cantidad_afectados_incidencia', $incidencia->cantidad_afectados_incidencia);
-        $prioridadId = $this->calculatePriority($subTipoId, $afectados);
-
-        $incidencia->update([
-            'incidencia_descripcion' => $request->input('incidencia_descripcion', $incidencia->incidencia_descripcion),
-            'direccion_id' => $request->input('direccion_id', $incidencia->direccion_id),
-            'estado_id' => $request->input('estado_id', $incidencia->estado_id),
-            'institucion_id' => $request->input('institucion_id', $incidencia->institucion_id),
-            'tipo_incidencia_id' => $request->input('tipo_incidencia_id', $incidencia->tipo_incidencia_id),
-            'sub_tipo_incidencia_id' => $subTipoId,
-            'prioridad_id' => $prioridadId,
-            'cantidad_afectados_incidencia' => $afectados,
-            'version' => $incidencia->version + 1, // Increment version
-            'updated_by' => $user ? $user->id : null,
-        ]);
-
-        if ($request->has('recursos')) {
-            $disk = env('FILESYSTEM_DISK', 'public');
-
-            foreach ($request->input('recursos') as $base64Image) {
-                // Procesar el formato Base64 (ej: "data:image/webp;base64,UklGRg...")
-                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-                    $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
-                    $extension = strtolower($type[1]);
-                } else {
-                    $extension = 'webp';
-                }
-                $imageDecoded = base64_decode($base64Image);
-                if ($imageDecoded === false) {
-                    continue; // Omitir si el base64 no es válido
-                }
-                // Generar nombre de archivo único
-                $fileName = 'incidencias/' . Str::uuid() . '.' . $extension;
-                // Subir al almacenamiento (S3 o Local según el .env)
-                Storage::disk($disk)->put($fileName, $imageDecoded);
-                // Registrar en la BD (guardamos la ruta relativa)
-                $incidencia->recursos()->create([
-                    'url' => $fileName,
-                    'tipo' => 'imagen'
-                ]);
-            }
-        }
+        $result = $service->updateIncidencia($incidencia, $request->validated() + $request->all(), $user);
 
         return response()->json([
-            'message' => 'Incidencia actualizada con éxito',
-            'data' => $incidencia->load([
-                'direccion.territorio.pais',
-                'cliente',
-                'estado',
-                'institucion',
-                'tipo',
-                'subTipo',
-                'prioridad',
-                'operadores',
-                'recursos',
-            ]),
+            'message' => $result['message'],
+            'data' => $result['data'],
         ], 200);
     }
 
@@ -268,37 +182,7 @@ class IncidenciaController extends Controller
         ], 200);
     }
 
-    /**
-     * Recalculates the priority of an incident based on the subcategory priority and affected count.
-     */
-    private function calculatePriority(int $subTipoId, int $afectados): ?int
-    {
-        $subtipo = CategoriaIncidencia::find($subTipoId);
-        if (! $subtipo) {
-            return null;
-        }
-
-        $basePriorityId = $subtipo->prioridad_id;
-        if (! $basePriorityId) {
-            return null;
-        }
-
-        // If >= 10 affected people, we recalculate/increase the priority level:
-        // Baja (4) -> Media (3)
-        // Media (3) -> Alta (2)
-        // Alta (2) -> Crítica (1)
-        if ($afectados >= 10) {
-            if ($basePriorityId == 2) { // Alta
-                return 1; // Crítica
-            } elseif ($basePriorityId == 3) { // Media
-                return 2; // Alta
-            } elseif ($basePriorityId == 4) { // Baja
-                return 3; // Media
-            }
-        }
-
-        return $basePriorityId;
-    }
+    // El método calculatePriority fue refactorizado y movido a IncidenciaService
 
     /**
      * Get the history/comments of the incident (paginated).
@@ -312,7 +196,9 @@ class IncidenciaController extends Controller
             return response()->json(['message' => 'No autorizado.'], 403);
         }
 
-        $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate(10);
+        $perPage = request()->input('per_page', 15);
+        $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate($perPage);
+
         return response()->json($historial, 200);
     }
 
@@ -332,7 +218,7 @@ class IncidenciaController extends Controller
             return response()->json(['message' => 'No autorizado.'], 403);
         }
 
-        $historial = \App\Models\HistorialIncidencia::create([
+        $historial = HistorialIncidencia::create([
             'incidencia_id' => $incidencia->id,
             'estado_id' => $incidencia->estado_id, // Keep current state
             'usuario_id' => $user ? $user->id : null,
@@ -341,7 +227,7 @@ class IncidenciaController extends Controller
 
         return response()->json([
             'message' => 'Comentario agregado con éxito',
-            'data' => $historial->load(['usuario', 'estado'])
+            'data' => $historial->load(['usuario', 'estado']),
         ], 201);
     }
 
@@ -355,7 +241,13 @@ class IncidenciaController extends Controller
         }
 
         if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
-            if ($user->pais_id && $incidencia->direccion && $incidencia->direccion->territorio && $incidencia->direccion->territorio->pais_id != $user->pais_id) {
+            $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+            if (! empty($territorioIds)) {
+                $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+                if (! $incidencia->direccion || ! in_array($incidencia->direccion->territorio_id, $descendientesIds)) {
+                    return false;
+                }
+            } else {
                 return false;
             }
 
@@ -370,7 +262,11 @@ class IncidenciaController extends Controller
             return true;
         }
 
-        // Citizens can view their own reported incidences
-        return $incidencia->cliente_id === $user->id;
+        // Citizens can view their own reported incidences (either as creator or as an attached reportante)
+        if ($incidencia->cliente_id === $user->id) {
+            return true;
+        }
+
+        return $incidencia->reportantes()->where('usuario_incidencia.user_id', $user->id)->exists();
     }
 }

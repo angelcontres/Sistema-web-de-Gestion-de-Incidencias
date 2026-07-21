@@ -128,5 +128,7 @@ class DatabaseSeeder extends Seeder
         if ($supervisorRole) {
             $roleService->syncRolesToUser($supervisorUser, [$supervisorRole->id]);
         }
+        
+        $this->call(NotificationSeeder::class);
     }
 }

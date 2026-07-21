@@ -111,4 +111,46 @@ export const AuthService = {
     const user = this.getCurrentUser();
     return user ? user.pais_id : null;
   },
+
+  getUserId() {
+    const user = this.getCurrentUser();
+    return user ? user.id : null;
+  },
+
+  canAccessRoute(hash) {
+    if (!hash || hash === '#/' || hash === '#/login' || hash === '#/public') return true;
+
+    const hashWithoutQuery = hash.split('?')[0];
+
+    const routePermissions = {
+      '#/opciones-menu': { action: 'READ', resource: 'opciones' },
+      '#/roles': { action: 'READ', resource: 'roles' },
+      '#/permisos': { action: 'READ', resource: 'permisos' },
+      '#/trp-dashboard': { action: 'READ', resource: 'trp' },
+      '#/usuarios': { action: 'READ', resource: 'usuarios' },
+      '#/ubicaciones': { action: 'READ', resource: 'ubicaciones' },
+      '#/categorias': { action: 'READ', resource: 'categorias' },
+      '#/incidencias': { action: 'READ', resource: 'incidencias' },
+      '#/incidencias/despacho': { action: 'READ', resource: 'despacho' },
+      '#/instituciones': { action: 'READ', resource: 'instituciones' },
+      '#/instituciones/kanban': { action: 'READ', resource: 'kanban' },
+      '#/mantenimiento': { action: 'READ', resource: 'mantenimiento' },
+      '#/tramites/historial': { action: 'READ', resource: 'historial' },
+      '#/administracion': { action: 'READ', resource: 'roles' },
+    };
+
+    const basePath = hashWithoutQuery
+      .replace(/\/form$/, '')
+      .replace(/\/historial$/, '')
+      .replace(/\/despacho$/, '')
+      .replace(/\/kanban$/, '')
+      .replace(/\/estado-individual$/, '');
+    const requiredPermission = routePermissions[hashWithoutQuery] || routePermissions[basePath];
+
+    if (requiredPermission) {
+      return this.hasPermission(requiredPermission.action, requiredPermission.resource);
+    }
+
+    return true;
+  },
 };
