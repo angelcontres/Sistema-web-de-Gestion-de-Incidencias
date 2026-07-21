@@ -74,15 +74,19 @@ jobs:
             sleep 10
           done
 
-      # --- NUEVO PASO: Análisis de calidad de código con SonarQube ---
+      # --- PASO CORREGIDO: Análisis con SonarQube ---
       - name: Ejecutar Análisis de SonarQube
         run: |
           docker run --rm \
             --network="host" \
             -v "$(pwd):/usr/src" \
             sonarsource/sonar-scanner-cli \
+            -Dsonar.projectKey=Sistema-web-gestion-incidencias \
+            -Dsonar.sources=. \
             -Dsonar.host.url="http://localhost:9009" \
-            -Dsonar.login="sqp_4459feb32685175a06e4e7e04c5dd6fb7d7ace1d"
+            -Dsonar.login="sqp_4459feb32685175a06e4e7e04c5dd6fb7d7ace1d" \
+            -Dsonar.php.coverage.reportPaths="backend/api/build/logs/clover.xml" \
+            -Dsonar.php.tests.reportPath="backend/api/build/logs/junit.xml"
 
       - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
         run: docker image prune -f
