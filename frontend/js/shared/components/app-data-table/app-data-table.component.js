@@ -295,7 +295,11 @@ export class AppDataTableComponent extends BaseComponent {
         return;
       }
 
-      this.totalBadge.textContent = `${this.data.length} Registros`;
+      if (response && response.total !== undefined) {
+        this.totalBadge.textContent = `${response.total} Registros en total`;
+      } else {
+        this.totalBadge.textContent = `${this.data.length} Registros`;
+      }
       this.totalBadge.classList.remove('d-none');
 
       this.renderRows();
