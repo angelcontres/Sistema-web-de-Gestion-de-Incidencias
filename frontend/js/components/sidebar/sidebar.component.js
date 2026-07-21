@@ -110,17 +110,26 @@ export class SideBarComponent extends BaseComponent {
       const s = String(v ?? '').trim();
       return /^[a-z0-9\s-]+$/i.test(s) ? s : '';
     };
+
     menuList.forEach((item) => {
+      // Filtrar elementos a los que el usuario no tiene acceso de lectura
+      const itemRuta = safeHref(item.ruta);
+      if (itemRuta && itemRuta !== '#/' && !AuthService.canAccessRoute(itemRuta)) {
+        return; // Omitir esta opción del menú
+      }
+
       lookup[item.id] = {
         ...item,
         nombre: esc(item.nombre),
-        ruta: safeHref(item.ruta),
+        ruta: itemRuta,
         icono: safeClass(item.icono),
         children: [],
       };
     });
 
     menuList.forEach((item) => {
+      if (!lookup[item.id]) return; // fue filtrado
+
       if (item.padre_id && lookup[item.padre_id]) {
         lookup[item.padre_id].children.push(lookup[item.id]);
       } else if (!item.padre_id) {
@@ -128,7 +137,26 @@ export class SideBarComponent extends BaseComponent {
       }
     });
 
-    return tree;
+    // Filtrar ramas vacías (padres que se quedaron sin hijos permitidos)
+    const filterTree = (nodes) => {
+      return nodes.filter(node => {
+        // Si el nodo originalmente tenía hijos en la BD, se renderizará como dropdown.
+        // Pero como no tenemos ese flag, solo podemos ver si ahora tiene hijos.
+        // Un menú es hoja válida si AuthService lo permitió.
+        if (node.children.length > 0) {
+          node.children = filterTree(node.children);
+          return node.children.length > 0;
+        }
+        // Si no tiene hijos, lo conservamos. El padre vacío se mostrará como link simple,
+        // pero la mayoría de los padres vacíos (ej. Mantenimiento) no tienen AuthService allowed si sus hijos no.
+        // Sin embargo, AuthService.canAccessRoute deja pasar a todos por defecto si no están en su diccionario.
+        // Para no romper la UI original, dejaremos que las hojas pasen.
+        // El Dashboard SIEMPRE debe pasar.
+        return true; 
+      });
+    };
+
+    return filterTree(tree);
   }
 
   renderMenuItems(menuTree) {
@@ -142,10 +170,10 @@ export class SideBarComponent extends BaseComponent {
         const collapseId = `collapse-menu-${menu.id}`;
         html += `
           <div class="nav-item">
-              <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="${menu.ruta}">
+              <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" style="cursor: pointer;" title="${menu.nombre}">
                 <i class="${menu.icono || 'bi bi-circle'} text-secondary"></i>
                 <span>${menu.nombre}</span>
-                <span class="ms-auto p-1 sidebar-toggle-btn" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" style="cursor: pointer; z-index: 2; position: relative;">
+                <span class="ms-auto p-1" style="z-index: 2; position: relative;">
                   <i class="bi bi-chevron-down small text-muted"></i>
                 </span>
               </a>
@@ -154,7 +182,7 @@ export class SideBarComponent extends BaseComponent {
                 ${menu.children
                   .map(
                     (child) => `
-                  <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-secondary" href="${child.ruta}">
+                  <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-secondary" href="${child.ruta}" title="${child.nombre}">
                     <i class="${child.icono || 'bi bi-dot'} text-secondary"></i>
                     <span>${child.nombre}</span>
                   </a>
@@ -167,7 +195,7 @@ export class SideBarComponent extends BaseComponent {
         `;
       } else {
         html += `
-          <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="${menu.ruta}">
+          <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="${menu.ruta}" title="${menu.nombre}">
             <i class="${menu.icono || 'bi bi-circle'} text-secondary"></i>
             <span>${menu.nombre}</span>
           </a>
@@ -177,12 +205,14 @@ export class SideBarComponent extends BaseComponent {
 
     container.innerHTML = html;
 
-    // Prevent navigation when clicking the toggle arrow
-    const toggleBtns = container.querySelectorAll('.sidebar-toggle-btn');
-    toggleBtns.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    // Expand sidebar if collapsed when clicking any link
+    const sidebarLinks = container.querySelectorAll('.sidebar-link');
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (this.classList.contains('collapsed')) {
+          this.dataset.userHidden = 'false';
+          this.classList.remove('collapsed');
+        }
       });
     });
   }

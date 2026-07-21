@@ -38,8 +38,13 @@ import './shared/components/modal/modal.component.js';
 import './shared/components/toast/toast.component.js';
 // Import and Initialize Router
 import { initRouter } from './router.js';
+import { ToastService } from './shared/services/toast.service.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initRouter();
   console.log('SPA Frontend (Arquitectura modular Angular-like) inicializada.');
+
+  window.addEventListener('api-forbidden', (e) => {
+    ToastService.error(e.detail?.message || 'Acceso Denegado (403)');
+  });
 });

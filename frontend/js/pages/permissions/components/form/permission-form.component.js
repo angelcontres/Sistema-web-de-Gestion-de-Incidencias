@@ -1,6 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { apiRequest } from '../../../../core/api.js';
-import { PermissionService } from '../../services/permissions.service.js';
 
 export class PermissionFormComponent extends BaseComponent {
   constructor() {
@@ -51,7 +50,7 @@ export class PermissionFormComponent extends BaseComponent {
       '<option value="" disabled selected>Seleccione una opción...</option>';
 
     try {
-      const response = await apiRequest('/opciones-menu');
+      const response = await apiRequest('/menu-options');
       const opciones = Array.isArray(response) ? response : response.data || [];
 
       opciones.forEach((opcion) => {
@@ -132,11 +131,13 @@ export class PermissionFormComponent extends BaseComponent {
     };
 
     try {
-      if (permisoId) {
-        await PermissionService.update(permisoId, payload);
-      } else {
-        await PermissionService.create(payload);
-      }
+      const endpoint = permisoId ? `/v1/permissions/${permisoId}` : '/v1/permissions';
+      const method = permisoId ? 'PUT' : 'POST';
+
+      await apiRequest(endpoint, {
+        method,
+        body: JSON.stringify(payload),
+      });
 
       if (this.modalEl) {
         const modal = bootstrap.Modal.getInstance(this.modalEl);

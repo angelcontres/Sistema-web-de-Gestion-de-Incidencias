@@ -139,7 +139,7 @@ class TerritorioAccesoTest extends TestCase
         ]);
 
         // 5. Query indices as Supervisor
-        $response = $this->actingAs($supervisor)->getJson('/api/v1/incidencias');
+        $response = $this->actingAs($supervisor)->getJson('/api/v1/incidents');
 
         // 6. Assertions
         $response->assertStatus(200);
@@ -158,10 +158,10 @@ class TerritorioAccesoTest extends TestCase
         );
 
         // 7. Verify checkAccess via direct show request
-        $responseShowAzuay = $this->actingAs($supervisor)->getJson("/api/v1/incidencias/{$incidenciaAzuay->id}");
+        $responseShowAzuay = $this->actingAs($supervisor)->getJson("/api/v1/incidents/{$incidenciaAzuay->id}");
         $responseShowAzuay->assertStatus(200);
 
-        $responseShowGuayas = $this->actingAs($supervisor)->getJson("/api/v1/incidencias/{$incidenciaGuayas->id}");
+        $responseShowGuayas = $this->actingAs($supervisor)->getJson("/api/v1/incidents/{$incidenciaGuayas->id}");
         $responseShowGuayas->assertStatus(403);
     }
 }

@@ -24,8 +24,16 @@ export class LoginComponent extends BaseComponent {
     const errorAlert = this.querySelector('#loginErrorAlert');
     const errorMessage = this.querySelector('#loginErrorMessage');
 
-    if (form) {
-      form.addEventListener('submit', async (e) => {
+    // Check if there's a pending error from a previous reload
+    const pendingError = sessionStorage.getItem('login_error');
+    if (pendingError) {
+      errorMessage.textContent = pendingError;
+      errorAlert.classList.remove('d-none');
+      sessionStorage.removeItem('login_error');
+    }
+
+    if (submitBtn) {
+      submitBtn.addEventListener('click', async (e) => {
         e.preventDefault();
 
         // Trigger Bootstrap native validation styles
@@ -55,7 +63,12 @@ export class LoginComponent extends BaseComponent {
           window.location.hash = '#/';
         } catch (error) {
           console.error('Login error:', error);
-          errorMessage.textContent = error.message || 'Error de conexión con el servidor.';
+          const msg = error.message || 'Error de conexión con el servidor.';
+          
+          // Save error in sessionStorage in case the page reloads immediately after
+          sessionStorage.setItem('login_error', msg);
+          
+          errorMessage.textContent = msg;
           errorAlert.classList.remove('d-none');
         } finally {
           // Reset button state
@@ -63,6 +76,16 @@ export class LoginComponent extends BaseComponent {
           spinner.classList.add('d-none');
         }
       });
+      
+      // Allow pressing Enter to submit
+      if (form) {
+        form.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            submitBtn.click();
+          }
+        });
+      }
     }
   }
 }

@@ -21,6 +21,7 @@ export class KanbanIndexComponent extends BaseComponent {
       btnRefresh.addEventListener('click', () => this.cargarIncidencias());
     }
 
+    const formResolver = this.querySelector('#form-resolver');
     const textarea = this.querySelector('#resolver-comentario');
     const charCount = this.querySelector('#char-count');
 
@@ -47,9 +48,8 @@ export class KanbanIndexComponent extends BaseComponent {
   async cargarIncidencias() {
     this.mostrarSpinners(true);
     try {
-      // Por defecto la API devuelve filtrado para 'Institucion' role
-      const response = await IncidenciaService.getAll();
-      this.incidencias = response.data || response;
+      const response = await IncidenciaService.getAll(1, 15, null, { all: true });
+      this.incidencias = Array.isArray(response) ? response : (response.data || []);
       this.renderKanban();
     } catch (error) {
       ToastService.error('No se pudieron cargar las incidencias: ' + error.message);
@@ -166,6 +166,7 @@ export class KanbanIndexComponent extends BaseComponent {
 
     try {
       const btnConfirmar = this.querySelector('#btn-confirmar-resolver');
+      const originalText = btnConfirmar.innerHTML;
       btnConfirmar.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
       btnConfirmar.disabled = true;
@@ -205,6 +206,7 @@ export class KanbanIndexComponent extends BaseComponent {
     });
   }
 
+  // Old alert functions removed
   // --- EVIDENCE FILE UPLOAD LOGIC ---
   setupDropzoneDragAndDrop(dropzone) {
     ['dragenter', 'dragover'].forEach((eventName) => {
@@ -350,12 +352,12 @@ export class KanbanIndexComponent extends BaseComponent {
       col.className = 'col';
       col.innerHTML = `
         <div class="card h-100 border rounded-3 overflow-hidden position-relative shadow-sm">
-          <img src="${file.base64}" class="card-img-top object-fit-cover" style="height: 120px;" alt="${file.name}" />
+          <img src="\${file.base64}" loading="lazy" class="card-img-top object-fit-cover" style="height: 120px;" alt="\${file.name}" />
           <div class="card-body p-2 d-flex flex-column justify-content-between">
-            <div class="text-truncate small fw-medium" title="${file.name}">${file.name}</div>
+            <div class="text-truncate small fw-medium" title="\${file.name}">\${file.name}</div>
             <div class="d-flex justify-content-between align-items-center mt-1">
               <span class="badge bg-success-soft text-success" style="font-size: 0.7rem;">.webp</span>
-              <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-file" data-index="${index}">
+              <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-file" data-index="\${index}">
                 <i class="bi bi-trash small"></i>
               </button>
             </div>

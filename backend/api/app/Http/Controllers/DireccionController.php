@@ -27,7 +27,12 @@ class DireccionController extends Controller
             $query->where('territorio_id', $request->input('territorio_id'));
         }
 
-        return response()->json($query->orderBy('id', 'desc')->get(), 200);
+        if ($request->query('all') === 'true' || $request->query('all') === '1') {
+            return response()->json($query->orderBy('id', 'desc')->get(), 200);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->orderBy('id', 'desc')->paginate($perPage), 200);
     }
 
     /**

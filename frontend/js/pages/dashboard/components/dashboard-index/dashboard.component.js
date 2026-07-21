@@ -6,8 +6,9 @@ import { DashboardService } from '../../services/dashboard.service.js';
 export class DashboardComponent extends BaseComponent {
   constructor() {
     super('js/pages/dashboard/components/dashboard-index/dashboard.component.html');
+    this.dashboardData = null;
     this.map = null;
-    this.clockInterval = null;
+    this.clusterGroup = null;
     this.mockMarkers = []; // to keep track of added markers
   }
 
@@ -97,8 +98,16 @@ export class DashboardComponent extends BaseComponent {
         localStorage.setItem('user_menu', JSON.stringify(menuList));
       }
 
-      // Filtrar solo los menús de nivel superior
-      const rootMenus = menuList.filter((item) => !item.padre_id);
+      // Filtrar solo los menús de nivel superior y verificar permisos
+      const rootMenus = menuList.filter((item) => {
+        if (item.padre_id) return false;
+        
+        // Check routing access rights
+        if (item.ruta && item.ruta !== '#/' && !AuthService.canAccessRoute(item.ruta)) {
+          return false;
+        }
+        return true;
+      });
 
       container.innerHTML = rootMenus
         .map(
@@ -272,10 +281,21 @@ export class DashboardComponent extends BaseComponent {
       subdomains: 'abcd',
       maxZoom: 20,
     }).addTo(this.map);
+
+    this.clusterGroup = L.markerClusterGroup({
+      chunkedLoading: true,
+      maxClusterRadius: 40,
+    });
+    this.map.addLayer(this.clusterGroup);
   }
 
   updateMapMarkers(markersData) {
     if (!this.map || !markersData) return;
+
+    if (this.clusterGroup) {
+      this.clusterGroup.clearLayers();
+    }
+    this.mockMarkers = [];
 
     markersData.forEach((inc) => {
       const marker = L.circleMarker([inc.lat, inc.lng], {
@@ -284,7 +304,7 @@ export class DashboardComponent extends BaseComponent {
         color: '#ffffff',
         weight: 2.5,
         fillOpacity: 0.95,
-      }).addTo(this.map);
+      });
 
       marker.bindPopup(`
         <div style="font-family: 'Outfit', sans-serif;">
@@ -296,6 +316,10 @@ export class DashboardComponent extends BaseComponent {
       `);
       this.mockMarkers.push(marker);
     });
+
+    if (this.mockMarkers.length > 0) {
+      this.clusterGroup.addLayers(this.mockMarkers);
+    }
 
     // Enfoque en la incidencia más reciente
     const mostRecent = markersData[0];

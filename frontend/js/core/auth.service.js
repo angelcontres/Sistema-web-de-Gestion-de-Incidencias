@@ -1,19 +1,23 @@
 import { apiRequest } from './api.js';
-// PermissionsEnum ha sido eliminado para tener verificación completamente dinámica
+import { CircuitBreaker } from './circuit-breaker.js';
+
+const loginBreaker = new CircuitBreaker(4, 30000); // 4 failures max, 30s lockout
 
 export const AuthService = {
   async login(email, password) {
-    localStorage.removeItem('user_menu');
-    const response = await apiRequest('/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
+    return loginBreaker.fire(async () => {
+      localStorage.removeItem('user_menu');
+      const response = await apiRequest('/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      if (response && response.access_token) {
+        localStorage.setItem('access_token', response.access_token);
+        // Fetch user profile and permissions from /me
+        await this.refreshUser();
+      }
+      return response;
     });
-    if (response && response.access_token) {
-      localStorage.setItem('access_token', response.access_token);
-      // Fetch user profile and permissions from /me
-      await this.refreshUser();
-    }
-    return response;
   },
 
   async logout() {

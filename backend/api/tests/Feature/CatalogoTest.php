@@ -32,7 +32,7 @@ class CatalogoTest extends TestCase
 
     public function test_no_se_puede_acceder_a_catalogos_sin_autenticacion(): void
     {
-        $response = $this->getJson('/api/v1/catalogos/paises');
+        $response = $this->getJson('/api/v1/catalogs/countries');
         $response->assertStatus(401);
     }
 
@@ -44,7 +44,7 @@ class CatalogoTest extends TestCase
         Pais::create(['nombre' => 'México', 'codigo_iso' => 'MX', 'activo' => true]);
         Pais::create(['nombre' => 'Inactivo', 'codigo_iso' => 'XX', 'activo' => false]);
 
-        $response = $this->getJson('/api/v1/catalogos/paises');
+        $response = $this->getJson('/api/v1/catalogs/countries');
 
         $response->assertStatus(200);
         $response->assertJsonCount(2);
@@ -82,23 +82,23 @@ class CatalogoTest extends TestCase
         ]);
 
         // 1. Todos los territorios
-        $response = $this->getJson('/api/v1/catalogos/territorios');
+        $response = $this->getJson('/api/v1/catalogs/territories');
         $response->assertStatus(200);
         $response->assertJsonCount(3);
 
         // 2. Filtrado por pais_id
-        $response = $this->getJson("/api/v1/catalogos/territorios?pais_id={$peru->id}");
+        $response = $this->getJson("/api/v1/catalogs/territories?pais_id={$peru->id}");
         $response->assertStatus(200);
         $response->assertJsonCount(2);
 
         // 3. Filtrado por parent_id = null (top-level)
-        $response = $this->getJson("/api/v1/catalogos/territorios?pais_id={$peru->id}&parent_id=null");
+        $response = $this->getJson("/api/v1/catalogs/territories?pais_id={$peru->id}&parent_id=null");
         $response->assertStatus(200);
         $response->assertJsonCount(1);
         $response->assertJsonFragment(['nombre' => 'Lima']);
 
         // 4. Filtrado por parent_id específico
-        $response = $this->getJson("/api/v1/catalogos/territorios?parent_id={$limaDpto->id}");
+        $response = $this->getJson("/api/v1/catalogs/territories?parent_id={$limaDpto->id}");
         $response->assertStatus(200);
         $response->assertJsonCount(1);
         $response->assertJsonFragment(['nombre' => 'Lima Provincia']);
@@ -126,7 +126,7 @@ class CatalogoTest extends TestCase
             'activo' => false, // inactivo
         ]);
 
-        $response = $this->getJson("/api/v1/catalogos/direcciones?territorio_id={$limaDpto->id}");
+        $response = $this->getJson("/api/v1/catalogs/addresses?territorio_id={$limaDpto->id}");
         $response->assertStatus(200);
         $response->assertJsonCount(1);
         $response->assertJsonFragment(['detalle' => 'Av. Javier Prado 123']);
@@ -163,18 +163,18 @@ class CatalogoTest extends TestCase
         ]);
 
         // 1. Listar todas las categorías activas (deberían ser 3)
-        $response = $this->getJson('/api/v1/catalogos/categorias-incidencia');
+        $response = $this->getJson('/api/v1/catalogs/incident-categories');
         $response->assertStatus(200);
         $response->assertJsonCount(3);
 
         // 2. Listar únicamente categorías principales (parent_id = null)
-        $response = $this->getJson('/api/v1/catalogos/categorias-incidencia?parent_id=null');
+        $response = $this->getJson('/api/v1/catalogs/incident-categories?parent_id=null');
         $response->assertStatus(200);
         $response->assertJsonCount(1);
         $response->assertJsonFragment(['nombre' => 'Soporte Técnico']);
 
         // 3. Listar subcategorías de Hardware
-        $response = $this->getJson("/api/v1/catalogos/categorias-incidencia?parent_id={$hardware->id}");
+        $response = $this->getJson("/api/v1/catalogs/incident-categories?parent_id={$hardware->id}");
         $response->assertStatus(200);
         $response->assertJsonCount(1);
         $response->assertJsonFragment(['nombre' => 'PC / Laptop']);
@@ -182,7 +182,7 @@ class CatalogoTest extends TestCase
 
         // 4. Listar únicamente nodos hoja (solo_hojas = true)
         // En este árbol, sólo $pc es un nodo hoja activo ($soporte tiene hijos, $hardware tiene hijos, $inactivo es inactivo)
-        $response = $this->getJson('/api/v1/catalogos/categorias-incidencia?solo_hojas=true');
+        $response = $this->getJson('/api/v1/catalogs/incident-categories?solo_hojas=true');
         $response->assertStatus(200);
         $response->assertJsonCount(1);
         $response->assertJsonFragment(['nombre' => 'PC / Laptop']);

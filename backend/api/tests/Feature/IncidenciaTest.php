@@ -115,7 +115,7 @@ class IncidenciaTest extends TestCase
             'cantidad_afectados_incidencia' => 2, // < 10 affected
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(201)
             ->assertJsonPath('data.prioridad_id', $this->alta->id) // Remains Alta
@@ -136,7 +136,7 @@ class IncidenciaTest extends TestCase
             'cantidad_afectados_incidencia' => 15, // >= 10 affected
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(201)
             ->assertJsonPath('data.prioridad_id', $this->critica->id); // Upgraded to Crítica
@@ -171,7 +171,7 @@ class IncidenciaTest extends TestCase
             'version' => 2, // Wrong version, current is 1
         ];
 
-        $response = $this->actingAs($this->admin)->putJson("/api/v1/incidencias/{$incidencia->id}", $payloadIncorrect);
+        $response = $this->actingAs($this->admin)->putJson("/api/v1/incidents/{$incidencia->id}", $payloadIncorrect);
         $response->assertStatus(409); // Conflict
 
         // Update with correct version
@@ -183,7 +183,7 @@ class IncidenciaTest extends TestCase
             'version' => 1, // Correct version
         ];
 
-        $response = $this->actingAs($this->admin)->putJson("/api/v1/incidencias/{$incidencia->id}", $payloadCorrect);
+        $response = $this->actingAs($this->admin)->putJson("/api/v1/incidents/{$incidencia->id}", $payloadCorrect);
         $response->assertStatus(200)
             ->assertJsonPath('data.version', 2) // Version incremented
             ->assertJsonPath('data.incidencia_descripcion', 'Árbol caído corregido');
@@ -236,17 +236,17 @@ class IncidenciaTest extends TestCase
         $institucionRole->permisos()->sync([$permisoVer->id]);
 
         // Fetch index with userPolicia -> should see only Policia incident
-        $response = $this->actingAs($userPolicia)->getJson('/api/v1/incidencias');
+        $response = $this->actingAs($userPolicia)->getJson('/api/v1/incidents');
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $incidenciaPolicia->id);
 
         // Access Policia incident -> OK
-        $responseShowOk = $this->actingAs($userPolicia)->getJson("/api/v1/incidencias/{$incidenciaPolicia->id}");
+        $responseShowOk = $this->actingAs($userPolicia)->getJson("/api/v1/incidents/{$incidenciaPolicia->id}");
         $responseShowOk->assertStatus(200);
 
         // Access Bomberos incident -> 403 Forbidden
-        $responseShowForbidden = $this->actingAs($userPolicia)->getJson("/api/v1/incidencias/{$incidenciaBomberos->id}");
+        $responseShowForbidden = $this->actingAs($userPolicia)->getJson("/api/v1/incidents/{$incidenciaBomberos->id}");
         $responseShowForbidden->assertStatus(403);
     }
 
@@ -272,7 +272,7 @@ class IncidenciaTest extends TestCase
             'cantidad_afectados_incidencia' => 3,
         ];
 
-        $response = $this->actingAs($ciudadanoUser)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($ciudadanoUser)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(201)
             ->assertJsonPath('data.estado_id', 1) // Pendiente
@@ -289,10 +289,10 @@ class IncidenciaTest extends TestCase
         $ciudadanoRole = Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano', 'created_by' => $this->admin->id]);
         $ciudadanoUser->roles()->sync([$ciudadanoRole->id]);
 
-        $responsePaises = $this->actingAs($ciudadanoUser)->getJson('/api/v1/catalogos/paises');
+        $responsePaises = $this->actingAs($ciudadanoUser)->getJson('/api/v1/catalogs/countries');
         $responsePaises->assertStatus(200);
 
-        $responseCategorias = $this->actingAs($ciudadanoUser)->getJson('/api/v1/catalogos/categorias-incidencia');
+        $responseCategorias = $this->actingAs($ciudadanoUser)->getJson('/api/v1/catalogs/incident-categories');
         $responseCategorias->assertStatus(200);
     }
 
@@ -316,7 +316,7 @@ class IncidenciaTest extends TestCase
             'updated_by' => $this->admin->id,
         ]);
 
-        $response = $this->actingAs($this->admin)->deleteJson("/api/v1/incidencias/{$incidencia->id}");
+        $response = $this->actingAs($this->admin)->deleteJson("/api/v1/incidents/{$incidencia->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('message', 'Incidencia eliminada con éxito');
@@ -357,7 +357,7 @@ class IncidenciaTest extends TestCase
             'version' => 1,
         ];
 
-        $response = $this->actingAs($this->admin)->putJson("/api/v1/incidencias/{$incidencia->id}", $payload);
+        $response = $this->actingAs($this->admin)->putJson("/api/v1/incidents/{$incidencia->id}", $payload);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.estado_id', $nuevoEstado->id);
@@ -399,7 +399,7 @@ class IncidenciaTest extends TestCase
             'updated_by' => $this->admin->id,
         ]);
 
-        $response = $this->actingAs($this->admin)->getJson("/api/v1/incidencias?estado_id={$estadoPendiente->id}");
+        $response = $this->actingAs($this->admin)->getJson("/api/v1/incidents?estado_id={$estadoPendiente->id}");
 
         $response->assertStatus(200);
         $data = $response->json('data');
@@ -443,7 +443,7 @@ class IncidenciaTest extends TestCase
             'updated_by' => $this->admin->id,
         ]);
 
-        $response = $this->actingAs($this->admin)->getJson("/api/v1/incidencias?tipo_incidencia_id={$otroTipo->id}");
+        $response = $this->actingAs($this->admin)->getJson("/api/v1/incidents?tipo_incidencia_id={$otroTipo->id}");
 
         $response->assertStatus(200);
         $data = $response->json('data');
@@ -469,7 +469,7 @@ class IncidenciaTest extends TestCase
             'longitud' => -80.0,
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/direcciones', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/addresses', $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['latitud']);
@@ -489,7 +489,7 @@ class IncidenciaTest extends TestCase
             'longitud' => 200.0, // Fuera de rango (-180 a 180)
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/direcciones', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/addresses', $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['longitud']);
@@ -507,7 +507,7 @@ class IncidenciaTest extends TestCase
             'incidencia_descripcion' => 'Descripción',
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
@@ -525,7 +525,7 @@ class IncidenciaTest extends TestCase
             'sub_tipo_incidencia_id' => 9999, // Inexistente
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['tipo_incidencia_id', 'sub_tipo_incidencia_id']);
@@ -576,7 +576,7 @@ class IncidenciaTest extends TestCase
             'cantidad_afectados_incidencia' => 1,
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(201); // Controller always returns 201 on store
         $response->assertJsonPath('data.id', $incidenciaOriginal->id);
@@ -629,7 +629,7 @@ class IncidenciaTest extends TestCase
             'cantidad_afectados_incidencia' => 1,
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(201); // Crea una nueva
 
@@ -695,13 +695,13 @@ class IncidenciaTest extends TestCase
         $incidencia->reportantes()->attach($ciudadano2->id, ['created_by' => $ciudadano2->id, 'tipo_relacion' => 'reportante']);
 
         // Ciudadano 2 intenta ver la incidencia
-        $response = $this->actingAs($ciudadano2)->getJson("/api/v1/incidencias/{$incidencia->id}");
+        $response = $this->actingAs($ciudadano2)->getJson("/api/v1/incidents/{$incidencia->id}");
 
         $response->assertStatus(200);
         $response->assertJsonPath('id', $incidencia->id);
 
         // Ciudadano 2 intenta ver el historial/comentarios
-        $responseHistorial = $this->actingAs($ciudadano2)->getJson("/api/v1/incidencias/{$incidencia->id}/historial");
+        $responseHistorial = $this->actingAs($ciudadano2)->getJson("/api/v1/incidents/{$incidencia->id}/historial");
         $responseHistorial->assertStatus(200);
     }
 
@@ -725,7 +725,7 @@ class IncidenciaTest extends TestCase
             // NOTA: No enviamos institucion_id en el payload
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(201);
 
@@ -752,7 +752,7 @@ class IncidenciaTest extends TestCase
             'estado_id' => $this->estadoPendiente->id,
         ];
 
-        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidencias', $payload);
+        $response = $this->actingAs($this->admin)->postJson('/api/v1/incidents', $payload);
 
         $response->assertStatus(201);
 

@@ -19,8 +19,15 @@ export class AppDataTableComponent extends BaseComponent {
     });
 
     this.currentPage = 1;
+    this.perPage = 15;
     this.lastPage = 1;
     this.currentEndpointOrService = null;
+    
+    // Cursor pagination support
+    this.isCursorPagination = false;
+    this.currentCursor = null;
+    this.nextCursor = null;
+    this.prevCursor = null;
 
     // Read page from URL hash if present
     const hashParts = window.location.hash.split('?');
@@ -29,6 +36,10 @@ export class AppDataTableComponent extends BaseComponent {
       const pageParam = urlParams.get('page');
       if (pageParam && !isNaN(pageParam)) {
         this.currentPage = parseInt(pageParam, 10);
+      }
+      const perPageParam = urlParams.get('per_page');
+      if (perPageParam && !isNaN(perPageParam)) {
+        this.perPage = parseInt(perPageParam, 10);
       }
     }
   }
@@ -97,13 +108,23 @@ export class AppDataTableComponent extends BaseComponent {
 
     if (this.btnPrevPage && this.btnNextPage) {
       this.btnPrevPage.addEventListener('click', () => {
-        if (this.currentPage > 1) {
+        if (this.isCursorPagination) {
+          if (this.prevCursor) {
+            this.currentCursor = this.prevCursor;
+            this.load(this.currentEndpointOrService);
+          }
+        } else if (this.currentPage > 1) {
           this.currentPage--;
           this.updateUrlAndLoad();
         }
       });
       this.btnNextPage.addEventListener('click', () => {
-        if (this.currentPage < this.lastPage) {
+        if (this.isCursorPagination) {
+          if (this.nextCursor) {
+            this.currentCursor = this.nextCursor;
+            this.load(this.currentEndpointOrService);
+          }
+        } else if (this.currentPage < this.lastPage) {
           this.currentPage++;
           this.updateUrlAndLoad();
         }
@@ -112,6 +133,16 @@ export class AppDataTableComponent extends BaseComponent {
 
     // Render table headers dynamically if columns are already defined
     this.renderHeaders();
+
+    this.selectPerPage = this.querySelector('#select-per-page');
+    if (this.selectPerPage) {
+      this.selectPerPage.value = this.perPage;
+      this.selectPerPage.addEventListener('change', (e) => {
+        this.perPage = parseInt(e.target.value, 10);
+        this.currentPage = 1;
+        this.updateUrlAndLoad();
+      });
+    }
 
     // Setup action click delegation
     if (this.tbody) {
@@ -182,7 +213,7 @@ export class AppDataTableComponent extends BaseComponent {
    */
   updateUrlAndLoad() {
     const hashPath = window.location.hash.split('?')[0];
-    const newHash = `${hashPath}?page=${this.currentPage}`;
+    const newHash = `${hashPath}?page=${this.currentPage}&per_page=${this.perPage}`;
     // Updates URL without triggering router reload
     history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
     
@@ -212,20 +243,41 @@ export class AppDataTableComponent extends BaseComponent {
     try {
       let response;
       if (typeof endpointOrService === 'function') {
-        response = await endpointOrService(this.currentPage);
+        response = await endpointOrService(this.currentPage, this.perPage, this.currentCursor);
       } else {
         const sep = endpointOrService.includes('?') ? '&' : '?';
-        response = await apiRequest(`${endpointOrService}${sep}page=${this.currentPage}`);
+        let url = `${endpointOrService}${sep}`;
+        if (this.isCursorPagination && this.currentCursor) {
+            url += `cursor=${this.currentCursor}&per_page=${this.perPage}`;
+        } else {
+            url += `page=${this.currentPage}&per_page=${this.perPage}`;
+        }
+        response = await apiRequest(url);
       }
       
       const list = Array.isArray(response) ? response : (response.data || []);
       
-      // Update pagination metadata if available
-      if (response && response.current_page !== undefined) {
+      // Check if it's cursor pagination
+      if (response && (response.next_cursor !== undefined || response.prev_cursor !== undefined)) {
+        this.isCursorPagination = true;
+        this.nextCursor = response.next_cursor;
+        this.prevCursor = response.prev_cursor;
+        
+        if (this.paginationContainer && (this.nextCursor || this.prevCursor || list.length > 0)) {
+            this.paginationContainer.classList.remove('d-none');
+            this.pageCurrentLabel.textContent = "Dinámica";
+            this.pageTotalLabel.textContent = "Cursor";
+            this.btnPrevPage.disabled = !this.prevCursor;
+            this.btnNextPage.disabled = !this.nextCursor;
+        }
+      } 
+      // Update standard pagination metadata if available
+      else if (response && response.current_page !== undefined) {
+        this.isCursorPagination = false;
         this.currentPage = response.current_page;
         this.lastPage = response.last_page || 1;
         
-        if (this.paginationContainer && response.last_page > 1) {
+        if (this.paginationContainer) {
           this.paginationContainer.classList.remove('d-none');
           this.pageCurrentLabel.textContent = this.currentPage;
           this.pageTotalLabel.textContent = this.lastPage;
@@ -243,7 +295,11 @@ export class AppDataTableComponent extends BaseComponent {
         return;
       }
 
-      this.totalBadge.textContent = `${this.data.length} Registros`;
+      if (response && response.total !== undefined) {
+        this.totalBadge.textContent = `${response.total} Registros en total`;
+      } else {
+        this.totalBadge.textContent = `${this.data.length} Registros`;
+      }
       this.totalBadge.classList.remove('d-none');
 
       this.renderRows();
