@@ -14,7 +14,7 @@ jobs:
             docker compose down
           fi
 
-      # 2. El truco de Docker: Usamos busybox para eliminar archivos creados por root (vendor, grafana y logs de test)
+     # 2. El truco de Docker: Usamos busybox para eliminar archivos creados por root
       - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
         run: |
           if [ -d "backend/api/vendor" ]; then
@@ -22,6 +22,12 @@ jobs:
           fi
           if [ -d "backend/api/build" ]; then
             docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
+          fi
+          if [ -d "frontend/coverage" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/coverage
+          fi
+          if [ -d "frontend/node_modules" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/node_modules
           fi
           if [ -d "grafana" ]; then
             docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
