@@ -7,14 +7,14 @@ jobs:
     runs-on: [self-hosted, linux, x64]
 
     steps:
-      # 1. Apagar los contenedores anteriores para liberar los descriptores de archivos compartidos
+      # 1. Apagar los contenedores anteriores para liberar descriptores de archivo
       - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
         run: |
           if [ -f "docker-compose.yml" ]; then
             docker compose down
           fi
 
-     # 2. El truco de Docker: Usamos busybox para eliminar archivos creados por root
+      # 2. Limpieza agresiva de archivos generados como root para evitar errores de EACCES
       - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
         run: |
           if [ -d "backend/api/vendor" ]; then
@@ -33,10 +33,11 @@ jobs:
             docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
           fi
 
-      # 3. Ahora el checkout puede limpiar y clonar el nuevo código sin problemas de permisos
+      # 3. Clonar el nuevo código
       - name: Copiar el código a la VAIO
         uses: actions/checkout@v4
 
+      # 4. Configurar variables de entorno de Laravel
       - name: Configurar entorno (.env) para PostgreSQL en el Servidor
         run: |
           cp backend/api/.env.example backend/api/.env
@@ -47,6 +48,7 @@ jobs:
           sed -i 's/# DB_USERNAME=root/DB_USERNAME=angeltux/' backend/api/.env
           sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password_segura_upse/' backend/api/.env
 
+      # 5. Desplegar la infraestructura de contenedores
       - name: Construir y levantar contenedores en segundo plano
         run: docker compose up -d --build --pull always
 
@@ -69,13 +71,15 @@ jobs:
       - name: Ejecutar migraciones de OLAP dentro del contenedor
         run: docker exec sistema_laravel php artisan migrate --path=database/migrations/olap --force
 
-      - name: Ejecutar pruebas automatizadas y generar reporte de cobertura (Backend)
-        run: docker exec sistema_laravel vendor/bin/phpunit --coverage-clover build/logs/clover.xml --log-junit build/logs/junit.xml || true
+      # 6. Pruebas y Cobertura (Usa artisan test para evitar errores de drivers ausentes)
+      - name: Ejecutar pruebas automatizadas (Backend)
+        run: docker exec sistema_laravel php artisan test --log-junit build/logs/junit.xml || true
 
-      - name: Ejecutar pruebas de Frontend y cobertura
+      - name: Ejecutar pruebas de Frontend y limpiar node_modules
         run: |
-          docker run --rm -v "$(pwd)/frontend:/app" -w /app node:18-alpine sh -c "npm install && npm run test" || true
+          docker run --rm -v "$(pwd)/frontend:/app" -w /app node:18-alpine sh -c "npm install && npm run test && rm -rf node_modules" || true
 
+      # 7. SonarQube
       - name: Esperar a que SonarQube inicie por completo
         run: |
           echo "Esperando a que SonarQube levante (puede tomar de 1 a 3 minutos)..."
@@ -83,7 +87,6 @@ jobs:
             sleep 10
           done
 
-      # --- PASO CORREGIDO: Análisis con SonarQube ---
       - name: Ejecutar Análisis de SonarQube
         run: |
           docker run --rm \
@@ -94,8 +97,8 @@ jobs:
             -Dsonar.sources=. \
             -Dsonar.host.url="http://localhost:9009" \
             -Dsonar.login="sqp_4459feb32685175a06e4e7e04c5dd6fb7d7ace1d" \
-            -Dsonar.php.coverage.reportPaths="backend/api/build/logs/clover.xml" \
             -Dsonar.php.tests.reportPath="backend/api/build/logs/junit.xml"
 
+      # 8. Mantenimiento del servidor
       - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
         run: docker image prune -f
