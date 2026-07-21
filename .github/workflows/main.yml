@@ -80,7 +80,7 @@ jobs:
             -Dsonar.projectKey=Sistema-web-gestion-incidencias \
             -Dsonar.sources=. \
             -Dsonar.host.url="http://localhost:9009" \
-            -Dsonar.token="sqp_4459feb32685175a06e4e7e04c5dd6fb7d7ace1d"
+            -Dsonar.login="sqp_4459feb32685175a06e4e7e04c5dd6fb7d7ace1d"
 
       - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
         run: docker image prune -f
