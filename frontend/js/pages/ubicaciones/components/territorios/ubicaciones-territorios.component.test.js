@@ -88,7 +88,7 @@ describe('UbicacionesTerritoriosComponent', () => {
     // Simular evento change
     select.dispatchEvent(new Event('change'));
     
-    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith({ pais_id: '1', parent_id: null });
+    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith(1, 1000, null, { all: true, pais_id: '1', parent_id: null });
   });
 
   it('abrirModalTerritorio configura el form para Nivel 1', async () => {

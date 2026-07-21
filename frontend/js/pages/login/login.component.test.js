@@ -25,14 +25,14 @@ describe('LoginComponent', () => {
   }
 
   beforeEach(() => {
-    AuthService.isAuthenticated = jest.fn(() => false);
-    AuthService.login = jest.fn(() => Promise.resolve());
+    jest.spyOn(AuthService, 'isAuthenticated').mockReturnValue(false);
+    jest.spyOn(AuthService, 'login').mockResolvedValue();
     window.dispatchEvent = jest.fn();
     window.location.hash = '';
   });
 
   it('onInit - redirige al dashboard si ya está autenticado', () => {
-    AuthService.isAuthenticated = jest.fn(() => true);
+    jest.spyOn(AuthService, 'isAuthenticated').mockReturnValue(true);
     const { component } = createMockComponent();
     
     component.onInit();
@@ -44,15 +44,17 @@ describe('LoginComponent', () => {
     
     let submitCallback;
     fakeElements['#loginForm'] = {
-      addEventListener: jest.fn((event, cb) => {
-        if (event === 'submit') submitCallback = cb;
-      }),
+      addEventListener: jest.fn(),
       classList: { add: jest.fn(), remove: jest.fn() },
       checkValidity: jest.fn(() => true)
     };
     fakeElements['#emailInput'] = { value: 'admin@test.com' };
     fakeElements['#passwordInput'] = { value: 'password123' };
-    fakeElements['#loginSubmitBtn'] = {};
+    fakeElements['#loginSubmitBtn'] = {
+      addEventListener: jest.fn((event, cb) => {
+        if (event === 'click') submitCallback = cb;
+      })
+    };
     fakeElements['#loginSpinner'] = { classList: { add: jest.fn(), remove: jest.fn() } };
     fakeElements['#loginErrorAlert'] = { classList: { add: jest.fn(), remove: jest.fn() } };
 
@@ -69,17 +71,21 @@ describe('LoginComponent', () => {
 
   it('submitForm - muestra error en UI si falla el login', async () => {
     const { component, fakeElements } = createMockComponent();
-    AuthService.login = jest.fn(() => Promise.reject(new Error('Credenciales inválidas')));
+    jest.spyOn(AuthService, 'login').mockRejectedValue(new Error('Credenciales inválidas'));
     
     let submitCallback;
     fakeElements['#loginForm'] = {
-      addEventListener: jest.fn((event, cb) => submitCallback = cb),
+      addEventListener: jest.fn(),
       classList: { add: jest.fn() },
       checkValidity: jest.fn(() => true)
     };
     fakeElements['#emailInput'] = { value: 'bad@test.com' };
     fakeElements['#passwordInput'] = { value: 'badpass' };
-    fakeElements['#loginSubmitBtn'] = {};
+    fakeElements['#loginSubmitBtn'] = {
+      addEventListener: jest.fn((event, cb) => {
+        if (event === 'click') submitCallback = cb;
+      })
+    };
     fakeElements['#loginSpinner'] = { classList: { add: jest.fn(), remove: jest.fn() } };
     fakeElements['#loginErrorAlert'] = { classList: { add: jest.fn(), remove: jest.fn() } };
     fakeElements['#loginErrorMessage'] = {};
