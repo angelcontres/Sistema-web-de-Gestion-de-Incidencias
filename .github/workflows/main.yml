@@ -7,7 +7,7 @@ jobs:
     runs-on: [self-hosted, linux, x64]
 
     steps:
-      # 1.  Apagar los contenedores anteriores para liberar los descriptores de archivos compartidos
+      # 1. Apagar los contenedores anteriores para liberar los descriptores de archivos compartidos
       - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
         run: |
           if [ -f "docker-compose.yml" ]; then
@@ -62,12 +62,25 @@ jobs:
 
       - name: Ejecutar pruebas automatizadas y generar reporte de cobertura
         run: docker exec sistema_laravel php artisan test
+
       - name: Esperar a que SonarQube inicie por completo
         run: |
-              echo "Esperando a que SonarQube levante (puede tomar de 1 a 3 minutos)..."
-              until curl -s http://localhost:9009/api/system/status | grep '"status":"UP"'; do
-                sleep 10
-              done
+          echo "Esperando a que SonarQube levante (puede tomar de 1 a 3 minutos)..."
+          until curl -s http://localhost:9009/api/system/status | grep '"status":"UP"'; do
+            sleep 10
+          done
+
+      # --- NUEVO PASO: Análisis de calidad de código con SonarQube ---
+      - name: Ejecutar Análisis de SonarQube
+        run: |
+          docker run --rm \
+            --network="host" \
+            -v "$(pwd):/usr/src" \
+            sonarsource/sonar-scanner-cli \
+            -Dsonar.projectKey=Sistema-web-gestion-incidencias \
+            -Dsonar.sources=. \
+            -Dsonar.host.url="http://localhost:9009" \
+            -Dsonar.token="sqp_4459feb32685175a06e4e7e04c5dd6fb7d7ace1d"
 
       - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
         run: docker image prune -f
