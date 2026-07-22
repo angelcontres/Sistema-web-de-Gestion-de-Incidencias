@@ -332,19 +332,20 @@
 }
 
 /* ==========================================
-   PREMIUM DARK DROPDOWN
+   PREMIUM IDENTITY DROPDOWN
    ========================================== */
 .custom-dropdown {
-  background-color: rgba(9, 9, 11, 0.95) !important;
+  background-color: var(--card-bg) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(14, 54, 89, 0.08) !important;
   border-radius: var(--radius-md) !important;
   padding: 0.5rem 0 !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 .custom-dropdown .dropdown-item {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: var(--text-main) !important;
   transition: all 0.2s ease;
   font-weight: 500;
   padding: 0.5rem 1.25rem !important;
@@ -352,20 +353,21 @@
 
 .custom-dropdown .dropdown-item:hover,
 .custom-dropdown .dropdown-item:focus {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  color: #ffffff !important;
+  background-color: var(--primary-soft) !important;
+  color: var(--primary-color) !important;
 }
 
 .custom-dropdown .dropdown-item.text-danger {
-  color: var(--danger-color) !important;
+  color: var(--highlight-color) !important;
 }
 
 .custom-dropdown .dropdown-item.text-danger:hover {
-  background-color: rgba(217, 138, 47, 0.1) !important;
+  background-color: var(--highlight-soft) !important;
+  color: var(--highlight-hover) !important;
 }
 
 .custom-dropdown .dropdown-divider {
-  border-top-color: rgba(255, 255, 255, 0.1) !important;
+  border-top-color: rgba(14, 54, 89, 0.08) !important;
   margin: 0.5rem 0 !important;
 }
 
