@@ -28,12 +28,16 @@ describe('PermissionIndexComponent', () => {
   }
 
   beforeEach(() => {
-    AuthService.hasPermission = jest.fn(() => true);
-    PermissionService.delete = jest.fn(() => Promise.resolve());
+    jest.spyOn(AuthService, 'hasPermission').mockReturnValue(true);
+    jest.spyOn(PermissionService, 'delete').mockResolvedValue();
+    jest.spyOn(ToastService, 'success').mockImplementation(() => {});
+    jest.spyOn(ToastService, 'error').mockImplementation(() => {});
+    window.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({}) }));
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
+    delete window.fetch;
   });
 
   it('onInit - configura la tabla y escucha evento row-action para editar', async () => {
@@ -55,7 +59,7 @@ describe('PermissionIndexComponent', () => {
 
   it('eliminarPermiso - confirma y llama a PermissionService.delete', async () => {
     const { component, fakeElements } = createMockComponent();
-    ModalService.confirm = jest.fn(() => Promise.resolve(true));
+    jest.spyOn(ModalService, 'confirm').mockResolvedValue(true);
     ToastService.success = jest.fn();
     fakeElements['#tbl-datos-permisos'] = { load: jest.fn() };
 
@@ -67,6 +71,6 @@ describe('PermissionIndexComponent', () => {
     // Permite que las promesas se resuelvan
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(ToastService.success).toHaveBeenCalled();
-    expect(fakeElements['#tbl-datos-permisos'].load).toHaveBeenCalledWith('/permisos');
+    expect(fakeElements['#tbl-datos-permisos'].load).toHaveBeenCalledWith('/permissions');
   });
 });

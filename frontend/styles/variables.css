@@ -1,0 +1,76 @@
+:root {
+  /* ==========================================
+   * 1. THEME IDENTITY PALETTE
+   * ========================================== */
+  
+  /* Primary: Azul Profundo */
+  --primary-color: #0E3659;
+  --primary-hover: #0a253d;
+  --primary-soft: rgba(14, 54, 89, 0.1);
+  --primary-glow: rgba(14, 54, 89, 0.15);
+
+  /* Secondary: Teal / Verde Azulado */
+  --secondary-color: #4E7D7F;
+  --secondary-hover: #3d6263;
+  --secondary-soft: rgba(78, 125, 127, 0.1);
+
+  /* Highlight: Dorado / Naranja */
+  --highlight-color: #D98A2F;
+  --highlight-hover: #b87528;
+  --highlight-soft: rgba(217, 138, 47, 0.1);
+
+  /* Backgrounds: Premium Contrast Hierarchy (Singleton Architecture) */
+  --bg-app: #E6DDCC; /* Arena Claro */
+  --sidebar-bg: #D6CCC1; /* Gris / Beige Neutro */
+  --card-bg: #F4EFE3; /* Crema Cálido para Paneles */
+  --navbar-bg: transparent;
+  --color-bg-input: #f8fafc;
+
+  /* ==========================================
+   * 2. TYPOGRAPHY & TEXT
+   * ========================================== */
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --color-text-inverse: #ffffff;
+}
+
+  /* ==========================================
+   * 3. BOOTSTRAP INTEGRATION (MAPPING)
+   * ========================================== */
+:root, [data-bs-theme="light"] {
+  --bs-primary: var(--primary-color);
+  --bs-primary-rgb: 13, 42, 76;
+  --bs-secondary: var(--secondary-color);
+  --bs-secondary-rgb: 34, 122, 138;
+  --bs-warning: var(--highlight-color);
+  --bs-warning-rgb: 217, 138, 47;
+  
+  /* Semantic mappings to force strict identity palette */
+  --bs-info: var(--secondary-color);
+  --bs-info-rgb: 34, 122, 138;
+  --bs-success: var(--secondary-color);
+  --bs-success-rgb: 34, 122, 138;
+  --bs-danger: var(--highlight-color);
+  --bs-danger-rgb: 217, 138, 47;
+
+  --bs-body-bg: var(--bg-app);
+  --bs-body-color: var(--text-main);
+  --bs-link-color: var(--secondary-color);
+  --bs-link-hover-color: var(--primary-color);
+
+  /* ==========================================
+   * 4. STRUCTURE & GEOMETRY
+   * ========================================== */
+  --navbar-height: 72px;
+  --border-color: rgba(13, 42, 76, 0.03); /* Soft primary border (Muy suavizado) */
+  
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  
+  --shadow-sm: 0 2px 4px rgba(13, 42, 76, 0.05);
+  --shadow-md: 0 10px 20px rgba(13, 42, 76, 0.08);
+  --shadow-glow-primary: 0 8px 16px var(--primary-soft);
+  --shadow-glow-highlight: 0 8px 16px var(--highlight-soft);
+}

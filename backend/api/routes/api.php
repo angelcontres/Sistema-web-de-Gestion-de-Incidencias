@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TrpController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CategoriaIncidenciaController;
 use App\Http\Controllers\DashboardController;
@@ -24,14 +25,19 @@ Route::post('/v1/login', [AuthController::class, 'login']);
 
 // Rutas de catálogos (protegidas por autenticación, accesibles para todos los usuarios logueados)
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/v1/catalogos/paises', [CatalogoController::class, 'paises']);
-    Route::get('/v1/catalogos/territorios', [CatalogoController::class, 'territorios']);
-    Route::get('/v1/catalogos/direcciones', [CatalogoController::class, 'direcciones']);
-    Route::get('/v1/catalogos/categorias-incidencia', [CatalogoController::class, 'categoriasIncidencia']);
-    Route::get('/v1/catalogos/instituciones', [CatalogoController::class, 'instituciones']);
-    Route::get('/v1/geocodificacion/reversa', [DireccionController::class, 'reverseGeocode']);
+    Route::get('/v1/catalogs/countries', [CatalogoController::class, 'paises']);
+    Route::get('/v1/catalogs/territories', [CatalogoController::class, 'territorios']);
+    Route::get('/v1/catalogs/addresses', [CatalogoController::class, 'direcciones']);
+    Route::get('/v1/catalogs/incident-categories', [CatalogoController::class, 'categoriasIncidencia']);
+    Route::get('/v1/catalogs/institutions', [CatalogoController::class, 'instituciones']);
+    Route::get('/v1/geocoding/reverse', [DireccionController::class, 'reverseGeocode']);
     Route::get('/v1/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/v1/dashboard/metrics', [DashboardController::class, 'metrics']);
+    
+    // Rutas del sistema de notificaciones en tiempo real
+    Route::get('/v1/notificaciones', [NotificationController::class, 'index']);
+    Route::put('/v1/notificaciones/leer-todas', [NotificationController::class, 'markAllAsRead']);
+    Route::put('/v1/notificaciones/{id}/leer', [NotificationController::class, 'markAsRead']);
 });
 
 // Rutas protegidas por autenticación y permisos de recursos
@@ -43,26 +49,26 @@ Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(funct
 
     Route::get('/v1/me/menu', [UserMenuController::class, 'index']);
 
-    Route::apiResource('v1/opciones-menu', OpcionMenuController::class);
-    Route::apiResource('v1/roles', RoleController::class);
-    Route::post('v1/roles/{id}/permisos', [RoleController::class, 'assignPermissions']);
-    Route::apiResource('v1/permisos', PermisoController::class);
-    Route::apiResource('v1/usuarios', UserController::class);
+    Route::apiResource('v1/menu-options', OpcionMenuController::class)->names('opciones');
+    Route::apiResource('v1/roles', RoleController::class)->names('roles');
+    Route::post('v1/roles/{id}/permissions', [RoleController::class, 'assignPermissions'])->name('roles.assignPermissions');
+    Route::apiResource('v1/permissions', PermisoController::class)->names('permisos');
+    Route::apiResource('v1/users', UserController::class)->names('usuarios');
 
-    Route::apiResource('v1/paises', PaisController::class);
-    Route::apiResource('v1/territorios', TerritorioController::class);
-    Route::apiResource('v1/direcciones', DireccionController::class);
-    Route::apiResource('v1/categorias-incidencia', CategoriaIncidenciaController::class);
-    Route::apiResource('v1/incidencias', IncidenciaController::class);
-    Route::get('v1/incidencias/{id}/historial', [IncidenciaController::class, 'getHistorial']);
-    Route::post('v1/incidencias/{id}/comentarios', [IncidenciaController::class, 'addComment']);
+    Route::apiResource('v1/countries', PaisController::class)->names('paises');
+    Route::apiResource('v1/territories', TerritorioController::class)->names('territorios');
+    Route::apiResource('v1/addresses', DireccionController::class)->names('direcciones');
+    Route::apiResource('v1/incident-categories', CategoriaIncidenciaController::class)->names('categorias');
+    Route::apiResource('v1/incidents', IncidenciaController::class)->names('incidencias');
+    Route::get('v1/incidents/{id}/historial', [IncidenciaController::class, 'getHistorial'])->name('incidencias.historial');
+    Route::post('v1/incidents/{id}/comentarios', [IncidenciaController::class, 'addComment'])->name('incidencias.comentarios');
 
-    Route::get('/v1/trp/performance-stats', [TrpController::class, 'performanceStats']);
-    Route::get('/v1/trp/performance-logs/export', [TrpController::class, 'exportLogs']);
-    Route::apiResource('v1/instituciones', InstitucionController::class)->parameters([
-        'instituciones' => 'institucion',
-    ]);
-    Route::apiResource('v1/prioridades', PrioridadController::class)->parameters([
-        'prioridades' => 'prioridad',
-    ]);
+    Route::get('/v1/trp/performance-stats', [TrpController::class, 'performanceStats'])->name('trp.performanceStats');
+    Route::get('/v1/trp/performance-logs/export', [TrpController::class, 'exportLogs'])->name('trp.exportLogs');
+    Route::apiResource('v1/institutions', InstitucionController::class)->parameters([
+        'institutions' => 'institucion',
+    ])->names('instituciones');
+    Route::apiResource('v1/priorities', PrioridadController::class)->parameters([
+        'priorities' => 'prioridad',
+    ])->names('prioridades');
 });

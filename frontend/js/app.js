@@ -5,6 +5,8 @@
 
 // Import Global Components
 import './components/navbar/navbar.component.js';
+import './components/navbar/notification/notification-tray.component.js';
+import './components/navbar/notification/notification-card.component.js';
 import './components/stats-card.js'; // Reusable small card component
 import './components/sidebar/sidebar.component.js';
 import './components/menu-lobby/menu-lobby.component.js';
@@ -38,8 +40,13 @@ import './shared/components/modal/modal.component.js';
 import './shared/components/toast/toast.component.js';
 // Import and Initialize Router
 import { initRouter } from './router.js';
+import { ToastService } from './shared/services/toast.service.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initRouter();
   console.log('SPA Frontend (Arquitectura modular Angular-like) inicializada.');
+
+  window.addEventListener('api-forbidden', (e) => {
+    ToastService.error(e.detail?.message || 'Acceso Denegado (403)');
+  });
 });

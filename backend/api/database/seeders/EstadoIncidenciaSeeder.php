@@ -20,17 +20,12 @@ class EstadoIncidenciaSeeder extends Seeder
             ['id' => 5, 'nombre' => 'Rechazado'],
         ];
 
-        // Evitar error de constraint unique renombrando temporalmente
-        foreach (EstadoIncidencia::all() as $estadoExistente) {
-            $estadoExistente->update(['nombre' => $estadoExistente->nombre.'_tmp_'.$estadoExistente->id]);
-        }
-
         foreach ($estados as $estado) {
+            // Utilizamos el upsert nativo o updateOrCreate pero asegurándonos de que si hay
+            // colisión de nombres (aunque no debería en DB vacía), simplemente tome el id.
             EstadoIncidencia::updateOrCreate(
                 ['id' => $estado['id']],
-                [
-                    'nombre' => $estado['nombre'],
-                ]
+                ['nombre' => $estado['nombre']]
             );
         }
 

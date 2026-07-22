@@ -15,6 +15,7 @@ class EstadoIncidencia extends Model
     protected $table = 'estados_incidencia';
 
     protected $fillable = [
+        'id',
         'nombre',
     ];
 }

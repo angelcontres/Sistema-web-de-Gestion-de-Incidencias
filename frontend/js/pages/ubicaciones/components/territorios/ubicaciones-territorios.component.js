@@ -87,8 +87,8 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
 
   async cargarPaises() {
     try {
-      const paises = await UbicacionesService.getPaises();
-      this.paisesList = paises || [];
+      const response = await UbicacionesService.getPaises();
+      this.paisesList = Array.isArray(response) ? response : (response.data || []);
       this.llenarPaisSelect();
     } catch (error) {
       console.error('Error al precargar países en territorios:', error);
@@ -147,12 +147,13 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     }
 
     try {
-      const territorios = await UbicacionesService.getTerritorios({
+      const response = await UbicacionesService.getTerritorios(1, 1000, null, {
         pais_id: this.selectedPaisId,
         parent_id: null,
+        all: true
       });
 
-      this.territoriosNivel1 = territorios || [];
+      this.territoriosNivel1 = Array.isArray(response) ? response : (response.data || []);
       this.renderColumna1();
       if (btnAdd1 && isAdmin) btnAdd1.classList.remove('d-none');
     } catch (error) {
@@ -242,12 +243,13 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     if (btnAdd3 && isAdmin) btnAdd3.classList.add('d-none');
 
     try {
-      const territorios = await UbicacionesService.getTerritorios({
+      const response = await UbicacionesService.getTerritorios(1, 1000, null, {
         pais_id: this.selectedPaisId,
         parent_id: this.selectedNivel1Id,
+        all: true
       });
 
-      this.territoriosNivel2 = territorios || [];
+      this.territoriosNivel2 = Array.isArray(response) ? response : (response.data || []);
       this.renderColumna2();
       if (btnAdd2 && isAdmin) btnAdd2.classList.remove('d-none');
     } catch (error) {
@@ -327,12 +329,13 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     if (btnAdd3 && isAdmin) btnAdd3.classList.add('d-none');
 
     try {
-      const territorios = await UbicacionesService.getTerritorios({
+      const response = await UbicacionesService.getTerritorios(1, 1000, null, {
         pais_id: this.selectedPaisId,
         parent_id: this.selectedNivel2Id,
+        all: true
       });
 
-      this.territoriosNivel3 = territorios || [];
+      this.territoriosNivel3 = Array.isArray(response) ? response : (response.data || []);
       this.renderColumna3();
       if (btnAdd3 && isAdmin) btnAdd3.classList.remove('d-none');
     } catch (error) {

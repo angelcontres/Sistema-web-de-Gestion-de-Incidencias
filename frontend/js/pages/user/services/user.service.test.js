@@ -24,7 +24,7 @@ describe('UserService', () => {
     await UserService.getAll();
 
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/usuarios?page=1'),
+      expect.stringContaining('/users?page=1'),
       expect.any(Object)
     );
   });
@@ -32,7 +32,7 @@ describe('UserService', () => {
   it('getAll debería llamar al endpoint correcto', async () => {
     await UserService.getAll(1);
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/usuarios?page=1'),
+      expect.stringContaining('/users?page=1'),
       expect.any(Object)
     );
   });
@@ -40,7 +40,7 @@ describe('UserService', () => {
   it('getById debería llamar al endpoint correcto', async () => {
     await UserService.getById(5);
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/usuarios/5'),
+      expect.stringContaining('/users/5'),
       expect.any(Object)
     );
   });
@@ -49,7 +49,7 @@ describe('UserService', () => {
     const payload = { username: 'test' };
     await UserService.create(payload);
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/usuarios'),
+      expect.stringContaining('/users'),
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(payload),
@@ -61,7 +61,7 @@ describe('UserService', () => {
     const payload = { username: 'test' };
     await UserService.update(5, payload);
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/usuarios/5'),
+      expect.stringContaining('/users/5'),
       expect.objectContaining({
         method: 'PUT',
         body: JSON.stringify(payload),
@@ -72,7 +72,7 @@ describe('UserService', () => {
   it('delete debería hacer DELETE', async () => {
     await UserService.delete(5);
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/usuarios/5'),
+      expect.stringContaining('/users/5'),
       expect.objectContaining({
         method: 'DELETE',
       })

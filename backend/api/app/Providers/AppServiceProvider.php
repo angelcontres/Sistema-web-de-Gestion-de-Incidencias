@@ -27,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        if (app()->environment('testing') && \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite') {
+            \Illuminate\Support\Facades\DB::statement("ATTACH DATABASE ':memory:' AS metrics");
+        }
     }
 }

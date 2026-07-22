@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $deleted_by
  */
 #[Table('prioridades')]
-#[Fillable(['nombre', 'color_hex', 'created_by', 'updated_by', 'deleted_by'])]
+#[Fillable(['id', 'nombre', 'color_hex', 'created_by', 'updated_by', 'deleted_by'])]
 class Prioridad extends Model
 {
     use HasFactory, SoftDeletes;

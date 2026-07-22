@@ -39,13 +39,15 @@ export class DashboardAdminComponent extends BaseComponent {
       const estadoColors = {
         Pendiente: '#94a3b8',
         'En Revisión': '#38bdf8',
-        'En Proceso': '#fbbf24',
+        'En Proceso': '#D98A2F',
         Resuelto: '#34d399',
         Rechazado: '#f87171',
       };
 
       const chartEstado = window.echarts.init(this.querySelector('#chartEstado'));
-      const estadoData = (data.distribucion_estado || []).map((item) => ({
+      const rawEstadoData = data.distribucion_estado || [];
+      // Object.values() convierte un objeto {"0": {...}} a arreglo, y si ya es arreglo lo deja igual.
+      const estadoData = Object.values(rawEstadoData).map((item) => ({
         name: String(item.metric),
         value: Number(item.value),
         itemStyle: { color: estadoColors[item.metric] || '#cbd5e1' },
@@ -92,7 +94,7 @@ export class DashboardAdminComponent extends BaseComponent {
             name: 'Incidencias',
             type: 'bar',
             barMaxWidth: 40,
-            itemStyle: { color: '#a78bfa', borderRadius: [4, 4, 0, 0] },
+            itemStyle: { color: '#0D2A4C', borderRadius: [4, 4, 0, 0] },
             data: instSeries,
           },
         ],
@@ -123,12 +125,12 @@ export class DashboardAdminComponent extends BaseComponent {
             type: 'line',
             smooth: true,
             symbolSize: 8,
-            lineStyle: { width: 3, color: '#10b981' },
-            itemStyle: { color: '#10b981' },
+            lineStyle: { width: 3, color: '#227A8A' },
+            itemStyle: { color: '#227A8A' },
             areaStyle: {
               color: new window.echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: 'rgba(16, 185, 129, 0.25)' },
-                { offset: 1, color: 'rgba(16, 185, 129, 0)' },
+                { offset: 0, color: 'rgba(34, 122, 138, 0.25)' },
+                { offset: 1, color: 'rgba(34, 122, 138, 0)' },
               ]),
             },
             data: seriesData,

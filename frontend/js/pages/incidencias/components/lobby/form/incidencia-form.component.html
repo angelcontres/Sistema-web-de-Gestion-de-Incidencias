@@ -184,11 +184,11 @@
                 </h5>
 
                 <!-- Geolocalización (Botones) -->
-                <div class="d-flex justify-content-start mb-3 gap-2">
+                <div class="d-flex flex-column flex-sm-row justify-content-start mb-3 gap-2">
                   <button
                     type="button"
                     id="btnObtenerUbicacion"
-                    class="btn btn-success btn-lg fw-semibold px-4 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm"
+                    class="ui-btn ui-btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2"
                   >
                     <i id="btnObtenerUbicacionIcon" class="bi bi-geo-fill fs-5"></i>
                     <span
@@ -202,7 +202,7 @@
                   <button
                     type="button"
                     id="btnSeleccionarMapa"
-                    class="btn btn-outline-success btn-lg fw-semibold px-4 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm"
+                    class="ui-btn ui-btn-outline flex-grow-1 d-flex align-items-center justify-content-center gap-2"
                     title="Seleccionar ubicación manualmente"
                   >
                     <i class="bi bi-pin-map-fill fs-5"></i>
@@ -403,7 +403,7 @@
                 O haga clic para explorar sus archivos locales (formatos JPG, PNG, WEBP)
               </p>
               <input type="file" id="fileInput" class="d-none" multiple accept="image/*" />
-              <div class="d-flex gap-2 justify-content-center flex-wrap">
+              <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center flex-wrap">
                 <button
                   type="button"
                   class="btn btn-outline-primary btn-sm fw-semibold rounded-2 px-3"
@@ -476,158 +476,3 @@
   </div>
 </div>
 
-<!-- Modal para registrar nueva dirección -->
-<div
-  class="modal fade"
-  id="modalRegistrarDireccion"
-  tabindex="-1"
-  aria-labelledby="modalRegistrarDireccionLabel"
-  aria-hidden="true"
-  style="z-index: 1060"
->
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-3">
-      <div class="modal-header border-bottom-0 pb-0">
-        <h5 class="modal-title fw-bold text-dark" id="modalRegistrarDireccionLabel">
-          <i class="bi bi-geo-alt-fill text-primary me-2"></i>Registrar Nueva Ubicación
-        </h5>
-        <button type="button" class="btn-close" id="btnCerrarModalX" aria-label="Close"></button>
-      </div>
-      <div class="modal-body pt-3">
-        <div class="alert alert-info py-2 px-3 small border-0 rounded-2 mb-3">
-          <i class="bi bi-info-circle-fill me-1.5"></i> La ubicación que seleccionó no está
-          registrada. Por favor complete los detalles para guardarla.
-        </div>
-        <form id="formModalDireccion" class="needs-validation" novalidate>
-          <div class="row g-2">
-            <div class="col-12">
-              <label for="modalDirDetalle" class="premium-label"
-                >Dirección Detallada <span class="text-danger">*</span></label
-              >
-              <input
-                type="text"
-                id="modalDirDetalle"
-                class="form-control rounded-2 border-secondary-subtle"
-                required
-                placeholder="Calle, número, intersección"
-              />
-              <div class="invalid-feedback">La dirección detallada es obligatoria.</div>
-            </div>
-
-            <div class="col-6" style="display: none !important">
-              <label for="modalDirCodigoPostal" class="premium-label"
-                >Código Postal</label
-              >
-              <input
-                type="text"
-                id="modalDirCodigoPostal"
-                class="form-control rounded-2 border-secondary-subtle"
-                placeholder="123456"
-              />
-            </div>
-
-            <div class="col-6" style="display: none !important">
-              <label for="modalDirPais" class="premium-label">País</label>
-              <select id="modalDirPais" class="form-select rounded-2 border-secondary-subtle">
-                <option value="">-- Seleccione --</option>
-              </select>
-              <div class="invalid-feedback">El país es obligatorio.</div>
-            </div>
-
-            <!-- Cascading Dropdowns para Territorio en Modal -->
-            <div class="col-12 d-none" id="colModalDirNivel1" style="display: none !important">
-              <label
-                id="lblModalDirNivel1"
-                for="modalDirNivel1"
-                class="premium-label"
-                >Provincia</label
-              >
-              <select
-                id="modalDirNivel1"
-                class="form-select rounded-2 border-secondary-subtle"
-                disabled
-              >
-                <option value="">-- Seleccione --</option>
-              </select>
-              <div class="invalid-feedback">La provincia es obligatoria.</div>
-            </div>
-
-            <div class="col-12 d-none" id="colModalDirNivel2" style="display: none !important">
-              <label
-                id="lblModalDirNivel2"
-                for="modalDirNivel2"
-                class="premium-label"
-                >Cantón</label
-              >
-              <select
-                id="modalDirNivel2"
-                class="form-select rounded-2 border-secondary-subtle"
-                disabled
-              >
-                <option value="">-- Seleccione --</option>
-              </select>
-              <div class="invalid-feedback">El cantón es obligatorio.</div>
-            </div>
-
-            <div class="col-12 d-none" id="colModalDirNivel3">
-              <label
-                id="lblModalDirNivel3"
-                for="modalDirNivel3"
-                class="premium-label"
-                >Parroquia <span class="text-danger">*</span></label
-              >
-              <select
-                id="modalDirNivel3"
-                class="form-select rounded-2 border-secondary-subtle"
-                disabled
-              >
-                <option value="">-- Seleccione --</option>
-              </select>
-              <div class="invalid-feedback">La parroquia es obligatoria.</div>
-            </div>
-
-            <div class="col-6" style="display: none !important">
-              <label for="modalDirLat" class="premium-label"
-                >Latitud</label
-              >
-              <input
-                type="text"
-                id="modalDirLat"
-                class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
-                readonly
-              />
-            </div>
-
-            <div class="col-6" style="display: none !important">
-              <label for="modalDirLng" class="premium-label"
-                >Longitud</label
-              >
-              <input
-                type="text"
-                id="modalDirLng"
-                class="form-control rounded-2 border-secondary-subtle bg-light text-muted"
-                readonly
-              />
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer border-top-0 pt-0">
-        <button
-          type="button"
-          class="btn btn-light fw-semibold rounded-2 px-3"
-          id="btnCancelarModal"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary fw-semibold rounded-2 px-4"
-          id="btnGuardarModalDireccion"
-        >
-          Guardar Ubicación
-        </button>
-      </div>
-    </div>
-  </div>
-</div>

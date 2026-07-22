@@ -31,7 +31,7 @@ export class DashboardCiudadanoComponent extends BaseComponent {
       const estadoColors = {
         Pendiente: '#94a3b8',
         'En Revisión': '#38bdf8',
-        'En Proceso': '#fbbf24',
+        'En Proceso': '#D98A2F',
         Resuelto: '#34d399',
         Rechazado: '#f87171',
       };
@@ -39,11 +39,13 @@ export class DashboardCiudadanoComponent extends BaseComponent {
         Urgente: '#ef4444',
         Alta: '#f97316',
         Media: '#eab308',
-        Baja: '#3b82f6',
+        Baja: '#D98A2F',
       };
 
       const chartEstado = window.echarts.init(this.querySelector('#chartEstado'));
-      const estadoData = (data.distribucion_estado || []).map((item) => ({
+      const rawEstadoData = data.distribucion_estado || [];
+      // Object.values() convierte un objeto {"0": {...}} a arreglo, y si ya es arreglo lo deja igual.
+      const estadoData = Object.values(rawEstadoData).map((item) => ({
         name: String(item.metric),
         value: Number(item.value),
         itemStyle: { color: estadoColors[item.metric] || '#cbd5e1' },
@@ -115,8 +117,8 @@ export class DashboardCiudadanoComponent extends BaseComponent {
             type: 'line',
             smooth: true,
             symbolSize: 8,
-            lineStyle: { width: 3, color: '#3b82f6' },
-            itemStyle: { color: '#3b82f6' },
+            lineStyle: { width: 3, color: '#D98A2F' },
+            itemStyle: { color: '#D98A2F' },
             areaStyle: {
               color: new window.echarts.graphic.LinearGradient(0, 0, 0, 1, [
                 { offset: 0, color: 'rgba(59, 130, 246, 0.25)' },

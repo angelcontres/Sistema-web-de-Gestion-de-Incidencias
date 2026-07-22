@@ -13,17 +13,17 @@ class InstitucionesSeeder extends Seeder
     public function run(): void
     {
         $instituciones = [
-            ['nombre' => 'Policía Nacional del Ecuador', 'siglas' => 'PNE'],
-            ['nombre' => 'Empresa Pública Metropolitana de Movilidad y Obras Públicas', 'siglas' => 'EPMMOP'],
-            ['nombre' => 'Empresa Eléctrica Quito', 'siglas' => 'EEQ'],
-            ['nombre' => 'Empresa Pública Metropolitana de Agua Potable y Saneamiento', 'siglas' => 'EPMAPS'],
-            ['nombre' => 'Empresa Metropolitana de Gestión Integral de Residuos Sólidos', 'siglas' => 'EMGIRS'],
-            ['nombre' => 'Dirección de Medio Ambiente Municipal', 'siglas' => 'DMA'],
-            ['nombre' => 'Comisión de Tránsito del Ecuador', 'siglas' => 'CTE'],
+            ['id' => 1, 'nombre' => 'Policía Nacional del Ecuador', 'siglas' => 'PNE'],
+            ['id' => 2, 'nombre' => 'Empresa Pública Metropolitana de Movilidad y Obras Públicas', 'siglas' => 'EPMMOP'],
+            ['id' => 3, 'nombre' => 'Empresa Eléctrica Quito', 'siglas' => 'EEQ'],
+            ['id' => 4, 'nombre' => 'Empresa Pública Metropolitana de Agua Potable y Saneamiento', 'siglas' => 'EPMAPS'],
+            ['id' => 5, 'nombre' => 'Empresa Metropolitana de Gestión Integral de Residuos Sólidos', 'siglas' => 'EMGIRS'],
+            ['id' => 6, 'nombre' => 'Dirección de Medio Ambiente Municipal', 'siglas' => 'DMA'],
+            ['id' => 7, 'nombre' => 'Comisión de Tránsito del Ecuador', 'siglas' => 'CTE'],
         ];
 
         foreach ($instituciones as $i) {
-            Institucion::firstOrCreate(['siglas' => $i['siglas']], $i);
+            Institucion::updateOrCreate(['id' => $i['id']], $i);
         }
     }
 }

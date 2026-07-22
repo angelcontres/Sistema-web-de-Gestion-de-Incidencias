@@ -5,9 +5,9 @@ services:
   nginx:
     image: nginx:alpine
     container_name: sistema_nginx
+    restart: always
     ports:
       - "3005:80"
-      - "8001:80"
     volumes:
       # Mapea todo el proyecto para que Nginx acceda a frontend/ y backend/
       - ./:/var/www/html
@@ -16,7 +16,7 @@ services:
       - laravel
       - postgres
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
   # El Backend (Laravel API)
   laravel:
@@ -24,11 +24,11 @@ services:
       context: ./backend/api
       dockerfile: Dockerfile
     container_name: sistema_laravel
-    #user: "1000:1000"
+    restart: always
     volumes:
       - ./backend/api:/var/www/html
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
   # Worker de Laravel para procesar tareas en segundo plano (Colas)
   laravel-worker:
@@ -42,8 +42,9 @@ services:
       - ./backend/api:/var/www/html
     depends_on:
       - postgres
+      - laravel
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
   # Scheduler de Laravel para ejecutar tareas programadas (ETL y comandos SQA)
   laravel-scheduler:
@@ -57,10 +58,11 @@ services:
       - ./backend/api:/var/www/html
     depends_on:
       - postgres
+      - laravel
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
-  # Base de Datos (PostgreSQL) [Asignatura: Base de Datos / Data Center]
+  # Base de Datos (PostgreSQL + PostGIS)
   postgres:
     image: postgis/postgis:17-3.4-alpine
     container_name: sistema_postgres
@@ -72,12 +74,11 @@ services:
     ports:
       - "5436:5432"
     volumes:
-      # Persistencia obligatoria para asegurar los puntos de Data Center
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
-  # El túnel gratuito de Cloudflare
+  # El túnel de Cloudflare
   tunnel:
     image: cloudflare/cloudflared:latest
     container_name: sistema_tunnel_staging
@@ -88,9 +89,9 @@ services:
     depends_on:
       - nginx
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
-  # Grafana para visualización y analítica interna (Puerto 3010 libre)
+  # Grafana para visualización y analítica
   grafana:
     image: grafana/grafana:latest
     container_name: sistema_grafana
@@ -109,9 +110,8 @@ services:
     depends_on:
       - postgres
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
-  # @TODO: Acceder al sonarqube de produccion para hacer la configuración antes de aplicarlo en el despligue
   # Base de datos dedicada para SonarQube
   sonarqube_db:
     image: postgres:15-alpine
@@ -124,8 +124,9 @@ services:
     volumes:
       - sonarqube_db_data:/var/lib/postgresql/data
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
+  # Inicializador de permisos de SonarQube
   sonarqube_init:
     image: busybox
     container_name: sistema_sonarqube_init
@@ -135,7 +136,7 @@ services:
       - sonarqube_extensions:/opt/sonarqube/extensions
       - sonarqube_logs:/opt/sonarqube/logs
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
   # Servidor SonarQube (Calidad de Código / SQA)
   sonarqube:
@@ -145,7 +146,7 @@ services:
     ports:
       - "9009:9000"
     environment:
-      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube_db:5432/sonarqube
+      - SONAR_JDBC_URL=jdbc:postgresql://sistema_sonarqube_db:5432/sonarqube
       - SONAR_JDBC_USERNAME=sonar
       - SONAR_JDBC_PASSWORD=sonar_secure_password
     volumes:
@@ -156,11 +157,11 @@ services:
       - sonarqube_db
       - sonarqube_init
     networks:
-      - sistema_net
+      - sistema_incidencias_net
 
-      
 networks:
-  sistema_net:
+  sistema_incidencias_net:
+    name: sistema_incidencias_net
     driver: bridge
 
 volumes:

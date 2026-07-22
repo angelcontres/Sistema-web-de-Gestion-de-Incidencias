@@ -16,7 +16,7 @@ class AuthTest extends TestCase
     // CP-S-01: Acceso sin autenticación
     public function test_cannot_access_protected_route_without_token()
     {
-        $response = $this->getJson('/api/v1/incidencias');
+        $response = $this->getJson('/api/v1/incidents');
         $response->assertStatus(401);
     }
 
@@ -39,7 +39,7 @@ class AuthTest extends TestCase
     {
         $response = $this->withHeaders([
             'Authorization' => 'Bearer invalid_and_manipulated_token_string',
-        ])->getJson('/api/v1/incidencias');
+        ])->getJson('/api/v1/incidents');
 
         $response->assertStatus(401);
     }
@@ -57,7 +57,7 @@ class AuthTest extends TestCase
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$token,
-        ])->getJson('/api/v1/incidencias');
+        ])->getJson('/api/v1/incidents');
 
         $response->assertStatus(401);
     }
@@ -77,8 +77,6 @@ class AuthTest extends TestCase
         $opcion = OpcionMenu::firstOrCreate([
             'nombre' => 'Roles',
             'ruta' => '/roles',
-            'orden' => 1,
-            'activo' => true,
             'created_by' => $admin->id,
         ]);
         $permisoAdmin = Permiso::firstOrCreate(['nombre' => 'Gestionar Roles', 'recurso' => 'roles', 'accion' => 'READ', 'opcion_menu_id' => $opcion->id]);
@@ -123,7 +121,7 @@ class AuthTest extends TestCase
 
         // 3. Ejecutar la petición DELETE actuando como Admin
         $response = $this->actingAs($admin)
-            ->deleteJson("/api/v1/usuarios/{$targetUser->id}");
+            ->deleteJson("/api/v1/users/{$targetUser->id}");
 
         // 4. Aserciones
         $response->assertStatus(200);

@@ -143,8 +143,8 @@ export class UserFormComponent extends BaseComponent {
     if (!this.rolesDisponiblesList || !this.rolesAsignadosList) return;
 
     try {
-      const roles = await RoleService.getAll();
-      const listRoles = roles || [];
+      const response = await RoleService.getAll(1, 15, null, { all: true });
+      const listRoles = Array.isArray(response) ? response : (response.data || []);
 
       this.rolesDisponiblesList.innerHTML = '';
       this.rolesAsignadosList.innerHTML = '';
@@ -198,9 +198,8 @@ export class UserFormComponent extends BaseComponent {
 
   async cargarInstituciones() {
     try {
-      const response = await InstitucionService.getAll();
-      const instituciones = response.data || response || [];
-      const list = Array.isArray(instituciones) ? instituciones : instituciones.data || [];
+      const response = await InstitucionService.getAll(1, 15, null, { all: true });
+      const list = Array.isArray(response) ? response : (response.data || []);
 
       list.forEach((inst) => {
         const option = document.createElement('option');

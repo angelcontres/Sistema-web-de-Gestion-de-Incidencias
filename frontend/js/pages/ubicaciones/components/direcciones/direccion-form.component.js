@@ -753,7 +753,58 @@ export class DireccionFormComponent extends BaseComponent {
         if (selectPais) selectPais.value = matchedPais.id;
         this.actualizarEtiquetasNiveles(matchedPais.id);
 
-        // A. Procesar Nivel 1
+        // A. Procesar Territorio Detectado por Código Postal (Prioridad Alta)
+        if (data.territorio_detectado) {
+          const td = data.territorio_detectado;
+          if (statusText) statusText.textContent = `Cargando jerarquía geográfica...`;
+          
+          await this.cargarDireccionDropdownNivel1(matchedPais.id);
+          if (td.provincia_id && selectN1) {
+            selectN1.value = td.provincia_id;
+            this.pendingGeography.nivel1 = { exists: true, id: td.provincia_id, tipo: config.nivel1 };
+            this.mostrarCampo('#colDirNivel1');
+            
+            await this.cargarDireccionDropdownNivel2(td.provincia_id);
+            if (td.canton_id && selectN2) {
+              selectN2.value = td.canton_id;
+              this.pendingGeography.nivel2 = { exists: true, id: td.canton_id, tipo: config.nivel2 };
+              this.mostrarCampo('#colDirNivel2');
+              
+              await this.cargarDireccionDropdownNivel3(td.canton_id);
+              if (td.parroquia_id && selectN3) {
+                selectN3.value = td.parroquia_id;
+                this.pendingGeography.nivel3 = { exists: true, id: td.parroquia_id, tipo: config.nivel3 };
+                this.mostrarCampo('#colDirNivel3');
+              } else if (!td.parroquia_id && selectN3) {
+                // Fallback: Si el cantón fue detectado pero la parroquia no, usamos búsqueda por texto solo para la parroquia
+                const possibleNivel3Names = [
+                  address.parish,
+                  address.suburb,
+                  address.neighbourhood,
+                  address.quarter,
+                ].filter(Boolean);
+                const n3Name = possibleNivel3Names[0] || '';
+                if (n3Name) {
+                  const cleanN3Name = this.normalizeText(n3Name);
+                  const optionsN3 = Array.from(selectN3.options);
+                  const foundN3 = optionsN3.find((opt) => {
+                    const optText = this.normalizeText(opt.text);
+                    return optText.includes(cleanN3Name) || cleanN3Name.includes(optText);
+                  });
+                  if (foundN3) {
+                    selectN3.value = foundN3.value;
+                    this.pendingGeography.nivel3 = { exists: true, id: foundN3.value, tipo: config.nivel3 };
+                    this.mostrarCampo('#colDirNivel3');
+                  }
+                }
+              }
+            }
+          }
+          if (statusContainer) statusContainer.classList.add('d-none');
+          return; // Salir, ya se completó el autollenado de todos los niveles posibles
+        }
+
+        // B. Procesar Nivel 1 (Búsqueda por texto - Fallback)
         const possibleNivel1Names = [
           address.state,
           address.region,

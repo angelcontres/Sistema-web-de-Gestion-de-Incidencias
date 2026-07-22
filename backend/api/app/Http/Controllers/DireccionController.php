@@ -27,7 +27,12 @@ class DireccionController extends Controller
             $query->where('territorio_id', $request->input('territorio_id'));
         }
 
-        return response()->json($query->orderBy('id', 'desc')->get(), 200);
+        if ($request->query('all') === 'true' || $request->query('all') === '1') {
+            return response()->json($query->orderBy('id', 'desc')->get(), 200);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        return response()->json($query->orderBy('id', 'desc')->paginate($perPage), 200);
     }
 
     /**
@@ -52,6 +57,9 @@ class DireccionController extends Controller
             'longitud' => $request->longitud,
             'activo' => $request->input('activo', true),
         ]);
+
+        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_all');
+        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_' . $direccion->territorio_id);
 
         return response()->json([
             'message' => 'Dirección creada con éxito',
@@ -96,7 +104,22 @@ class DireccionController extends Controller
             }
         }
 
-        $direccion->update($request->only(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'latitud', 'longitud', 'activo']));
+        // Remember old territorio_id to clear its cache
+        $oldTerritorioId = $direccion->territorio_id;
+
+        $direccion->update($request->only([
+            'territorio_id',
+            'detalle',
+            'referencia',
+            'codigo_postal',
+            'latitud',
+            'longitud',
+            'activo',
+        ]));
+
+        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_all');
+        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_' . $oldTerritorioId);
+        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_' . $direccion->territorio_id);
 
         return response()->json([
             'message' => 'Dirección actualizada con éxito',
@@ -117,7 +140,11 @@ class DireccionController extends Controller
             return response()->json(['message' => 'No autorizado para eliminar esta dirección.'], 403);
         }
 
+        $territorioId = $direccion->territorio_id;
         $direccion->delete();
+
+        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_all');
+        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_' . $territorioId);
 
         return response()->json([
             'message' => 'Dirección eliminada con éxito',
@@ -136,6 +163,7 @@ class DireccionController extends Controller
 
         $lat = $request->input('lat');
         $lng = $request->input('lng');
+        $result = null;
 
         // 1. Intentar con Nominatim (OpenStreetMap)
         try {
@@ -153,53 +181,119 @@ class DireccionController extends Controller
                 ]);
 
             if ($response->successful()) {
-                return response()->json($response->json(), 200);
+                $result = $response->json();
             }
         } catch (\Exception $e) {
             // Continuar silenciosamente al plan B (Fallback)
         }
 
-        // 2. Fallback: Intentar con BigDataCloud (API gratuita sin límite estricto de IP y con CORS)
-        try {
-            $response = Http::timeout(3)
-                ->withoutVerifying()
-                ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
-                    'latitude' => $lat,
-                    'longitude' => $lng,
-                    'localityLanguage' => 'es',
-                ]);
+        // 2. Fallback: Intentar con BigDataCloud
+        if (!$result) {
+            try {
+                $response = Http::timeout(3)
+                    ->withoutVerifying()
+                    ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
+                        'latitude' => $lat,
+                        'longitude' => $lng,
+                        'localityLanguage' => 'es',
+                    ]);
 
-            if ($response->successful()) {
-                $bdc = $response->json();
+                if ($response->successful()) {
+                    $bdc = $response->json();
 
-                // Mapear al formato de Nominatim para que el frontend lo procese igual
-                $mapped = [
-                    'address' => [
-                        'country' => $bdc['countryName'] ?? null,
-                        'country_code' => $bdc['countryCode'] ?? null,
-                        'state' => $bdc['principalSubdivision'] ?? null,
-                        'city' => $bdc['city'] ?? null,
-                        'town' => $bdc['city'] ?? null,
-                        'parish' => $bdc['locality'] ?? null,
-                        'suburb' => $bdc['locality'] ?? null,
-                        'neighbourhood' => $bdc['locality'] ?? null,
-                        'postcode' => $bdc['postcode'] ?? null,
-                        'road' => $bdc['locality'] ?? null,
-                    ],
-                    'display_name' => implode(', ', array_filter([
-                        $bdc['locality'] ?? null,
-                        $bdc['city'] ?? null,
-                        $bdc['principalSubdivision'] ?? null,
-                        $bdc['countryName'] ?? null,
-                    ])),
-                ];
-
-                return response()->json($mapped, 200);
+                    $result = [
+                        'address' => [
+                            'country' => $bdc['countryName'] ?? null,
+                            'country_code' => $bdc['countryCode'] ?? null,
+                            'state' => $bdc['principalSubdivision'] ?? null,
+                            'city' => $bdc['city'] ?? null,
+                            'town' => $bdc['city'] ?? null,
+                            'parish' => $bdc['locality'] ?? null,
+                            'suburb' => $bdc['locality'] ?? null,
+                            'neighbourhood' => $bdc['locality'] ?? null,
+                            'postcode' => $bdc['postcode'] ?? null,
+                            'road' => $bdc['locality'] ?? null,
+                        ],
+                        'display_name' => implode(', ', array_filter([
+                            $bdc['locality'] ?? null,
+                            $bdc['city'] ?? null,
+                            $bdc['principalSubdivision'] ?? null,
+                            $bdc['countryName'] ?? null,
+                        ])),
+                    ];
+                }
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Error en todos los servicios de geocodificación: '.$e->getMessage(),
+                ], 502);
             }
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error en todos los servicios de geocodificación: '.$e->getMessage(),
-            ], 502);
+        }
+
+        if ($result) {
+            // Buscar la parroquia por código postal
+            $postcode = $result['address']['postcode'] ?? null;
+            if ($postcode) {
+                // Remover ceros a la izquierda para asegurar coincidencias si el seeder las guardó como numéricos
+                $codigoLimpio = (string) (int) $postcode;
+
+                $territorio = Territorio::where('tipo', 'Parroquia')
+                    ->where(function($query) use ($postcode, $codigoLimpio) {
+                        $query->where('codigo', $postcode)
+                              ->orWhere('codigo', $codigoLimpio);
+                    })->first();
+
+                if ($territorio) {
+                    $canton = $territorio->parent;
+                    $provincia = $canton ? $canton->parent : null;
+
+                    $result['territorio_detectado'] = [
+                        'parroquia_id' => $territorio->id,
+                        'canton_id' => $canton ? $canton->id : null,
+                        'provincia_id' => $provincia ? $provincia->id : null,
+                        'pais_id' => $territorio->pais_id,
+                    ];
+                } else {
+                    // Fallback 1: Buscar si alguna Dirección previa ya tiene registrado este código postal
+                    $direccionMapeada = Direccion::with('territorio')
+                        ->where('codigo_postal', $postcode)
+                        ->first();
+
+                    if ($direccionMapeada && $direccionMapeada->territorio) {
+                        $territorio = $direccionMapeada->territorio;
+                        $canton = $territorio->parent;
+                        $provincia = $canton ? $canton->parent : null;
+
+                        $result['territorio_detectado'] = [
+                            'parroquia_id' => $territorio->id,
+                            'canton_id' => $canton ? $canton->id : null,
+                            'provincia_id' => $provincia ? $provincia->id : null,
+                            'pais_id' => $territorio->pais_id,
+                        ];
+                    } else {
+                        // Fallback 2: Buscar Cantón por los primeros 4 dígitos del código postal (Ej: 170135 -> 1701)
+                        $padded = str_pad($postcode, 6, '0', STR_PAD_LEFT);
+                        $cantonCode = substr($padded, 0, 4);
+                        $cantonCodeLimpio = (string) (int) $cantonCode;
+
+                        $canton = Territorio::where('tipo', 'Canton')
+                            ->where(function($query) use ($cantonCode, $cantonCodeLimpio) {
+                                $query->where('codigo', $cantonCode)
+                                      ->orWhere('codigo', $cantonCodeLimpio);
+                            })->first();
+
+                        if ($canton) {
+                            $provincia = $canton->parent;
+                            $result['territorio_detectado'] = [
+                                'parroquia_id' => null,
+                                'canton_id' => $canton->id,
+                                'provincia_id' => $provincia ? $provincia->id : null,
+                                'pais_id' => $canton->pais_id,
+                            ];
+                        }
+                    }
+                }
+            }
+            return response()->json($result, 200);
         }
 
         return response()->json([

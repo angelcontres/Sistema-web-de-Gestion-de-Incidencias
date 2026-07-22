@@ -34,7 +34,6 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.institucionSelect = this.querySelector('#institucionSelect');
     this.estadoSelect = this.querySelector('#estadoSelect');
     this.dirDetalleInput = this.querySelector('#dirDetalle');
-    this.dirCodigoPostalInput = this.querySelector('#dirCodigoPostal');
     this.dirPaisSelect = this.querySelector('#dirPais');
     this.dirNivel1Select = this.querySelector('#dirNivel1');
     this.dirNivel2Select = this.querySelector('#dirNivel2');
@@ -53,26 +52,8 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.formTitle = this.querySelector('#formTitle');
     this.btnText = this.querySelector('#btnText');
 
-    // Modal elements
-    this.modalElement = this.querySelector('#modalRegistrarDireccion');
-    this.modalInstance = this.modalElement ? new bootstrap.Modal(this.modalElement) : null;
-
-    this.modalDirDetalle = this.querySelector('#modalDirDetalle');
-    this.modalDirCodigoPostal = this.querySelector('#modalDirCodigoPostal');
-    this.modalDirPais = this.querySelector('#modalDirPais');
-    this.modalDirNivel1 = this.querySelector('#modalDirNivel1');
-    this.modalDirNivel2 = this.querySelector('#modalDirNivel2');
-    this.modalDirNivel3 = this.querySelector('#modalDirNivel3');
-    this.modalDirLat = this.querySelector('#modalDirLat');
-    this.modalDirLng = this.querySelector('#modalDirLng');
-
-    this.colModalDirNivel1 = this.querySelector('#colModalDirNivel1');
-    this.colModalDirNivel2 = this.querySelector('#colModalDirNivel2');
-    this.colModalDirNivel3 = this.querySelector('#colModalDirNivel3');
-
-    this.btnCancelarModal = this.querySelector('#btnCancelarModal');
-    this.btnCerrarModalX = this.querySelector('#btnCerrarModalX');
-    this.btnGuardarModalDireccion = this.querySelector('#btnGuardarModalDireccion');
+    // Removed modal elements and unused fields
+    this.currentPostalCode = '';
 
     // Tab Elements
     this.dropzoneContainer = this.querySelector('#dropzoneContainer');
@@ -125,44 +106,6 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.institucionSelect.disabled = !canManageIncidencia;
     }
 
-    const isCitizen =
-      user &&
-      user.roles &&
-      user.roles.every(
-        (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
-      );
-    if (isCitizen) {
-      const detallesContainer = this.querySelector('#detallesDireccionContainer');
-      if (detallesContainer) detallesContainer.classList.add('d-none');
-
-      const colNivel1 = this.querySelector('#colDirNivel1');
-      if (colNivel1) colNivel1.style.setProperty('display', 'none', 'important');
-
-      const colNivel2 = this.querySelector('#colDirNivel2');
-      if (colNivel2) colNivel2.style.setProperty('display', 'none', 'important');
-
-      const colNivel3 = this.querySelector('#colDirNivel3');
-      if (colNivel3) colNivel3.style.setProperty('display', 'none', 'important');
-
-      const colMapa = this.querySelector('#colMapaContainer');
-      if (colMapa) {
-        colMapa.classList.remove('col-lg-7');
-        colMapa.classList.add('col-lg-12');
-      }
-
-      const infoMinimalista = this.querySelector('#infoUbicacionMinimalista');
-      if (infoMinimalista) {
-        infoMinimalista.classList.remove('d-none');
-      }
-
-      // Remove required from hidden inputs to avoid form validation blocking
-      this.dirDetalleInput?.removeAttribute('required');
-      this.dirPaisSelect?.removeAttribute('required');
-      this.dirNivel1Select?.removeAttribute('required');
-      this.dirNivel2Select?.removeAttribute('required');
-      this.dirNivel3Select?.removeAttribute('required');
-    }
-
     // Initialize map in read-only mode
     this.initMap();
 
@@ -183,39 +126,21 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.cargarDropdownNivel3(this.dirPaisSelect.value, e.target.value);
     });
 
-    // Modal event listeners
-    if (this.btnCancelarModal) {
-      this.btnCancelarModal.addEventListener('click', () => this.modalInstance?.hide());
-    }
-    if (this.btnCerrarModalX) {
-      this.btnCerrarModalX.addEventListener('click', () => this.modalInstance?.hide());
-    }
-    if (this.btnGuardarModalDireccion) {
-      this.btnGuardarModalDireccion.addEventListener('click', () => this.guardarDireccionModal());
-    }
-
-    if (this.modalDirPais) {
-      this.modalDirPais.addEventListener('change', (e) => {
-        this.actualizarEtiquetasNivelesModal(e.target.value);
-        this.cargarModalDropdownNivel1(e.target.value);
-      });
-    }
-    if (this.modalDirNivel1) {
-      this.modalDirNivel1.addEventListener('change', (e) => {
-        this.cargarModalDropdownNivel2(this.modalDirPais.value, e.target.value);
-      });
-    }
-    if (this.modalDirNivel2) {
-      this.modalDirNivel2.addEventListener('change', (e) => {
-        this.cargarModalDropdownNivel3(this.modalDirPais.value, e.target.value);
-      });
-    }
+    // Removed modal event listeners
 
     if (this.btnObtenerUbicacion) {
       this.btnObtenerUbicacion.addEventListener('click', () => this.obtenerUbicacionActual());
     }
     if (this.btnSeleccionarMapa) {
       this.btnSeleccionarMapa.addEventListener('click', () => this.habilitarMapaInteractivo());
+    }
+    
+    // Si el usuario modifica la dirección autocompletada, desvinculamos el ID 
+    // para forzar la creación de una NUEVA dirección con sus detalles personalizados.
+    if (this.dirDetalleInput) {
+      this.dirDetalleInput.addEventListener('input', () => {
+        this.selectedDireccionId = null;
+      });
     }
 
     // Resources/Upload events
@@ -453,15 +378,15 @@ export class IncidenciaFormComponent extends BaseComponent {
       const data = await UbicacionesService.reverseGeocode(lat, lng);
       const address = data.address || {};
 
-      // 1. Fill detailed address
+      // 1. Street Name
       const road = address.road || address.pedestrian || '';
       const suburb = address.suburb || address.neighbourhood || address.parish || '';
       const county = address.county || address.city || '';
       this.dirDetalleInput.value =
         [road, suburb, county].filter(Boolean).join(', ') || data.display_name || '';
 
-      // 2. Postal code
-      this.dirCodigoPostalInput.value = address.postcode || '';
+      // 2. Postal code (guardado internamente)
+      this.currentPostalCode = address.postcode || '';
 
       // 3. Match Country
       const countryCode = (address.country_code || '').toUpperCase();
@@ -470,11 +395,11 @@ export class IncidenciaFormComponent extends BaseComponent {
       );
 
       if (matchedPais) {
-        this.dirPaisSelect.value = matchedPais.id;
+        if (this.dirPaisSelect) this.dirPaisSelect.value = matchedPais.id;
         this.actualizarEtiquetasNiveles(matchedPais.id);
 
         // Geocoding autofill cascading for territories
-        await this.autofillTerritoriosCascading(matchedPais.id, address);
+        await this.autofillTerritoriosCascading(matchedPais.id, address, data.territorio_detectado);
       }
 
       // Check if location is already registered in DB (Optimizado por proximidad)
@@ -515,46 +440,55 @@ export class IncidenciaFormComponent extends BaseComponent {
       if (matchedDbDir) {
         this.selectedDireccionId = matchedDbDir.id;
         this.dirDetalleInput.value = matchedDbDir.detalle;
-        this.dirLatInput.value = matchedDbDir.latitud;
-        this.dirLngInput.value = matchedDbDir.longitud;
-        this.dirPaisSelect.value = matchedDbDir.territorio?.pais_id || '';
-        this.dirCodigoPostalInput.value = matchedDbDir.codigo_postal || '';
+        if (this.dirLatInput) this.dirLatInput.value = matchedDbDir.latitud;
+        if (this.dirLngInput) this.dirLngInput.value = matchedDbDir.longitud;
+        if (this.dirPaisSelect) this.dirPaisSelect.value = matchedDbDir.territorio?.pais_id || '';
+        this.currentPostalCode = matchedDbDir.codigo_postal || '';
 
         this.actualizarIndicadorMinimalista();
 
-        if (isCitizen) {
-          ToastService.info(`Ubicación seleccionada: ${matchedDbDir.detalle}`);
-        }
+        ToastService.info(`Ubicación seleccionada: ${matchedDbDir.detalle}`);
       } else {
         this.selectedDireccionId = null;
-        if (isCitizen) {
-          if (this.modalInstance) {
-            this.modalDirLat.value = lat;
-            this.modalDirLng.value = lng;
-            this.modalDirDetalle.value =
-              [road, suburb, county].filter(Boolean).join(', ') || data.display_name || '';
-            this.modalDirCodigoPostal.value = address.postcode || '';
-
-            if (matchedPais) {
-              this.modalDirPais.value = matchedPais.id;
-              this.actualizarEtiquetasNivelesModal(matchedPais.id);
-              await this.autofillModalTerritoriosCascading(matchedPais.id, address);
-            } else {
-              this.modalDirPais.value = '';
-              this.colModalDirNivel1.classList.add('d-none');
-              this.colModalDirNivel2.classList.add('d-none');
-              this.colModalDirNivel3.classList.add('d-none');
-            }
-            this.modalInstance.show();
-          }
-        }
+        this.actualizarIndicadorMinimalista();
       }
     } catch (e) {
       console.warn('Error autofilling from reverse geocoding:', e);
     }
   }
 
-  async autofillTerritoriosCascading(paisId, address) {
+  async autofillTerritoriosCascading(paisId, address, territorioDetectado) {
+    if (territorioDetectado) {
+      const td = territorioDetectado;
+      await this.cargarDropdownNivel1(paisId);
+      if (td.provincia_id && this.dirNivel1Select) {
+        this.dirNivel1Select.value = td.provincia_id;
+
+        await this.cargarDropdownNivel2(paisId, td.provincia_id);
+        if (td.canton_id && this.dirNivel2Select) {
+          this.dirNivel2Select.value = td.canton_id;
+
+          await this.cargarDropdownNivel3(paisId, td.canton_id);
+          if (td.parroquia_id && this.dirNivel3Select) {
+            this.dirNivel3Select.value = td.parroquia_id;
+          } else if (!td.parroquia_id && this.dirNivel3Select) {
+            const possibleNivel3Names = [
+              address.parish,
+              address.suburb,
+              address.neighbourhood,
+              address.quarter,
+            ].filter(Boolean);
+            const n3Name = possibleNivel3Names[0] || '';
+            if (n3Name) {
+              const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
+              if (opt3) this.dirNivel3Select.value = opt3.value;
+            }
+          }
+        }
+      }
+      return;
+    }
+
     // 1. Siempre cargar Nivel 1 para el país seleccionado
     await this.cargarDropdownNivel1(paisId);
 
@@ -604,205 +538,6 @@ export class IncidenciaFormComponent extends BaseComponent {
     }
   }
 
-  async autofillModalTerritoriosCascading(paisId, address) {
-    // 1. Siempre cargar Nivel 1 en el modal
-    await this.cargarModalDropdownNivel1(paisId);
-
-    const possibleNivel1Names = [address.state, address.region, address.province].filter(Boolean);
-    const n1Name = possibleNivel1Names[0] || '';
-
-    if (n1Name) {
-      const opt1 = this.findOptionMatchingText(this.modalDirNivel1, n1Name);
-      if (opt1) {
-        this.modalDirNivel1.value = opt1.value;
-
-        // 2. Siempre cargar Nivel 2 en el modal
-        await this.cargarModalDropdownNivel2(paisId, opt1.value);
-
-        const possibleNivel2Names = [
-          address.county,
-          address.city,
-          address.town,
-          address.municipality,
-        ].filter(Boolean);
-        const n2Name = possibleNivel2Names[0] || '';
-        if (n2Name) {
-          const opt2 = this.findOptionMatchingText(this.modalDirNivel2, n2Name);
-          if (opt2) {
-            this.modalDirNivel2.value = opt2.value;
-
-            // 3. Siempre cargar Nivel 3 en el modal
-            await this.cargarModalDropdownNivel3(paisId, opt2.value);
-
-            const possibleNivel3Names = [
-              address.parish,
-              address.suburb,
-              address.neighbourhood,
-              address.quarter,
-            ].filter(Boolean);
-            const n3Name = possibleNivel3Names[0] || '';
-
-            if (n3Name) {
-              const opt3 = this.findOptionMatchingText(this.modalDirNivel3, n3Name);
-              if (opt3) {
-                this.modalDirNivel3.value = opt3.value;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  actualizarEtiquetasNivelesModal(paisId) {
-    const pId = parseInt(paisId);
-    const lbl1 = this.querySelector('#lblModalDirNivel1');
-    const lbl2 = this.querySelector('#lblModalDirNivel2');
-    const lbl3 = this.querySelector('#lblModalDirNivel3');
-
-    if (pId === 1) {
-      // Perú
-      if (lbl1) lbl1.textContent = 'Departamento *';
-      if (lbl2) lbl2.textContent = 'Provincia *';
-      if (lbl3) lbl3.textContent = 'Distrito *';
-    } else if (pId === 2) {
-      // México
-      if (lbl1) lbl1.textContent = 'Estado *';
-      if (lbl2) lbl2.textContent = 'Municipio *';
-      if (lbl3) lbl3.textContent = 'Colonia/Localidad *';
-    } else {
-      // Ecuador / default
-      if (lbl1) lbl1.textContent = 'Provincia *';
-      if (lbl2) lbl2.textContent = 'Cantón *';
-      if (lbl3) lbl3.textContent = 'Parroquia *';
-    }
-  }
-
-  async cargarModalDropdownNivel1(paisId, selectVal = null) {
-    const s1 = this.modalDirNivel1;
-    s1.innerHTML = '<option value="">-- Cargando --</option>';
-    s1.disabled = true;
-
-    try {
-      const list = await CatalogoService.getTerritorios(paisId, null);
-      if (list.length > 0) {
-        s1.innerHTML =
-          '<option value="">-- Seleccione --</option>' +
-          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
-        s1.disabled = false;
-        this.colModalDirNivel1.classList.remove('d-none');
-      } else {
-        s1.innerHTML = '<option value="">-- No hay territorios registrados --</option>';
-        this.colModalDirNivel1.classList.add('d-none');
-      }
-      this.colModalDirNivel2.classList.add('d-none');
-      this.colModalDirNivel3.classList.add('d-none');
-
-      if (selectVal) {
-        s1.value = selectVal;
-      }
-    } catch (e) {
-      s1.innerHTML = '<option value="">-- Error --</option>';
-    }
-  }
-
-  async cargarModalDropdownNivel2(paisId, parentId, selectVal = null) {
-    const s2 = this.modalDirNivel2;
-    s2.innerHTML = '<option value="">-- Cargando --</option>';
-    s2.disabled = true;
-
-    try {
-      const list = await CatalogoService.getTerritorios(paisId, parentId);
-      if (list.length > 0) {
-        s2.innerHTML =
-          '<option value="">-- Seleccione --</option>' +
-          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
-        s2.disabled = false;
-        this.colModalDirNivel2.classList.remove('d-none');
-      } else {
-        s2.innerHTML = '<option value="">-- No hay --</option>';
-        this.colModalDirNivel2.classList.add('d-none');
-      }
-      this.colModalDirNivel3.classList.add('d-none');
-
-      if (selectVal) {
-        s2.value = selectVal;
-      }
-    } catch (e) {
-      s2.innerHTML = '<option value="">-- Error --</option>';
-    }
-  }
-
-  async cargarModalDropdownNivel3(paisId, parentId, selectVal = null) {
-    const s3 = this.modalDirNivel3;
-    s3.innerHTML = '<option value="">-- Cargando --</option>';
-    s3.disabled = true;
-
-    try {
-      const list = await CatalogoService.getTerritorios(paisId, parentId);
-      if (list.length > 0) {
-        s3.innerHTML =
-          '<option value="">-- Seleccione --</option>' +
-          list.map((t) => `<option value="${t.id}">${t.nombre}</option>`).join('');
-        s3.disabled = false;
-        this.colModalDirNivel3.classList.remove('d-none');
-      } else {
-        s3.innerHTML = '<option value="">-- No hay --</option>';
-        this.colModalDirNivel3.classList.add('d-none');
-      }
-
-      if (selectVal) {
-        s3.value = selectVal;
-      }
-    } catch (e) {
-      s3.innerHTML = '<option value="">-- Error --</option>';
-    }
-  }
-
-  async guardarDireccionModal() {
-    const finalTerritorioId =
-      this.modalDirNivel3.value || this.modalDirNivel2.value || this.modalDirNivel1.value;
-    if (!finalTerritorioId) {
-      ToastService.warning(
-        'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
-      );
-      return;
-    }
-    if (!this.modalDirDetalle.value) {
-      ToastService.warning('La dirección detallada es obligatoria.');
-      return;
-    }
-
-    const dirPayload = {
-      territorio_id: parseInt(finalTerritorioId),
-      detalle: this.modalDirDetalle.value,
-      codigo_postal: this.modalDirCodigoPostal.value || null,
-      latitud: parseFloat(this.modalDirLat.value),
-      longitud: parseFloat(this.modalDirLng.value),
-      activo: true,
-    };
-
-    try {
-      const dirRes = await UbicacionesService.createDireccion(dirPayload);
-      const newDir = dirRes.data || dirRes;
-      this.selectedDireccionId = newDir.id;
-
-      // Update background values
-      this.dirDetalleInput.value = newDir.detalle;
-      this.dirLatInput.value = newDir.latitud;
-      this.dirLngInput.value = newDir.longitud;
-      this.dirPaisSelect.value = newDir.territorio?.pais_id || this.modalDirPais.value;
-      this.dirCodigoPostalInput.value = newDir.codigo_postal || this.modalDirCodigoPostal.value;
-
-      this.actualizarIndicadorMinimalista();
-
-      this.modalInstance?.hide();
-      ToastService.success('Ubicación guardada con éxito.');
-    } catch (e) {
-      console.error(e);
-      ToastService.error('Error al guardar la ubicación en la base de datos.');
-    }
-  }
 
   actualizarIndicadorMinimalista() {
     const detalle = this.dirDetalleInput.value;
@@ -1293,7 +1028,8 @@ export class IncidenciaFormComponent extends BaseComponent {
         const dirPayload = {
           territorio_id: parseInt(finalTerritorioId),
           detalle: this.dirDetalleInput.value,
-          codigo_postal: this.dirCodigoPostalInput.value || null,
+          referencia: '',
+          codigo_postal: this.currentPostalCode || null,
           latitud: this.coords.lat,
           longitud: this.coords.lng,
           precision_gps: this.dirPrecisionGpsInput?.value
@@ -1302,15 +1038,17 @@ export class IncidenciaFormComponent extends BaseComponent {
           activo: true,
         };
 
-        if (id) {
-          // If editing, update or keep address
-          const incData = await IncidenciaService.getById(id);
+        const incData = id ? await IncidenciaService.getById(id) : null;
+        if (incData && incData.direccion_id) {
           direccionId = incData.direccion_id;
           await UbicacionesService.updateDireccion(direccionId, dirPayload);
         } else {
           const dirRes = await UbicacionesService.createDireccion(dirPayload);
           direccionId = (dirRes.data || dirRes).id;
         }
+
+        // Limpiar la caché de direcciones para que las próximas incidencias en esta SPA session puedan recuperarla
+        CatalogoService.clearDireccionesCache();
       } catch (err) {
         console.error(err);
         ToastService.error('Error al guardar la dirección.');
@@ -1527,7 +1265,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       col.className = 'col';
       col.innerHTML = `
         <div class="card h-100 border rounded-3 overflow-hidden position-relative shadow-sm">
-          <img src="${file.base64}" class="card-img-top object-fit-cover" style="height: 120px;" alt="${file.name}" />
+          <img src="${file.base64}" loading="lazy" class="card-img-top object-fit-cover" style="height: 120px;" alt="${file.name}" />
           <div class="card-body p-2 d-flex flex-column justify-content-between">
             <div class="text-truncate small fw-medium" title="${file.name}">${file.name}</div>
             <div class="d-flex justify-content-between align-items-center mt-1">
