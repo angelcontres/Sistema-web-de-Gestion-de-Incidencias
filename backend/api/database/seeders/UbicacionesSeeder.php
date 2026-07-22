@@ -225,17 +225,7 @@ class UbicacionesSeeder extends Seeder
             );
         }
 
-        if (isset($parroquias['santa elena.santa elena.manglaralto'])) {
-            Direccion::updateOrCreate(
-                ['detalle' => 'Calle Principal de Montañita, Sector La Punta', 'territorio_id' => $parroquias['santa elena.santa elena.manglaralto']->id],
-                [
-                    'referencia' => 'Cerca de la playa de surf de Montañita',
-                    'codigo_postal' => '240103',
-                    'latitud' => -1.82840000,
-                    'longitud' => -80.75310000,
-                ]
-            );
-        }
+
     }
 
     /**

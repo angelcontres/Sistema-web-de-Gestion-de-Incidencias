@@ -69,6 +69,17 @@ export const CatalogoService = {
   },
 
   /**
+   * Limpia la caché de direcciones (útil después de crear una nueva dirección).
+   */
+  clearDireccionesCache(territorioId = null) {
+    const params = new URLSearchParams();
+    if (territorioId !== null && territorioId !== undefined) params.append('territorio_id', territorioId);
+    const queryString = params.toString();
+    const cacheKey = `catalogo_direcciones_${queryString || 'all'}`;
+    localStorage.removeItem(cacheKey);
+  },
+
+  /**
    * Obtiene la lista de categorías de incidencia activas.
    */
   async getCategoriasIncidencia(parentId = undefined, soloHojas = false) {
