@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg-orange { fill: #FF9800; }
+      .bg-amber-dark { fill: #F57C00; }
+      .bg-base { fill: #1a2332; }
+      .bg-cyan { fill: #1abb9c; }
+      .bg-screen { fill: #0b111a; }
+      .glass-overlay { fill: #FFB300; opacity: 0.25; }
+    </style>
+  </defs>
+
+  <g transform="translate(0, 10)">
+    <!-- 1. CÚPULA TRANSLÚCIDA (Fondo) -->
+    <path d="M 100,50 C 180,25 220,25 300,50 C 340,65 350,110 350,325 L 50,325 C 50,110 60,65 100,50 Z" class="glass-overlay" />
+
+    <!-- 2. MASCOTA ROBÓTICA DENTRO (Flat Design) -->
+    <!-- Cuerpo -->
+    <polygon points="150,90 250,90 310,150 310,325 90,325 90,150" class="bg-orange" />
+    
+    <!-- Pantalla de la cara -->
+    <rect x="130" y="130" width="140" height="150" rx="20" class="bg-screen" />
+
+    <!-- Ojos LED -->
+    <rect x="160" y="165" width="20" height="40" rx="10" class="bg-cyan" />
+    <rect x="220" y="165" width="20" height="40" rx="10" class="bg-cyan" />
+    <!-- Sonrisa LED -->
+    <path d="M 165,235 Q 200,265 235,235" fill="none" stroke="#1abb9c" stroke-width="8" stroke-linecap="round" />
+
+    <!-- 3. BASE INFERIOR (Simple y limpia) -->
+    <!-- Base Sólida -->
+    <rect x="40" y="325" width="320" height="80" rx="20" class="bg-base" />
+    
+    <!-- Anillo divisor ámbar superior -->
+    <rect x="60" y="325" width="280" height="12" rx="4" class="bg-amber-dark" />
+  </g>
+</svg>

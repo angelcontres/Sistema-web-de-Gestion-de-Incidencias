@@ -418,7 +418,6 @@ describe('DashboardComponent', () => {
     await Promise.all([component.loadECharts(), component.loadDashboardStyles()]);
     
     expect(document.head.innerHTML).toContain('echarts.min.js');
-    expect(document.head.innerHTML).toContain('dashboard-cards.css');
     
     // Restore
     document.head.appendChild = originalAppend;

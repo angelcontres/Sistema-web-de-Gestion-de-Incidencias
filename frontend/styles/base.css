@@ -1,0 +1,68 @@
+/* ==========================================
+ * BASE STYLES & RESET
+ * ========================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-color);
+  font-weight: 700;
+  margin-top: 0;
+}
+
+a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-color);
+}
+
+/* Custom Scrollbar for a premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--secondary-soft);
+  border-radius: var(--radius-lg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--secondary-color);
+}
+
+/* ==========================================
+ * GLOBAL OVERRIDES PARA FONDOS DE PANELES
+ * ========================================== */
+.bg-white, 
+.card,
+.modal-content,
+.offcanvas,
+.premium-card-header,
+.card-header,
+.card-footer,
+.modal-header,
+.modal-footer {
+  background-color: var(--card-bg) !important;
+}

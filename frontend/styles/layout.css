@@ -1,0 +1,317 @@
+/* ==========================================
+   HEADER / NAVBAR (GLASSMORPHISM)
+   ========================================== */
+app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: block;
+  width: 100%;
+}
+
+.custom-navbar {
+  background-color: var(--bg-app) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  min-height: var(--navbar-height);
+}
+
+.custom-navbar .navbar-brand {
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.custom-navbar .nav-link {
+  color: var(--text-muted) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.custom-navbar .nav-link:hover {
+  color: var(--primary-color) !important;
+  background-color: var(--primary-soft);
+}
+
+.custom-navbar .nav-link.active {
+  color: var(--primary-color) !important;
+  background-color: var(--primary-soft) !important;
+  box-shadow: none;
+}
+
+/* ==========================================
+   SIDEBAR (SLEEK DARK THEME)
+   ========================================== */
+
+/* Mobile-first defaults for sidebar */
+app-sidebar {
+  display: block;
+}
+
+app-sidebar nav {
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+/* Desktop Full-Height Layout (Conventional Standard) */
+@media (min-width: 992px) {
+  /* Sidebar Host Element - Fills vertical height of container */
+  app-sidebar {
+    height: 100vh !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 900 !important;
+    display: block;
+    margin: 0 !important;
+    width: 260px !important;
+    min-width: 260px !important;
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+  }
+
+  app-sidebar.collapsed {
+    width: 72px !important;
+    min-width: 72px !important;
+  }
+  
+  app-sidebar nav {
+    height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    width: 260px;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem !important;
+    box-shadow: var(--shadow-md) !important;
+    overflow-y: auto;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(0);
+  }
+
+  app-sidebar.collapsed nav {
+    transform: translateX(0);
+    width: 72px !important;
+    min-width: 72px !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  app-sidebar.collapsed .sidebar-link span,
+  app-sidebar.collapsed .collapse,
+  app-sidebar.collapsed .sidebar-brand-text {
+    display: none !important;
+  }
+
+  app-sidebar.collapsed .sidebar-brand-container a {
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+  
+  app-sidebar.collapsed .sidebar-brand-icon {
+    width: 40px !important;
+    height: 40px !important;
+    margin: 0 auto !important;
+  }
+
+  app-sidebar.collapsed .sidebar-link {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+  }
+
+  app-sidebar.collapsed .sidebar-link i {
+    font-size: 1.25rem;
+    margin-right: 0 !important;
+  }
+
+  /* Navbar spans 100% width at the top (Conventional) */
+  app-navbar {
+    margin-left: 0 !important;
+    width: 100% !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+  }
+
+  /* Workspace flows naturally alongside the sidebar */
+  main#app {
+    width: auto !important;
+  }
+}
+
+/* Sidebar Links */
+app-sidebar .sidebar-link {
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.625rem 1rem !important;
+  transition: all 0.2s ease;
+  color: var(--text-main) !important;
+  border-radius: var(--radius-md) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+app-sidebar .sidebar-link i {
+  font-size: 1.1rem;
+  color: var(--text-muted) !important;
+  transition: color 0.2s ease;
+}
+
+app-sidebar .sidebar-link:hover {
+  background-color: var(--primary-soft) !important;
+  color: var(--primary-color) !important;
+}
+
+app-sidebar .sidebar-link:hover i {
+  color: var(--primary-color) !important;
+}
+
+/* Active State (Mini-rail style) */
+app-sidebar .sidebar-link.active,
+app-sidebar .sidebar-link.bg-primary {
+  background-color: rgba(13, 42, 76, 0.08) !important;
+  color: var(--primary-color) !important;
+  box-shadow: none !important;
+  position: relative;
+  overflow: hidden;
+}
+
+app-sidebar .sidebar-link.active::before,
+app-sidebar .sidebar-link.bg-primary::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--primary-color);
+  border-radius: 0 4px 4px 0;
+}
+
+app-sidebar .sidebar-link.active i,
+app-sidebar .sidebar-link.bg-primary i {
+  color: var(--primary-color) !important;
+}
+
+/* Submenu background */
+app-sidebar .collapse {
+  background-color: transparent;
+  border-radius: var(--radius-md);
+  margin-top: 4px;
+}
+
+/* Section Header in Sidebar */
+app-sidebar .text-muted.small {
+  color: var(--text-light) !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.1em;
+  padding-left: 1rem;
+  margin-top: 1rem;
+}
+
+/* Sidebar Profile Card */
+#sidebarUserCard {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem !important;
+  margin-top: auto;
+  transition: background-color 0.2s ease;
+}
+
+#sidebarUserCard:hover {
+  background-color: rgba(13, 42, 76, 0.05);
+}
+
+/* ==========================================
+   MAIN CONTENT AREA
+   ========================================== */
+main#app {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 1rem !important;
+  margin: 0 !important;
+  max-width: 100%;
+}
+
+/* ==========================================
+   RESPONSIVE LAYOUT OVERRIDES (OFF-CANVAS SIDEBAR)
+   ========================================== */
+@media (max-width: 991.98px) {
+  /* Reset vertical sticky wrapper on mobile */
+  app-sidebar {
+    position: static !important;
+    height: auto !important;
+    margin: 0 !important;
+  }
+
+  /* Make sidebar float as an overlaid popup card on mobile */
+  app-sidebar nav {
+    position: fixed !important;
+    top: calc(72px + 1rem);
+    left: 1rem;
+    bottom: 1rem;
+    height: calc(100vh - 72px - 2rem);
+    width: 260px;
+    min-width: 260px;
+    z-index: 1050;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: 1px solid var(--border-color) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s;
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  app-sidebar.collapsed nav {
+    transform: translateX(-300px) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  main#app {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Overlay the navbar collapse menu on mobile to avoid breaking the viewport layout */
+  .custom-navbar .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--card-bg);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    z-index: 1050;
+  }
+}
+
+/* Mobile maps adjustments */
+@media (max-width: 575.98px) {
+  #dashboardMap, #map {
+    height: 280px !important;
+  }
+  
+  .stat-value {
+    font-size: 1.85rem !important;
+  }
+  
+  .nav-tabs .nav-item .nav-link {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.8rem !important;
+  }
+}

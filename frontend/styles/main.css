@@ -1,0 +1,25 @@
+@charset "UTF-8";
+
+/* ==========================================
+ * MAIN.CSS - SINGLETON ARCHITECTURE
+ * Coordina e importa todos los estilos del proyecto
+ * en estricto orden de cascada.
+ * ========================================== */
+
+/* 1. Variables de identidad y temas */
+@import url('variables.css');
+
+/* 2. Reset y estilos globales (body, scrollbars, utilidades) */
+@import url('base.css');
+
+/* 3. Componentes atómicos (Botones, Paneles, Badges, Tablas) */
+@import url('components.css');
+
+/* 4. Layout estructural (Navbar, Sidebar flotante, Main) */
+@import url('layout.css');
+
+/* 5. Tarjetas específicas del Dashboard */
+@import url('dashboard-cards.css');
+
+/* 6. Animaciones globales */
+@import url('animations.css');

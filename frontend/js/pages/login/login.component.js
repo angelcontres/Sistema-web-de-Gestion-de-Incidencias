@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../core/base-component.js';
 import { AuthService } from '../../core/auth.service.js';
+import { MascotAnimation } from '../../core/mascot/mascot-animation.js';
 
 /**
  * LoginComponent class to manage user authentication view and logic.
@@ -16,6 +17,18 @@ export class LoginComponent extends BaseComponent {
       return;
     }
 
+    // 1. Setup Auth Form
+    this.initAuthForm();
+
+    // 2. Setup Mascot Interactive Animations
+    const mascot = new MascotAnimation(this);
+    mascot.init();
+  }
+
+  /**
+   * Initializes all authentication related logic (Form submission, validation, error handling)
+   */
+  initAuthForm() {
     const form = this.querySelector('#loginForm');
     const emailInput = this.querySelector('#emailInput');
     const passwordInput = this.querySelector('#passwordInput');
@@ -32,60 +45,41 @@ export class LoginComponent extends BaseComponent {
       sessionStorage.removeItem('login_error');
     }
 
-    if (submitBtn) {
-      submitBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
+    if (!submitBtn) return;
 
-        // Trigger Bootstrap native validation styles
-        form.classList.add('was-validated');
+    submitBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      form.classList.add('was-validated');
 
-        // Check form validity
-        if (!form.checkValidity()) {
-          return;
-        }
+      if (!form.checkValidity()) return;
 
-        // Reset error state and start loading animation
-        errorAlert.classList.add('d-none');
-        submitBtn.disabled = true;
-        spinner.classList.remove('d-none');
+      errorAlert.classList.add('d-none');
+      submitBtn.disabled = true;
+      spinner.classList.remove('d-none');
 
-        try {
-          const email = emailInput.value;
-          const password = passwordInput.value;
-
-          // Call real Sanctum API login endpoint
-          await AuthService.login(email, password);
-
-          // Trigger custom event to notify other UI components (like the Navbar)
-          window.dispatchEvent(new CustomEvent('auth-change'));
-
-          // Redirect user to the dashboard
-          window.location.hash = '#/';
-        } catch (error) {
-          console.error('Login error:', error);
-          const msg = error.message || 'Error de conexión con el servidor.';
-          
-          // Save error in sessionStorage in case the page reloads immediately after
-          sessionStorage.setItem('login_error', msg);
-          
-          errorMessage.textContent = msg;
-          errorAlert.classList.remove('d-none');
-        } finally {
-          // Reset button state
-          submitBtn.disabled = false;
-          spinner.classList.add('d-none');
+      try {
+        await AuthService.login(emailInput.value, passwordInput.value);
+        window.dispatchEvent(new CustomEvent('auth-change'));
+        window.location.hash = '#/';
+      } catch (error) {
+        console.error('Login error:', error);
+        const msg = error.message || 'Error de conexión con el servidor.';
+        sessionStorage.setItem('login_error', msg);
+        errorMessage.textContent = msg;
+        errorAlert.classList.remove('d-none');
+      } finally {
+        submitBtn.disabled = false;
+        spinner.classList.add('d-none');
+      }
+    });
+    
+    if (form) {
+      form.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitBtn.click();
         }
       });
-      
-      // Allow pressing Enter to submit
-      if (form) {
-        form.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            submitBtn.click();
-          }
-        });
-      }
     }
   }
 }

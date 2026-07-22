@@ -182,7 +182,7 @@ export class SideBarComponent extends BaseComponent {
                 ${menu.children
                   .map(
                     (child) => `
-                  <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-secondary" href="${child.ruta}" title="${child.nombre}">
+                  <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="${child.ruta}" title="${child.nombre}">
                     <i class="${child.icono || 'bi bi-dot'} text-secondary"></i>
                     <span>${child.nombre}</span>
                   </a>
@@ -258,7 +258,7 @@ export class SideBarComponent extends BaseComponent {
         }
 
         if (link.closest('.collapse')) {
-          link.classList.add('text-secondary');
+          link.classList.add('text-dark');
         } else {
           link.classList.add('text-dark');
         }

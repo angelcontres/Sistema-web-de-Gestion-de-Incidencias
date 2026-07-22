@@ -5,6 +5,8 @@
 
 // Import Global Components
 import './components/navbar/navbar.component.js';
+import './components/navbar/notification/notification-tray.component.js';
+import './components/navbar/notification/notification-card.component.js';
 import './components/stats-card.js'; // Reusable small card component
 import './components/sidebar/sidebar.component.js';
 import './components/menu-lobby/menu-lobby.component.js';
