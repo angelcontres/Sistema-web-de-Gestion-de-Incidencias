@@ -39,6 +39,58 @@
         "docker-compose.yml"
       ],
       "priority": "low"
+    },
+    {
+      "id": 10,
+      "name": "citizen_frictionless_signup",
+      "title": "Registro Público de Ciudadanos sin Fricción",
+      "description": "Implementar el flujo de registro público y ágil para ciudadanos (solo email/username y password) sin confirmación previa por correo/OTP para permitir el reporte inmediato de incidencias.",
+      "acceptance": [
+        "Ajustar la migración de 'users' para garantizar que 'email'/'username' sea único e indexado.",
+        "Crear 'RegisterRequest' validando exclusivamente credenciales mínimas ('email'/'username' y 'password' de mínimo 6 caracteres).",
+        "El método 'AuthController@register' fuerza la asignación del rol 'Ciudadano' e ignora cualquier rol elevado enviado en el payload.",
+        "El registro autoverifica la cuenta ('email_verified_at = now()') y retorna el token (Sanctum/JWT) con HTTP 201 Created para login automático e inmediato.",
+        "Ruta pública expuesta: 'POST /v1/register'.",
+        "Frontend en VanillaJS con validación, deshabilitación de botón durante el envío (previene double-submit) y manejo de errores 422/500."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "pending",
+      "references": [
+        "docs/01_analisis/casos_uso_descripcion.md",
+        "routes/api.php",
+        "app/Http/Controllers/AuthController.php",
+        "app/Http/Requests/RegisterRequest.php",
+        "public/js/services/authService.js",
+        "public/js/views/signup.js"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "admin_institutional_onboarding_magic_link",
+      "title": "Alta e Invitación de Usuarios Internos (Admin, Operador, Institución) vía Magic Link / OTP",
+      "description": "Implementar la creación de cuentas con privilegios elevados. La alta es realizada por un Administrador desde un panel interno, enviando una invitación por correo con Magic Link u OTP para la activación y definición de contraseña.",
+      "acceptance": [
+        "Endpoint protegido 'POST /v1/admin/users/invite' restringido a rol 'Admin' mediante middleware RBAC.",
+        "Validador 'InviteUserRequest' requiere: 'email', 'name', 'role' (Admin, Operador, Institución) e 'institution_id' (si aplica).",
+        "El backend genera un token de un solo uso con expiración (24h) y envía una notificación por correo con un Magic Link u OTP.",
+        "El usuario invitado ingresa al Magic Link/pantalla de activación en el Frontend, define su contraseña por primera vez y activa su cuenta.",
+        "El método 'activateAccount' valida el token/OTP, guarda el hash de la contraseña, marca 'email_verified_at = now()' y activa el usuario.",
+        "Soporte para reexpedir enlaces en caso de token expirado (HTTP 403/422).",
+        "Vista en VanillaJS para la gestión de invitaciones (panel Admin) y pantalla de activación de cuenta."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "pending",
+      "references": [
+        "docs/01_analisis/casos_uso_descripcion.md",
+        "routes/api.php",
+        "app/Http/Controllers/Admin/UserController.php",
+        "app/Http/Requests/InviteUserRequest.php",
+        "app/Notifications/UserInvitationNotification.php",
+        "public/js/views/admin/users.js",
+        "public/js/views/auth/activate.js"
+      ]
     }
   ]
 }
