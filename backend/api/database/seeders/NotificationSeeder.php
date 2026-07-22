@@ -14,10 +14,9 @@ class NotificationSeeder extends Seeder
      */
     public function run(): void
     {
+        // Forzar que las alertas se guarden al instante en la BD (evita que se vayan a la cola)
         config(['queue.default' => 'sync']);
         config(['broadcasting.default' => 'null']);
-        // 1. TRUCO DE MAGIA: Forzar que las alertas se guarden al instante en la BD (evita que se vayan a la cola)
-        config(['queue.default' => 'sync']);
 
         // 2. Obtener TODOS los usuarios que ya fueron creados previamente en DatabaseSeeder
         $usuarios = User::all();
