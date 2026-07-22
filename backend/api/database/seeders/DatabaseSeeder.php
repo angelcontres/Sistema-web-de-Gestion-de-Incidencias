@@ -258,8 +258,8 @@ class DatabaseSeeder extends Seeder
             ['email' => 'dma@example.com'],
             [
                 'name' => 'Dirección de Medio Ambiente Municipal',
-                'username' => 'dma_user',
-                'password' => Hash::make('dma123'),
+                'username' => 'dmamunicipal_user',
+                'password' => Hash::make('dmamunicipal123'),
                 'activo' => true,
                 'institucion_id' => 6,
             ]
