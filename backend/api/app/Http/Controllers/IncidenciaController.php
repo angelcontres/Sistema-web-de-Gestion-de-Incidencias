@@ -41,7 +41,6 @@ class IncidenciaController extends Controller
             foreach ($incidenciasTransition as $inc) {
                 $inc->update(['estado_id' => 2]);
                 
-                // 🟢 DISPARO AUTOMÁTICO: Notificar que el supervisor inició la revisión
                 $this->despacharNotificaciones($inc, 1, []);
             }
         }
@@ -105,7 +104,6 @@ class IncidenciaController extends Controller
     {
         $result = $service->createIncidencia($request->validated() + $request->all(), auth()->user());
 
-        // 🟢 DISPARO EN CREACIÓN: Si al crear ya se asignaron operadores, notificarles
         if (isset($result['data']['id'])) {
             $nuevaIncidencia = Incidencia::find($result['data']['id']);
             if ($nuevaIncidencia) {
@@ -165,14 +163,12 @@ class IncidenciaController extends Controller
             ], 409);
         }
 
-        // 🟢 PRE-CAPTURAMOS: Guardamos el estado y operadores antes del cambio
         $oldEstadoId = $incidencia->estado_id;
         $oldOperadoresIds = $incidencia->operadores()->pluck('users.id')->toArray();
 
         // Ejecutamos la actualización del servicio
         $result = $service->updateIncidencia($incidencia, $request->validated() + $request->all(), $user);
 
-        // 🟢 POST-DISPARO: Refrescamos el modelo y evaluamos qué cambió para notificar
         $incidencia->refresh();
         $this->despacharNotificaciones($incidencia, $oldEstadoId, $oldOperadoresIds);
 
@@ -290,7 +286,7 @@ class IncidenciaController extends Controller
     }
 
     /**
-     * 🟢 HELPER DE NOTIFICACIONES EN TIEMPO REAL
+     * 
      * Evalúa qué cambió en la incidencia y dispara alertas vía Reverb y BD.
      */
     private function despacharNotificaciones(Incidencia $incidencia, $oldEstadoId = null, array $oldOperadoresIds = []): void
@@ -310,7 +306,7 @@ class IncidenciaController extends Controller
                 $destinatario->notify(new IssueStatusChangedNotification([
                     'title'         => "Incidencia #{$incidencia->id}: Cambio de Estado",
                     'message'       => "El reporte ha cambiado a: " . ($incidencia->estado->nombre ?? 'Actualizado'),
-                    'url'           => "/tramites/estado-individual?id={$incidencia->id}", // 🟢 Ruta exacta para estados
+                    'url'           => "/tramites/estado-individual?id={$incidencia->id}", 
                     'type'          => 'info',
                     'incidencia_id' => $incidencia->id,
                 ]));
@@ -328,7 +324,7 @@ class IncidenciaController extends Controller
                 $operador->notify(new IssueAssignedNotification([
                     'title'         => "Nueva Incidencia Asignada (#{$incidencia->id})",
                     'message'       => "Se te ha despachado para atender: " . ($incidencia->direccion->calle ?? 'Ubicación registrada'),
-                    'url'           => "/instituciones/kanban", // 🟢 Ruta exacta para el tablero kanban de asignación
+                    'url'           => "/instituciones/kanban",
                     'type'          => 'danger',
                     'incidencia_id' => $incidencia->id,
                     'color_hex'     => '#dc3545',
