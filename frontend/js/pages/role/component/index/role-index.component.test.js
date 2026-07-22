@@ -21,6 +21,14 @@ describe('RoleIndexComponent', () => {
               <span id="totalRolesBadge"></span>
               <button id="btnNuevoRol"></button>
               <div id="app-role-form"></div>
+              <form id="roleForm">
+                <input id="roleId" />
+                <input id="nombre" />
+                <input id="descripcion" />
+                <select id="padre_id"></select>
+                <div id="roleModalLabel"></div>
+                <div id="btnText"></div>
+              </form>
               <form id="assignPermissionsForm"></form>
               <div id="permissionsAccordionContainer"></div>
               <button id="btnClosePermissions"></button>
@@ -36,6 +44,17 @@ describe('RoleIndexComponent', () => {
     });
 
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
+    window.dispatchEvent = jest.fn();
+    
+    global.bootstrap = {
+      Modal: {
+        getOrCreateInstance: jest.fn(() => ({
+          show: jest.fn(),
+          hide: jest.fn()
+        }))
+      }
+    };
+    window.bootstrap = global.bootstrap;
     window.scrollTo = jest.fn();
     window.alert = jest.fn();
 

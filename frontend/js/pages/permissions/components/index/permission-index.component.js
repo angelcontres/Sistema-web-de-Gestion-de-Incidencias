@@ -3,6 +3,7 @@ import { apiRequest } from '../../../../core/api.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
+import { PermissionService } from '../../services/permissions.service.js';
 
 export class PermissionIndexComponent extends BaseComponent {
   constructor() {
@@ -107,7 +108,7 @@ export class PermissionIndexComponent extends BaseComponent {
     
     if (!isConfirmed) return;
 
-    apiRequest(`/permissions/${id}`, { method: 'DELETE' })
+    PermissionService.delete(id)
       .then(() => {
         ToastService.success('Permiso eliminado correctamente.');
 

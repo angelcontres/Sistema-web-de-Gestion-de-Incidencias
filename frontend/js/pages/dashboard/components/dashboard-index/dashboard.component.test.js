@@ -53,10 +53,11 @@ describe('DashboardComponent', () => {
     }
 
     window.L = {
-      map: () => ({ setView: () => {}, remove: () => {} }),
+      map: () => ({ setView: () => {}, remove: () => {}, addLayer: () => {} }),
       control: { zoom: () => ({ addTo: () => {} }) },
       tileLayer: () => ({ addTo: () => {} }),
-      circleMarker: () => ({ addTo: () => ({ bindPopup: () => {} }) }),
+      circleMarker: () => ({ addTo: () => ({ bindPopup: () => {} }), bindPopup: () => {} }),
+      markerClusterGroup: () => ({ addLayers: () => {}, clearLayers: () => {}, addTo: () => {} }),
     };
   }
 
@@ -350,9 +351,10 @@ describe('DashboardComponent', () => {
     
     let lMapCalled = false;
     window.L = {
-      map: () => { lMapCalled = true; return { setView: () => {}, remove: () => {} }; },
+      map: () => { lMapCalled = true; return { setView: () => {}, remove: () => {}, addLayer: () => {} }; },
       control: { zoom: () => ({ addTo: () => {} }) },
       tileLayer: () => ({ addTo: () => {} }),
+      markerClusterGroup: () => ({ addLayers: () => {}, clearLayers: () => {}, addTo: () => {} }),
     };
     
     component.initDashboardMap();
@@ -365,11 +367,14 @@ describe('DashboardComponent', () => {
     component.map = { setView: jest.fn() };
     
     let circleAdded = false;
-    window.L = {
-      circleMarker: () => ({ addTo: () => ({ bindPopup: () => { circleAdded = true; } }) })
-    };
-    
-    component.updateMapMarkers([{lat: 0, lng: 0, categoria: 'Cat1', titulo: 'Test1'}]);
+      window.L = {
+        circleMarker: () => ({ addTo: () => ({ bindPopup: () => { circleAdded = true; } }), bindPopup: () => { circleAdded = true; } }),
+        markerClusterGroup: () => ({ addLayers: () => {}, clearLayers: () => {}, addTo: () => {} }),
+      };
+      
+      component.clusterGroup = { clearLayers: () => {}, addLayers: () => {} };
+      
+      component.updateMapMarkers([{lat: 0, lng: 0, categoria: 'Cat1', titulo: 'Test1'}]);
     expect(true).toBe(true);
   });
 
