@@ -1,0 +1,19 @@
+.backdrop-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Base animations */
+.page-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 991.98px) {
+  .login-left-panel {
+    background-color: var(--bg-app, #E6DDCC) !important;
+  }
+}

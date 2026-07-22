@@ -1,0 +1,232 @@
+/* Scene sequence for the mascot: Cartoon style squash and stretch */
+#robot-body {
+  animation: alertVibrate 12s infinite;
+}
+@keyframes alertVibrate {
+  0%, 41% { transform: translate(0, 10px); }
+  42%, 44%, 46%, 48%, 50%, 52%, 54%, 56%, 58%, 60%, 62%, 64%, 66%, 68%, 70%, 72%, 74%, 76%, 78%, 80%, 82%, 84% { transform: translate(-1.5px, 10.5px) rotate(-1deg); }
+  43%, 45%, 47%, 49%, 51%, 53%, 55%, 57%, 59%, 61%, 63%, 65%, 67%, 69%, 71%, 73%, 75%, 77%, 79%, 81%, 83%, 85% { transform: translate(1.5px, 9.5px) rotate(1deg); }
+  86%, 100% { transform: translate(0, 10px); }
+}
+
+@keyframes floatWithWink {
+  0%, 22% { transform: translateY(0) rotate(0) scaleY(1); }
+  24% { transform: translateY(5px) rotate(0) scaleY(0.95); } /* Anticipation */
+  27% { transform: translateY(-12px) rotate(8deg) scaleY(1.05); } /* Wink Jump */
+  30%, 41% { transform: translateY(0) rotate(0) scaleY(1); } /* Settle */
+  42%, 85% { transform: translateY(0) scaleY(0.98); } /* Slightly squashed during vibration */
+  100% { transform: translateY(0); }
+}
+
+#left-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: reactionEye 12s cubic-bezier(0.4, 0, 0.2, 1) infinite, colorSequence 12s infinite;
+}
+#right-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: winkSync 12s cubic-bezier(0.4, 0, 0.2, 1) infinite, colorSequence 12s infinite;
+}
+#smile {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: smileCartoon 12s cubic-bezier(0.4, 0, 0.2, 1) infinite, strokeSequence 12s infinite;
+}
+
+#robot-eyes {
+  transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px));
+  transition: transform 0.1s ease-out;
+  animation: freezeTracking 12s infinite;
+}
+@keyframes freezeTracking {
+  0%, 41.99% { transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)); }
+  42%, 85% { transform: translate(0px, 0px); } /* Snap eyes to center during alert */
+  85.01%, 100% { transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)); }
+}
+
+@keyframes winkSync {
+  0%, 24% { transform: scale(1) rotate(0); }
+  27% { transform: scaleX(1.3) scaleY(0.05); } /* Wink */
+  30%, 41% { transform: scale(1) rotate(0); }
+  42%, 85% { transform: scaleY(0.5); } /* ._. Perfect circle dot */
+  86%, 100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes reactionEye {
+  0%, 24% { transform: scale(1) rotate(0); }
+  27% { transform: scaleX(0.9) scaleY(1.2); } /* Surprise */
+  30%, 41% { transform: scale(1) rotate(0); }
+  42%, 85% { transform: scaleY(0.5); } /* ._. Perfect circle dot */
+  86%, 100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes smileCartoon {
+  0%, 24% { transform: scale(1) rotate(0); }
+  27% { transform: scaleX(1.15) rotate(-5deg); } /* Stretch smile */
+  30%, 41% { transform: scale(1) rotate(0); }
+  42%, 85% { transform: scaleY(0.1) scaleX(0.4) translateY(-30px); } /* Short flat line for ._. */
+  86%, 100% { transform: scale(1) rotate(0); }
+}
+
+/* Privacy Mode (Password focus) */
+.privacy-mode #left-eye,
+.privacy-mode #right-eye {
+  transform: scaleY(0.05) !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.privacy-mode #smile {
+  transform: scaleX(0.6) scaleY(0.5) !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth color transition for internal LED parts */
+.led-light-stroke {
+  animation: strokeSequence 12s infinite;
+}
+
+@keyframes colorSequence {
+  0%, 35% { fill: #1abb9c; } /* Normal Cyan */
+  42%, 85% { fill: #ef4444; } /* Alert Red */
+  92%, 100% { fill: #1abb9c; }
+}
+@keyframes strokeSequence {
+  0%, 35% { stroke: #1abb9c; } 
+  42%, 85% { stroke: #ef4444; }
+  92%, 100% { stroke: #1abb9c; }
+}
+
+/* Minimalist glowing outline (aura) around the entire SVG shape */
+.animated-svg {
+  animation: svgDropShadow 12s infinite;
+  transition: all 0.3s;
+}
+@keyframes svgDropShadow {
+  0%, 35% { filter: drop-shadow(0 0 6px rgba(26,187,156,0.3)); }
+  42%, 85% { filter: drop-shadow(0 0 12px rgba(239,68,68,0.7)); }
+  92%, 100% { filter: drop-shadow(0 0 6px rgba(26,187,156,0.3)); }
+}
+
+/* Container ambient glow syncing with alert */
+.logo-container {
+  animation: glowSequence 12s infinite, floatWithWink 12s infinite;
+  border: 1px solid transparent;
+}
+@keyframes glowSequence {
+  0%, 35% { 
+    box-shadow: 0 0 20px rgba(26,187,156,0.1); 
+    border-color: rgba(26,187,156,0.15); 
+  }
+  42%, 85% { 
+    box-shadow: 0 0 35px rgba(239,68,68,0.3); 
+    border-color: rgba(239,68,68,0.4); 
+  }
+  92%, 100% { 
+    box-shadow: 0 0 20px rgba(26,187,156,0.1); 
+    border-color: rgba(26,187,156,0.15); 
+  }
+}
+
+/* Speech bubble pop out */
+.speech-bubble {
+  position: absolute;
+  top: -10px;
+  right: -55px;
+  background: white;
+  color: var(--primary-color, #0E3659);
+  padding: 6px 14px;
+  border-radius: 18px 18px 18px 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: bottom left;
+  animation: bubbleSequence 12s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
+  z-index: 10;
+}
+@keyframes bubbleSequence {
+  0%, 48% { opacity: 0; transform: scale(0); }
+  52%, 80% { opacity: 1; transform: scale(1) translateY(-10px); }
+  85%, 100% { opacity: 0; transform: scale(0); }
+}
+
+/* Easter Egg: Radar Mode */
+.logo-container {
+  cursor: pointer;
+}
+.spin-3d {
+  animation: barrelRoll 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+@keyframes barrelRoll {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.radar-mode .led-light {
+  animation: none !important;
+  fill: #10b981 !important; /* Verde Neón / Escáner */
+  transition: fill 0.3s;
+}
+.radar-mode .led-light-stroke {
+  animation: none !important;
+  stroke: #10b981 !important;
+  transition: stroke 0.3s;
+}
+.radar-mode .logo-container {
+  animation: none !important;
+  box-shadow: 0 0 40px rgba(16, 185, 129, 0.4) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+}
+.radar-mode .animated-svg {
+  animation: none !important;
+  filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.8)) !important;
+}
+
+/* Hide normal bubble during radar mode */
+.radar-mode .speech-bubble-normal {
+  display: none !important;
+}
+
+/* Easter egg bubble styling */
+.speech-bubble-easter {
+  position: absolute;
+  top: -10px;
+  right: -80px;
+  background: white;
+  color: #047857; /* Verde Oscuro */
+  padding: 6px 14px;
+  border-radius: 18px 18px 18px 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: bottom left;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 10;
+  pointer-events: none;
+}
+.radar-mode .speech-bubble-easter {
+  opacity: 1;
+  transform: scale(1) translateY(-10px);
+}
+
+.alert-icon {
+  animation: vibrate 0.3s infinite;
+  display: inline-block;
+}
+.radar-icon {
+  animation: spinRadar 2s linear infinite;
+  display: inline-block;
+}
+@keyframes spinRadar {
+  100% { transform: rotate(360deg); }
+}
+@keyframes vibrate {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-1px) rotate(-5deg); }
+  75% { transform: translateX(1px) rotate(5deg); }
+}
+
+/* For small screens */

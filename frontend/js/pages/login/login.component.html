@@ -1,66 +1,137 @@
-<div class="page-fade-in d-flex align-items-center justify-content-center w-100 h-100" style="min-height: 80vh;">
-  <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4 position-relative">
-    
-    <!-- Background subtle glow effect -->
-    <div class="position-absolute top-50 start-50 translate-middle rounded-circle bg-primary opacity-25" style="width: 300px; height: 300px; filter: blur(80px); z-index: -1;"></div>
+<link rel="stylesheet" href="js/pages/login/login.component.css">
+<link rel="stylesheet" href="js/core/mascot/mascot.css">
 
-    <div class="premium-card">
-      <div class="card-body p-2 p-md-3">
-        <!-- Logo / Brand Emblem -->
-        <div class="text-center mb-4">
-          <div class="d-inline-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px; overflow: hidden;">
-            <img src="assets/logo.svg" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.2);">
+<div class="row g-0 page-fade-in w-100" style="min-height: 100vh;">
+  <!-- Left Side: Traditional Login -->
+  <div class="col-12 col-lg-5 d-flex align-items-center justify-content-center login-left-panel position-relative bg-white shadow-lg z-2">
+    <div class="w-100 px-4 px-sm-5" style="max-width: 480px;">
+      <!-- Mobile Logo -->
+      <div class="text-center mb-4 d-lg-none">
+        <div class="d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px; overflow: hidden;">
+          <img src="assets/logo.svg" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.2);">
+        </div>
+      </div>
+
+      <div class="text-center mb-5">
+        <h2 class="fw-bolder text-dark mb-2" style="letter-spacing: -0.02em; color: var(--primary-color);">Bienvenido de nuevo</h2>
+        <p class="text-muted">Ingresa tus credenciales para acceder a la plataforma</p>
+      </div>
+
+      <!-- Error Alert Container -->
+      <div id="loginErrorAlert" class="alert alert-danger premium-alert d-none shadow-sm border-0" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span id="loginErrorMessage">Credenciales incorrectas.</span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" novalidate>
+        <div class="premium-form-group mb-4">
+          <label for="emailInput" class="premium-label fw-bold text-dark mb-2">Correo Electrónico</label>
+          <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text border-0 text-muted px-4" style="background: var(--color-bg-input, #f8fafc);"><i class="bi bi-envelope"></i></span>
+            <input type="email" class="form-control border-0 fs-6 py-3" id="emailInput" placeholder="correo@ejemplo.com" required style="background: var(--color-bg-input, #f8fafc);">
           </div>
-          <h3 class="fw-bolder text-dark mb-1" style="letter-spacing: -0.02em;">Iniciar Sesión</h3>
-          <p class="text-muted small">Ingresa tus credenciales para acceder al sistema</p>
         </div>
 
-        <!-- Error Alert Container -->
-        <div id="loginErrorAlert" class="alert alert-danger premium-alert d-none" role="alert">
-          <i class="bi bi-exclamation-triangle-fill"></i>
-          <span id="loginErrorMessage">Credenciales incorrectas.</span>
+        <div class="premium-form-group mb-5">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label for="passwordInput" class="premium-label fw-bold text-dark mb-0">Contraseña</label>
+            <a href="#" class="text-decoration-none small fw-semibold" style="color: var(--secondary-color);">¿Olvidaste tu contraseña?</a>
+          </div>
+          <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text border-0 text-muted px-4" style="background: var(--color-bg-input, #f8fafc);"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control border-0 fs-6 py-3" id="passwordInput" placeholder="••••••••" required style="background: var(--color-bg-input, #f8fafc);">
+          </div>
         </div>
 
-        <!-- Login Form -->
-        <form id="loginForm" novalidate>
-          <div class="premium-form-group">
-            <label for="emailInput" class="premium-label">Correo Electrónico</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
-              <input type="email" class="form-control bg-light border-start-0 py-2.5" id="emailInput" placeholder="correo@ejemplo.com" required>
-            </div>
+        <!-- Submit Button -->
+        <button type="button" id="loginSubmitBtn" class="btn w-100 py-3 fs-6 fw-bold d-flex align-items-center justify-content-center gap-2 shadow rounded-3 transition-all text-white" style="background-color: var(--primary-color); letter-spacing: 0.5px; border: none;">
+          <span>Ingresar al Sistema</span>
+          <div id="loginSpinner" class="spinner-border spinner-border-sm text-white d-none" role="status">
+            <span class="visually-hidden">Cargando...</span>
           </div>
+          <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </form>
 
-          <div class="premium-form-group mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <label for="passwordInput" class="premium-label mb-0">Contraseña</label>
-            </div>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-lock"></i></span>
-              <input type="password" class="form-control bg-light border-start-0 py-2.5" id="passwordInput" placeholder="••••••••" required>
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <button type="button" id="loginSubmitBtn" class="btn btn-primary w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm rounded-3">
-            <span>Ingresar al Sistema</span>
-            <div id="loginSpinner" class="spinner-border spinner-border-sm text-white d-none" role="status">
-              <span class="visually-hidden">Cargando...</span>
-            </div>
-          </button>
-        </form>
-
-        <!-- Credentials Helper Tip (Useful for Testing) -->
-        <div class="mt-4 p-3 bg-secondary-soft rounded-3 small text-muted border-0">
-          <p class="mb-1 fw-bold text-dark d-flex align-items-center gap-2">
-            <i class="bi bi-info-circle-fill text-primary"></i> Credenciales de Prueba:
-          </p>
-          <ul class="mb-0 ps-3">
-            <li>Usuario: <code>test@example.com</code></li>
-            <li>Contraseña: <code>password123</code></li>
-          </ul>
+      <!-- Credentials Helper Tip -->
+      <div class="mt-5 p-3 rounded-3 small text-muted border shadow-sm" style="background-color: var(--card-bg, #F4EFE3); border-color: rgba(13, 42, 76, 0.05);">
+        <p class="mb-2 fw-bold d-flex align-items-center gap-2" style="color: var(--primary-color);">
+          <i class="bi bi-info-circle-fill" style="color: var(--secondary-color);"></i> Credenciales de Prueba:
+        </p>
+        <div class="d-flex justify-content-between px-2">
+          <span><strong>Usu:</strong> test@example.com</span>
+          <span><strong>Pass:</strong> password123</span>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Right Side: Animated Logo Sequence (Hidden on mobile/tablet) -->
+  <div class="col-12 col-lg-7 d-none d-lg-flex flex-column align-items-center justify-content-center position-relative overflow-hidden" style="background-color: var(--primary-color, #0E3659);">
+    
+    <!-- Smooth ambient lights matching the palette -->
+    <div class="position-absolute rounded-circle" style="width: 50vw; height: 50vw; background: var(--secondary-color, #4E7D7F); opacity: 0.15; filter: blur(120px); top: -20%; right: -10%;"></div>
+    <div class="position-absolute rounded-circle" style="width: 40vw; height: 40vw; background: var(--highlight-color, #D98A2F); opacity: 0.1; filter: blur(120px); bottom: -10%; left: -10%;"></div>
+
+    <!-- Main Content -->
+    <div class="z-1 position-relative d-flex flex-column align-items-center">
+      
+      <!-- Sequence Container -->
+      <div class="position-relative mb-4 mt-4" id="robot-interactive-zone">
+        
+        <!-- Animated SVG Logo -->
+        <div class="logo-container bg-white bg-opacity-10 backdrop-blur rounded-circle p-4 d-flex align-items-center justify-content-center" style="width: 170px; height: 170px;">
+          <svg class="animated-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450" width="100%" height="100%">
+            <defs>
+              <style>
+                .svg-bg-orange { fill: var(--highlight-color, #D98A2F); }
+                .svg-bg-amber-dark { fill: var(--highlight-hover, #b87528); }
+                .svg-bg-base { fill: var(--primary-hover, #0a253d); }
+                .svg-bg-screen { fill: #0b111a; }
+                .svg-glass-overlay { fill: var(--highlight-color, #D98A2F); opacity: 0.15; }
+              </style>
+            </defs>
+            <g id="robot-body" transform="translate(0, 10)">
+              <!-- CÚPULA -->
+              <path d="M 100,50 C 180,25 220,25 300,50 C 340,65 350,110 350,325 L 50,325 C 50,110 60,65 100,50 Z" class="svg-glass-overlay" />
+              <!-- Cuerpo -->
+              <polygon points="150,90 250,90 310,150 310,325 90,325 90,150" class="svg-bg-orange" />
+              <!-- Pantalla -->
+              <rect x="130" y="130" width="140" height="150" rx="20" class="svg-bg-screen" />
+              <!-- Grupo de Ojos para Parallax (Mouse Tracking JS) -->
+              <g id="robot-eyes" style="transition: transform 0.1s ease-out;">
+                <!-- Ojo LED Izquierdo -->
+                <rect id="left-eye" x="160" y="165" width="20" height="40" rx="10" class="led-light" />
+                <!-- Ojo LED Derecho (Animación con scaleY) -->
+                <rect id="right-eye" x="220" y="165" width="20" height="40" rx="10" class="led-light" />
+              </g>
+              <!-- Sonrisa LED animable -->
+              <path id="smile" d="M 165,235 Q 200,265 235,235" fill="none" class="led-light-stroke" stroke-width="8" stroke-linecap="round" />
+              <!-- Base -->
+              <rect x="40" y="325" width="320" height="80" rx="20" class="svg-bg-base" />
+              <rect x="60" y="325" width="280" height="12" rx="4" class="svg-bg-amber-dark" />
+            </g>
+          </svg>
+        </div>
+
+        <!-- Pop-out Speech Bubble (Normal) -->
+        <div class="speech-bubble speech-bubble-normal d-flex align-items-center gap-1">
+          <i class="bi bi-exclamation-triangle-fill text-danger alert-icon fs-6"></i>
+          <span>¡Bip! Alerta</span>
+        </div>
+
+        <!-- Pop-out Speech Bubble (Easter Egg Radar) -->
+        <div class="speech-bubble-easter d-flex align-items-center gap-2">
+          <i class="bi bi-radar radar-icon fs-6"></i>
+          <span>0 incidencias activas.</span>
+        </div>
+
+      </div>
+
+      <h1 class="text-white fw-bolder mt-3" style="letter-spacing: -0.04em; font-size: 2.7rem;">GeoIncidencias</h1>
+      <p class="fs-5 mt-2 mb-0" style="color: var(--card-bg, #F4EFE3); font-weight: 300; opacity: 0.85;">Gestión inteligente de eventos urbanos.</p>
+    </div>
+
   </div>
 </div>
