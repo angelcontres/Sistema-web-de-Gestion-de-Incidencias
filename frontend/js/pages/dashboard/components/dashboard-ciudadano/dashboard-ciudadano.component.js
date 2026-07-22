@@ -43,7 +43,9 @@ export class DashboardCiudadanoComponent extends BaseComponent {
       };
 
       const chartEstado = window.echarts.init(this.querySelector('#chartEstado'));
-      const estadoData = (data.distribucion_estado || []).map((item) => ({
+      const rawEstadoData = data.distribucion_estado || [];
+      // Object.values() convierte un objeto {"0": {...}} a arreglo, y si ya es arreglo lo deja igual.
+      const estadoData = Object.values(rawEstadoData).map((item) => ({
         name: String(item.metric),
         value: Number(item.value),
         itemStyle: { color: estadoColors[item.metric] || '#cbd5e1' },

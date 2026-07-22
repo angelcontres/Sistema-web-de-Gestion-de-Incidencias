@@ -49,7 +49,7 @@ export class KanbanIndexComponent extends BaseComponent {
     this.mostrarSpinners(true);
     try {
       const response = await IncidenciaService.getAll(1, 15, null, { all: true });
-      this.incidencias = Array.isArray(response) ? response : (response.data || []);
+      this.incidencias = Array.isArray(response) ? response : response.data || [];
       this.renderKanban();
     } catch (error) {
       ToastService.error('No se pudieron cargar las incidencias: ' + error.message);
@@ -352,9 +352,9 @@ export class KanbanIndexComponent extends BaseComponent {
       col.className = 'col';
       col.innerHTML = `
         <div class="card h-100 border rounded-3 overflow-hidden position-relative shadow-sm">
-          <img src="\${file.base64}" loading="lazy" class="card-img-top object-fit-cover" style="height: 120px;" alt="\${file.name}" />
+          <img src="${file.base64}" loading="lazy" class="card-img-top object-fit-cover" style="height: 120px;" alt="${file.name}" />
           <div class="card-body p-2 d-flex flex-column justify-content-between">
-            <div class="text-truncate small fw-medium" title="\${file.name}">\${file.name}</div>
+            <div class="text-truncate small fw-medium" title="${file.name}">${file.name}</div>
             <div class="d-flex justify-content-between align-items-center mt-1">
               <span class="badge bg-success-soft text-success" style="font-size: 0.7rem;">.webp</span>
               <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-file" data-index="\${index}">
