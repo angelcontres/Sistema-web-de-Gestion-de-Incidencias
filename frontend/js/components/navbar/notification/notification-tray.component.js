@@ -109,7 +109,8 @@ export class NotificationTrayComponent extends BaseComponent {
     listContainer.prepend(newCard);
 
     newCard.setData({
-      ...notification,
+      id: notification.id ?? notifData.id,
+      ...notifData,
       is_read: false,
       read_at: null,
     });
