@@ -8,6 +8,10 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\UserInvitation;
+use App\Http\Requests\ActivateAccountRequest;
+use App\Notifications\UserActivatedNotification;
+use Illuminate\Support\Facades\Notification;
 
 class AuthController extends Controller
 {
@@ -64,6 +68,46 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'username' => $user->username,
             ],
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 201);
+    }
+
+    public function activate(ActivateAccountRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $invitation = UserInvitation::where('token', $validated['token'])->first();
+
+        if (!$invitation) {
+            return response()->json(['message' => 'El enlace de activación es inválido o ya fue usado.'], 422);
+        }
+
+        if (now()->greaterThan($invitation->expires_at)) {
+            return response()->json(['message' => 'El enlace de activación ha expirado.'], 422);
+        }
+
+        $user = User::create([
+            'email' => $invitation->email,
+            'username' => strtolower(explode('@', $invitation->email)[0]) . '_' . rand(100, 999), // O simplemente $invitation->email, pero username podría tener límite de longitud.
+            'name' => $invitation->name,
+            'password' => Hash::make($validated['password']),
+            'activo' => true,
+            'institucion_id' => $invitation->institution_id,
+        ]);
+        $user->email_verified_at = now();
+        $user->save();
+
+        $user->roles()->attach($invitation->role_id);
+        
+        $invitation->delete();
+
+        Notification::route('mail', $user->email)->notify(new UserActivatedNotification($user));
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Cuenta activada exitosamente.',
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 201);

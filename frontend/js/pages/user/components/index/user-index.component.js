@@ -3,6 +3,9 @@ import { UserService } from '../../services/user.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
+import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
+import { RoleService } from '../../../role/services/role.service.js';
+
 export class UserIndexComponent extends BaseComponent {
   constructor() {
     super('js/pages/user/components/index/user-index.component.html');
@@ -15,11 +18,14 @@ export class UserIndexComponent extends BaseComponent {
     if (btnNuevoRegistro && !AuthService.hasPermission('CREATE', 'usuarios')) {
       btnNuevoRegistro.classList.add('d-none');
     }
+    const btnInvitar = this.querySelector('#btn-invitar-usuario');
+    if (btnInvitar && !AuthService.hasPermission('CREATE', 'usuarios')) {
+      btnInvitar.classList.add('d-none');
+    }
 
     const tblDatos = this.querySelector('#tbl-datos-usuarios');
 
     if (tblDatos) {
-      // 1. Configurar las columnas de forma parametrizable
       tblDatos.configure({
         columns: [
           {
@@ -84,7 +90,6 @@ export class UserIndexComponent extends BaseComponent {
         ],
       });
 
-      // 2. Escuchar acciones de la tabla (editar / eliminar)
       tblDatos.addEventListener('row-action', (e) => {
         const { action, item } = e.detail;
         if (action === 'editar') {
@@ -94,14 +99,98 @@ export class UserIndexComponent extends BaseComponent {
         }
       });
 
-      // 3. Cargar la lista inicial de usuarios
       tblDatos.load(UserService.getAll);
     }
+
+    await this.setupInviteModal();
   }
 
-  /**
-   * Elimina un usuario por ID
-   */
+  async setupInviteModal() {
+    const formInvite = this.querySelector('#form-invite-user');
+    const selectRole = this.querySelector('#select-invite-role');
+    const selectInstitution = this.querySelector('#select-invite-institution');
+    const containerInstitution = this.querySelector('#container-invite-institution');
+    const btnSubmit = this.querySelector('#btn-submit-invite');
+    const spinner = this.querySelector('#spinner-submit-invite');
+    
+    if (!formInvite) return;
+
+    // Load roles
+    try {
+      const rolesData = await RoleService.getAll(1, 100, null, { all: true });
+      const roles = rolesData.data || rolesData;
+      roles.forEach((r) => {
+        const option = document.createElement('option');
+        option.value = r.id;
+        option.textContent = r.nombre;
+        option.dataset.name = r.nombre;
+        selectRole.appendChild(option);
+      });
+    } catch (e) {
+      console.error('Error cargando roles:', e);
+    }
+
+    // Load institutions
+    try {
+      const institutions = await CatalogoService.getInstituciones();
+      institutions.forEach((i) => {
+        const option = document.createElement('option');
+        option.value = i.id;
+        option.textContent = i.nombre;
+        selectInstitution.appendChild(option);
+      });
+    } catch (e) {
+      console.error('Error cargando instituciones:', e);
+    }
+
+    // Handle role change to toggle institution field
+    selectRole.addEventListener('change', (e) => {
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      const roleName = selectedOption.dataset.name;
+      if (roleName === 'Institucion') {
+        containerInstitution.style.display = 'block';
+        selectInstitution.setAttribute('required', 'required');
+      } else {
+        containerInstitution.style.display = 'none';
+        selectInstitution.removeAttribute('required');
+        selectInstitution.value = '';
+      }
+    });
+
+    // Handle submit
+    formInvite.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(formInvite);
+      const payload = Object.fromEntries(formData.entries());
+      if (!payload.institution_id) {
+        delete payload.institution_id;
+      }
+
+      btnSubmit.disabled = true;
+      spinner.classList.remove('d-none');
+
+      try {
+        await UserService.invite(payload);
+        ToastService.success('Invitación enviada exitosamente.');
+        
+        // Hide modal
+        const modalEl = this.querySelector('#inviteUserModal');
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.hide();
+        
+        // Reset form
+        formInvite.reset();
+        containerInstitution.style.display = 'none';
+      } catch (error) {
+        ToastService.error(error.message || 'Error al enviar invitación.');
+      } finally {
+        btnSubmit.disabled = false;
+        spinner.classList.add('d-none');
+      }
+    });
+  }
+
   async eliminarUsuario(id, name) {
     const isConfirmed = await ModalService.confirm(
       'Eliminar Usuario',

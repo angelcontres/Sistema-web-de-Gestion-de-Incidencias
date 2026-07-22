@@ -30,4 +30,10 @@ export const UserService = {
       method: 'DELETE',
     });
   },
+  invite(payload) {
+    return apiRequest('/admin/users/invite', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
 };

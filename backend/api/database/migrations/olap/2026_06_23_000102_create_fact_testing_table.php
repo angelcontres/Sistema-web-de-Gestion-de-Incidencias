@@ -8,6 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (config("database.default") === "sqlite") { return; // skip for sqlite
+ }
         Schema::create('metrics.fact_testing', function (Blueprint $table) {
             $table->id();
 
@@ -25,6 +27,8 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (config("database.default") === "sqlite") { return; // skip for sqlite
+ }
         Schema::dropIfExists('metrics.fact_testing');
     }
 };

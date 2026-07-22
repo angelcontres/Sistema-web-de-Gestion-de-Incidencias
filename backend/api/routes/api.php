@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 // Rutas públicas
 Route::post('/v1/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/v1/auth/register-citizen', [AuthController::class, 'register'])->middleware('throttle:3,1');
+Route::post('/v1/auth/activate', [AuthController::class, 'activate']);
 
 // Rutas de catálogos (protegidas por autenticación, accesibles para todos los usuarios logueados)
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -44,6 +45,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Rutas protegidas por autenticación y permisos de recursos
 Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(function () {
     Route::post('/v1/logout', [AuthController::class, 'logout']);
+    Route::post('/v1/admin/users/invite', [\App\Http\Controllers\AdminUserController::class, 'invite'])->name('usuarios.invite');
 
     Route::get('/v1/me', [AuthController::class, 'me']);
     Route::post('/v1/refresh', [AuthController::class, 'refresh']);

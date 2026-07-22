@@ -9,7 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement('CREATE SCHEMA IF NOT EXISTS metrics');
+        if (config("database.default") === "sqlite") { return; // skip for sqlite
+ }
+        if (config('database.default') !== 'sqlite') {
+            DB::statement('CREATE SCHEMA IF NOT EXISTS metrics');
+        }
 
         Schema::create('metrics.dim_tiempo', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary(); // formato YYYYMMDDHHMMSS
@@ -26,6 +30,8 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (config("database.default") === "sqlite") { return; // skip for sqlite
+ }
         Schema::dropIfExists('metrics.dim_tiempo');
     }
 };

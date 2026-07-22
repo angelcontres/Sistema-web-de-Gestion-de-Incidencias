@@ -15,6 +15,7 @@ import './components/menu-lobby/menu-lobby.component.js';
 import './pages/dashboard/components/dashboard-index/dashboard.component.js';
 import './pages/login/login.component.js';
 import './pages/signup/signup.component.js';
+import './pages/auth/activate/activate.component.js';
 
 import './pages/menu-options/components/menu-options-list/menu-options-list.component.js';
 import './pages/menu-options/components/menu-options-form/menu-options-form.component.js';

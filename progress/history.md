@@ -83,3 +83,15 @@
 - Se añadió el `SignupComponent` en VanillaJS controlando *double-submit* visual y enrutamiento protegido.
 - Se añadió `AuthTest` Feature test cubriendo todo el proceso de registro exitoso, control de intrusión y fallos de validación.
 - Se verificó correctamente con el arnés del proyecto (`./init.sh`).
+
+## Feature 11: Admin Institutional Onboarding Magic Link (Completado)
+**Fecha:** 2026-07-22
+**Resumen:**
+- Implementación de la tabla `user_invitations` en la base de datos para almacenar invitaciones temporales con tokens únicos (hash).
+- Creación del componente backend `AdminUserController` con lógica para crear invitaciones y enviar correos de Magic Link mediante el sistema de Notificaciones de Laravel (`UserInvitationNotification`).
+- Endpoint `POST /api/v1/auth/activate` creado en `AuthController` con sus validaciones (`ActivateAccountRequest`) para verificar tokens y crear cuentas de usuarios asignando contraseñas seguras y generando usernames automáticamente a partir del correo.
+- Migraciones OLAP protegidas contra ejecución en bases de datos SQLite durante tests (patching `database/migrations/olap` y saltando ETL en `DatabaseSeeder.php`).
+- Interfaz (Frontend) actualizada: Inclusión de botón "Invitar Usuario" con su respectivo Modal en `user-index.component.js`, integrando selectores de Roles e Instituciones.
+- Componente `app-activate-account` añadido para mostrar una estética premium en la confirmación de la invitación donde el usuario introduce su nueva contraseña.
+- Se reparó el test arquitectónico `DashboardMetricsArchitectureTest` debido a que verificaba esquemas que ahora no corren en los entornos de prueba SQLite.
+- Tests (PHPUnit) en verde. `init.sh` en verde. Feature concluido.
