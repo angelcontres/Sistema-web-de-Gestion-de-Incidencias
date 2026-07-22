@@ -1,14 +1,17 @@
 /* ==========================================
    HEADER / NAVBAR (GLASSMORPHISM)
    ========================================== */
-.custom-navbar {
-  background-color: transparent !important;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-bottom: none !important;
-  z-index: 1000;
+app-navbar {
   position: sticky;
   top: 0;
+  z-index: 1000;
+  display: block;
+  width: 100%;
+}
+
+.custom-navbar {
+  background-color: var(--bg-app) !important;
+  border-bottom: 1px solid var(--border-color) !important;
   min-height: var(--navbar-height);
 }
 
@@ -127,7 +130,7 @@ app-sidebar nav {
   }
 
   /* Navbar spans 100% width at the top (Conventional) */
-  .custom-navbar {
+  app-navbar {
     margin-left: 0 !important;
     width: 100% !important;
     position: sticky !important;

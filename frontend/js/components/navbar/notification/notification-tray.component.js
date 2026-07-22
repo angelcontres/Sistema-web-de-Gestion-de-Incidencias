@@ -1,8 +1,8 @@
 import { BaseComponent } from '../../../core/base-component.js';
 import { apiRequest } from '../../../core/api.js';
-import { NotificationCardComponent } from './notification-card.component.js';
 import { initEcho } from '../../../core/echo.js';
 import { AuthService } from '../../../core/auth.service.js';
+
 export class NotificationTrayComponent extends BaseComponent {
   constructor() {
     super('js/components/navbar/notification/notification-tray.component.html');
