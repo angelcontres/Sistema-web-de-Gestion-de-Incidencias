@@ -184,11 +184,11 @@
                 </h5>
 
                 <!-- Geolocalización (Botones) -->
-                <div class="d-flex justify-content-start mb-3 gap-2">
+                <div class="d-flex flex-column flex-sm-row justify-content-start mb-3 gap-2">
                   <button
                     type="button"
                     id="btnObtenerUbicacion"
-                    class="btn btn-primary btn-lg fw-semibold px-4 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm"
+                    class="ui-btn ui-btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2"
                   >
                     <i id="btnObtenerUbicacionIcon" class="bi bi-geo-fill fs-5"></i>
                     <span
@@ -202,7 +202,7 @@
                   <button
                     type="button"
                     id="btnSeleccionarMapa"
-                    class="btn btn-outline-primary btn-lg fw-semibold px-4 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm"
+                    class="ui-btn ui-btn-outline flex-grow-1 d-flex align-items-center justify-content-center gap-2"
                     title="Seleccionar ubicación manualmente"
                   >
                     <i class="bi bi-pin-map-fill fs-5"></i>
@@ -403,7 +403,7 @@
                 O haga clic para explorar sus archivos locales (formatos JPG, PNG, WEBP)
               </p>
               <input type="file" id="fileInput" class="d-none" multiple accept="image/*" />
-              <div class="d-flex gap-2 justify-content-center flex-wrap">
+              <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center flex-wrap">
                 <button
                   type="button"
                   class="btn btn-outline-primary btn-sm fw-semibold rounded-2 px-3"
