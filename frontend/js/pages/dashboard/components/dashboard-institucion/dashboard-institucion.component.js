@@ -2,7 +2,9 @@ import { BaseComponent } from '../../../../core/base-component.js';
 
 export class DashboardInstitucionComponent extends BaseComponent {
   constructor() {
-    super('js/pages/dashboard/components/dashboard-institucion/dashboard-institucion.component.html');
+    super(
+      'js/pages/dashboard/components/dashboard-institucion/dashboard-institucion.component.html'
+    );
     this.dashboardData = null;
   }
 
@@ -21,7 +23,7 @@ export class DashboardInstitucionComponent extends BaseComponent {
 
   renderData() {
     const data = this.dashboardData;
-    
+
     this.querySelector('#val-asignadas').textContent = data.kpis?.asignadas || 0;
     this.querySelector('#val-en-proceso').textContent = data.kpis?.en_proceso || 0;
     this.querySelector('#val-resueltas').textContent = data.kpis?.resueltas || 0;
@@ -38,7 +40,9 @@ export class DashboardInstitucionComponent extends BaseComponent {
       };
 
       const chartEstado = window.echarts.init(this.querySelector('#chartEstado'));
-      const estadoData = (data.distribucion_estado || []).map((item) => ({
+      const rawEstadoData = data.distribucion_estado || [];
+      // Object.values() convierte un objeto {"0": {...}} a arreglo, y si ya es arreglo lo deja igual.
+      const estadoData = Object.values(rawEstadoData).map((item) => ({
         name: String(item.metric),
         value: Number(item.value),
         itemStyle: { color: estadoColors[item.metric] || '#cbd5e1' },

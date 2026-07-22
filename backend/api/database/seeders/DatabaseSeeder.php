@@ -166,7 +166,7 @@ class DatabaseSeeder extends Seeder
         $institucionUser = User::updateOrCreate(
             ['email' => 'policianacional@example.com'],
             [
-                'name' => 'Policia Nacional (Prueba)',
+                'name' => 'Policia Nacional del Ecuador',
                 'username' => 'policia_prueba',
                 'password' => Hash::make('policianacional123'),
                 'activo' => true,
@@ -182,8 +182,8 @@ class DatabaseSeeder extends Seeder
         $epmmopUser = User::updateOrCreate(
             ['email' => 'epmmop@example.com'],
             [
-                'name' => 'EPMMOP (Prueba)',
-                'username' => 'epmmop_prueba',
+                'name' => 'Empresa Pública Metropolitana de Movilidad y Obras Públicas',
+                'username' => 'epmmop_user',
                 'password' => Hash::make('epmmop123'),
                 'activo' => true,
                 'institucion_id' => 2,
@@ -197,8 +197,8 @@ class DatabaseSeeder extends Seeder
         $eeqUser = User::updateOrCreate(
             ['email' => 'eeq@example.com'],
             [
-                'name' => 'EEQ (Prueba)',
-                'username' => 'eeq_prueba',
+                'name' => 'Empresa Eléctrica de Quito',
+                'username' => 'eeq_user',
                 'password' => Hash::make('eeq123'),
                 'activo' => true,
                 'institucion_id' => 3,
@@ -212,8 +212,8 @@ class DatabaseSeeder extends Seeder
         $epmapsUser = User::updateOrCreate(
             ['email' => 'epmaps@example.com'],
             [
-                'name' => 'EPMAPS (Prueba)',
-                'username' => 'epmaps_prueba',
+                'name' => 'Empresa Pública Metropolitana de Agua Potable y Saneamiento',
+                'username' => 'epmaps_user',
                 'password' => Hash::make('epmaps123'),
                 'activo' => true,
                 'institucion_id' => 4,
@@ -227,8 +227,8 @@ class DatabaseSeeder extends Seeder
         $emgirsUser = User::updateOrCreate(
             ['email' => 'emgirs@example.com'],
             [
-                'name' => 'EMGIRS (Prueba)',
-                'username' => 'emgirs_prueba',
+                'name' => 'Empresa Pública de Gestión Integral de Residuos',
+                'username' => 'emgirs_user',
                 'password' => Hash::make('emgirs123'),
                 'activo' => true,
                 'institucion_id' => 5,
@@ -242,8 +242,8 @@ class DatabaseSeeder extends Seeder
         $dmaUser = User::updateOrCreate(
             ['email' => 'dma@example.com'],
             [
-                'name' => 'DMA (Prueba)',
-                'username' => 'dma_prueba',
+                'name' => 'Dirección de Medio Ambiente Municipal',
+                'username' => 'dma_user',
                 'password' => Hash::make('dma123'),
                 'activo' => true,
                 'institucion_id' => 6,
@@ -255,11 +255,11 @@ class DatabaseSeeder extends Seeder
 
         // CTE / id 7
         $cteUser = User::updateOrCreate(
-            ['email' => 'cte@example.com'],
+            ['email' => 'comisiontransito@example.com'],
             [
-                'name' => 'CTE (Prueba)',
-                'username' => 'cte_prueba',
-                'password' => Hash::make('cte123'),
+                'name' => 'Comisión de tránsito del Ecuador',
+                'username' => 'comisiontransito_user',
+                'password' => Hash::make('comisiontransito123'),
                 'activo' => true,
                 'institucion_id' => 7,
             ]

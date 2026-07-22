@@ -123,6 +123,18 @@ class DashboardMetricsQuery
                     ->get();
             }
 
+            // Aseguramos que todo sea un array puro para evitar problemas de serialización en el caché
+            $data['distribucion_estado'] = json_decode(json_encode($data['distribucion_estado'] ?? []), true);
+            if (isset($data['distribucion_prioridad'])) {
+                $data['distribucion_prioridad'] = json_decode(json_encode($data['distribucion_prioridad']), true);
+            }
+            if (isset($data['tendencia_temporal'])) {
+                $data['tendencia_temporal'] = json_decode(json_encode($data['tendencia_temporal']), true);
+            }
+            if (isset($data['incidencias_institucion'])) {
+                $data['incidencias_institucion'] = json_decode(json_encode($data['incidencias_institucion']), true);
+            }
+
             return $data;
         });
     }
