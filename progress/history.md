@@ -47,7 +47,7 @@
 
 **Cambios realizados:**
 - Se limpió el array de traducciones redundantes en `PermissionsSeeder.php`, dejando únicamente `'opciones'` y `'categorias'`.
-- Se refactorizó el middleware `CheckResourcePermission.php` para eliminar el diccionario hardcodeado, obteniendo el nombre del recurso de forma dinámica mediante `$request->route()->getName()$.
+- Se refactorizó el middleware `CheckResourcePermission.php` para eliminar el diccionario hardcodeado, obteniendo el nombre del recurso de forma dinámica mediante `$request->route()->getName()`.
 - Se aplicaron alias a todas las rutas de recursos en `api.php` mediante `->names(...)`.
 - El frontend se actualizó para mapear de manera estricta los permisos de un solo nombre (ej. `categorias`).
 - Integración funcional de `AuthService.hasPermission()` en la generación dinámica del Sidebar.
@@ -58,7 +58,6 @@
 - Se removió el color de fondo estático (`red`) en `layout.css`, reemplazándolo por `var(--sidebar-bg)`.
 - Se importó `layout.css` dentro de `main.css` para que el navbar y sidebar se muestren de forma correcta, respetando el diseño original (la paleta de colores no fue alterada).
 
-## Sesión: Mejoras de Layout (Sidebar y Main)
 ## Sesión: Mejoras de Layout (Sidebar y Main)
 - Se añadió la variable `--navbar-height: 72px;` en `variables.css`.
 - Se modificó `app-sidebar` en `layout.css` para utilizar `height: calc(100vh - var(--navbar-height))` y `position: sticky` con `top: var(--navbar-height)` de modo que ocupe todo el espacio sobrante sin desbordarse al hacer scroll.
@@ -76,4 +75,11 @@
 - Se retiró la "caja blanca" gigante del `main#app` permitiendo que el fondo original beige Champagne Silver fluya de esquina a esquina, y que las tarjetas de las vistas internas floten libremente encima.
 - Se aumentaron globalmente los radios de bordes (`--radius-md`, `--radius-lg`) y específicamente en `.sys-dashboard-card` (`24px`) para lograr las esquinas ultra redondeadas orgánicas del diseño de referencia.
 
-
+## Sesión: Registro Público de Ciudadanos sin Fricción (Feature 10)
+- Feature completada: citizen_frictionless_signup (ID 10).
+- Se modificó la migración de `users` para garantizar unicidad en `username` y permitir nombres nulos.
+- Se creó `RegisterRequest` en Laravel para centralizar validaciones exclusivas de registro.
+- Se implementó el endpoint `POST /v1/auth/register-citizen` forzando el rol de 'Ciudadano' y verificando el correo instantáneamente.
+- Se añadió el `SignupComponent` en VanillaJS controlando *double-submit* visual y enrutamiento protegido.
+- Se añadió `AuthTest` Feature test cubriendo todo el proceso de registro exitoso, control de intrusión y fallos de validación.
+- Se verificó correctamente con el arnés del proyecto (`./init.sh`).

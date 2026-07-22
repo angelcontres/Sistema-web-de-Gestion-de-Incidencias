@@ -3,15 +3,17 @@
 namespace App\Models;
 
 use App\Traits\HasLocalTimezone;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 
+#[Table('recurso_incidencias')]
 class RecursoIncidencia extends Model
 {
     use HasLocalTimezone;
 
-    protected $table = 'recurso_incidencias';
 
     protected $fillable = [
         'incidencia_id',
@@ -28,7 +30,10 @@ class RecursoIncidencia extends Model
             return $value;
         }
 
-        return Storage::disk(env('FILESYSTEM_DISK', 'public'))->url($value);
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk(env('FILESYSTEM_DISK', 'public'));
+
+        return $disk->url($value);
     }
 
     public function incidencia(): BelongsTo

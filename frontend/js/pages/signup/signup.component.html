@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="js/core/mascot/mascot.css">
 
 <div class="row g-0 page-fade-in w-100" style="min-height: 100vh;">
-  <!-- Left Side: Traditional Login -->
+  <!-- Left Side: Registration Form -->
   <div class="col-12 col-lg-5 d-flex align-items-center justify-content-center login-left-panel position-relative bg-white shadow-lg z-2">
     <div class="w-100 px-4 px-sm-5" style="max-width: 480px;">
       <!-- Mobile Logo -->
@@ -13,56 +13,43 @@
       </div>
 
       <div class="text-center mb-5">
-        <h2 class="fw-bolder text-dark mb-2" style="letter-spacing: -0.02em; color: var(--primary-color);">Bienvenido de nuevo</h2>
-        <p class="text-muted">Ingresa tus credenciales para acceder a la plataforma</p>
+        <h2 class="fw-bolder text-dark mb-2" style="letter-spacing: -0.02em; color: var(--primary-color);">Crea tu cuenta</h2>
+        <p class="text-muted">Regístrate en segundos para reportar incidencias urbanas</p>
       </div>
 
-      <!-- Login Form -->
-      <form id="loginForm" novalidate>
+      <!-- Signup Form -->
+      <form id="signup-form" novalidate>
         <div class="premium-form-group mb-4">
-          <label for="emailInput" class="premium-label fw-bold text-dark mb-2">Correo Electrónico / Usuario</label>
+          <label for="username" class="premium-label fw-bold text-dark mb-2">Correo Electrónico / Usuario</label>
           <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
             <span class="input-group-text border-0 text-muted px-4" style="background: var(--color-bg-input, #f8fafc);"><i class="bi bi-person"></i></span>
-            <input type="text" class="form-control border-0 fs-6 py-3" id="emailInput" placeholder="correo@ejemplo.com o usuario" required style="background: var(--color-bg-input, #f8fafc);">
+            <input type="text" class="form-control border-0 fs-6 py-3" id="username" name="username" placeholder="Tu usuario o correo" required autocomplete="username" style="background: var(--color-bg-input, #f8fafc);">
           </div>
         </div>
 
         <div class="premium-form-group mb-5">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <label for="passwordInput" class="premium-label fw-bold text-dark mb-0">Contraseña</label>
-            <a href="#" class="text-decoration-none small fw-semibold" style="color: var(--secondary-color);">¿Olvidaste tu contraseña?</a>
-          </div>
+          <label for="password" class="premium-label fw-bold text-dark mb-2">Contraseña</label>
           <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
             <span class="input-group-text border-0 text-muted px-4" style="background: var(--color-bg-input, #f8fafc);"><i class="bi bi-lock"></i></span>
-            <input type="password" class="form-control border-0 fs-6 py-3" id="passwordInput" placeholder="••••••••" required style="background: var(--color-bg-input, #f8fafc);">
+            <input type="password" class="form-control border-0 fs-6 py-3" id="password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password" style="background: var(--color-bg-input, #f8fafc);">
           </div>
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" id="loginSubmitBtn" class="btn w-100 py-3 fs-6 fw-bold d-flex align-items-center justify-content-center gap-2 shadow rounded-3 transition-all text-white" style="background-color: var(--primary-color); letter-spacing: 0.5px; border: none;">
-          <span>Ingresar al Sistema</span>
-          <div id="loginSpinner" class="spinner-border spinner-border-sm text-white d-none" role="status">
+        <button type="submit" id="submit-btn" class="btn w-100 py-3 fs-6 fw-bold d-flex align-items-center justify-content-center gap-2 shadow rounded-3 transition-all text-white" style="background-color: var(--primary-color); letter-spacing: 0.5px; border: none;">
+          <span>Registrarse Ahora</span>
+          <div id="signup-spinner" class="spinner-border spinner-border-sm text-white d-none" role="status">
             <span class="visually-hidden">Cargando...</span>
           </div>
-          <i class="bi bi-arrow-right ms-1"></i>
+          <i class="bi bi-person-plus ms-1"></i>
         </button>
 
-        <!-- Signup Link -->
+        <!-- Login Link -->
         <div class="text-center mt-4">
-          <p class="text-muted mb-0">¿No tienes cuenta? <a href="#/signup" class="text-decoration-none fw-bold" style="color: var(--primary-color);">Regístrate aquí</a></p>
+          <p class="text-muted mb-0">¿Ya tienes cuenta? <a href="#/login" class="text-decoration-none fw-bold" style="color: var(--primary-color);">Inicia sesión aquí</a></p>
         </div>
       </form>
 
-      <!-- Credentials Helper Tip -->
-      <div class="mt-4 p-3 rounded-3 small text-muted border shadow-sm" style="background-color: var(--card-bg, #F4EFE3); border-color: rgba(13, 42, 76, 0.05);">
-        <p class="mb-2 fw-bold d-flex align-items-center gap-2" style="color: var(--primary-color);">
-          <i class="bi bi-info-circle-fill" style="color: var(--secondary-color);"></i> Credenciales de Prueba:
-        </p>
-        <div class="d-flex justify-content-between px-2">
-          <span><strong>Usu:</strong> test@example.com</span>
-          <span><strong>Pass:</strong> password123</span>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -113,23 +100,10 @@
             </g>
           </svg>
         </div>
-
-        <!-- Pop-out Speech Bubble (Normal) -->
-        <div class="speech-bubble speech-bubble-normal d-flex align-items-center gap-1">
-          <i class="bi bi-exclamation-triangle-fill text-danger alert-icon fs-6"></i>
-          <span>¡Bip! Alerta</span>
-        </div>
-
-        <!-- Pop-out Speech Bubble (Easter Egg Radar) -->
-        <div class="speech-bubble-easter d-flex align-items-center gap-2">
-          <i class="bi bi-radar radar-icon fs-6"></i>
-          <span>0 incidencias activas.</span>
-        </div>
-
       </div>
 
       <h1 class="text-white fw-bolder mt-3" style="letter-spacing: -0.04em; font-size: 2.7rem;">GeoIncidencias</h1>
-      <p class="fs-5 mt-2 mb-0" style="color: var(--card-bg, #F4EFE3); font-weight: 300; opacity: 0.85;">Gestión inteligente de eventos urbanos.</p>
+      <p class="fs-5 mt-2 mb-0" style="color: var(--card-bg, #F4EFE3); font-weight: 300; opacity: 0.85;">Tu participación hace la diferencia.</p>
     </div>
 
   </div>

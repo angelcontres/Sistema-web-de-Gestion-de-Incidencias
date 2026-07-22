@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Traits\HasLocalTimezone;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
+#[Table('historial_incidencias')]
 class HistorialIncidencia extends Model
 {
     use HasLocalTimezone;
-
-    protected $table = 'historial_incidencias';
 
     protected $fillable = [
         'incidencia_id',

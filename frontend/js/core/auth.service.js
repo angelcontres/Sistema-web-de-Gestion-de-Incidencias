@@ -4,12 +4,24 @@ import { CircuitBreaker } from './circuit-breaker.js';
 const loginBreaker = new CircuitBreaker(4, 30000); // 4 failures max, 30s lockout
 
 export const AuthService = {
-  async login(email, password) {
+  async register(data) {
+    const response = await apiRequest('/auth/register-citizen', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (response && response.access_token) {
+      localStorage.setItem('access_token', response.access_token);
+      await this.refreshUser();
+    }
+    return response;
+  },
+
+  async login(loginIdentifier, password) {
     return loginBreaker.fire(async () => {
       localStorage.removeItem('user_menu');
       const response = await apiRequest('/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ login: loginIdentifier, password }),
       });
       if (response && response.access_token) {
         localStorage.setItem('access_token', response.access_token);

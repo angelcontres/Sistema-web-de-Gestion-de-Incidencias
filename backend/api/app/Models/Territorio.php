@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\TipoTerritorio;
 use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,13 +25,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Territorio|null $parent
  * @property Collection<int, Territorio> $hijos
  */
+#[Table('territorios')]
 #[Fillable(['pais_id', 'parent_id', 'nombre', 'tipo', 'codigo', 'activo'])]
 class Territorio extends Model
 {
     use HasFactory;
     use HasLocalTimezone;
-
-    protected $table = 'territorios';
 
     protected function casts(): array
     {

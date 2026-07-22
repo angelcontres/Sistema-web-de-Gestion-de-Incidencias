@@ -14,8 +14,11 @@ class AuthController extends Controller
     //
     public function login(LoginRequest $request): JsonResponse
     {
-        // 1. Buscar al usuario
-        $user = User::where('email', $request->email)->first();
+        $login = $request->input('login');
+        // 1. Buscar al usuario por email o por username
+        $user = User::where('email', $login)
+            ->orWhere('username', $login)
+            ->first();
 
         // 2. Verificar credenciales
         if (! $user || ! Hash::check($request->password, $user->password)) {
@@ -32,6 +35,38 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 200);
+    }
+
+    public function register(\App\Http\Requests\RegisterRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $user = User::create([
+            'email' => $validated['email'] ?? null,
+            'username' => $validated['username'] ?? null,
+            'password' => Hash::make($validated['password']),
+            'activo' => true,
+        ]);
+        $user->email_verified_at = now();
+        $user->save();
+
+        // Asignar rol Ciudadano
+        $role = \App\Models\Role::where('nombre', 'Ciudadano')->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'username' => $user->username,
+            ],
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 201);
     }
 
     public function logout(Request $request): JsonResponse
