@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Services\IncidenciaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-// 🟢 1. IMPORTAMOS TUS CLASES DE NOTIFICACIÓN
 use App\Notifications\IssueAssignedNotification;
 use App\Notifications\IssueStatusChangedNotification;
 
