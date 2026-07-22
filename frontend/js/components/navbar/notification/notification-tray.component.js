@@ -63,17 +63,17 @@ export class NotificationTrayComponent extends BaseComponent {
     const userId = AuthService.getUserId();
 
     if (!userId) {
-      console.warn('⚠️ No se puede conectar a WebSocket: Usuario no autenticado o falta ID.');
+      console.warn('No se puede conectar a WebSocket: Usuario no autenticado o falta ID.');
       return;
     }
 
     this.echoInstance = initEcho();
     if (!this.echoInstance) return;
 
-    console.log(`📡 Conectando a WebSocket en canal privado: App.Models.User.${userId}`);
+    console.log(` Conectando a WebSocket en canal privado: App.Models.User.${userId}`);
 
     this.echoInstance.private(`App.Models.User.${userId}`).notification((notification) => {
-      console.log('🚨 ¡Nueva alerta en tiempo real!', notification);
+      console.log('Nueva alerta', notification);
       this.handleRealtimeNotification(notification);
     });
   }
@@ -194,7 +194,6 @@ export class NotificationTrayComponent extends BaseComponent {
     container.innerHTML = '';
 
     if (!notifications || notifications.length === 0) {
-      // CORREGIDO: Se añade la clase 'empty-message' para que el WebSocket pueda identificarla
       container.innerHTML =
         '<p class="text-muted small text-center py-4 mb-0 empty-message">No hay incidencias reportadas.</p>';
       return;
