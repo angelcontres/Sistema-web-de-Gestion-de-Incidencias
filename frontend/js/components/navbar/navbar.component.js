@@ -1,6 +1,6 @@
 import { BaseComponent } from '../../core/base-component.js';
 import { AuthService } from '../../core/auth.service.js';
-
+import { NotificationTrayComponent } from './notification/notification-tray.component.js'; 
 /**
  * Navbar Component class to manage layout navigation, active pages, and session state.
  */

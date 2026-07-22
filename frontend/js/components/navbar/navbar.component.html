@@ -23,22 +23,7 @@
 
     <div class="d-flex align-items-center gap-3 ms-auto">
       <!-- Notificaciones (Siempre Visibles) -->
-      <a
-        class="nav-link text-white position-relative hover-scale"
-        style="padding: 0.25rem; transition: transform 0.2s ease;"
-        href="#"
-        role="button"
-        aria-label="Notificaciones"
-        title="Notificaciones"
-      >
-        <i class="bi bi-bell fs-5 opacity-75"></i>
-        <span
-          class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle animate-pulse"
-        >
-          <span class="visually-hidden">Nuevas notificaciones</span>
-        </span>
-      </a>
-
+      <app-notification-tray></app-notification-tray>
       <!-- Toggler para móvil -->
       <button
         class="navbar-toggler border-0 p-0 ms-1"
@@ -51,7 +36,6 @@
       >
         <span class="navbar-toggler-icon"></span>
       </button>
-
       <!-- Menú Colapsable (Dropdown de Usuario) -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav mb-0">
@@ -98,4 +82,3 @@
       </div>
     </div>
   </div>
-</nav>

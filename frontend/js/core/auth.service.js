@@ -45,7 +45,7 @@ export const AuthService = {
       // Always fetch the menu tree globally on login/refresh
       try {
         const menuResp = await apiRequest('/me/menu', { method: 'GET' });
-        const menuList = Array.isArray(menuResp) ? menuResp : (menuResp.data || []);
+        const menuList = Array.isArray(menuResp) ? menuResp : menuResp.data || [];
         localStorage.setItem('user_menu', JSON.stringify(menuList));
       } catch (err) {
         console.error('Error fetching menu profile:', err);
@@ -118,6 +118,11 @@ export const AuthService = {
     return user ? user.pais_id : null;
   },
 
+  getUserId() {
+    const user = this.getCurrentUser();
+    return user ? user.id : null;
+  },
+
   canAccessRoute(hash) {
     if (!hash || hash === '#/' || hash === '#/login' || hash === '#/public') return true;
 
@@ -148,19 +153,10 @@ export const AuthService = {
       .replace(/\/estado-individual$/, '');
     const requiredPermission = routePermissions[hashWithoutQuery] || routePermissions[basePath];
 
-    console.log(
-      `[AuthService] canAccessRoute: hash=${hash}, hashWithoutQuery=${hashWithoutQuery}, basePath=${basePath}`
-    );
-    console.log(`[AuthService] requiredPermission=`, requiredPermission);
-
     if (requiredPermission) {
-      const hasPerm = this.hasPermission(requiredPermission.action, requiredPermission.resource);
-      console.log(`[AuthService] hasPermission result:`, hasPerm);
-      return hasPerm;
+      return this.hasPermission(requiredPermission.action, requiredPermission.resource);
     }
 
-    console.log(`[AuthService] canAccessRoute: No route permissions matched, allowing by default.`);
-    // Por defecto permitimos si no hay un mapeo estricto, ya que el backend lo protegerá.
     return true;
   },
 };

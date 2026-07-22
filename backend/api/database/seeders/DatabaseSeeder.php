@@ -283,7 +283,11 @@ class DatabaseSeeder extends Seeder
             $roleService->syncRolesToUser($supervisorUser, [$supervisorRole->id]);
         }
 
+        $this->call(NotificationSeeder::class);
+
+
         // Ejecutar ETL inicial para asegurar que las dimensiones del Data Warehouse estén pobladas
         Artisan::call('etl:run');
+
     }
 }
