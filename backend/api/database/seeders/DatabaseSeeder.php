@@ -287,7 +287,7 @@ class DatabaseSeeder extends Seeder
 
 
         // Ejecutar ETL inicial para asegurar que las dimensiones del Data Warehouse estén pobladas
-        // Artisan::call('etl:run');
+        Artisan::call('etl:run');
 
     }
 }
