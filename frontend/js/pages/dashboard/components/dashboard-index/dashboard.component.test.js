@@ -313,7 +313,7 @@ describe('DashboardComponent', () => {
     expect(lastApiRequestUrl).toBe('/dashboard/metrics?role=Ciudadano');
 
     // Institucion
-    AuthService.hasPermission = jest.fn((action, resource) => resource === 'progreso');
+    AuthService.hasPermission = jest.fn((action, resource) => resource === 'kanban');
     try {
       await component.initDashboards();
     } catch (e) {}
