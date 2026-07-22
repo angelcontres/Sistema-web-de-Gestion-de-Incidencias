@@ -223,16 +223,7 @@ export class DashboardComponent extends BaseComponent {
   }
 
   loadDashboardStyles() {
-    return new Promise((resolve) => {
-      if (document.getElementById('dashboard-cards-css')) return resolve();
-      const link = document.createElement('link');
-      link.id = 'dashboard-cards-css';
-      link.rel = 'stylesheet';
-      link.href = 'js/pages/dashboard/css/dashboard-cards.css';
-      link.onload = resolve;
-      link.onerror = resolve; // Continue even if it fails to avoid blocking the UI completely
-      document.head.appendChild(link);
-    });
+    return Promise.resolve();
   }
 
   renderTopServices(services) {
@@ -300,7 +291,7 @@ export class DashboardComponent extends BaseComponent {
     markersData.forEach((inc) => {
       const marker = L.circleMarker([inc.lat, inc.lng], {
         radius: 10,
-        fillColor: '#3b82f6',
+        fillColor: '#D98A2F',
         color: '#ffffff',
         weight: 2.5,
         fillOpacity: 0.95,
@@ -308,7 +299,7 @@ export class DashboardComponent extends BaseComponent {
 
       marker.bindPopup(`
         <div style="font-family: 'Outfit', sans-serif;">
-          <span class="badge mb-1 bg-primary-soft text-primary" style="border: 1px solid #3b82f640; font-weight: bold;">
+          <span class="badge mb-1 bg-primary-soft text-primary" style="border: 1px solid #D98A2F40; font-weight: bold;">
             ${inc.categoria}
           </span>
           <h6 class="fw-bold text-dark m-0" style="font-size: 0.9rem;">${inc.titulo || 'Sin descripción'}</h6>

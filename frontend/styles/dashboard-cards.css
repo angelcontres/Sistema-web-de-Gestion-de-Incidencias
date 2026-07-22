@@ -18,7 +18,7 @@
 
 .sys-dashboard-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 32px -10px rgba(124, 58, 237, 0.2);
+  box-shadow: var(--shadow-glow-primary);
 }
 
 .sys-card-header {
@@ -64,35 +64,21 @@
 }
 
 .bg-danger-soft {
-  background-color: rgba(239, 68, 68, 0.08);
-  color: #ef4444;
+  background-color: var(--highlight-soft);
+  color: var(--highlight-color);
 }
 
 .bg-success-soft {
-  background-color: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  background-color: var(--secondary-soft);
+  color: var(--secondary-color);
 }
 
 .bg-warning-soft {
-  background-color: rgba(245, 158, 11, 0.08);
-  color: #f59e0b;
+  background-color: var(--highlight-soft);
+  color: var(--highlight-color);
 }
 
-.text-primary {
-  color: #7c3aed !important;
-}
-.text-dark {
-  color: #0f172a !important;
-}
-.text-secondary {
-  color: #475569 !important;
-}
-.text-success {
-  color: #10b981 !important;
-}
-.text-danger {
-  color: #ef4444 !important;
-}
+
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

@@ -37,7 +37,7 @@ export class DashboardSupervisorComponent extends BaseComponent {
     setTimeout(() => {
         if (!window.echarts) return;
         
-        const estadoColors = { "Pendiente": "#94a3b8", "En Revisión": "#38bdf8", "En Proceso": "#fbbf24", "Resuelto": "#34d399", "Rechazado": "#f87171" };
+        const estadoColors = { "Pendiente": "#94a3b8", "En Revisión": "#38bdf8", "En Proceso": "#D98A2F", "Resuelto": "#34d399", "Rechazado": "#f87171" };
 
         const chartEstado = window.echarts.init(this.querySelector('#chartEstado'));
         const estadoData = (data.distribucion_estado || []).map(item => ({
@@ -65,7 +65,7 @@ export class DashboardSupervisorComponent extends BaseComponent {
             yAxis: { type: "value", name: "Incidencias", nameTextStyle: { color: "#64748b" }, axisLabel: { color: "#64748b" }, splitLine: { lineStyle: { type: "dashed", color: "#e2e8f0" } } },
             series: [{
                 name: "Incidencias", type: "bar", barMaxWidth: 40,
-                itemStyle: { color: "#a78bfa", borderRadius: [4, 4, 0, 0] },
+                itemStyle: { color: "#0D2A4C", borderRadius: [4, 4, 0, 0] },
                 data: instSeries
             }]
         });

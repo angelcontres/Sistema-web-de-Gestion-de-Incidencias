@@ -1,0 +1,576 @@
+/* ==========================================
+ * UI COMPONENTS (Modular, Reusable)
+ * ========================================== */
+
+/* --- Cards --- */
+.ui-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ui-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--secondary-color);
+}
+
+.ui-card-header {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+}
+
+/* --- Buttons --- */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: none;
+  font-family: inherit;
+}
+
+/* Primary Button (Azul Marino) */
+.ui-btn-primary {
+  background-color: var(--primary-color);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-glow-primary);
+}
+
+.ui-btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+/* Accent/Highlight Button (Dorado) */
+.ui-btn-highlight {
+  background-color: var(--highlight-color);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-glow-highlight);
+}
+
+.ui-btn-highlight:hover {
+  background-color: var(--highlight-hover);
+  transform: translateY(-1px);
+}
+
+/* Secondary/Outline Button (Teal) */
+.ui-btn-outline {
+  background-color: transparent;
+  color: var(--secondary-color);
+  border: 2px solid var(--secondary-color);
+}
+
+.ui-btn-outline:hover {
+  background-color: var(--secondary-soft);
+  color: var(--secondary-hover);
+}
+
+/* --- Badges / Pills --- */
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ui-badge-teal {
+  background-color: var(--secondary-soft);
+  color: var(--secondary-color);
+  border: 1px solid rgba(34, 122, 138, 0.2);
+}
+
+.ui-badge-gold {
+  background-color: var(--highlight-soft);
+  color: var(--highlight-color);
+  border: 1px solid rgba(217, 138, 47, 0.2);
+}
+
+/* ==========================================
+ * LEGACY BOOTSTRAP OVERRIDES
+ * ========================================== */
+/* ==========================================
+   CARDS & CONTAINERS (PREMIUM SaaS STYLE)
+   ========================================== */
+.card, .custom-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.card:hover, .custom-card:hover {
+  border-color: rgba(13, 42, 76, 0.15) !important;
+}
+
+.stat-card-hover {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.stat-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -10px rgba(13, 42, 76, 0.2) !important;
+}
+
+.stat-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+/* ==========================================
+   BUTTONS (MICRO-INTERACTIONS)
+   ========================================== */
+.btn {
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1.25rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.825rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  border: 1px solid var(--primary-hover) !important;
+  box-shadow: 0 4px 12px rgba(13, 42, 76, 0.12);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(13, 42, 76, 0.28);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-light {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: var(--text-main);
+}
+
+.btn-light:hover {
+  background-color: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+/* ==========================================
+   FORMS AND INPUTS
+   ========================================== */
+.form-control, .form-select {
+  border-radius: var(--radius-md);
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  transition: all 0.15s ease-in-out;
+  background-color: #ffffff;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  outline: 0;
+}
+
+.form-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   TABLES
+   ========================================== */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-light);
+  letter-spacing: 0.06em;
+  padding: 0.85rem 1rem !important;
+  background-color: rgba(15, 23, 42, 0.015);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table tbody td {
+  padding: 0.9rem 1rem !important;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(15, 23, 42, 0.01);
+}
+
+/* ==========================================
+   BADGES (TRANSLUCENT & GLOWING)
+   ========================================== */
+.badge {
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.65rem;
+}
+
+.bg-primary-soft {
+  background-color: var(--primary-soft) !important;
+  color: var(--primary-color) !important;
+  border: 1px solid rgba(13, 42, 76, 0.15) !important;
+}
+
+.bg-success-soft {
+  background-color: var(--success-soft) !important;
+  color: var(--success-color) !important;
+  border: 1px solid rgba(34, 122, 138, 0.15) !important;
+}
+
+.bg-warning-soft {
+  background-color: var(--warning-soft) !important;
+  color: var(--warning-color) !important;
+  border: 1px solid rgba(217, 138, 47, 0.15) !important;
+}
+
+.bg-danger-soft {
+  background-color: var(--danger-soft) !important;
+  color: var(--danger-color) !important;
+  border: 1px solid rgba(217, 138, 47, 0.15) !important;
+}
+
+.bg-secondary-soft {
+  background-color: var(--secondary-soft) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid rgba(100, 116, 139, 0.15) !important;
+}
+
+/* ==========================================
+   PREMIUM CUSTOM TABS
+   ========================================== */
+.nav-tabs {
+  border-bottom: 2px solid #e2e8f0;
+  gap: 0.5rem;
+}
+
+.nav-tabs .nav-item .nav-link {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  position: relative;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.85rem 1.25rem !important;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.nav-tabs .nav-item .nav-link:hover {
+  color: var(--primary-color);
+  background-color: rgba(13, 42, 76, 0.04);
+}
+
+.nav-tabs .nav-item .nav-link.active {
+  color: var(--primary-color) !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.nav-tabs .nav-item .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--primary-color) !important;
+  border-radius: 3px 3px 0 0;
+}
+
+/* ==========================================
+   ANIMATIONS & PULSES
+   ========================================== */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: .6;
+    transform: scale(0.95);
+  }
+}
+
+/* ==========================================
+   PREMIUM DARK DROPDOWN
+   ========================================== */
+.custom-dropdown {
+  background-color: rgba(9, 9, 11, 0.95) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.5rem 0 !important;
+}
+
+.custom-dropdown .dropdown-item {
+  color: rgba(255, 255, 255, 0.75) !important;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem !important;
+}
+
+.custom-dropdown .dropdown-item:hover,
+.custom-dropdown .dropdown-item:focus {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+.custom-dropdown .dropdown-item.text-danger {
+  color: var(--danger-color) !important;
+}
+
+.custom-dropdown .dropdown-item.text-danger:hover {
+  background-color: rgba(217, 138, 47, 0.1) !important;
+}
+
+.custom-dropdown .dropdown-divider {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 0.5rem 0 !important;
+}
+
+/* Premium Micro-Animations & Aesthetic Tweaks */
+.custom-card {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0,0,0,0.05) !important;
+}
+.custom-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+}
+
+table.table-hover tbody tr {
+    transition: background-color 0.15s ease-in-out, transform 0.1s ease;
+}
+table.table-hover tbody tr:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.03) !important;
+    transform: scale(1.001);
+}
+
+.btn {
+    transition: all 0.2s ease;
+}
+.btn:active {
+    transform: scale(0.96);
+}
+
+/* Glassmorphism for floating dropdowns / modals */
+.dropdown-menu {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+/* Skeleton Loaders (Premium UI) */
+.skeleton-box {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+
+.skeleton-box::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.4) 20%,
+    rgba(255, 255, 255, 0.7) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 2s infinite;
+  content: '';
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ==========================================
+   PREMIUM CENTRALIZED COMPONENTS (DESIGN SYSTEM)
+   ========================================== */
+
+/* Page Headers */
+.page-header-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 576px) {
+  .page-header-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.page-title {
+  font-size: 1.5rem; /* h3 */
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  color: var(--text-muted);
+  font-size: 0.875rem; /* small */
+  margin-bottom: 0;
+}
+
+/* Premium Cards */
+.premium-card {
+  background-color: var(--card-bg);
+  border: none !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 1.5rem; /* p-4 equivalent */
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.premium-card:hover {
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.premium-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.premium-card-title {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Premium Modals */
+.premium-modal-content {
+  border: none !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-lg) !important;
+  overflow: hidden;
+}
+
+.premium-modal-header {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 1.5rem 1.5rem 1rem 1.5rem !important;
+}
+
+.premium-modal-title {
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.premium-modal-body {
+  padding: 1.5rem !important;
+}
+
+/* Premium Forms */
+.premium-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.premium-form-group {
+  margin-bottom: 1.25rem;
+}
+
+/* Premium Tables */
+.premium-table-wrapper {
+  background-color: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.premium-table {
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+
+.premium-table thead th {
+  background-color: var(--secondary-soft);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem !important;
+  border-bottom: none;
+}
+
+.premium-table tbody td {
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.875rem;
+}
+
+/* Premium Alerts */
+.premium-alert {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+

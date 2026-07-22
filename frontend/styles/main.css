@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* ==========================================
+ * SINGLETON CSS ENTRYPOINT (main.css)
+ * ==========================================
+ * Este archivo orquesta el diseño global del frontend.
+ * Contiene estrictamente las directivas de importación
+ * respetando el orden natural de la cascada CSS.
+ * ========================================== */
+
+/* 1. Design Tokens & Variables (Identity) */
+@import url('./variables.css');
+
+/* 2. Global Resets & Typography */
+@import url('./base.css');
+
+/* 3. Layout (Navbar, Sidebar, Grid) */
+@import url('./layout.css');
+
+/* 4. Reusable UI Components */
+@import url('./components.css');
+
+/* 4. Legacy Styles (Opcional, para retrocompatibilidad con el diseño anterior) */
+/* Si requieres que la estructura vieja siga funcionando, descomenta la siguiente línea: */
+/* @import url('./style.css'); */

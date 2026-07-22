@@ -32,7 +32,7 @@ export class DashboardInstitucionComponent extends BaseComponent {
       const estadoColors = {
         Pendiente: '#94a3b8',
         'En Revisión': '#38bdf8',
-        'En Proceso': '#fbbf24',
+        'En Proceso': '#D98A2F',
         Resuelto: '#34d399',
         Rechazado: '#f87171',
       };

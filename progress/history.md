@@ -53,3 +53,27 @@
 - Integración funcional de `AuthService.hasPermission()` en la generación dinámica del Sidebar.
 - Se añadió un interceptor global para el código HTTP 403 en `api.js`, despachando un CustomEvent para mostrar un `ToastService` al usuario.
 
+## Sesión: Fix CSS bugs
+- Se corrigieron los nombres de variables incorrectas (`--color-primary-soft` a `--primary-soft`) en `variables.css`.
+- Se removió el color de fondo estático (`red`) en `layout.css`, reemplazándolo por `var(--sidebar-bg)`.
+- Se importó `layout.css` dentro de `main.css` para que el navbar y sidebar se muestren de forma correcta, respetando el diseño original (la paleta de colores no fue alterada).
+
+## Sesión: Mejoras de Layout (Sidebar y Main)
+## Sesión: Mejoras de Layout (Sidebar y Main)
+- Se añadió la variable `--navbar-height: 72px;` en `variables.css`.
+- Se modificó `app-sidebar` en `layout.css` para utilizar `height: calc(100vh - var(--navbar-height))` y `position: sticky` con `top: var(--navbar-height)` de modo que ocupe todo el espacio sobrante sin desbordarse al hacer scroll.
+- Se encapsuló el contenedor principal `main#app` con un fondo de tarjeta (`var(--card-bg)`), bordes levemente redondeados usando `var(--radius-sm)`, sombras y padding (`2rem`) creando un efecto de tarjeta flotante.
+
+## Sesión: Ajuste de Paleta Exacta (basado en mockup)
+- Se actualizó el color principal de fondo `--bg-app` a `#E6DED0` (Champagne Silver) extrayendo el código hexadecimal directamente de la imagen `paleta.png`.
+- Se configuró el fondo del sidebar (`--sidebar-bg`) y del navbar (`--navbar-bg`) para que utilicen este mismo tono beige, logrando la apariencia continua e integrada que muestra el mockup original.
+- Los colores primarios, secundarios y de resalte ya coincidían con el panel de identidad (Azul Marino `#0D2A4C`, Turquesa `#227A8A` y Dorado `#D98A2F`).
+
+## Sesión: Adopción del Estilo Flotante del Mockup
+- Se modificó el diseño base (Layout) para replicar fielmente el estilo de tarjetas flotantes de la imagen `paleta.png`.
+- El **Sidebar** se rediseñó a un formato de "píldora" flotante (margen alrededor, bordes redondeados y altura limitada `calc(100vh - 2rem)`).
+- El **Navbar** se volvió 100% transparente y sin bordes inferiores para fusionarse con el fondo.
+- Se retiró la "caja blanca" gigante del `main#app` permitiendo que el fondo original beige Champagne Silver fluya de esquina a esquina, y que las tarjetas de las vistas internas floten libremente encima.
+- Se aumentaron globalmente los radios de bordes (`--radius-md`, `--radius-lg`) y específicamente en `.sys-dashboard-card` (`24px`) para lograr las esquinas ultra redondeadas orgánicas del diseño de referencia.
+
+
