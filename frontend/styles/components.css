@@ -295,10 +295,11 @@
   background-color: rgba(13, 42, 76, 0.04);
 }
 
-.nav-tabs .nav-item .nav-link.active {
+.nav-tabs .nav-tabs .nav-link.active {
   color: var(--primary-color) !important;
-  background: transparent !important;
-  border: none !important;
+  background-color: var(--card-bg) !important;
+  border-color: rgba(13, 42, 76, 0.1) rgba(13, 42, 76, 0.1) var(--card-bg) !important;
+  font-weight: 600;
 }
 
 .nav-tabs .nav-item .nav-link.active::after {
@@ -466,12 +467,12 @@ table.table-hover tbody tr:hover {
   margin-bottom: 0;
 }
 
-/* Premium Cards */
+/* Premium Cards (Unificado con sys-dashboard-card) */
 .premium-card {
-  background-color: var(--card-bg);
-  border: none !important;
-  border-radius: var(--radius-xl) !important;
-  box-shadow: var(--shadow-md) !important;
+  background-color: var(--card-bg) !important;
+  border: 0;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03) !important;
   padding: 1.5rem; /* p-4 equivalent */
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
@@ -571,6 +572,56 @@ table.table-hover tbody tr:hover {
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
+}
+
+/* ==========================================
+   LINEAR-STYLE TABLES (Global Hegemony)
+   ========================================== */
+.table {
+  background-color: transparent !important;
+  margin-bottom: 0;
+  --bs-table-bg: transparent;
+  color: var(--text-main);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Remove default borders and set padding */
+.table > :not(caption) > * > * {
+  border-bottom: 1px solid rgba(13, 42, 76, 0.04) !important;
+  padding: 1rem 0.75rem;
+  background-color: transparent !important;
+  color: var(--text-main);
+  box-shadow: none !important;
+  vertical-align: middle;
+}
+
+/* Clean up table header (Minimalist) */
+.table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(13, 42, 76, 0.5);
+  font-weight: 700;
+  border-bottom: 1px solid rgba(13, 42, 76, 0.08) !important;
+  border-top: none !important;
+  padding-bottom: 0.75rem;
+}
+
+/* Hover effect on rows */
+.table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+/* To make border-radius work on tr, we need to hide overflow or apply it to td */
+.table tbody tr:hover > td {
+  background-color: rgba(13, 42, 76, 0.02) !important;
+  cursor: pointer;
+}
+
+/* Remove top border from first row in tbody */
+.table tbody tr:first-child > td {
+  border-top: none;
 }
 
 

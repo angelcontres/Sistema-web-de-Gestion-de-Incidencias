@@ -3,27 +3,27 @@
    * 1. THEME IDENTITY PALETTE
    * ========================================== */
   
-  /* Primary: Azul Marino */
-  --primary-color: #0D2A4C;
-  --primary-hover: #091e36;
-  --primary-soft: rgba(13, 42, 76, 0.1);
-  --primary-glow: rgba(13, 42, 76, 0.15);
+  /* Primary: Azul Profundo */
+  --primary-color: #0E3659;
+  --primary-hover: #0a253d;
+  --primary-soft: rgba(14, 54, 89, 0.1);
+  --primary-glow: rgba(14, 54, 89, 0.15);
 
-  /* Secondary: Turquesa / Teal */
-  --secondary-color: #227A8A;
-  --secondary-hover: #195d69;
-  --secondary-soft: rgba(34, 122, 138, 0.1);
+  /* Secondary: Teal / Verde Azulado */
+  --secondary-color: #4E7D7F;
+  --secondary-hover: #3d6263;
+  --secondary-soft: rgba(78, 125, 127, 0.1);
 
   /* Highlight: Dorado / Naranja */
   --highlight-color: #D98A2F;
   --highlight-hover: #b87528;
   --highlight-soft: rgba(217, 138, 47, 0.1);
 
-  /* Backgrounds: Premium Contrast Hierarchy */
-  --bg-app: #F0EAE2; /* Fondo de la app (más claro) */
-  --sidebar-bg: #E3D9C9; /* Color del sidebar de la imagen */
-  --card-bg: #ffffff;
-  --navbar-bg: #F0EAE2;
+  /* Backgrounds: Premium Contrast Hierarchy (Singleton Architecture) */
+  --bg-app: #E6DDCC; /* Arena Claro */
+  --sidebar-bg: #D6CCC1; /* Gris / Beige Neutro */
+  --card-bg: #F4EFE3; /* Crema Cálido para Paneles */
+  --navbar-bg: transparent;
   --color-bg-input: #f8fafc;
 
   /* ==========================================

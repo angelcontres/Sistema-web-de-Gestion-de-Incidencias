@@ -1,6 +1,6 @@
 .sys-dashboard-card {
   font-family: 'Outfit', sans-serif;
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border: 0;
   border-radius: 16px;
   box-shadow:

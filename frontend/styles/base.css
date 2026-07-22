@@ -51,3 +51,18 @@ a:hover {
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--secondary-color);
 }
+
+/* ==========================================
+ * GLOBAL OVERRIDES PARA FONDOS DE PANELES
+ * ========================================== */
+.bg-white, 
+.card,
+.modal-content,
+.offcanvas,
+.premium-card-header,
+.card-header,
+.card-footer,
+.modal-header,
+.modal-footer {
+  background-color: var(--card-bg) !important;
+}
