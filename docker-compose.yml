@@ -62,7 +62,23 @@ services:
     networks:
       - sistema_incidencias_net
 
-  # Base de Datos (PostgreSQL + PostGIS)
+  # Servidor de WebSockets (Reverb)
+  laravel-reverb:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: sistema_reverb
+    restart: always
+    command: php artisan reverb:start --host="0.0.0.0" --port=8080
+    volumes:
+      - ./backend/api:/var/www/html
+    depends_on:
+      - postgres
+      - laravel
+    networks:
+      - sistema_incidencias_net
+
+   # Base de Datos (PostgreSQL + PostGIS) [Asignatura: Base de Datos / Data Center]
   postgres:
     image: postgis/postgis:17-3.4-alpine
     container_name: sistema_postgres
