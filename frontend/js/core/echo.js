@@ -8,21 +8,19 @@ export function initEcho() {
   if (!token) return null;
 
   const isProduction = window.location.protocol === 'https:';
+  const currentPort = window.location.port || (isProduction ? 443 : 80);
 
   return new Echo({
     broadcaster: 'reverb',
-    key: 'my-app-key', // Asegúrate de que coincida con REVERB_APP_KEY de tu .env
-    wsHost: window.location.hostname, // Usa el dominio actual automáticamente
+    key: 'my-app-key',
+    wsHost: window.location.hostname,
 
-    wsPort: isProduction ? 80 : 8080,
-    wssPort: isProduction ? 443 : 8080,
+    wsPort: currentPort,
+    wssPort: currentPort,
 
-    // Activa el cifrado de WebSockets solo si la página cargó por HTTPS
     forceTLS: isProduction,
     enabledTransports: ['ws', 'wss'],
-
     authEndpoint: '/api/broadcasting/auth',
-
     auth: {
       headers: {
         Authorization: `Bearer ${token}`,
