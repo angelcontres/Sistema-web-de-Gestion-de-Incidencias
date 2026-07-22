@@ -48,25 +48,33 @@ export class NotificationCardComponent extends BaseComponent {
 
     // Mapeo exacto de colores Bootstrap según gravedad de la incidencia
     const typeClasses = {
-      'danger':  { border: 'border-danger',  bg: 'bg-danger' },
-      'warning': { border: 'border-warning', bg: 'bg-warning' },
-      'info':    { border: 'border-info',    bg: 'bg-info' },
-      'success': { border: 'border-success', bg: 'bg-success' }
+      danger: { border: 'border-danger', bg: 'bg-danger' },
+      warning: { border: 'border-warning', bg: 'bg-warning' },
+      info: { border: 'border-info', bg: 'bg-info' },
+      success: { border: 'border-success', bg: 'bg-success' },
+      secondary: { border: 'border-secondary', bg: 'bg-secondary' },
     };
-    
+
     const theme = typeClasses[type] || { border: 'border-primary', bg: 'bg-primary' };
-    
+
     // Limpiamos bordes anteriores por si se está re-renderizando y aplicamos el nuevo
-    item.classList.remove('border-danger', 'border-warning', 'border-info', 'border-success', 'border-primary');
+    item.classList.remove(
+      'border-danger',
+      'border-warning',
+      'border-info',
+      'border-success',
+      'border-secondary',
+      'border-primary'
+    );
     item.classList.add(theme.border);
 
     // --- GESTIÓN VISUAL DEL PUNTO INDICADOR (ESTILO FACEBOOK/INSTAGRAM) ---
     const unreadDot = this.querySelector('.unread-dot');
     const titleEl = this.querySelector('.card-title');
-    
+
     if (unreadDot) {
       // Limpiamos cualquier color de fondo anterior y le ponemos el color de la emergencia
-      unreadDot.classList.remove('bg-primary', 'bg-danger', 'bg-warning', 'bg-info', 'bg-success');
+      unreadDot.classList.remove('bg-primary', 'bg-danger', 'bg-warning', 'bg-info', 'bg-success', 'bg-secondary');
       unreadDot.classList.add(theme.bg);
     }
 
