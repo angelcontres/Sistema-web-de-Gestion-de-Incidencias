@@ -10,8 +10,11 @@ limpiar_procesos() {
   gum style --foreground 136 "[INFO] Deteniendo servicios en segundo plano..."
   
   # Mata los trabajos hijos de este script
-  kill $(jobs -p) 2>/dev/null || true
-  
+  local pids
+  pids="$(jobs -p)"
+  if [ -n "$pids" ]; then
+    kill $pids 2>/dev/null || true
+  fi
   # Por seguridad extra, libera los puertos por si acaso
   fuser -k 8000/tcp 8080/tcp 3000/tcp 2>/dev/null || true
   
