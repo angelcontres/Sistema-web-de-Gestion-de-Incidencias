@@ -162,6 +162,21 @@ class DatabaseSeeder extends Seeder
             $roleService->syncRolesToUser($pauloUser, [$pauloUserRole->id]);
         }
 
+        // Crear usuario llamado Evelyn del Pezo
+        $evelynUser = User::updateOrCreate(
+            ['email' => 'evelyn@example.com'],
+            [
+                'name' => 'Evelyn del Pezo',
+                'username' => 'evelyndelpezo1',
+                'password' => Hash::make('evelyn123'),
+                'activo' => true,
+            ]
+        );
+        $evelynUserRole = Role::where('nombre', 'Ciudadano')->first();
+        if ($evelynUserRole) {
+            $roleService->syncRolesToUser($evelynUser, [$evelynUserRole->id]);
+        }
+
         // 2. institucion@example.com (Institucion, linked to PNE / id 1)
         $institucionUser = User::updateOrCreate(
             ['email' => 'policianacional@example.com'],

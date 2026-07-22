@@ -14,7 +14,7 @@ class DashboardMetricsQuery
         
         return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($role, $user) {
             $now = TimezoneService::nowLocal()->setTimezone('UTC');
-            $startOfRange = $now->copy()->subDays(30);
+            $startOfRange = $now->copy()->subHours(24);
             $data = [];
 
             if ($role === 'Ciudadano') {
@@ -46,9 +46,9 @@ class DashboardMetricsQuery
                 $data['tendencia_temporal'] = DB::table('metrics.fact_incidencias')
                     ->where('usuario_reporta_id', $user->id)
                     ->join('metrics.dim_tiempo', 'metrics.fact_incidencias.tiempo_id', '=', 'metrics.dim_tiempo.id')
-                    ->select(DB::raw('DATE(metrics.dim_tiempo.fecha) as metric'), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
+                    ->select(DB::raw("DATE_TRUNC('hour', metrics.dim_tiempo.fecha) as metric"), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
                     ->where('metrics.dim_tiempo.fecha', '>=', $startOfRange)
-                    ->groupBy(DB::raw('DATE(metrics.dim_tiempo.fecha)'))
+                    ->groupBy(DB::raw("DATE_TRUNC('hour', metrics.dim_tiempo.fecha)"))
                     ->orderBy('metric', 'ASC')
                     ->get();
 
@@ -80,9 +80,9 @@ class DashboardMetricsQuery
                 $data['tendencia_temporal'] = DB::table('metrics.fact_incidencias')
                     ->where('institucion_id', $institucionId)
                     ->join('metrics.dim_tiempo', 'metrics.fact_incidencias.tiempo_id', '=', 'metrics.dim_tiempo.id')
-                    ->select(DB::raw('DATE(metrics.dim_tiempo.fecha) as metric'), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
+                    ->select(DB::raw("DATE_TRUNC('hour', metrics.dim_tiempo.fecha) as metric"), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
                     ->where('metrics.dim_tiempo.fecha', '>=', $startOfRange)
-                    ->groupBy(DB::raw('DATE(metrics.dim_tiempo.fecha)'))
+                    ->groupBy(DB::raw("DATE_TRUNC('hour', metrics.dim_tiempo.fecha)"))
                     ->orderBy('metric', 'ASC')
                     ->get();
                     
@@ -116,9 +116,9 @@ class DashboardMetricsQuery
                     
                 $data['tendencia_temporal'] = DB::table('metrics.fact_incidencias')
                     ->join('metrics.dim_tiempo', 'metrics.fact_incidencias.tiempo_id', '=', 'metrics.dim_tiempo.id')
-                    ->select(DB::raw('DATE(metrics.dim_tiempo.fecha) as metric'), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
+                    ->select(DB::raw("DATE_TRUNC('hour', metrics.dim_tiempo.fecha) as metric"), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
                     ->where('metrics.dim_tiempo.fecha', '>=', $startOfRange)
-                    ->groupBy(DB::raw('DATE(metrics.dim_tiempo.fecha)'))
+                    ->groupBy(DB::raw("DATE_TRUNC('hour', metrics.dim_tiempo.fecha)"))
                     ->orderBy('metric', 'ASC')
                     ->get();
             }
