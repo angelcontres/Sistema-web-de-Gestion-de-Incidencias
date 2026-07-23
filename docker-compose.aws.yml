@@ -94,14 +94,12 @@ services:
     networks:
       - sistema_incidencias_net_prod
 
-  # El túnel de Cloudflare
+  # El túnel de Cloudflare (Modo Remoto)
   tunnel:
     image: cloudflare/cloudflared:latest
     container_name: sistema_tunnel_prod
     restart: always
-    volumes:
-      - ./cloudflare:/etc/cloudflared
-    command: tunnel run ${PROD_CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run --token ${PROD_CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       - nginx
     networks:

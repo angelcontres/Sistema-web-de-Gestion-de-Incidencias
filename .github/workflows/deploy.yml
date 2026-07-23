@@ -42,7 +42,7 @@ jobs:
           
           # Configurar Docker (Raíz)
           echo "DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" > .env
-          echo "CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.PROD_CLOUDFLARE_TUNNEL_TOKEN }}" >> .env
+          echo "PROD_CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.PROD_CLOUDFLARE_TUNNEL_TOKEN }}" >> .env
           echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.PROD_GRAFANA_ADMIN_PASSWORD }}" >> .env
           echo "SONAR_DB_PASSWORD=${{ secrets.PROD_SONAR_DB_PASSWORD }}" >> .env
           
