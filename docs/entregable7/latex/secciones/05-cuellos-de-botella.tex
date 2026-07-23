@@ -1,7 +1,5 @@
 \section{Detección de Cuellos de Botella}
-
 Basado en el análisis de las muestras por endpoint extraídas, se detectaron los siguientes cuellos de botella críticos:
-
 \begin{enumerate}
     \item \textbf{Colapso en la carga de Territorios (Grupo 3):} 
     Durante la prueba de estrés masivo (Grupo 3), el endpoint \texttt{GET territories} promedió un tiempo de respuesta inaceptable de \textbf{51,158 ms (51 segundos)}, con un pico máximo de 96,718 ms. Esto indica que extraer todo el catálogo de territorios simultáneamente agota la memoria/CPU de la base de datos bajo alta concurrencia.
