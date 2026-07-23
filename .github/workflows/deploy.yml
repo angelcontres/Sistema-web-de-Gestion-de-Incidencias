@@ -12,13 +12,27 @@ on:
 
 jobs:
   deploy:
-    # Solo ejecutar si es un push a main, o si es un PR que fue "merged"
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: [self-hosted, linux, x64]
 
     steps:
       - name: Apagar contenedores anteriores
         run: docker compose -f docker-compose.aws.yml down || true
+
+      - name: Eliminar residuos bloqueados usando Docker
+        run: |
+          if [ -d "backend/api/vendor" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
+          fi
+          if [ -d "backend/api/build" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
+          fi
+          if [ -d "frontend/coverage" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/coverage
+          fi
+          if [ -d "frontend/node_modules" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/node_modules
+          fi
 
       - name: Descargar el nuevo código
         uses: actions/checkout@v4
