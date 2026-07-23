@@ -1,0 +1,12 @@
+\section{Objetivos del Sprint de Carga}
+
+\textbf{Objetivo General:} \\
+Evaluar el rendimiento, escalabilidad y estabilidad del Sistema Web de Gestión de Incidencias Georreferenciadas bajo condiciones progresivas de carga concurrente simulada.
+
+\textbf{Funcionalidades Críticas Sometidas a Estrés:}
+\begin{itemize}
+    \item \textbf{Autenticación de Usuarios (\texttt{POST /api/v1/login}):} Validación de generación de tokens para 4 perfiles distintos (admin, ciudadano, supervisor, institución).
+    \item \textbf{Consulta de Incidencias (\texttt{GET /api/v1/incidents}):} Medición de latencia en la recuperación de datos para mapas.
+    \item \textbf{Métricas del Dashboard (\texttt{GET /api/v1/dashboard/stats}):} Procesamiento de estadísticas agregadas.
+    \item \textbf{Catálogos y Geocodificación:} Carga de territorios (\texttt{GET /api/v1/catalogs/territories}) y geocodificación inversa (\texttt{GET /api/v1/geocoding/reverse}).
+\end{itemize}
