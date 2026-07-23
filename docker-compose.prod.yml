@@ -82,6 +82,7 @@ services:
     image: postgis/postgis:17-3.4-alpine
     container_name: sistema_postgres_prod
     restart: always
+    command: postgres -c shared_buffers=256MB -c work_mem=16MB
     environment:
       POSTGRES_DB: gestion_incidencias
       POSTGRES_USER: angeltux
