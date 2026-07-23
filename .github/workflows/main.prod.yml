@@ -41,6 +41,7 @@ jobs:
           ENV_STAGING_SECRET: ${{ secrets.ENV_STAGING }}
         run: |
           echo "$ENV_STAGING_SECRET" > backend/api/.env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> backend/api/.env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
           echo "CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" >> .env
           echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> .env
@@ -62,6 +63,8 @@ jobs:
             echo "Esperando a postgres..."
             sleep 2
           done
+          echo "Postgres aceptó conexiones tempranas. Esperando a que termine su reinicio de instalación (10s)..."
+          sleep 10
 
       - name: Ejecutar migraciones de Laravel dentro del contenedor
         run: docker exec sistema_laravel_prod php artisan migrate --force
