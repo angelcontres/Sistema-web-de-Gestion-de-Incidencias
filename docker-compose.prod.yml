@@ -137,7 +137,7 @@ services:
       POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD}
       POSTGRES_DB: sonarqube
     volumes:
-      - sonarqube_db_data_prod:/var/lib/postgresql/data
+      - sonarqube_db_data:/var/lib/postgresql/data
     networks:
       - sistema_incidencias_net_prod
 
@@ -147,9 +147,9 @@ services:
     container_name: sistema_sonarqube_init_prod
     command: chown -R 1000:1000 /opt/sonarqube/data /opt/sonarqube/extensions /opt/sonarqube/logs
     volumes:
-      - sonarqube_data_prod:/opt/sonarqube/data
-      - sonarqube_extensions_prod:/opt/sonarqube/extensions
-      - sonarqube_logs_prod:/opt/sonarqube/logs
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
     networks:
       - sistema_incidencias_net_prod
 
@@ -165,9 +165,9 @@ services:
       - SONAR_JDBC_USERNAME=sonar
       - SONAR_JDBC_PASSWORD=${SONAR_DB_PASSWORD}
     volumes:
-      - sonarqube_data_prod:/opt/sonarqube/data
-      - sonarqube_extensions_prod:/opt/sonarqube/extensions
-      - sonarqube_logs_prod:/opt/sonarqube/logs
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
     depends_on:
       - sonarqube_db
       - sonarqube_init
@@ -182,7 +182,7 @@ networks:
 volumes:
   postgres_data_prod:
   grafana_data:
-  sonarqube_db_data_prod:
-  sonarqube_data_prod:
-  sonarqube_extensions_prod:
-  sonarqube_logs_prod:
+  sonarqube_db_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
