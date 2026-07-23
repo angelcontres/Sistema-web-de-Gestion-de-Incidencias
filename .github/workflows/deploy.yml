@@ -1,4 +1,4 @@
-name: Deploy to AWS EC2
+name: Deploy to AWS EC2 (Self-Hosted)
 
 on:
   push:
@@ -8,50 +8,54 @@ on:
     branches:
       - main
     types:
-      - closed # Solo despliega cuando el PR es aprobado y cerrado/mezclado
+      - closed
 
 jobs:
   deploy:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    runs-on: [self-hosted, linux, x64]
+    # AQUÍ PONEMOS LA ETIQUETA: Asegúrate de ponerle 'aws-production' a tu servidor de AWS en GitHub
+    runs-on: [self-hosted, aws-production]
 
     steps:
-      - name: Apagar contenedores anteriores
-        run: docker compose -f docker-compose.aws.yml down || true
-
-      - name: Eliminar residuos bloqueados usando Docker
-        run: |
-          if [ -d "backend/api/vendor" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
-          fi
-          if [ -d "backend/api/build" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
-          fi
-          if [ -d "frontend/coverage" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/coverage
-          fi
-          if [ -d "frontend/node_modules" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/node_modules
-          fi
-
-      - name: Descargar el nuevo código
+      - name: Bajar el nuevo código directamente al servidor
         uses: actions/checkout@v4
 
-      - name: Configurar variables de entorno y Secretos
+      - name: Configurar archivos .env (Variables de Entorno)
         env:
           ENV_AWS_SECRET: ${{ secrets.ENV_AWS }}
         run: |
+          # Configurar Laravel
           echo "$ENV_AWS_SECRET" > backend/api/.env
+          # Obligamos a que use la misma clave que Postgres para evitar errores de conexión
+          echo "DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" >> backend/api/.env
+          
+          # Configurar Docker (Raíz)
           echo "DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" > .env
           echo "CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.PROD_CLOUDFLARE_TUNNEL_TOKEN }}" >> .env
           echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.PROD_GRAFANA_ADMIN_PASSWORD }}" >> .env
           echo "SONAR_DB_PASSWORD=${{ secrets.PROD_SONAR_DB_PASSWORD }}" >> .env
           
-          # Preparar archivo de cloudflare
           cp cloudflare/config.aws.yml cloudflare/config.yml
 
-      - name: Reconstruir y levantar contenedores en Producción
+      - name: Construir y reiniciar contenedores
         run: |
           docker compose -f docker-compose.aws.yml pull
           docker compose -f docker-compose.aws.yml up -d --build
-          docker image prune -f
+
+      - name: Instalar dependencias y correr Migraciones de Base de Datos
+        run: |
+          # Tu archivo anterior de AWS no corría migraciones, ¡ahora sí lo hará automáticamente!
+          docker exec sistema_laravel_prod composer install --no-ansi --no-interaction --no-progress
+          docker exec sistema_laravel_prod php artisan key:generate
+          
+          until docker exec sistema_postgres_prod pg_isready -U angeltux; do
+            echo "Esperando a que la BD responda..."
+            sleep 2
+          done
+          echo "Base de datos viva. Dando 10 segundos extra para que termine de inicializarse..."
+          sleep 10
+          
+          docker exec sistema_laravel_prod php artisan migrate --force
+
+      - name: Limpiar espacio del servidor
+        run: docker image prune -f
