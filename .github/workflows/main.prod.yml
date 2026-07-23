@@ -7,15 +7,13 @@ jobs:
     runs-on: [self-hosted, linux, x64]
 
     steps:
-      # 1. Apagar los contenedores anteriores para liberar descriptores de archivo
+      # 1. Apagar los contenedores anteriores
       - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
         run: |
-          if [ -f "docker-compose.yml" ]; then
-            docker compose down
-          fi
+          docker compose -f docker-compose.prod.yml down || true
 
-      # 2. Limpieza agresiva de archivos generados como root para evitar errores de EACCES
-      - name: Eliminar residuos bloqueados usando Docker (Evita usar sudo)
+      # 2. Limpieza agresiva de archivos generados como root
+      - name: Eliminar residuos bloqueados usando Docker
         run: |
           if [ -d "backend/api/vendor" ]; then
             docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
@@ -37,43 +35,43 @@ jobs:
       - name: Copiar el código a la VAIO
         uses: actions/checkout@v4
 
-      # 4. Configurar variables de entorno de Laravel
-      - name: Configurar entorno (.env) para PostgreSQL en el Servidor
+      # 4. Configurar variables de entorno de Laravel (PROD) usando GitHub Secrets
+      - name: Configurar entorno (.env) de Producción
+        env:
+          ENV_PROD_SECRET: ${{ secrets.ENV_PROD }}
         run: |
-          cp backend/api/.env.example backend/api/.env
-          sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/' backend/api/.env
-          sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=postgres/' backend/api/.env
-          sed -i 's/# DB_PORT=3306/DB_PORT=5432/' backend/api/.env
-          sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=gestion_incidencias/' backend/api/.env
-          sed -i 's/# DB_USERNAME=root/DB_USERNAME=angeltux/' backend/api/.env
-          sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password_segura_upse/' backend/api/.env
+          echo "$ENV_PROD_SECRET" > backend/api/.env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
+          echo "CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" >> .env
+          echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> .env
+          echo "SONAR_DB_PASSWORD=${{ secrets.SONAR_DB_PASSWORD }}" >> .env
 
       # 5. Desplegar la infraestructura de contenedores
       - name: Construir y levantar contenedores en segundo plano
-        run: docker compose up -d --build --pull always
+        run: docker compose -f docker-compose.prod.yml up -d --build --pull always
 
       - name: Instalar dependencias de PHP (Composer) dentro del contenedor
-        run: docker exec sistema_laravel composer install --no-ansi --no-interaction --no-progress
+        run: docker exec sistema_laravel_prod composer install --no-ansi --no-interaction --no-progress
 
       - name: Generar clave de seguridad de Laravel
-        run: docker exec sistema_laravel php artisan key:generate
+        run: docker exec sistema_laravel_prod php artisan key:generate
 
       - name: Esperar a que la base de datos esté lista
         run: |
-          until docker exec sistema_postgres pg_isready -U angeltux; do
+          until docker exec sistema_postgres_prod pg_isready -U angeltux; do
             echo "Esperando a postgres..."
             sleep 2
           done
 
       - name: Ejecutar migraciones de Laravel dentro del contenedor
-        run: docker exec sistema_laravel php artisan migrate --force
+        run: docker exec sistema_laravel_prod php artisan migrate --force
 
       - name: Ejecutar migraciones de OLAP dentro del contenedor
-        run: docker exec sistema_laravel php artisan migrate --path=database/migrations/olap --force
+        run: docker exec sistema_laravel_prod php artisan migrate --path=database/migrations/olap --force
 
-      # 6. Pruebas y Cobertura (Usa artisan test para evitar errores de drivers ausentes)
+      # 6. Pruebas y Cobertura
       - name: Ejecutar pruebas automatizadas (Backend)
-        run: docker exec sistema_laravel php artisan test --log-junit build/logs/junit.xml || true
+        run: docker exec sistema_laravel_prod php artisan test --log-junit build/logs/junit.xml || true
 
       - name: Ejecutar pruebas de Frontend y limpiar node_modules
         run: |
@@ -95,10 +93,11 @@ jobs:
             sonarsource/sonar-scanner-cli \
             -Dsonar.projectKey=Sistema-web-gestion-incidencias \
             -Dsonar.sources=. \
+            -Dsonar.exclusions="**/vendor/**,**/node_modules/**,**/public/build/**,**/storage/**,**/bootstrap/cache/**,**/dist/**" \
             -Dsonar.host.url="http://localhost:9009" \
-            -Dsonar.login="sqp_4459feb32685175a06e4e7e04c5dd6fb7d7ace1d" \
+            -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
             -Dsonar.php.tests.reportPath="backend/api/build/logs/junit.xml"
 
       # 8. Mantenimiento del servidor
-      - name: Limpiar imágenes de Docker huérfanas (Liberar espacio del servidor)
+      - name: Limpiar imágenes de Docker huérfanas
         run: docker image prune -f
