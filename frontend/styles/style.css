@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* 
+ * ==========================================
+ * SINGLETON / MAIN CSS ENTRYPOINT
+ * ==========================================
+ * Orquesta la arquitectura de estilos modulares.
+ */
+
+/* 1. Theme Identity & Variables */
+@import url('variables.css');
+
+/* 2. Base Styles & Resets */
+@import url('base.css');
+
+/* 3. Layout (Navbar, Sidebar, Grid) */
+@import url('layout.css');
+
+/* 4. Modular Components (Buttons, Cards, Inputs, Tables) */
+@import url('components.css');
+
+/* 5. Legacy/Other styles from previous monolithic file */
+@import url('legacy.css');

@@ -39,6 +39,31 @@ composer require laravel/boost --dev
 php artisan boost:install
 ```
 
+## Sistema de Permisos Dinámicos (RBAC)
+
+El proyecto utiliza un sistema de control de acceso basado en roles (RBAC) totalmente dinámico y almacenado en la base de datos, eliminando la necesidad de constantes hardcodeadas.
+
+### Funcionamiento
+
+1. **Tabla `permisos`**: Define un permiso como un par `{accion, recurso}`.
+   - `accion`: El método u operación a realizar (ej. `READ`, `CREATE`, `UPDATE`, `DELETE`).
+   - `recurso`: La entidad sobre la que se opera (ej. `incidencias`, `despacho_de_incidencias`, `kanban`).
+2. **Tabla `roles`**: Define los roles de sistema (ej. Admin, Supervisor, Institucion).
+3. **Tabla `permiso_rol`**: Tabla pivote que vincula los permisos a los roles.
+4. **Respuesta del Servidor**: El endpoint `/api/v1/me` retorna la lista de permisos del usuario en formato estandarizado `ACCION_RECURSO` (ej. `READ_INCIDENCIAS`).
+
+### Sembrado de Permisos
+
+Los permisos se generan automáticamente a partir de las `Opciones de Menú` y de recursos adicionales utilizando el `PermissionsSeeder`.
+
+Para reconstruir o sincronizar permisos, ejecuta:
+```bash
+php artisan db:seed --class=PermissionsSeeder
+php artisan db:seed --class=RoleSeeder
+```
+
+**Nota**: El `RoleSeeder` asigna dinámicamente los permisos a los roles basándose en las constantes de la base de datos en lugar de Enums antiguos. Si agregas un nuevo módulo, asegúrate de actualizar el mapeo en `PermissionsSeeder`.
+
 Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
 ## Contributing

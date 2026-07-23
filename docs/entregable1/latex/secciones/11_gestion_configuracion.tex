@@ -1,0 +1,30 @@
+\section{Gestión de la Configuración del Software (SCM)}
+
+Se estructuran los siguientes lineamientos del repositorio de control de versiones Git:
+
+\subsection{Modelo de Ramas (GitFlow Simplificado)}
+El desarrollo y la integración del software se rige bajo la siguiente estructura de ramificación organizada:
+
+\begin{itemize}
+    \item \texttt{main}: Rama estable y productiva del sistema. Cada commit incorporado aquí representa una versión liberada y debe ser inmutable. Solo recibe cambios desde la rama \texttt{develop} mediante peticiones de integración controladas (Releases) o desde ramas \texttt{hotfix/*} tras una emergencia.
+    
+    \item \texttt{develop}: Rama principal de integración y desarrollo. Concentra todas las funcionalidades finalizadas de los desarrolladores. Está asociada directamente a la pipeline CI del servidor de \textit{staging} para su testeo continuo.
+    
+    \item \texttt{feature/*}: Ramas temporales destinadas a construir características o historias de usuario individuales (ej: \texttt{feature/hu-01-registro}). Nacen a partir de la última versión de \texttt{develop} y se reincorporan a ella exclusivamente por Pull Request.
+    
+    \item \texttt{hotfix/*}: Ramas críticas que nacen a partir de \texttt{main} para resolver \textit{bugs} urgentes detectados directamente en producción. Una vez corregido el problema, se mezclan de vuelta tanto en \texttt{main} como en \texttt{develop}.
+\end{itemize}
+
+\subsection{Políticas de Fusión (\texttt{git merge}) y Pull Requests (Code Review)}
+\begin{itemize}
+    \item Queda estrictamente prohibido realizar commits o empujar (\textit{push}) código de forma directa sobre las ramas \texttt{develop} y \texttt{main}.
+    
+    \item Para incorporar cualquier cambio a \texttt{develop}, el desarrollador deberá abrir un Pull Request (PR).
+    
+    \item \textbf{Requisitos obligatorios para la fusión de un PR:}
+    \begin{enumerate}
+        \item \textbf{Aprobación Humana:} Al menos un revisor técnico del equipo debe inspeccionar el código y aprobar la idoneidad y el cumplimiento de las convenciones de nomenclatura.
+        \item \textbf{Pruebas Automáticas Exitosas:} La suite de pruebas de backend en GitHub Actions (\texttt{php artisan test}) debe haber compilado y ejecutado todos los tests con $100\%$ de éxito.
+        \item \textbf{Análisis Estático Limpio:} La inspección de los linters no debe arrojar advertencias críticas ni de formato.
+    \end{enumerate}
+\end{itemize}

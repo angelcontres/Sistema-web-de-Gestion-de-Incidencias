@@ -1,0 +1,27 @@
+\section{Actividades de Aseguramiento de Calidad}
+
+Se programan las siguientes actividades formales de control e ingeniería de software durante el ciclo de vida del desarrollo:
+
+\subsection{Revisiones Técnicas y Walkthroughs}
+Inspecciones estructuradas de los modelos de base de datos relacionales, el diseño lógico de las APIs y la configuración de contenedores Docker. Se realizarán revisiones cruzadas de código (Pull Requests en GitHub) requiriendo la aprobación de al menos un revisor técnico antes de la integración a la rama principal.
+
+\subsection{Análisis Estático de Código}
+Ejecución automatizada de herramientas de validación de sintaxis, estándares de codificación y detección temprana de bugs (como PHP CodeSniffer o PHPStan para Laravel, y linters estándar para JavaScript y CSS). Esto previene código espagueti y asegura la mantenibilidad del software.
+
+\subsection{Diseño y Documentación de Casos de Prueba}
+Basados en la norma IEEE 29119, antes del inicio de la codificación de cada funcionalidad, el encargado de diseño de pruebas elaborará los casos de prueba de caja negra correspondientes. Cada caso detallará las condiciones previas, datos de entrada, secuencia de pasos a ejecutar, y el comportamiento esperado del frontend o backend.
+
+\subsection{Pruebas Funcionales (Caja Negra)}
+Validación sistemática en un entorno de staging idéntico al de producción (levantado mediante Docker Compose). Se verificará que cada formulario web cumpla con las validaciones de campos obligatorios, adjuntos admitidos y que las llamadas AJAX (Fetch API) procesen correctamente los estados HTTP de respuesta (200, 201, 422, 500).
+
+\subsection{Pruebas de Carga y Eficiencia}
+Ejecución de simulaciones de peticiones concurrentes a la API del backend, concentrándose en el endpoint de consulta cartográfica y carga del dashboard de métricas. Se validará el uso de recursos de hardware en los contenedores PostgreSQL y Laravel para evitar fugas de memoria o bloqueos.
+
+\subsection{Integración Continua (CI/CD)}
+Uso de la pipeline automatizada definida en el workflow de GitHub Actions. En cada push a la rama \texttt{develop}, la pipeline levantará los contenedores en el entorno self-hosted, instalará las dependencias de Composer, generará las claves de entorno, ejecutará las migraciones de base de datos y correrá la suite de pruebas automatizadas mediante:
+
+\begin{verbatim}
+docker exec sistema_laravel php artisan test
+\end{verbatim}
+
+Cualquier falla en la suite de pruebas detendrá inmediatamente el flujo de despliegue, notificando al equipo de desarrollo de forma preventiva.

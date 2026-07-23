@@ -1,0 +1,20 @@
+\section{Registro de Bugs y Ciclo de Vida}
+\label{sec:bugs_ciclo_vida}
+
+\begin{xltabular}{\textwidth}{X X X X X X}
+    \caption{Inventario de Defectos}
+    \label{tab:inventario_defectos} \\
+    \toprule
+    \textbf{ID Bug} & \textbf{Caso Asociado} & \textbf{Descripción del Defecto} & \textbf{Severidad} & \textbf{Estado} & \textbf{Re-test (ID)} \\
+    \midrule
+    BUG-01 & CP-F-01 & Leaflet no encuentra la parroquia del cantón seleccionado en algunos puntos del mapa, provocando fallo al autocompletar. & Medio & Abierto & Pendiente (Flag interno) \\
+    \bottomrule
+\end{xltabular}
+
+\textbf{Evidencias de Re-testeo:}
+\begin{figure}[H] % La 'H' mayúscula obliga a la imagen a quedarse EXACTAMENTE aquí
+        \centering
+        \includegraphics[width=0.9\textwidth]{imagenes/bug-01-cp-f-01.png}
+        \caption{Evidencia.}
+    \end{figure}
+    Ahora, si el lugar seleccionado en el mapa no tiene catalogada exactamente su parroquia, el usuario tendrá la posibilidad de registrarla manualmente, asegurando exactitud en las ubicaciones.

@@ -1,0 +1,104 @@
+.sys-dashboard-card {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--card-bg);
+  border: 0;
+  border-radius: 16px;
+  box-shadow:
+    0 10px 25px -5px rgba(15, 23, 42, 0.04),
+    0 4px 12px -2px rgba(15, 23, 42, 0.03);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
+}
+
+.sys-dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow-primary);
+}
+
+.sys-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sys-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sys-card-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: auto;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.04em;
+}
+
+.sys-card-subtitle {
+  color: #475569;
+  font-size: 0.875rem;
+  margin-bottom: 0;
+}
+
+.sys-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 50rem;
+}
+
+.bg-danger-soft {
+  background-color: var(--highlight-soft);
+  color: var(--highlight-color);
+}
+
+.bg-success-soft {
+  background-color: var(--secondary-soft);
+  color: var(--secondary-color);
+}
+
+.bg-warning-soft {
+  background-color: var(--highlight-soft);
+  color: var(--highlight-color);
+}
+
+
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+}
+
+.sys-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+}

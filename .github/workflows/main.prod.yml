@@ -1,0 +1,103 @@
+on:
+  push:
+    branches: ["develop"]
+
+jobs:
+  despliegue-docker:
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      # 1. Apagar los contenedores anteriores
+      - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
+        run: |
+          docker compose -f docker-compose.staging.yml down || true
+
+      # 2. Limpieza agresiva de archivos generados como root
+      - name: Eliminar residuos bloqueados usando Docker
+        run: |
+          if [ -d "backend/api/vendor" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
+          fi
+          if [ -d "backend/api/build" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
+          fi
+          if [ -d "frontend/coverage" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/coverage
+          fi
+          if [ -d "frontend/node_modules" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/node_modules
+          fi
+          if [ -d "grafana" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
+          fi
+
+      # 3. Clonar el nuevo código
+      - name: Copiar el código a la VAIO
+        uses: actions/checkout@v4
+
+      # 4. Configurar variables de entorno de Laravel (STAGING) usando GitHub Secrets
+      - name: Configurar entorno (.env) de Staging
+        env:
+          ENV_STAGING_SECRET: ${{ secrets.ENV_STAGING }}
+        run: |
+          echo "$ENV_STAGING_SECRET" > backend/api/.env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
+          echo "CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" >> .env
+          echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> .env
+          echo "SONAR_DB_PASSWORD=${{ secrets.SONAR_DB_PASSWORD }}" >> .env
+
+      # 5. Desplegar la infraestructura de contenedores
+      - name: Construir y levantar contenedores en segundo plano
+        run: docker compose -f docker-compose.staging.yml up -d --build --pull always
+
+      - name: Instalar dependencias de PHP (Composer) dentro del contenedor
+        run: docker exec sistema_laravel_prod composer install --no-ansi --no-interaction --no-progress
+
+      - name: Generar clave de seguridad de Laravel
+        run: docker exec sistema_laravel_prod php artisan key:generate
+
+      - name: Esperar a que la base de datos esté lista
+        run: |
+          until docker exec sistema_postgres_prod pg_isready -U angeltux; do
+            echo "Esperando a postgres..."
+            sleep 2
+          done
+
+      - name: Ejecutar migraciones de Laravel dentro del contenedor
+        run: docker exec sistema_laravel_prod php artisan migrate --force
+
+      - name: Ejecutar migraciones de OLAP dentro del contenedor
+        run: docker exec sistema_laravel_prod php artisan migrate --path=database/migrations/olap --force
+
+      # 6. Pruebas y Cobertura
+      - name: Ejecutar pruebas automatizadas (Backend)
+        run: docker exec sistema_laravel_prod php artisan test --log-junit build/logs/junit.xml || true
+
+      - name: Ejecutar pruebas de Frontend y limpiar node_modules
+        run: |
+          docker run --rm -v "$(pwd)/frontend:/app" -w /app node:18-alpine sh -c "npm install && npm run test && rm -rf node_modules" || true
+
+      # 7. SonarQube
+      - name: Esperar a que SonarQube inicie por completo
+        run: |
+          echo "Esperando a que SonarQube levante (puede tomar de 1 a 3 minutos)..."
+          until curl -s http://localhost:9009/api/system/status | grep '"status":"UP"'; do
+            sleep 10
+          done
+
+      - name: Ejecutar Análisis de SonarQube
+        run: |
+          docker run --rm \
+            --network="host" \
+            -v "$(pwd):/usr/src" \
+            sonarsource/sonar-scanner-cli \
+            -Dsonar.projectKey=Sistema-web-gestion-incidencias \
+            -Dsonar.sources=. \
+            -Dsonar.exclusions="**/vendor/**,**/node_modules/**,**/public/build/**,**/storage/**,**/bootstrap/cache/**,**/dist/**" \
+            -Dsonar.host.url="http://localhost:9009" \
+            -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
+            -Dsonar.php.tests.reportPath="backend/api/build/logs/junit.xml"
+
+      # 8. Mantenimiento del servidor
+      - name: Limpiar imágenes de Docker huérfanas
+        run: docker image prune -f

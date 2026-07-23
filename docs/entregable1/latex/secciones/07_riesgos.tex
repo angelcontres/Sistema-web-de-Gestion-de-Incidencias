@@ -1,0 +1,50 @@
+\section{Riesgos Iniciales de Calidad}
+
+Identificación preventiva de riesgos asociados al software que atentan contra la calidad de la entrega, junto con su probabilidad, impacto y estrategias específicas de mitigación:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X c c X}
+\toprule
+\textbf{Código} & \textbf{Riesgo Identificado} & \textbf{Prob.} & \textbf{Imp.} & \textbf{Estrategia de Mitigación / Contingencia} \\
+\midrule
+\textbf{R-01} & 
+\textbf{Accesos no autorizados a paneles administrativos} \newline 
+\textit{Un usuario malintencionado o sin privilegios accede a vistas de gestión o APIs de edición de incidencias.} & 
+Media & 
+Alta & 
+\textbf{Mitigación:} Aplicar middleware de autenticación (ej: \texttt{auth:sanctum} de Laravel) y control de acceso basado en roles en todos los endpoints de consulta administrativa. Realizar pruebas de penetración manuales sobre rutas de API. \\
+\midrule
+\textbf{R-02} & 
+\textbf{Inconsistencia en datos de georreferenciación} \newline 
+\textit{Incidencias registradas con coordenadas geográficas nulas, incorrectas o sin correspondencia en la jerarquía geopolítica (\texttt{pais}, \texttt{provincia}, \texttt{ciudad}).} & 
+Media & 
+Alta & 
+\textbf{Mitigación:} Configurar restricciones de clave foránea y no-nulidad en PostgreSQL. Validar la estructura del payload JSON en la API REST de Laravel antes de persistir, implementando geocodificación de respaldo en el frontend. \\
+\midrule
+\textbf{R-03} & 
+\textbf{Errores en el flujo de cambio de estados} \newline 
+\textit{Permitir transiciones de estado inválidas (ej. pasar directo de Pendiente a Resuelto sin pasar por En proceso, o modificar incidencias ya cerradas).} & 
+Alta & 
+Media & 
+\textbf{Mitigación:} Implementar lógica de validación centralizada (máquina de estados) en el backend Laravel. Crear pruebas unitarias automáticas (\texttt{php artisan test}) específicas para validar las transiciones permitidas y denegadas. \\
+\midrule
+\textbf{R-04} & 
+\textbf{Consultas y renderizado lentos en el mapa dinámico} \newline 
+\textit{Demoras superiores a los 5 segundos en el mapa de Leaflet debido a la descarga simultánea de cientos de marcadores espaciales sin agrupar.} & 
+Baja & 
+Media & 
+\textbf{Mitigación:} Implementar paginación a nivel de API REST y uso de la biblioteca \texttt{Leaflet.markercluster} en el frontend para agrupar marcadores geográficos. Crear índices espaciales en la base de datos PostgreSQL. \\
+\midrule
+\textbf{R-05} & 
+\textbf{Fallas en la integración asíncrona de servicios futuros} \newline 
+\textit{Caída de servicios externos de notificaciones de correo o en la comunicación con la futura IA de clasificación de texto.} & 
+Media & 
+Media & 
+\textbf{Mitigación:} Implementar colas de trabajo asíncronas en Laravel (Queue Jobs) para el envío de correos y la comunicación HTTP. Establecer políticas de reintento automatizado y registrar fallos detallados en logs. \\
+\bottomrule
+\end{tabularx}
+\caption{Matriz de riesgos de calidad y estrategias de mitigación}
+\label{tab:riesgos_calidad}
+\end{table}

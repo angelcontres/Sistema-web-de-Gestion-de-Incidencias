@@ -1,0 +1,73 @@
+<!-- MODAL INSTITUCIÓN -->
+<div
+  class="modal fade"
+  id="institucionModal"
+  tabindex="-1"
+  aria-labelledby="institucionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="institucionModalLabel">Nueva Institución</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <div id="institucionModalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="institucionModalErrorMessage">Error.</span>
+        </div>
+
+        <form id="institucionForm" novalidate>
+          <input type="hidden" id="institucionId" />
+
+          <div class="mb-3">
+            <label for="institucionNombre" class="form-label fw-semibold text-dark small"
+              >Nombre de la Institución *</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="institucionNombre"
+              required
+              placeholder="Ej: Policía Nacional del Ecuador"
+              maxlength="255"
+            />
+            <div class="invalid-feedback">Por favor ingrese el nombre de la institución.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="siglas" class="form-label fw-semibold text-dark small">Siglas *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="siglas"
+              required
+              maxlength="10"
+              placeholder="Ej: PNE"
+            />
+            <div class="invalid-feedback">Por favor ingrese las siglas de la institución.</div>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" role="switch" id="institucionActivo" checked />
+            <label class="form-check-label fw-semibold text-dark" for="institucionActivo">Institución Activa</label>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary fw-semibold px-4"
+              id="btnGuardarInstitucion"
+            >
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

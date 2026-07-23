@@ -1,0 +1,126 @@
+<div class="card custom-card border-0 shadow-sm overflow-hidden mb-4">
+  <div class="card-body bg-white p-3">
+    <div class="row align-items-center">
+      <div class="col-md-6 col-sm-12">
+        <label for="explorerPaisSelect" class="form-label fw-bold text-dark mb-1">
+          <i class="bi bi-search me-1"></i> Selecciona un País para Explorar:
+        </label>
+        <select id="explorerPaisSelect" class="form-select border-2">
+          <option value="">-- Selecciona un País --</option>
+          <!-- Se inyecta dinámicamente -->
+        </select>
+      </div>
+      <div class="col-md-6 col-sm-12 mt-3 mt-md-0 text-md-end">
+        <span class="text-muted small">
+          <i class="bi bi-info-circle-fill me-1 text-primary"></i> 
+          Haz clic en los elementos para navegar hacia niveles más profundos.
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Explorador de Tres Niveles (Columnas Interactivas) -->
+<div class="row g-3" id="territoriosExplorerContainer">
+  <!-- Columna Nivel 1 -->
+  <div class="col-lg-4 col-md-6">
+    <div class="card border shadow-sm h-100 bg-white">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+        <span class="fw-bold text-dark small" id="lblNivel1">Nivel 1 (ej: Estado/Dpto)</span>
+        <button id="btnAddNivel1" class="btn btn-xs btn-outline-primary p-1 rounded d-none" title="Agregar elemento a Nivel 1">
+          <i class="bi bi-plus-lg"></i> Agregar
+        </button>
+      </div>
+      <div class="list-group list-group-flush overflow-auto style-scrollbar explorer-column-list" id="listNivel1">
+        <div class="text-center py-4 text-muted small">
+          Selecciona un país para comenzar
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Columna Nivel 2 -->
+  <div class="col-lg-4 col-md-6">
+    <div class="card border shadow-sm h-100 bg-white">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+        <span class="fw-bold text-dark small" id="lblNivel2">Nivel 2 (ej: Municipio/Provincia)</span>
+        <button id="btnAddNivel2" class="btn btn-xs btn-outline-primary p-1 rounded d-none" title="Agregar elemento a Nivel 2">
+          <i class="bi bi-plus-lg"></i> Agregar
+        </button>
+      </div>
+      <div class="list-group list-group-flush overflow-auto style-scrollbar explorer-column-list" id="listNivel2">
+        <div class="text-center py-4 text-muted small">
+          Selecciona un elemento del Nivel 1
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Columna Nivel 3 -->
+  <div class="col-lg-4 col-md-12">
+    <div class="card border shadow-sm h-100 bg-white">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+        <span class="fw-bold text-dark small" id="lblNivel3">Nivel 3 (ej: Distrito/Localidad)</span>
+        <button id="btnAddNivel3" class="btn btn-xs btn-outline-primary p-1 rounded d-none" title="Agregar elemento a Nivel 3">
+          <i class="bi bi-plus-lg"></i> Agregar
+        </button>
+      </div>
+      <div class="list-group list-group-flush overflow-auto style-scrollbar explorer-column-list" id="listNivel3">
+        <div class="text-center py-4 text-muted small">
+          Selecciona un elemento del Nivel 2
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TERRITORIO -->
+<div class="modal fade" id="territorioModal" tabindex="-1" aria-labelledby="territorioModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="modal-title fw-bold text-dark" id="territorioModalLabel">Nuevo Territorio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <div id="territorioModalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span id="territorioModalErrorMessage">Error.</span>
+        </div>
+        <form id="territorioForm" novalidate>
+          <input type="hidden" id="territorioId" />
+          <input type="hidden" id="territorioParentId" />
+          <input type="hidden" id="territorioPaisId" />
+          
+          <div class="mb-3 bg-light p-3 rounded border">
+            <span class="text-muted small d-block mb-1">Ubicación del elemento:</span>
+            <strong class="text-dark small" id="territorioContextLabel">Raíz del país</strong>
+          </div>
+
+          <div class="mb-3">
+            <label for="territorioNombre" class="form-label fw-semibold text-dark">Nombre del Territorio</label>
+            <input type="text" class="form-control" id="territorioNombre" required placeholder="Ej: Lima, Jalisco, Miraflores" />
+            <div class="invalid-feedback">El nombre es obligatorio.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="territorioTipo" class="form-label fw-semibold text-dark">Tipo de Territorio</label>
+            <input type="text" class="form-control" id="territorioTipo" required placeholder="Ej: Departamento, Estado, Provincia, Municipio, Distrito, Alcaldía" />
+            <div class="invalid-feedback">El tipo es obligatorio.</div>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" role="switch" id="territorioActivo" checked />
+            <label class="form-check-label fw-semibold text-dark" for="territorioActivo">Territorio Activo</label>
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnTerritorioSubmit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

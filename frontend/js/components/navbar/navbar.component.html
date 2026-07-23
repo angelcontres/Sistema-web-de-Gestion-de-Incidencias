@@ -1,0 +1,79 @@
+<nav
+  id="navbarContainer"
+  class="navbar navbar-expand-lg navbar-light custom-navbar shadow-sm py-2 d-none"
+>
+  <div class="container-fluid px-3">
+    <div class="d-flex align-items-center gap-2">
+      <button
+        id="sidebarToggleBtn"
+        class="btn btn-link text-primary p-1 border-0 me-1"
+        type="button"
+        aria-label="Alternar menú lateral"
+      >
+        <i class="bi bi-list fs-3"></i>
+      </button>
+
+      <!-- Toggle y espaciado (el logo está en el sidebar ahora) -->
+    </div>
+
+    <div class="d-flex align-items-center gap-3 ms-auto">
+      <!-- Notificaciones (Siempre Visibles) -->
+      <app-notification-tray></app-notification-tray>
+      <!-- Toggler para móvil -->
+      <button
+        class="navbar-toggler border-0 p-0 ms-1"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <!-- Menú Colapsable (Dropdown de Usuario) -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mb-0">
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle text-primary d-flex align-items-center gap-2"
+              href="#"
+              id="navbarDropdownMenuLink"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <div class="bg-secondary-soft rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border: 1px solid rgba(255,255,255,0.1);">
+                <i class="bi bi-person-fill fs-6"></i>
+              </div>
+              <span id="navUserName" class="fw-medium small ms-1">Usuario</span>
+            </a>
+            <ul
+              class="dropdown-menu dropdown-menu-end shadow-lg mt-3 custom-dropdown border-0"
+              aria-labelledby="navbarDropdownMenuLink"
+            >
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#/"
+                  ><i class="bi bi-person text-primary"></i> Mi perfil</a
+                >
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#/"
+                  ><i class="bi bi-gear text-primary"></i> Configuración</a
+                >
+              </li>
+              <li><hr class="dropdown-divider opacity-25" /></li>
+              <li>
+                <button
+                  id="logoutBtn"
+                  class="dropdown-item d-flex align-items-center gap-2 text-danger w-100 text-start py-2"
+                >
+                  <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                </button>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,18 @@
+\section{Recomendaciones, Objetivos (E1) y Dictamen}
+
+\subsection{Plan de Remediación Específico}
+\begin{enumerate}
+    \item \textbf{Caché en Territorios:} Es mandatorio implementar una estrategia de caché (ej. Redis o Caché nativo de Laravel) para el endpoint de \texttt{territories}, ya que es información de solo lectura que cambia rara vez, pero cuyo tamaño colapsa la BD en lectura concurrente.
+    \item \textbf{Asincronismo o Caché Espacial en Geocoding:} Los resultados de \texttt{geocoding reverse} deben cachearse en la base de datos (guardar lat/lng previamente consultados) para evitar salir a internet en cada petición, lo que dispara los tiempos de respuesta a más de 3 segundos.
+    \item \textbf{Optimización de Queries en Incidencias:} Revisar la implementación de paginación o añadir índices espaciales a las coordenadas de PostgreSQL para mantener los tiempos bajo 1 segundo incluso con carga pesada.
+\end{enumerate}
+
+\subsection{Contraste con Acuerdos de Nivel de Servicio (SLA) del Hito 1}
+Según el \textbf{Plan de Gestión de Calidad (Hito 1)}, el SLA para el \textbf{Tiempo de Respuesta Promedio (TRP)} dicta un umbral de \textbf{$<$ 3 s (entre 3 a 5 segundos como máximo)} y una tasa de éxito $\ge 90\%$.
+\begin{itemize}
+    \item \textbf{Disponibilidad:} El sistema cumplió sobradamente, manteniendo 0.000\% de errores en los Grupos 1 y 2, y apenas un 0.007\% en el Grupo 3.
+    \item \textbf{Latencia (TRP):} El sistema \textbf{CUMPLE} el SLA bajo escenarios de uso normales y medios (Grupos 1 y 2 con promedios de 1.5s y 0.69s). Sin embargo, \textbf{INCUMPLE} el SLA en el escenario de estrés (Grupo 3 con promedio de 8.18s), arrastrado principalmente por el endpoint de territorios.
+\end{itemize}
+
+\subsection{Dictamen}
+El sistema actual es \textbf{VIABLE} para paso a producción bajo las cargas simuladas para un escenario de uso diario normal, dado que el Throughput escaló excelentemente hasta las 57 peticiones por segundo sin pérdida de datos. Sin embargo, para soportar eventos de crisis (avalanchas de reportes), es requisito aplicar las recomendaciones de caché antes mencionadas.

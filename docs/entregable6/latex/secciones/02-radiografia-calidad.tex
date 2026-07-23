@@ -1,0 +1,54 @@
+\section{Radiografía de Calidad Interna y Deuda Técnica}
+
+Se consolidan los resultados obtenidos a través de las diversas herramientas del toolkit.
+
+\subsection{Resultados del Análisis Estático Frontend (ESLint)}
+
+El escaneo del código JavaScript del cliente reportó un total de \textbf{43 hallazgos}, distribuidos en 9 errores críticos y 34 advertencias. Entre los principales problemas detectados destacan:
+
+\begin{itemize}
+    \item \textbf{Variables no definidas y posibles bugs:} Se detectaron asignaciones a variables no declaradas (por ejemplo, \texttt{dirNivel3Select} en componentes de ubicación), lo que representa un riesgo latente de fallos en tiempo de ejecución.
+    \item \textbf{Bloques vacíos y código muerto:} Presencia de declaraciones de bloques sin lógica interna (\texttt{Empty block statement}) y variables declaradas pero nunca utilizadas (\texttt{no-unused-vars}), lo cual añade ruido cognitivo al mantenimiento del sistema.
+    \item \textbf{Asignaciones inútiles:} Variables como \texttt{icon} y \texttt{bgClass} en el componente de notificaciones (\textit{toast}) a las que se les asigna un valor que posteriormente nunca es consumido.
+\end{itemize}
+
+\subsection{Resultados del Análisis Estático Backend (PHPStan)}
+
+La evaluación del núcleo del sistema transaccional (Laravel) con PHPStan evidenció un total de \textbf{41 errores lógicos}. Este escáner identificó problemas arquitectónicos subyacentes, tales como:
+
+\begin{itemize}
+    \item \textbf{Llamadas a variables de entorno inestables:} Se detectó el uso de la función \texttt{env()} fuera de los archivos de configuración (\texttt{config/}). Esto representa un defecto crítico de calidad en Laravel, dado que en un entorno de producción con configuración en caché, dichas llamadas retornarán \texttt{null}, provocando caídas silenciosas.
+    \item \textbf{Propiedades dinámicas no documentadas:} El acceso a atributos no definidos formalmente en los modelos Eloquent (ej. \texttt{\$permisos}, \texttt{\$nombre}) dificulta la predictibilidad y el auto-completado del código.
+    \item \textbf{Comparaciones estrictas inalcanzables:} Identificación de condicionales con verificación de tipos estricta (\texttt{===}) donde se compara una variable tipo \textit{String} contra un Booleano (\texttt{false}), lo cual siempre evaluará negativamente y genera fragmentos de código inalcanzable.
+\end{itemize}
+
+\subsection{Consolidación Global y Densidad de Defectos}
+
+Complementando los resultados de SAST, la plataforma cuenta con un proceso de Cálculo de Densidad de Defectos (KLOC vs Fixes históricos) automatizado en el Data Warehouse (\texttt{fact\_quality}). La combinación de las métricas retrospectivas del historial de Git con los reportes prospectivos de SonarQube ofrece un panorama completo de la madurez del software y el tamaño de la refactorización necesaria.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-reporte-eslint.png}
+    \caption{Evidencia del reporte de hallazgos en ESLint.}
+    \label{fig:evidencia_eslint}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-log-eslint.png}
+    \caption{Evidencia de cantidad neta de hallazgos ESLint.}
+    \label{fig:evidencia_eslint_net}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-php-stan.png}
+    \caption{Evidencia del escaneo de errores lógicos mediante PHPStan.}
+    \label{fig:evidencia_phpstan}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-overview-sonar.png}
+    \caption{Evidencia del panel general (Overview) de calidad en SonarQube.}
+    \label{fig:evidencia_sonar_overview}
+\end{figure}

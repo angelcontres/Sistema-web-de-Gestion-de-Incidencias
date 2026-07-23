@@ -1,0 +1,49 @@
+<div class="page-fade-in">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="premium-card">
+        <div class="premium-card-header mb-0 border-bottom pb-3">
+          <h5 class="premium-card-title text-primary"><i class="bi bi-graph-up-arrow me-2"></i> TRP Promedio a lo largo del tiempo (24h)</h5>
+          <div class="dropdown">
+            <button class="btn btn-primary btn-sm dropdown-toggle rounded-pill px-3 shadow-sm fw-semibold" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-download me-1"></i> Exportar Logs
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 custom-dropdown" aria-labelledby="exportDropdown">
+              <li><a class="dropdown-item py-2" href="#" id="btnExportCsv"><i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i>Como CSV</a></li>
+              <li><a class="dropdown-item py-2" href="#" id="btnExportTxt"><i class="bi bi-file-earmark-text me-2 text-secondary"></i>Como TXT</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-body pt-4 px-0 pb-0">
+          <canvas id="trpChart" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="premium-table-wrapper">
+        <div class="premium-card-header bg-white px-4 pt-4 pb-3 mb-0 border-bottom">
+          <h5 class="premium-card-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Top 5 Endpoints más lentos</h5>
+        </div>
+        <div class="table-responsive">
+          <table class="table premium-table table-hover mb-0">
+            <thead>
+              <tr>
+                <th class="ps-4">Endpoint</th>
+                <th>Método</th>
+                <th>Promedio (ms)</th>
+                <th>Máximo (ms)</th>
+                <th>Total Peticiones</th>
+              </tr>
+            </thead>
+            <tbody id="slowestEndpointsTable">
+              <tr><td colspan="5" class="text-center py-5 text-muted fw-medium">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

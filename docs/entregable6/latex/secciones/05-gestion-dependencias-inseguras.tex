@@ -1,0 +1,34 @@
+\section{Gestión de Dependencias Inseguras}
+
+La arquitectura moderna del software depende intrínsecamente del ecosistema de librerías de terceros (Open Source). Para garantizar que el Sistema de Gestión de Incidencias no incorpore brechas de seguridad a través de su cadena de suministro, se implementaron mecanismos de Auditoría de Análisis de Composición de Software (SCA).
+
+\subsection{Inspección en el Ecosistema Backend y Contenedores}
+
+El núcleo del backend, basado en PHP, fue auditado nativamente a través del empaquetador de componentes. Para ello, se integró el motor de vulnerabilidades de \textbf{Snyk} en conjunto con el comando \texttt{composer audit}. 
+
+Este análisis cruza las versiones definidas en el archivo \texttt{composer.lock} contra bases de datos globales de vulnerabilidades y exposiciones comunes (CVE). El reporte automatizado generó observaciones en tiempo real sobre aquellos paquetes que carecen de mantenimiento comunitario activo, recomendando la migración o actualización a ramas menores más seguras. La misma estrategia de evaluación mediante Snyk garantiza la sanidad técnica de las imágenes base configuradas en los archivos \texttt{Dockerfile} y \texttt{docker-compose.yml}.
+
+\subsection{Inspección en el Ecosistema Frontend}
+
+De forma análoga, para el ecosistema JavaScript Vanilla del cliente, las herramientas SCA mapean las dependencias contenidas en \texttt{package.json} a fin de prevenir ataques a la cadena de suministro.
+
+\subsection{Auditoría mediante OWASP Dependency-Check}
+
+Adicionalmente a los análisis de Snyk y Composer, se ejecutó de manera local la utilidad oficial de \textbf{OWASP Dependency-Check} (v12.2.2) para el análisis de composición de software (SCA). El análisis se centró en el manifiesto de dependencias bloqueadas del backend (\texttt{composer.lock}), integrando una clave de acceso (NVD API Key) para acelerar la sincronización de registros con la base de datos nacional de vulnerabilidades (NVD) del NIST.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia-check-owasp.png}
+    \caption{Evidencia del escaneo de dependencias de composer mediante check OWASP.}
+    \label{fig:evidencia_owasp}
+\end{figure}
+
+El reporte interactivo HTML generado arrojó que, de las \textbf{113 dependencias únicas analizadas}, se identificaron \textbf{18 dependencias vulnerables} que asocian un total de \textbf{274 vulnerabilidades individuales (CVEs)}. Entre los hallazgos críticos detectados se encuentran subcomponentes del framework Symfony como \texttt{var-dumper} (asociando vulnerabilidades de inyección y conflictos de interpretación como CVE-2026-45066 y CVE-2026-45753) y la librería de manejo de errores \texttt{whoops} (v2.18.4). Este diagnóstico aporta visibilidad directa para mitigar el riesgo de vulnerabilidades en componentes de terceros, alineándose al estándar OWASP A06:2021. No se escaneó a nivel de frontend porque al ser Vanilla no existe un nodejs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/evidencia_snyk.png}
+    \caption{Evidencia del escaneo de dependencias mediante Snyk.}
+    \label{fig:evidencia_snyk}
+\end{figure}
+

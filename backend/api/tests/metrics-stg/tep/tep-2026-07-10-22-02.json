@@ -1,0 +1,9 @@
+{
+    "metric": "Tasa de Exito de Pruebas (TEP)",
+    "value": 100,
+    "total_pruebas": 44,
+    "pruebas_aprobadas": 44,
+    "pruebas_fallidas": 0,
+    "pruebas_omitidas": 0,
+    "fecha_procesamiento": "2026-07-10 22:02:36"
+}

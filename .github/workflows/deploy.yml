@@ -1,0 +1,53 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed # Solo despliega cuando el PR es aprobado y cerrado/mezclado
+
+jobs:
+  deploy:
+    # Solo ejecutar si es un push a main, o si es un PR que fue "merged"
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to AWS EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          ENV_AWS_SECRET: ${{ secrets.ENV_AWS }}
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          envs: ENV_AWS_SECRET
+          script: |
+            cd /home/${{ secrets.AWS_EC2_USERNAME }}/Sistema-web-de-Gestion-de-Incidencias
+            # Actualizar el código
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Generar el archivo .env raíz a partir de los Secrets de GitHub
+            echo "DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" > .env
+            echo "CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.PROD_CLOUDFLARE_TUNNEL_TOKEN }}" >> .env
+            echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.PROD_GRAFANA_ADMIN_PASSWORD }}" >> .env
+            echo "SONAR_DB_PASSWORD=${{ secrets.PROD_SONAR_DB_PASSWORD }}" >> .env
+            
+            # Preparar archivos de entorno para AWS
+            echo "$ENV_AWS_SECRET" > backend/api/.env
+            cp cloudflare/config.aws.yml cloudflare/config.yml
+            
+            # Reconstruir y reiniciar los contenedores con Docker Compose
+            docker compose -f docker-compose.aws.yml pull
+            docker compose -f docker-compose.aws.yml up -d --build
+            
+            # Limpiar imágenes sin usar para ahorrar espacio en EC2
+            docker image prune -f

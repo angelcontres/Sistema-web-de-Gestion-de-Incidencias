@@ -1,0 +1,25 @@
+<div class="page-fade-in">
+  <!-- Cabecera de Página -->
+  <div class="page-header-container">
+    <div>
+      <h1 class="page-title">Mantenimiento de Usuarios</h1>
+      <p class="page-subtitle">
+        Gestiona las cuentas de usuario, sus estados de actividad y los roles asignados en el
+        sistema.
+      </p>
+    </div>
+    <!-- Enlace para ir al formulario en modo creación -->
+    <a
+      id="btn-nuevo-registro"
+      href="#/usuarios/form"
+      class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2"
+    >
+      <i class="bi bi-person-plus"></i> Nuevo Registro
+    </a>
+  </div>
+
+  <!-- Tabla Auto-Contenida (Maneja tarjeta, loading, vacío y errores internamente) -->
+  <app-data-table id="tbl-datos-usuarios" title="Lista de Usuarios" empty-text="No se encontraron usuarios registrados."></app-data-table>
+</div>
+
+</div>

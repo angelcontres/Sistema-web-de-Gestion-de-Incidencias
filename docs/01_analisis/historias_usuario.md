@@ -59,9 +59,15 @@ ubicación y prioridad
 **Para** aportar seguimiento, decisiones o evidencias
 
 **Criterios de aceptación:**
-- Los comentarios incluyen autor y timestamp.
-- Los comentarios aparecen en el hilo de la incidencia y en el historial.
-- Permitir edición limitada de comentarios por su autor (opcional).
+- El sistema no permitirá guardar comentarios con el campo de texto vacío.
+- El sistema no permitirá exceder la cantidad máxima de caracteres definidos en la base
+de datos.
+- El sistema no permitirá exceder la cantidad máxima de caracteres definidos en la base
+de datos.
+- Los comentarios deben visualizarse en orden cronológico dentro del hilo de la
+incidencia.
+- El autor original podrá editar su propio comentario únicamente dentro de los primeros 30
+minutos posteriores a su publicación. El sistema mostrará la etiqueta "(Editado)".
 
 ## HU-07: Ver incidencias en mapa
 **Como** usuario

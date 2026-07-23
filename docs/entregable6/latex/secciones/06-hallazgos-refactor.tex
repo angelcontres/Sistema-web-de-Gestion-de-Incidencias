@@ -1,0 +1,29 @@
+\section{Catálogo de Hallazgos y Propuestas de Refactorización}
+
+La identificación de métricas de calidad y deuda técnica carece de valor si no se encamina hacia una estrategia factible de corrección. A continuación, se presenta la matriz de remediación propuesta para las inconsistencias detectadas, vinculada directamente a la norma ISO/IEC 25010.
+
+\subsection{Matriz de Remediación Técnica}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{|p{4.5cm}|p{2cm}|p{8.2cm}|}
+\hline
+\textbf{Hallazgo / Code Smell} & \textbf{Riesgo} & \textbf{Estrategia de Refactorización} \\ \hline
+Uso de \texttt{env()} fuera de \texttt{config/} & Alto (Fallo en Producción) & Migrar las llamadas dinámicas hacia archivos estáticos en \texttt{config/} y referenciarlas posteriormente mediante el \textit{helper} \texttt{config('archivo.llave')}. \\ \hline
+Variables y Bloques JS inútiles & Medio (Deuda Técnica) & Remover condicionales en blanco y variables declaradas no utilizadas (ej. en componentes como \texttt{toast.component.js}). \\ \hline
+Atributos mágicos no declarados (Modelos Eloquent) & Medio (Mantenibilidad) & Documentar explícitamente mediante etiquetas \texttt{@property} los tipos de datos en la cabecera (PHPDoc) de las clases de modelo. \\ \hline
+Relaciones inexistentes o mal declaradas en Backend & Medio (Fiabilidad) & Definir un tipado fuerte de retorno (ej. \texttt{: HasMany}) en los métodos de asociación de entidades para evitar la corrupción de acceso. \\ \hline
+Objetos o variables DOM no inicializados (Frontend) & Alto (Crash de JS) & Validar que variables como \texttt{dirNivel3Select} sean instanciadas antes de asignar manejadores de eventos. \\ \hline
+Librerías externas obsoletas con vulnerabilidades (SCA) & Medio-Alto (Explotación CVE) & Configurar auditorías automatizadas periódicas con \texttt{OWASP Dependency-Check} y actualizar dependencias críticas como \texttt{symfony/var-dumper} (mitigando CVE-2026-45066 y CVE-2026-45753). \\ \hline
+\end{tabular}
+\caption{Matriz de Hallazgos SQA y Refactorización.}
+\label{tab:matriz_hallazgos}
+\end{table}
+
+\subsection{Dictamen Final según la Norma ISO/IEC 25010}
+
+\begin{itemize}
+    \item \textbf{Mantenibilidad:} El sistema muestra un desempeño sobresaliente en modularidad. A pesar de la detección de variables no inicializadas y \textit{Code Smells} menores en el frontend, la segmentación en clases desacopladas permite que su mitigación y refactorización técnica sea inmediata y altamente localizada, sin inducir regresiones críticas en la arquitectura central.
+    \item \textbf{Seguridad y Fiabilidad:} La abstracción asíncrona de los cálculos SQA hacia colas de trabajo (esquema ETL y Data Warehouse local) asegura la fiabilidad transaccional y la capacidad de responder ágilmente frente a picos de carga imprevistos. Las refactorizaciones sugeridas respecto a los llamados \texttt{env()} y tipado de métodos consolidarán completamente la barrera de seguridad de los procesos asíncronos y síncronos del sistema de incidencias.
+\end{itemize}

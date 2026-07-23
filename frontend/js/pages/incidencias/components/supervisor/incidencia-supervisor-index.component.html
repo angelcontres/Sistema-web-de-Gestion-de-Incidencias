@@ -1,0 +1,97 @@
+<div class="row g-3 h-100 p-3">
+  <!-- Panel de Alertas Izquierdo -->
+  <div class="col-md-4 col-lg-3 d-flex flex-column h-100">
+    <div class="premium-card flex-grow-1 overflow-hidden h-100 d-flex flex-column">
+      <div class="premium-card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-shrink-0">
+        <h5 class="premium-card-title mb-0"><i class="bi bi-bell text-danger me-2"></i>Alertas</h5>
+        <span class="badge bg-danger rounded-pill shadow-sm" id="badge-alertas">0</span>
+      </div>
+      <div class="card-body p-0 position-relative overflow-auto" style="height: 100%">
+        <div class="list-group list-group-flush" id="alertas-container">
+          <!-- Alertas list -->
+        </div>
+        <div class="text-center text-muted p-5 spinner-list d-none">
+          <div class="spinner-border text-primary mb-2" role="status"></div>
+          <div>Cargando...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel Principal Derecho -->
+  <div class="col-md-8 col-lg-9 d-flex flex-column h-100 gap-3">
+    <!-- Mapa -->
+    <div class="premium-card flex-grow-1 p-0" style="min-height: 400px">
+      <div
+        class="card-body p-0 rounded-4 overflow-hidden position-relative h-100"
+        id="map"
+        style="z-index: 1"
+      ></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal de Detalle y Despacho -->
+<div
+  class="modal fade"
+  id="modal-detalle-incidencia"
+  tabindex="-1"
+  aria-labelledby="modalDetalleLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content premium-modal-content border-0 shadow-lg">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark" id="modalDetalleLabel">
+          <i class="bi bi-info-circle-fill text-primary me-2"></i>Detalle de Incidencia
+          <span id="modal-incidencia-id" class="text-primary opacity-75"></span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex justify-content-between mb-3">
+          <span class="badge bg-secondary" id="modal-incidencia-estado"></span>
+          <span class="small text-muted" id="modal-incidencia-fecha"></span>
+        </div>
+
+        <h6 class="fw-bold mb-1" id="modal-incidencia-tipo"></h6>
+        <p class="text-muted small mb-3" id="modal-incidencia-desc"></p>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <div class="small text-muted"><i class="bi bi-geo-alt-fill me-1"></i>Dirección</div>
+            <div class="fw-medium small" id="modal-incidencia-dir"></div>
+          </div>
+          <div class="col-6">
+            <div class="small text-muted">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i>Prioridad
+            </div>
+            <div class="fw-medium small" id="modal-incidencia-prioridad"></div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 small">
+          <div class="fw-bold mb-1">Afectados reportados:</div>
+          <div id="modal-incidencia-afectados"></div>
+        </div>
+      </div>
+      <div class="modal-footer border-top-0 pt-0">
+        <button
+          type="button"
+          class="btn btn-outline-secondary rounded-pill px-4"
+          data-bs-dismiss="modal"
+        >
+          Cerrar
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary rounded-pill px-4 d-flex align-items-center"
+          id="btn-despachar-incidencia"
+        >
+          <i class="bi bi-send-check-fill me-2"></i>Despachar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

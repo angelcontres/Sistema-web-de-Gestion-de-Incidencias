@@ -1,0 +1,43 @@
+\section{Atributos de Calidad Seleccionados (ISO/IEC 25010)}
+
+Basados en el modelo de calidad de producto de software \textbf{ISO/IEC 25010}, se seleccionan y justifican los siguientes atributos críticos:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{3.0cm} p{4.2cm} X}
+\toprule
+\textbf{Atributo de Calidad} & \textbf{Característica / Subcaracterística} & \textbf{Justificación Técnica en el Proyecto} \\
+\midrule
+\textbf{Usabilidad} & 
+$\bullet$ Aprendizaje \newline 
+$\bullet$ Operabilidad \newline 
+$\bullet$ Estética de la interfaz & 
+Dado que la alfabetización digital de los usuarios reportantes varía ampliamente, la interfaz (construida sobre Bootstrap) debe ser limpia y comprensible. Los mapas interactivos de Leaflet deben contar con iconos claros y popups informativos de lectura ágil. \\
+\midrule
+\textbf{Seguridad} & 
+$\bullet$ Confidencialidad \newline 
+$\bullet$ Integridad \newline 
+$\bullet$ Autenticación \newline 
+$\bullet$ Responsabilidad (No repudio) & 
+La API en Laravel debe forzar la autenticación mediante tokens/sesiones seguras y verificar permisos mediante middlewares antes de cualquier mutación de datos. \\
+\midrule
+\textbf{Fiabilidad} & 
+$\bullet$ Tolerancia a fallos \newline 
+$\bullet$ Recuperabilidad & 
+El historial de cambios de estado y las asignaciones de operadores no deben verse comprometidos ante fallos de conexión o concurrencia transaccional en PostgreSQL. El sistema implementa ``soft delete'' (borrado lógico) para evitar la pérdida accidental de datos y mantener la trazabilidad histórica de auditoría. \\
+\midrule
+\textbf{Mantenibilidad} & 
+$\bullet$ Modularidad \newline 
+$\bullet$ Capacidad de ser modificado \newline 
+$\bullet$ Analizabilidad & 
+Al estructurar el proyecto mediante contenedores Docker independientes y separar las responsabilidades de Frontend (HTML/JS) y Backend (Laravel API REST), el código fuente es altamente extensible. Esto simplifica la futura incorporación de otros componentes (como el microservicio IA o MongoDB) sin alterar el núcleo transaccional. \\
+\midrule
+\textbf{Eficiencia de Desempeño} & 
+$\bullet$ Comportamiento temporal & 
+El renderizado de mapas con múltiples incidencias cargadas de forma síncrona puede degradar la experiencia de usuario. La API REST debe proveer filtros espaciales, consultas optimizadas mediante índices en la base de datos PostgreSQL, paginación eficiente de datos y carga asíncrona de marcadores (clusters). \\
+\bottomrule
+\end{tabularx}
+\caption{Atributos de calidad seleccionados bajo la norma ISO/IEC 25010}
+\label{tab:atributos_calidad}
+\end{table}

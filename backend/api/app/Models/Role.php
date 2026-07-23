@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Models;
+
+use App\Traits\HasLocalTimezone;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Override;
+
+/**
+ * @property int $id
+ * @property string $nombre
+ * @property string|null $descripcion
+ * @property int|null $padre_id
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property int|null $deleted_by
+ * @property Collection<int, Permiso> $permisos
+ * @property Collection<int, User> $users
+ */
+#[Fillable(['nombre', 'descripcion', 'padre_id', 'created_by', 'updated_by', 'deleted_by'])]
+class Role extends Model
+{
+    use HasFactory, SoftDeletes;
+    use HasLocalTimezone;
+
+    /**
+     * Mapeo y conversión de tipos de datos.
+     */
+    #[Override]
+    protected function casts(): array
+    {
+        return [
+            'padre_id' => 'integer',
+            'created_by' => 'integer',
+            'updated_by' => 'integer',
+            'deleted_by' => 'integer',
+        ];
+    }
+
+    /**
+     * Relación: El usuario que creó este rol.
+     */
+    public function RoleCreater(): BelongsTo
+    {
+        // Usamos belongsTo porque el Rol "pertenece a" un usuario creador
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relación: El usuario que modificó este rol por última vez.
+     */
+    public function RoleEditor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /*+
+     * Relacion el usuario que elimino rol
+     */
+    public function RoleDeleter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    /**
+     * Relación: Permisos asignados a este rol.
+     */
+    public function permisos(): BelongsToMany
+    {
+        return $this->belongsToMany(Permiso::class, 'roles_permisos', 'rol_id', 'permiso_id');
+    }
+
+    /**
+     * Relación: Los usuarios que poseen este rol.
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'roles_users', 'rol_id', 'user_id')->withTimestamps();
+    }
+}

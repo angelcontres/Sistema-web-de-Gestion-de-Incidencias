@@ -1,0 +1,48 @@
+<div class="row w-100 m-0 p-0">
+  <div class="col-md-4 mb-4">
+    <div class="sys-dashboard-card">
+      <div class="sys-card-header">
+        <h5 class="sys-card-title"><i class="bi bi-person-x text-primary"></i> Sin Asignar</h5>
+        <span id="badge-rezagos" class="sys-badge bg-danger-soft animate-pulse d-none"><span class="sys-indicator-dot"></span> Rezagos</span>
+      </div>
+      <h2 class="sys-card-value" id="val-sin-asignar">0</h2>
+      <p class="sys-card-subtitle">Nuevas en espera</p>
+    </div>
+  </div>
+  <div class="col-md-4 mb-4">
+    <div class="sys-dashboard-card">
+      <div class="sys-card-header">
+        <h5 class="sys-card-title"><i class="bi bi-clock-history text-warning"></i> En Revisión</h5>
+      </div>
+      <h2 class="sys-card-value" id="val-revision">0</h2>
+      <p class="sys-card-subtitle">Por verificar</p>
+    </div>
+  </div>
+  <div class="col-md-4 mb-4">
+    <div class="sys-dashboard-card">
+      <div class="sys-card-header">
+        <h5 class="sys-card-title"><i class="bi bi-check-circle text-success"></i> Resueltas</h5>
+      </div>
+      <h2 class="sys-card-value" id="val-resueltas">0</h2>
+      <p class="sys-card-subtitle">Incidencias solucionadas</p>
+    </div>
+  </div>
+  <div class="col-md-6 mb-4">
+    <div class="sys-dashboard-card" style="height: 350px;">
+      <h5 class="sys-card-title mb-3">Distribución por estado</h5>
+      <div id="chartEstado" style="flex-grow: 1;"></div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-4">
+    <div class="sys-dashboard-card" style="height: 350px;">
+      <h5 class="sys-card-title mb-3">Asignación por Institución</h5>
+      <div id="chartInstitucion" style="flex-grow: 1;"></div>
+    </div>
+  </div>
+  <div class="col-12 mb-4">
+    <div class="sys-dashboard-card" style="height: 400px;">
+      <h5 class="sys-card-title mb-3" id="title-tendencia">Tendencia Temporal</h5>
+      <div id="chartTendencia" style="flex-grow: 1;"></div>
+    </div>
+  </div>
+</div>
