@@ -1,3 +1,2 @@
 Feature en curso: Ninguna
-Plan: Esperando instrucciones del usuario.
-
+Plan: Status done. Tareas completadas. Listo para iniciar nueva feature.

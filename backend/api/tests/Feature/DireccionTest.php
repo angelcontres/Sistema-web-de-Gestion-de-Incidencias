@@ -11,6 +11,11 @@ use Tests\TestCase;
 
 class DireccionTest extends TestCase
 {
+    const string ENDPOINT_ADDRESSES = '/api/v1/addresses';
+
+    const string CALLE_MAGNOLIAS_NAME = 'Calle Las Magnolias 123';
+    const string CALLE_VERDADERA_NAME = 'Calle Verdadera 456';
+
     use RefreshDatabase;
 
     private User $user;
@@ -47,7 +52,7 @@ class DireccionTest extends TestCase
             'activo' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/v1/addresses');
+        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_ADDRESSES);
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data')
@@ -60,7 +65,7 @@ class DireccionTest extends TestCase
     {
         $payload = [
             'territorio_id' => $this->territorio->id,
-            'detalle' => 'Calle Las Magnolias 123',
+            'detalle' => self::CALLE_MAGNOLIAS_NAME,
             'referencia' => 'Frente al parque',
             'codigo_postal' => '15046',
             'latitud' => -12.046374,
@@ -68,13 +73,13 @@ class DireccionTest extends TestCase
             'activo' => true,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/v1/addresses', $payload);
+        $response = $this->actingAs($this->user)->postJson(self::ENDPOINT_ADDRESSES, $payload);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.detalle', 'Calle Las Magnolias 123');
+            ->assertJsonPath('data.detalle', self::CALLE_MAGNOLIAS_NAME);
 
         $this->assertDatabaseHas('direcciones', [
-            'detalle' => 'Calle Las Magnolias 123',
+            'detalle' => self::CALLE_MAGNOLIAS_NAME,
             'codigo_postal' => '15046',
         ]);
     }
@@ -87,7 +92,7 @@ class DireccionTest extends TestCase
             'latitud' => 100, // between -90 and 90
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/v1/addresses', $payload);
+        $response = $this->actingAs($this->user)->postJson(self::ENDPOINT_ADDRESSES, $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['territorio_id', 'detalle', 'latitud']);
@@ -102,17 +107,17 @@ class DireccionTest extends TestCase
         ]);
 
         $payload = [
-            'detalle' => 'Calle Verdadera 456',
+            'detalle' => self::CALLE_VERDADERA_NAME,
         ];
 
-        $response = $this->actingAs($this->user)->putJson("/api/v1/addresses/{$direccion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_ADDRESSES . "/{$direccion->id}", $payload);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.detalle', 'Calle Verdadera 456');
+            ->assertJsonPath('data.detalle', self::CALLE_VERDADERA_NAME);
 
         $this->assertDatabaseHas('direcciones', [
             'id' => $direccion->id,
-            'detalle' => 'Calle Verdadera 456',
+            'detalle' => self::CALLE_VERDADERA_NAME,
         ]);
     }
 
@@ -124,7 +129,7 @@ class DireccionTest extends TestCase
             'activo' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson("/api/v1/addresses/{$direccion->id}");
+        $response = $this->actingAs($this->user)->deleteJson(self::ENDPOINT_ADDRESSES . "/{$direccion->id}");
 
         $response->assertStatus(200);
 

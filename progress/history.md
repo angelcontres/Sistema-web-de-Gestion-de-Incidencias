@@ -77,3 +77,10 @@
 - Se aumentaron globalmente los radios de bordes (`--radius-md`, `--radius-lg`) y especÃ­ficamente en `.sys-dashboard-card` (`24px`) para lograr las esquinas ultra redondeadas orgÃ¡nicas del diseÃ±o de referencia.
 
 
+
+## 2026-07-23 17:25 - Finalización Feature 10 (implement_test_api_controllers)
+- Se implementaron las pruebas funcionales (Feature) para todos los controladores API de hasta 150 líneas: NotificationTest, TrpTest, RoleTest, TerritorioTest, UserTest, UserMenuTest, CategoriaIncidenciaTest, InstitucionTest, PaisTest, PermisoTest, PrioridadTest.
+- Se refactorizaron los tests creados utilizando constantes (ENDPOINT y prefijos ATTR_) para evitar duplicación de texto y code smells.
+- Se ejecutó php artisan test con éxito (133 tests en total, 100% pasando).
+- Se ejecutó php artisan test --coverage confirmando que la configuración está validando exitosamente la aplicación.
+- Se actualizó el archivo eature_list.json pasando la feature 10 de in_progress a done.

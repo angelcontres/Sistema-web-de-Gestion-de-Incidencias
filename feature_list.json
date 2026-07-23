@@ -14,10 +14,7 @@
       "name": "ejemplo_nueva_feature",
       "title": "Ejemplo de nueva feature",
       "description": "Agrega una descripción aquí.",
-      "acceptance": [
-        "Criterio 1",
-        "Criterio 2"
-      ],
+      "acceptance": ["Criterio 1", "Criterio 2"],
       "sdd": true,
       "status": "blocked"
     },
@@ -54,10 +51,7 @@
       "sdd": true,
       "priority": "high",
       "status": "done",
-      "references": [
-        "app/Http/Controllers/",
-        "app/Models/"
-      ]
+      "references": ["app/Http/Controllers/", "app/Models/"]
     },
     {
       "id": 5,
@@ -73,10 +67,7 @@
       "sdd": true,
       "priority": "high",
       "status": "done",
-      "references": [
-        "database/migrations/",
-        "docker-compose.yml"
-      ]
+      "references": ["database/migrations/", "docker-compose.yml"]
     },
     {
       "id": 6,
@@ -93,10 +84,7 @@
       "sdd": false,
       "priority": "high",
       "status": "done",
-      "references": [
-        "public/js/",
-        "public/css/"
-      ]
+      "references": ["public/js/", "public/css/"]
     },
     {
       "id": 7,
@@ -111,10 +99,7 @@
       "sdd": true,
       "priority": "high",
       "status": "done",
-      "references": [
-        "docker-compose.yml",
-        "docker/nginx/nginx.conf"
-      ]
+      "references": ["docker-compose.yml", "docker/nginx/nginx.conf"]
     },
     {
       "id": 8,
@@ -142,6 +127,23 @@
       ],
       "sdd": true,
       "priority": "high",
+      "status": "done"
+    },
+    {
+      "id": 10,
+      "name": "implement_test_api_controllers",
+      "description": "Implementar test para los controladores del backend.",
+      "acceptance": [
+        "Primero hay que listar todos los controladores en /Http/Controllers/Api/ y cubrir primero los que tienen como maximo 150 lineas para empezar con los más ligeros.",
+        "Los tests deben implementarse en la ruta: backend/api/tests; dependiendo si son tests unitarios (/tests/Unit) o de integración (/tests/Feature)",
+        "Los tests deben utilizar la database que se sigue utilizando, y optimizar las cargas de datos antes haciendo un refresh database.",
+        "No se podrá utilizar sqlite porque algunos datos necesitan ser procesados por PostGis",
+        "Los tests deben implementar un caso por cada método de los controladores",
+        "Los tests deben verificar que se devuelvan las respuestas correctas con el código de estado HTTP correspondiente",
+        "Los tests deben verificar que se manejen correctamente los errores y excepciones",
+        "Los tests deben verificar que se manejen correctamente las peticiones con datos inválidos"
+      ],
+      "sdd": true,
       "status": "done"
     }
   ]
