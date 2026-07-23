@@ -10,7 +10,7 @@ jobs:
       # 1. Apagar los contenedores anteriores
       - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
         run: |
-          docker compose -f docker-compose.prod.yml down || true
+          docker compose -f docker-compose.staging.yml down || true
 
       # 2. Limpieza agresiva de archivos generados como root
       - name: Eliminar residuos bloqueados usando Docker
@@ -35,12 +35,12 @@ jobs:
       - name: Copiar el código a la VAIO
         uses: actions/checkout@v4
 
-      # 4. Configurar variables de entorno de Laravel (PROD) usando GitHub Secrets
-      - name: Configurar entorno (.env) de Producción
+      # 4. Configurar variables de entorno de Laravel (STAGING) usando GitHub Secrets
+      - name: Configurar entorno (.env) de Staging
         env:
-          ENV_PROD_SECRET: ${{ secrets.ENV_PROD }}
+          ENV_STAGING_SECRET: ${{ secrets.ENV_STAGING }}
         run: |
-          echo "$ENV_PROD_SECRET" > backend/api/.env
+          echo "$ENV_STAGING_SECRET" > backend/api/.env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
           echo "CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" >> .env
           echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> .env
@@ -48,7 +48,7 @@ jobs:
 
       # 5. Desplegar la infraestructura de contenedores
       - name: Construir y levantar contenedores en segundo plano
-        run: docker compose -f docker-compose.prod.yml up -d --build --pull always
+        run: docker compose -f docker-compose.staging.yml up -d --build --pull always
 
       - name: Instalar dependencias de PHP (Composer) dentro del contenedor
         run: docker exec sistema_laravel_prod composer install --no-ansi --no-interaction --no-progress
