@@ -101,7 +101,7 @@ services:
     restart: always
     volumes:
       - ./cloudflare:/etc/cloudflared
-    command: tunnel run ${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel run ${CLOUDFLARE_TUNNEL_TOKEN_PROD}
     depends_on:
       - nginx
     networks:
