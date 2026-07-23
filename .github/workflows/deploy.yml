@@ -17,6 +17,17 @@ jobs:
     runs-on: [self-hosted, aws-production]
 
     steps:
+      - name: Eliminar archivos bloqueados por root (Docker)
+        run: |
+          # Como Laravel corre como root, los archivos de vendor/ quedan bloqueados y rompen el checkout.
+          # Usamos un contenedor temporal para borrarlos con permisos de root.
+          if [ -d "backend/api/vendor" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
+          fi
+          if [ -d "backend/api/build" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
+          fi
+
       - name: Bajar el nuevo código directamente al servidor
         uses: actions/checkout@v4
 
