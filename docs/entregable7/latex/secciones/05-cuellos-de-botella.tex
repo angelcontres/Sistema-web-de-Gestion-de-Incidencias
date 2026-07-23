@@ -1,0 +1,14 @@
+\section{Detección de Cuellos de Botella}
+
+Basado en el análisis de las muestras por endpoint extraídas, se detectaron los siguientes cuellos de botella críticos:
+
+\begin{enumerate}
+    \item \textbf{Colapso en la carga de Territorios (Grupo 3):} 
+    Durante la prueba de estrés masivo (Grupo 3), el endpoint \texttt{GET territories} promedió un tiempo de respuesta inaceptable de \textbf{51,158 ms (51 segundos)}, con un pico máximo de 96,718 ms. Esto indica que extraer todo el catálogo de territorios simultáneamente agota la memoria/CPU de la base de datos bajo alta concurrencia.
+    
+    \item \textbf{Degradación en Geocodificación (Grupo 1):}
+    El endpoint \texttt{GET geocoding reverse} fue el más lento en la prueba ligera, promediando 3,243 ms. Esto se debe a que realiza peticiones a APIs externas (OpenStreetMap / BigDataCloud), limitando severamente la velocidad de respuesta del propio sistema.
+    
+    \item \textbf{Consulta de Incidencias:}
+    Aunque resistió bien en cargas bajas y medias (1256 ms y 701 ms respectivamente), durante el Grupo 3 (\texttt{GET incidents} con 2161 peticiones) el tiempo se elevó a 2,438 ms de promedio.
+\end{enumerate}

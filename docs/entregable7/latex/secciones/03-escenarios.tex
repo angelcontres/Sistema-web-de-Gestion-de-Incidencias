@@ -1,0 +1,18 @@
+\section{Definición de Escenarios Operativos}
+
+Se definieron tres grupos de prueba (Ramp-up progresivo) atacando simultáneamente múltiples endpoints del sistema:
+
+\begin{table}[h]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|l|p{5cm}|l|}
+\hline
+\textbf{Grupo de Prueba} & \textbf{Nivel de Estrés} & \textbf{Muestras Totales} & \textbf{Endpoints Involucrados} & \textbf{SLA - Hito 1} \\ \hline
+\textbf{Grupo 1} & Carga Ligera (Línea Base) & 1,750 pet. (250 x endpoint) & 7 endpoints (Logins, Incidents, Dashboard, Geocoding) & $<$ 3000ms \\ \hline
+\textbf{Grupo 2} & Carga Media & 4,500 pet. (750 x endpoint) & 6 endpoints (Logins, Incidents, Dashboard) & $<$ 3000ms \\ \hline
+\textbf{Grupo 3} & Carga Pesada (Estrés) & 14,997 pet. ($\sim$2160 x endpoint) & 7 endpoints (Logins, Incidents, Dashboard, Territories) & $<$ 3000ms \\ \hline
+\end{tabular}%
+}
+\caption{Escenarios Operativos de Carga}
+\label{tab:escenarios_carga}
+\end{table}
