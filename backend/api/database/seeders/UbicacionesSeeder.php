@@ -225,7 +225,6 @@ class UbicacionesSeeder extends Seeder
             );
         }
 
-
     }
 
     /**

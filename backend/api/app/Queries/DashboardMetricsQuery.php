@@ -2,16 +2,16 @@
 
 namespace App\Queries;
 
-use Illuminate\Support\Facades\DB;
 use App\Services\TimezoneService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DashboardMetricsQuery
 {
     public function getMetrics($role, $user)
     {
-        $cacheKey = 'dashboard_metrics_' . $role . '_' . ($user ? $user->id : 'guest');
-        
+        $cacheKey = 'dashboard_metrics_'.$role.'_'.($user ? $user->id : 'guest');
+
         return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($role, $user) {
             $now = TimezoneService::nowLocal()->setTimezone('UTC');
             $startOfRange = $now->copy()->subHours(24);
@@ -54,7 +54,7 @@ class DashboardMetricsQuery
 
             } elseif ($role === 'Institucion') {
                 $institucionId = $user->institucion_id;
-                
+
                 $data['kpis'] = [
                     'asignadas' => DB::table('metrics.fact_incidencias')->where('institucion_id', $institucionId)->count(),
                     'en_proceso' => DB::table('metrics.fact_incidencias')
@@ -68,7 +68,7 @@ class DashboardMetricsQuery
                         ->where('metrics.dim_estado.nombre', 'Resuelto')
                         ->count(),
                 ];
-                
+
                 $data['distribucion_estado'] = DB::table('metrics.fact_incidencias')
                     ->where('institucion_id', $institucionId)
                     ->join('metrics.dim_estado', 'metrics.fact_incidencias.estado_id', '=', 'metrics.dim_estado.id')
@@ -76,7 +76,7 @@ class DashboardMetricsQuery
                     ->groupBy('metrics.dim_estado.nombre')
                     ->orderByDesc('value')
                     ->get();
-                    
+
                 $data['tendencia_temporal'] = DB::table('metrics.fact_incidencias')
                     ->where('institucion_id', $institucionId)
                     ->join('metrics.dim_tiempo', 'metrics.fact_incidencias.tiempo_id', '=', 'metrics.dim_tiempo.id')
@@ -85,7 +85,7 @@ class DashboardMetricsQuery
                     ->groupBy(DB::raw("DATE_TRUNC('hour', metrics.dim_tiempo.fecha)"))
                     ->orderBy('metric', 'ASC')
                     ->get();
-                    
+
             } elseif ($role === 'Supervisor' || $role === 'Admin') {
                 $data['kpis'] = [
                     'totales' => DB::table('metrics.fact_incidencias')->count(),
@@ -99,21 +99,21 @@ class DashboardMetricsQuery
                         ->where('metrics.dim_estado.nombre', 'Pendiente')
                         ->count(),
                 ];
-                
+
                 $data['distribucion_estado'] = DB::table('metrics.fact_incidencias')
                     ->join('metrics.dim_estado', 'metrics.fact_incidencias.estado_id', '=', 'metrics.dim_estado.id')
                     ->select('metrics.dim_estado.nombre as metric', DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
                     ->groupBy('metrics.dim_estado.nombre')
                     ->orderByDesc('value')
                     ->get();
-                    
+
                 $data['incidencias_institucion'] = DB::table('metrics.fact_incidencias')
                     ->leftJoin('metrics.dim_institucion', 'metrics.fact_incidencias.institucion_id', '=', 'metrics.dim_institucion.id')
                     ->select(DB::raw('COALESCE(metrics.dim_institucion.nombre, \'Sin Asignar\') as metric'), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))
                     ->groupBy('metrics.dim_institucion.nombre')
                     ->orderByDesc('value')
                     ->get();
-                    
+
                 $data['tendencia_temporal'] = DB::table('metrics.fact_incidencias')
                     ->join('metrics.dim_tiempo', 'metrics.fact_incidencias.tiempo_id', '=', 'metrics.dim_tiempo.id')
                     ->select(DB::raw("DATE_TRUNC('hour', metrics.dim_tiempo.fecha) as metric"), DB::raw('COUNT(metrics.fact_incidencias.id) as value'))

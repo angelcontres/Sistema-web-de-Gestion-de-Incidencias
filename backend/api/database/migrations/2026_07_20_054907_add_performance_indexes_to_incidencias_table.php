@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -17,7 +17,7 @@ return new class extends Migration
         });
 
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement("CREATE INDEX IF NOT EXISTS direcciones_ubicacion_gist ON direcciones USING GIST (ubicacion);");
+            DB::statement('CREATE INDEX IF NOT EXISTS direcciones_ubicacion_gist ON direcciones USING GIST (ubicacion);');
         }
     }
 

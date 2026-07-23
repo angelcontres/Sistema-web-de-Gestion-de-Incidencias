@@ -35,6 +35,7 @@ class TerritorioController extends Controller
         }
 
         $perPage = $request->input('per_page', 15);
+
         return response()->json($query->orderBy('nombre')->paginate($perPage), 200);
     }
 

@@ -7,6 +7,7 @@ use App\Models\Direccion;
 use App\Models\Territorio;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class DireccionController extends Controller
@@ -32,6 +33,7 @@ class DireccionController extends Controller
         }
 
         $perPage = $request->input('per_page', 15);
+
         return response()->json($query->orderBy('id', 'desc')->paginate($perPage), 200);
     }
 
@@ -58,8 +60,8 @@ class DireccionController extends Controller
             'activo' => $request->input('activo', true),
         ]);
 
-        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_all');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_' . $direccion->territorio_id);
+        Cache::forget('catalogo_direcciones_all');
+        Cache::forget('catalogo_direcciones_'.$direccion->territorio_id);
 
         return response()->json([
             'message' => 'Dirección creada con éxito',
@@ -117,9 +119,9 @@ class DireccionController extends Controller
             'activo',
         ]));
 
-        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_all');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_' . $oldTerritorioId);
-        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_' . $direccion->territorio_id);
+        Cache::forget('catalogo_direcciones_all');
+        Cache::forget('catalogo_direcciones_'.$oldTerritorioId);
+        Cache::forget('catalogo_direcciones_'.$direccion->territorio_id);
 
         return response()->json([
             'message' => 'Dirección actualizada con éxito',
@@ -143,8 +145,8 @@ class DireccionController extends Controller
         $territorioId = $direccion->territorio_id;
         $direccion->delete();
 
-        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_all');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_direcciones_' . $territorioId);
+        Cache::forget('catalogo_direcciones_all');
+        Cache::forget('catalogo_direcciones_'.$territorioId);
 
         return response()->json([
             'message' => 'Dirección eliminada con éxito',
@@ -188,7 +190,7 @@ class DireccionController extends Controller
         }
 
         // 2. Fallback: Intentar con BigDataCloud
-        if (!$result) {
+        if (! $result) {
             try {
                 $response = Http::timeout(3)
                     ->withoutVerifying()
@@ -237,9 +239,9 @@ class DireccionController extends Controller
                 $codigoLimpio = (string) (int) $postcode;
 
                 $territorio = Territorio::where('tipo', 'Parroquia')
-                    ->where(function($query) use ($postcode, $codigoLimpio) {
+                    ->where(function ($query) use ($postcode, $codigoLimpio) {
                         $query->where('codigo', $postcode)
-                              ->orWhere('codigo', $codigoLimpio);
+                            ->orWhere('codigo', $codigoLimpio);
                     })->first();
 
                 if ($territorio) {
@@ -276,9 +278,9 @@ class DireccionController extends Controller
                         $cantonCodeLimpio = (string) (int) $cantonCode;
 
                         $canton = Territorio::where('tipo', 'Canton')
-                            ->where(function($query) use ($cantonCode, $cantonCodeLimpio) {
+                            ->where(function ($query) use ($cantonCode, $cantonCodeLimpio) {
                                 $query->where('codigo', $cantonCode)
-                                      ->orWhere('codigo', $cantonCodeLimpio);
+                                    ->orWhere('codigo', $cantonCodeLimpio);
                             })->first();
 
                         if ($canton) {
@@ -293,6 +295,7 @@ class DireccionController extends Controller
                     }
                 }
             }
+
             return response()->json($result, 200);
         }
 

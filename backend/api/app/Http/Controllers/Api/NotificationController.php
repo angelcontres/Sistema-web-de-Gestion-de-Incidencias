@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
@@ -18,7 +18,6 @@ class NotificationController extends Controller
         $user = $request->user();
         $unreadCount = $user->unreadNotifications()->count();
         $notifications = $user->notifications()->latest()->take(15)->get();
-
 
         return response()->json([
             'status' => 'success',
@@ -46,10 +45,9 @@ class NotificationController extends Controller
     public function markAsRead(Request $request, string $id): JsonResponse
     {
         $notification = $request->user()
-                                ->notifications()
-                                ->where('id', $id)
-                                ->firstOrFail();
-
+            ->notifications()
+            ->where('id', $id)
+            ->firstOrFail();
 
         $notification->markAsRead();
 

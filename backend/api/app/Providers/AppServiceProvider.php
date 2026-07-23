@@ -6,6 +6,7 @@ use App\Services\Contracts\PermissionServiceInterface;
 use App\Services\Contracts\RoleServiceInterface;
 use App\Services\PermissionService;
 use App\Services\RoleService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,8 +28,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if (app()->environment('testing') && \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite') {
-            \Illuminate\Support\Facades\DB::statement("ATTACH DATABASE ':memory:' AS metrics");
+        if (app()->environment('testing') && DB::connection()->getDriverName() === 'sqlite') {
+            DB::statement("ATTACH DATABASE ':memory:' AS metrics");
         }
     }
 }
