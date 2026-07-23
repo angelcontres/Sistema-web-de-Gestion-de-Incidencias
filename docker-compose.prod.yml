@@ -135,6 +135,7 @@ services:
     environment:
       POSTGRES_USER: sonar
       POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD}
+      POSTGRES_DB: sonarqube
     volumes:
       - sonarqube_db_data_prod:/var/lib/postgresql/data
     networks:
