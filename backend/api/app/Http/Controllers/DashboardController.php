@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Incidencia;
+use App\Queries\DashboardMetricsQuery;
 use App\Services\TimezoneService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -124,11 +125,11 @@ class DashboardController extends Controller
             })->values();
     }
 
-    public function metrics(Request $request, \App\Queries\DashboardMetricsQuery $metricsQuery)
+    public function metrics(Request $request, DashboardMetricsQuery $metricsQuery)
     {
         $role = $request->query('role', 'Ciudadano');
         $user = $request->user();
-        
+
         $data = $metricsQuery->getMetrics($role, $user);
 
         return response()->json($data);

@@ -300,7 +300,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call(NotificationSeeder::class);
 
-
         // Ejecutar ETL inicial para asegurar que las dimensiones del Data Warehouse estén pobladas
         Artisan::call('etl:run');
 

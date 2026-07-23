@@ -1,8 +1,5 @@
-// Importamos Echo y Pusher (asegúrate de haber ejecutado npm i @laravel/echo pusher-js
-// o imfórmalos vía CDN en tu index.html si no usas un bundler como Vite)
 import Echo from 'https://esm.sh/laravel-echo@^1.16.0';
 import Pusher from 'https://esm.sh/pusher-js@^8.4.0';
-
 
 window.Pusher = Pusher;
 
@@ -10,17 +7,20 @@ export function initEcho() {
   const token = localStorage.getItem('access_token');
   if (!token) return null;
 
+  const isProduction = window.location.protocol === 'https:';
+  const currentPort = window.location.port || (isProduction ? 443 : 80);
+
   return new Echo({
     broadcaster: 'reverb',
-    key: 'my-app-key', // El mismo EVERB_APP_KEY de tu .env
+    key: 'my-app-key',
     wsHost: window.location.hostname,
-    wsPort: 8080,
-    wssPort: 8080,
-    forceTLS: false, // Ponlo en true cuando pases a HTTPS en producción
+
+    wsPort: currentPort,
+    wssPort: currentPort,
+
+    forceTLS: isProduction,
     enabledTransports: ['ws', 'wss'],
-    
-    // VITAL PARA SANCTUM: Enviamos tu token para poder entrar al canal privado
-    authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+    authEndpoint: '/api/broadcasting/auth',
     auth: {
       headers: {
         Authorization: `Bearer ${token}`,

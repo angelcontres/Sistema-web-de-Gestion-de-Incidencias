@@ -16,7 +16,7 @@ limpiar_procesos() {
     kill $pids 2>/dev/null || true
   fi
   # Por seguridad extra, libera los puertos por si acaso
-  fuser -k 8000/tcp 8080/tcp 3000/tcp 2>/dev/null || true
+  fuser -k 8001/tcp 8083/tcp 3006/tcp 2>/dev/null || true
   
   gum style --foreground 160 "[INFO] Todos los servicios fueron cerrados limpiamente."
   exit 0
@@ -26,7 +26,7 @@ limpiar_procesos() {
 trap limpiar_procesos SIGINT SIGTERM
 
 # Limpieza silenciosa por si quedaron procesos zombis de ejecuciones anteriores
-fuser -k 8000/tcp 8080/tcp 3000/tcp 2>/dev/null || true
+fuser -k 8001/tcp 8083/tcp 3006/tcp 2>/dev/null || true
 
 # ==========================================
 # 1. ENCABEZADO FORMAL
@@ -45,10 +45,10 @@ gum style \
 # ==========================================
 echo "Seleccione los servicios que desea iniciar:"
 SERVICIOS=$(gum choose --no-limit --cursor="> " \
-  --selected="Laravel API (8000),WebSockets Reverb (8080),Frontend Python (3000)" \
-  "Laravel API (8000)" \
-  "WebSockets Reverb (8080)" \
-  "Frontend Python (3000)")
+  --selected="Laravel API (8001),WebSockets Reverb (8083),Frontend Python (3006)" \
+  "Laravel API (8001)" \
+  "WebSockets Reverb (8083)" \
+  "Frontend Python (3006)")
 
 if [ -z "$SERVICIOS" ]; then
   gum style --foreground 160 "[INFO] Operacion cancelada. No se seleccionaron servicios."
@@ -68,26 +68,26 @@ echo ""
 # ==========================================
 # 4. INICIALIZACIÓN EN SEGUNDO PLANO
 # ==========================================
-if echo "$SERVICIOS" | grep -q "Laravel API (8000)"; then
-  gum spin --spinner line --title "Iniciando Laravel API en puerto 8000..." -- sleep 1
-  (cd backend/api && php artisan serve) &
-  gum style --foreground 70 "[OK] Laravel API: http://localhost:8000"
+if echo "$SERVICIOS" | grep -q "Laravel API (8001)"; then
+  gum spin --spinner line --title "Iniciando Laravel API en puerto 8001..." -- sleep 1
+  (cd backend/api && php artisan serve --port=8001) &
+  gum style --foreground 70 "[OK] Laravel API: http://localhost:8001"
 fi
 
-if echo "$SERVICIOS" | grep -q "WebSockets Reverb (8080)"; then
+if echo "$SERVICIOS" | grep -q "WebSockets Reverb (8083)"; then
   gum spin --spinner line --title "Iniciando servidor de WebSockets Reverb..." -- sleep 1
-  (cd backend/api && php artisan reverb:start) &
-  gum style --foreground 70 "[OK] Servidor Reverb activo en puerto 8080"
+  (cd backend/api && php artisan reverb:start --port=8083) &
+  gum style --foreground 70 "[OK] Servidor Reverb activo en puerto 8083"
 fi
 
-if echo "$SERVICIOS" | grep -q "Frontend Python (3000)"; then
+if echo "$SERVICIOS" | grep -q "Frontend Python (3006)"; then
   gum spin --spinner line --title "Iniciando servidor HTTP de Frontend..." -- sleep 1
   if command -v python3 &> /dev/null; then
-    (cd frontend && python3 -m http.server 3000) &
+    (cd frontend && python3 -m http.server 3006) &
   else
-    (cd frontend && python -m http.server 3000) &
+    (cd frontend && python -m http.server 3006) &
   fi
-  gum style --foreground 70 "[OK] Frontend: http://localhost:3000"
+  gum style --foreground 70 "[OK] Frontend: http://localhost:3006"
 fi
 
 echo ""

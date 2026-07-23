@@ -4,8 +4,8 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Notification;
 
 class IssueStatusChangedNotification extends Notification implements ShouldQueue
 {
@@ -36,7 +36,7 @@ class IssueStatusChangedNotification extends Notification implements ShouldQueue
      *
      * @return array<string, mixed>
      */
-   public function toArray(object $notifiable): array
+    public function toArray(object $notifiable): array
     {
         return [
             'title' => $this->data['title'],
@@ -50,8 +50,6 @@ class IssueStatusChangedNotification extends Notification implements ShouldQueue
 
     /**
      * Get the broadcastable representation of the notification.
-     * 
-     * @return \Illuminate\Notifications\Messages\BroadcastMessage
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {

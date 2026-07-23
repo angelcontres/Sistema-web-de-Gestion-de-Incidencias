@@ -22,6 +22,7 @@ class OpcionMenuController extends Controller
             } else {
                 $opciones = $query->with('padre')->get();
             }
+
             return response()->json([
                 'status' => 'success',
                 'data' => $opciones,
@@ -29,6 +30,7 @@ class OpcionMenuController extends Controller
         }
 
         $perPage = $request->input('per_page', 15);
+
         return response()->json($query->with('padre')->paginate($perPage));
     }
 
