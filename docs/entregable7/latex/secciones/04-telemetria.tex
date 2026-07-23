@@ -1,0 +1,39 @@
+\section{Telemetría de Indicadores \& Gráficos}
+A continuación, se tabulan los resultados obtenidos para el conjunto global de cada prueba y se adjuntan los gráficos generados por JMeter.
+\subsection{Tabla Consolidada de Resultados (Promedios Globales)}
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{Grupo de Prueba} & \textbf{Tiempo Promedio (ms)} & \textbf{Tiempo Máximo (ms)} & \textbf{Throughput (Req/s)} & \textbf{Tasa de Error (\%)} \\ \hline
+\textbf{Grupo 1} & 1,521 ms & 5,902 ms & 13.97 req/s & 0.000 \% \\ \hline
+\textbf{Grupo 2} & \textbf{696 ms} & 3,260 ms & \textbf{57.01 req/s} & 0.000 \% \\ \hline
+\textbf{Grupo 3} & 8,186 ms & 96,718 ms & 17.81 req/s & 0.007 \% \\ \hline
+\end{tabular}%
+}
+\caption{Resumen de telemetría de rendimiento}
+\label{tab:telemetria}
+\end{table}
+\subsection{Gráficos de Comportamiento}
+\subsubsection{Resultados - Grupo 1 (Carga Ligera)}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/grafico-grupo1.png}
+    \caption{Tiempos de respuesta para el Grupo 1}
+    \label{fig:grupo1}
+\end{figure}
+\subsubsection{Resultados - Grupo 2 (Carga Media)}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/grafico-grupo2.png}
+    \caption{Tiempos de respuesta para el Grupo 2}
+    \label{fig:grupo2}
+\end{figure}
+\subsubsection{Resultados - Grupo 3 (Carga Pesada / Estrés)}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../imagenes/grafico-grupo3.png}
+    \caption{Tiempos de respuesta para el Grupo 3}
+    \label{fig:grupo3}
+\end{figure}
