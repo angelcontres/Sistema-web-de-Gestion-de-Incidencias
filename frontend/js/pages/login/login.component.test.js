@@ -8,15 +8,19 @@ describe('LoginComponent', () => {
     const fakeElements = {};
 
     component.querySelector = jest.fn((selector) => {
+      const defaultElement = {
+        addEventListener: jest.fn(),
+        classList: { add: jest.fn(), remove: jest.fn() },
+        value: '',
+        textContent: '',
+        disabled: false,
+        checkValidity: jest.fn(() => true)
+      };
+      
       if (!fakeElements[selector]) {
-        fakeElements[selector] = {
-          addEventListener: jest.fn(),
-          classList: { add: jest.fn(), remove: jest.fn() },
-          value: '',
-          textContent: '',
-          disabled: false,
-          checkValidity: jest.fn(() => true)
-        };
+        fakeElements[selector] = defaultElement;
+      } else {
+        fakeElements[selector] = { ...defaultElement, ...fakeElements[selector] };
       }
       return fakeElements[selector];
     });

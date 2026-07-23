@@ -31,6 +31,33 @@ fuser -k 8001/tcp 8083/tcp 3006/tcp 2>/dev/null || true
 # ==========================================
 # 1. ENCABEZADO FORMAL
 # ==========================================
+if ! command -v gum &> /dev/null; then
+  echo "------------------------------------------------------"
+  echo "SISTEMA DE GESTION DE INCIDENCIAS"
+  echo "Iniciando todos los servicios por defecto..."
+  echo "(Nota: Instala 'gum' para tener menu interactivo)"
+  echo "------------------------------------------------------"
+  
+  (cd backend/api && php artisan serve --port=8001) &
+  echo "[OK] Laravel API: http://localhost:8001"
+  
+  (cd backend/api && php artisan reverb:start --port=8083) &
+  echo "[OK] Servidor Reverb activo en puerto 8083"
+  
+  if command -v python3 &> /dev/null; then
+    (cd frontend && python3 -m http.server 3006) &
+  elif command -v python &> /dev/null; then
+    (cd frontend && python -m http.server 3006) &
+  else
+    (cd frontend && php -S 127.0.0.1:3006 > /dev/null 2>&1) &
+  fi
+  echo "[OK] Frontend: http://localhost:3006"
+  echo ""
+  echo "Los servicios se encuentran ejecutando en segundo plano."
+  echo "Presione [CTRL + C] en esta terminal para detener todos los procesos."
+  wait
+  exit 0
+fi
 gum style \
   --border normal \
   --border-foreground 240 \
@@ -84,8 +111,11 @@ if echo "$SERVICIOS" | grep -q "Frontend Python (3006)"; then
   gum spin --spinner line --title "Iniciando servidor HTTP de Frontend..." -- sleep 1
   if command -v python3 &> /dev/null; then
     (cd frontend && python3 -m http.server 3006) &
-  else
+  elif command -v python &> /dev/null; then
     (cd frontend && python -m http.server 3006) &
+  else
+    gum style --foreground 136 "[INFO] Python no encontrado, usando servidor de PHP..."
+    (cd frontend && php -S 127.0.0.1:3006 > /dev/null 2>&1) &
   fi
   gum style --foreground 70 "[OK] Frontend: http://localhost:3006"
 fi
