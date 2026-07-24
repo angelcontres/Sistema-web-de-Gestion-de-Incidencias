@@ -17,15 +17,11 @@ class CheckResourcePermission
     {
         $user = $request->user();
 
-        // If no user is authenticated, we assume other middlewares (like auth:sanctum) will handle it,
-        // but just in case, we return 401.
         if (! $user) {
             return response()->json(['message' => 'No autorizado'], 401);
         }
 
-        // Action Mapping
-        $method = $request->method();
-        $accion = match ($method) {
+        $accion = match ($request->method()) {
             'GET' => 'READ',
             'POST' => 'CREATE',
             'PUT', 'PATCH' => 'UPDATE',
@@ -37,60 +33,39 @@ class CheckResourcePermission
             return response()->json(['message' => 'Método HTTP no soportado'], 405);
         }
 
-        $routeName = $request->route() ? $request->route()->getName() : null;
+        $routeName = $request->route()?->getName();
 
-        // Si la ruta no tiene nombre explícito o es auto-generada por Laravel 11, se asume que no está protegida por recursos (ej. /v1/me, /v1/logout)
         if (! $routeName || str_starts_with($routeName, 'generated::')) {
             return $next($request);
         }
 
-        // Extraer el recurso base del nombre de la ruta (ej: "opciones.index" -> "opciones")
         $recurso = explode('.', $routeName)[0];
 
-        // Validation
-        $user->load('roles.permisos');
-        $hasPermission = false;
+        $user->loadMissing('roles.permisos');
 
-        foreach ($user->roles as $role) {
-            foreach ($role->permisos as $permiso) {
-                if ($permiso->accion === $accion && $permiso->recurso === $recurso) {
-                    $hasPermission = true;
-                    break 2;
-                }
-
-            }
-        }
+        $hasPermission = $user->roles->flatMap->permisos
+            ->contains(fn ($permiso) => $permiso->accion === $accion && $permiso->recurso === $recurso);
 
         if (! $hasPermission) {
-
-            $strAccionLower = strtolower($accion);
-
-            if ($strAccionLower == 'read') {
-                return response()->json([
-                    'message' => 'No tiene permisos para consultar este recurso: '.strtolower($recurso),
-                ], 403);
-            }
-            if ($strAccionLower == 'create') {
-                return response()->json([
-                    'message' => 'No tiene permisos para crear este recurso: '.strtolower($recurso),
-                ], 403);
-            }
-            if ($strAccionLower == 'update') {
-                return response()->json([
-                    'message' => 'No tiene permisos para actualizar este recurso: '.strtolower($recurso),
-                ], 403);
-            }
-            if ($strAccionLower == 'delete') {
-                return response()->json([
-                    'message' => 'No tiene permisos para eliminar este recurso'.strtolower($recurso),
-                ], 403);
-            }
-
-            return response()->json([
-                'message' => 'No tiene permisos '.strtolower($recurso).':'.strtolower($accion),
-            ], 403);
+            return $this->buildErrorResponse($accion, $recurso);
         }
 
         return $next($request);
+    }
+
+    private function buildErrorResponse(string $accion, string $recurso): Response
+    {
+        $accionLower = strtolower($accion);
+        $recursoLower = strtolower($recurso);
+
+        $message = match ($accionLower) {
+            'read' => "No tiene permisos para consultar este recurso: {$recursoLower}",
+            'create' => "No tiene permisos para crear este recurso: {$recursoLower}",
+            'update' => "No tiene permisos para actualizar este recurso: {$recursoLower}",
+            'delete' => "No tiene permisos para eliminar este recurso: {$recursoLower}",
+            default => "No tiene permisos {$recursoLower}:{$accionLower}",
+        };
+
+        return response()->json(['message' => $message], 403);
     }
 }

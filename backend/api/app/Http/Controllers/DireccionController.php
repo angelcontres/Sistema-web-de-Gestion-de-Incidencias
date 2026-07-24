@@ -42,12 +42,8 @@ class DireccionController extends Controller
      */
     public function store(DireccionesRequest $request)
     {
-        $user = auth()->user();
-        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
-            $territorio = Territorio::findOrFail($request->territorio_id);
-            if ($territorio->pais_id != $user->pais_id) {
-                return response()->json(['message' => 'El territorio seleccionado debe pertenecer a su país asignado.'], 403);
-            }
+        if (! $this->checkTerritoryPermission(auth()->user(), $request->territorio_id)) {
+            return response()->json(['message' => 'El territorio seleccionado debe pertenecer a su país asignado.'], 403);
         }
 
         $direccion = Direccion::create([
@@ -98,11 +94,8 @@ class DireccionController extends Controller
             if ($direccion->territorio?->pais_id != $user->pais_id) {
                 return response()->json(['message' => 'No autorizado para modificar esta dirección.'], 403);
             }
-            if ($request->has('territorio_id')) {
-                $territorio = Territorio::findOrFail($request->territorio_id);
-                if ($territorio->pais_id != $user->pais_id) {
-                    return response()->json(['message' => 'El nuevo territorio seleccionado debe pertenecer a su país asignado.'], 403);
-                }
+            if ($request->has('territorio_id') && ! $this->checkTerritoryPermission($user, $request->territorio_id)) {
+                return response()->json(['message' => 'El nuevo territorio seleccionado debe pertenecer a su país asignado.'], 403);
             }
         }
 
@@ -252,42 +245,56 @@ class DireccionController extends Controller
 
     private function detectTerritoryFromPostcode($postcode)
     {
-        $codigoLimpio = (string) (int) $postcode;
-
-        $territorio = Territorio::where('tipo', 'Parroquia')
-            ->where(function ($query) use ($postcode, $codigoLimpio) {
-                $query->where('codigo', $postcode)->orWhere('codigo', $codigoLimpio);
-            })->first();
-
+        $territorio = $this->findParroquiaByPostcode($postcode);
         if ($territorio) {
             return $this->formatTerritoryResult($territorio);
         }
 
-        $direccionMapeada = Direccion::with('territorio')->where('codigo_postal', $postcode)->first();
-        if ($direccionMapeada && $direccionMapeada->territorio) {
-            return $this->formatTerritoryResult($direccionMapeada->territorio);
+        $territorio = $this->findTerritorioByDireccionMapeada($postcode);
+        if ($territorio) {
+            return $this->formatTerritoryResult($territorio);
         }
 
+        $canton = $this->findCantonByPostcode($postcode);
+        return $canton ? $this->formatCantonResult($canton) : null;
+    }
+
+    private function findParroquiaByPostcode($postcode): ?Territorio
+    {
+        $codigoLimpio = (string) (int) $postcode;
+        return Territorio::where('tipo', 'Parroquia')
+            ->where(function ($query) use ($postcode, $codigoLimpio) {
+                $query->where('codigo', $postcode)->orWhere('codigo', $codigoLimpio);
+            })->first();
+    }
+
+    private function findTerritorioByDireccionMapeada($postcode): ?Territorio
+    {
+        $direccion = Direccion::with('territorio')->where('codigo_postal', $postcode)->first();
+        return $direccion?->territorio;
+    }
+
+    private function findCantonByPostcode($postcode): ?Territorio
+    {
         $padded = str_pad($postcode, 6, '0', STR_PAD_LEFT);
         $cantonCode = substr($padded, 0, 4);
         $cantonCodeLimpio = (string) (int) $cantonCode;
 
-        $canton = Territorio::where('tipo', 'Canton')
+        return Territorio::where('tipo', 'Canton')
             ->where(function ($query) use ($cantonCode, $cantonCodeLimpio) {
                 $query->where('codigo', $cantonCode)->orWhere('codigo', $cantonCodeLimpio);
             })->first();
+    }
 
-        if ($canton) {
-            $provincia = $canton->parent;
-            return [
-                'parroquia_id' => null,
-                'canton_id' => $canton->id,
-                'provincia_id' => $provincia ? $provincia->id : null,
-                'pais_id' => $canton->pais_id,
-            ];
-        }
-
-        return null;
+    private function formatCantonResult(Territorio $canton)
+    {
+        $provincia = $canton->parent;
+        return [
+            'parroquia_id' => null,
+            'canton_id' => $canton->id,
+            'provincia_id' => $provincia ? $provincia->id : null,
+            'pais_id' => $canton->pais_id,
+        ];
     }
 
     private function formatTerritoryResult(Territorio $territorio)
@@ -301,5 +308,18 @@ class DireccionController extends Controller
             'provincia_id' => $provincia ? $provincia->id : null,
             'pais_id' => $territorio->pais_id,
         ];
+    }
+
+    /**
+     * Valida que el usuario tenga permiso para operar sobre el territorio indicado.
+     */
+    private function checkTerritoryPermission(?User $user, ?int $territorioId): bool
+    {
+        if (! $user || $user->roles()->where('nombre', 'Admin')->exists() || ! $user->pais_id || ! $territorioId) {
+            return true;
+        }
+
+        $territorio = Territorio::findOrFail($territorioId);
+        return $territorio->pais_id == $user->pais_id;
     }
 }

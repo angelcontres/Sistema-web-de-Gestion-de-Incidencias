@@ -3,15 +3,15 @@
 > **Nota para el Agente:** Documenta aquí tu progreso. Cuando cierres la sesión (ver `AGENTS.md`), mueve el resumen al final de `history.md` y deja esta plantilla limpia para el siguiente agente.
 
 ## Feature en desarrollo
-**Nombre:** N/A
-**ID en feature_list.json:** N/A
-**Status actual:** N/A
+**Nombre:** [Nombre de la feature]
+**ID en feature_list.json:** [ID]
+**Status actual:** [pending | spec_ready | in_progress | done]
 
 ## Últimos cambios realizados
-- (Vacío)
+- [Lista de cambios]
 
 ## Problemas actuales / Bloqueos
-- Ninguno
+- [Lista de problemas]
 
 ## Próximos pasos
-- Identificar siguiente tarea
+- [Lista de próximos pasos]

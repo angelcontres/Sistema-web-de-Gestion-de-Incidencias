@@ -59,8 +59,8 @@ class IssueNotificationServiceTest extends TestCase
         Notification::assertSentTo(
             [$cliente, $userInstitucion],
             IssueStatusChangedNotification::class,
-            function ($notification, $notifiable) use ($incidencia) {
-                return str_contains($notification->toArray($notifiable)['url'], (string)$incidencia->id);
+            function ($notification, $channels) use ($incidencia, $cliente) {
+                return str_contains($notification->toArray($cliente)['url'], (string)$incidencia->id);
             }
         );
     }
@@ -90,8 +90,8 @@ class IssueNotificationServiceTest extends TestCase
         Notification::assertSentTo(
             $assignedUser,
             IssueAssignedNotification::class,
-            function ($notification, $notifiable) use ($incidencia) {
-                return str_contains($notification->toArray($notifiable)['url'], (string)$incidencia->id);
+            function ($notification, $channels) use ($incidencia, $assignedUser) {
+                return str_contains($notification->toArray($assignedUser)['url'], (string)$incidencia->id);
             }
         );
     }
