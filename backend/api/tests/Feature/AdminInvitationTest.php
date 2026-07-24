@@ -31,16 +31,19 @@ class AdminInvitationTest extends TestCase
 
         $targetRole = Role::where('nombre', 'Supervisor')->first();
 
-        $response = $this->actingAs($admin)->postJson('/api/v1/admin/users/invite', [
-            'email' => 'operador@example.com',
+        $response = $this->actingAs($admin)->postJson('/api/v1/users', [
             'name' => 'Test Supervisor',
-            'role_id' => $targetRole->id,
+            'username' => 'test_supervisor',
+            'email' => 'operador@example.com',
+            'roles' => [$targetRole->id],
         ]);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('user_invitations', [
             'email' => 'operador@example.com',
-            'role_id' => $targetRole->id,
+        ]);
+        $this->assertDatabaseHas('users', [
+            'email' => 'operador@example.com',
         ]);
 
         Notification::assertSentOnDemand(UserInvitationNotification::class);
@@ -54,10 +57,11 @@ class AdminInvitationTest extends TestCase
 
         $targetRole = Role::where('nombre', 'Supervisor')->first();
 
-        $response = $this->actingAs($citizen)->postJson('/api/v1/admin/users/invite', [
-            'email' => 'operador2@example.com',
+        $response = $this->actingAs($citizen)->postJson('/api/v1/users', [
             'name' => 'Test Supervisor 2',
-            'role_id' => $targetRole->id,
+            'username' => 'test_supervisor_2',
+            'email' => 'operador2@example.com',
+            'roles' => [$targetRole->id],
         ]);
 
         // Debe ser 403 Forbidden por CheckResourcePermission
@@ -70,10 +74,14 @@ class AdminInvitationTest extends TestCase
 
         $targetRole = Role::where('nombre', 'Supervisor')->first();
 
-        UserInvitation::create([
+        User::factory()->create([
             'email' => 'newuser@example.com',
             'name' => 'New User',
-            'role_id' => $targetRole->id,
+            'email_verified_at' => null,
+        ]);
+
+        UserInvitation::create([
+            'email' => 'newuser@example.com',
             'token' => 'test-token-123',
             'expires_at' => now()->addHours(24),
         ]);
@@ -84,7 +92,7 @@ class AdminInvitationTest extends TestCase
             'password_confirmation' => 'Password123!',
         ]);
 
-        $response->assertStatus(201);
+        $response->assertStatus(200);
         $response->assertJsonStructure(['access_token']);
 
         $this->assertDatabaseHas('users', [

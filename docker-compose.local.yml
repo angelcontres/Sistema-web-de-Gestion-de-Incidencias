@@ -77,6 +77,17 @@ services:
     networks:
       - sistema_incidencias_net_local
 
+  # Mailpit para pruebas de envío de correos en local
+  mailpit:
+    image: axllent/mailpit
+    container_name: sistema_mailpit_local
+    restart: always
+    ports:
+      - "8025:8025" # Interfaz Web
+      - "1025:1025" # Servidor SMTP falso
+    networks:
+      - sistema_incidencias_net_local
+
 networks:
   sistema_incidencias_net_local:
     name: sistema_incidencias_net_local

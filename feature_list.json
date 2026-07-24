@@ -185,7 +185,7 @@
       ],
       "sdd": true,
       "priority": "high",
-      "status": "in_progress",
+      "status": "done",
       "references": [
         "docs/01_analisis/casos_uso_descripcion.md",
         "routes/api.php",

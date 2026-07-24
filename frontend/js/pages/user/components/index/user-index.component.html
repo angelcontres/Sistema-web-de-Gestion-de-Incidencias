@@ -8,72 +8,17 @@
         sistema.
       </p>
     </div>
-    <!-- Botones de Acción -->
     <div class="d-flex gap-2">
-      <button
-        id="btn-invitar-usuario"
-        class="btn btn-secondary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2"
-        data-bs-toggle="modal"
-        data-bs-target="#inviteUserModal"
-      >
-        <i class="bi bi-envelope"></i> Invitar Usuario
-      </button>
       <a
         id="btn-nuevo-registro"
         href="#/usuarios/form"
         class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2"
       >
-        <i class="bi bi-person-plus"></i> Nuevo Registro
+        <i class="bi bi-envelope"></i> Invitar Usuario
       </a>
     </div>
   </div>
 
   <!-- Tabla Auto-Contenida -->
   <app-data-table id="tbl-datos-usuarios" title="Lista de Usuarios" empty-text="No se encontraron usuarios registrados."></app-data-table>
-
-  <!-- Modal Invitar Usuario -->
-  <div class="modal fade" id="inviteUserModal" tabindex="-1" aria-labelledby="inviteUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow">
-        <form id="form-invite-user">
-          <div class="modal-header border-bottom border-light">
-            <h5 class="modal-title fw-bold" id="inviteUserModalLabel">Invitar mediante Enlace Mágico</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body p-4">
-            <p class="text-muted small mb-4">
-              Enviaremos un correo electrónico con un enlace seguro de un solo uso para que el usuario configure su propia contraseña de acceso.
-            </p>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Nombre del Usuario</label>
-              <input type="text" class="form-control" name="name" required placeholder="Ej. Juan Pérez">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Correo Electrónico</label>
-              <input type="email" class="form-control" name="email" required placeholder="juan@ejemplo.com">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Rol a Asignar</label>
-              <select class="form-select" name="role_id" required id="select-invite-role">
-                <option value="">Seleccione un rol...</option>
-              </select>
-            </div>
-            <div class="mb-3" id="container-invite-institution" style="display: none;">
-              <label class="form-label fw-semibold">Institución</label>
-              <select class="form-select" name="institution_id" id="select-invite-institution">
-                <option value="">Seleccione una institución...</option>
-              </select>
-            </div>
-          </div>
-          <div class="modal-footer border-top border-light">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary px-4" id="btn-submit-invite">
-              <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="spinner-submit-invite"></span>
-              Enviar Invitación
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 </div>

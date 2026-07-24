@@ -96,18 +96,14 @@ class AuthController extends Controller
             return response()->json(['message' => 'El enlace de activación ha expirado.'], 422);
         }
 
-        $user = User::create([
-            'email' => $invitation->email,
-            'username' => strtolower(explode('@', $invitation->email)[0]) . '_' . rand(100, 999), // O simplemente $invitation->email, pero username podría tener límite de longitud.
-            'name' => $invitation->name,
-            'password' => Hash::make($validated['password']),
-            'activo' => true,
-            'institucion_id' => $invitation->institution_id,
-        ]);
+        $user = User::where('email', $invitation->email)->first();
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado.'], 404);
+        }
+
+        $user->password = Hash::make($validated['password']);
         $user->email_verified_at = now();
         $user->save();
-
-        $user->roles()->attach($invitation->role_id);
         
         $invitation->delete();
 
@@ -119,7 +115,7 @@ class AuthController extends Controller
             'message' => 'Cuenta activada exitosamente.',
             'access_token' => $token,
             'token_type' => 'Bearer',
-        ], 201);
+        ], 200);
     }
 
     public function logout(Request $request): JsonResponse

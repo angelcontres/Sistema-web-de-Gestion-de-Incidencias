@@ -95,3 +95,4 @@
 - Componente `app-activate-account` añadido para mostrar una estética premium en la confirmación de la invitación donde el usuario introduce su nueva contraseña.
 - Se reparó el test arquitectónico `DashboardMetricsArchitectureTest` debido a que verificaba esquemas que ahora no corren en los entornos de prueba SQLite.
 - Tests (PHPUnit) en verde. `init.sh` en verde. Feature concluido.
+- Se repararon los tests `AdminInvitationTest` para alinear sus aserciones con el reciente flujo unificado, y se excluyeron migraciones OLAP/ETL en SQLite (`DatabaseSeeder`).

@@ -45,7 +45,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Rutas protegidas por autenticación y permisos de recursos
 Route::middleware(['auth:sanctum', CheckResourcePermission::class])->group(function () {
     Route::post('/v1/logout', [AuthController::class, 'logout']);
-    Route::post('/v1/admin/users/invite', [\App\Http\Controllers\AdminUserController::class, 'invite'])->name('usuarios.invite');
+
 
     Route::get('/v1/me', [AuthController::class, 'me']);
     Route::post('/v1/refresh', [AuthController::class, 'refresh']);

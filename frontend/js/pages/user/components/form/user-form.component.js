@@ -63,16 +63,26 @@ export class UserFormComponent extends BaseComponent {
         if (this.formTitle) this.formTitle.textContent = 'Editar Usuario';
         if (this.btnText) this.btnText.textContent = 'Actualizar Usuario';
         if (this.txtPasswordHelp) this.txtPasswordHelp.classList.remove('d-none');
-        if (this.passwordInput) this.passwordInput.required = false;
+        if (this.passwordInput) {
+            this.passwordInput.required = false;
+            this.passwordInput.closest('.mb-3').classList.remove('d-none');
+        }
+        const inviteAlert = this.querySelector('#inviteInfoAlert');
+        if (inviteAlert) inviteAlert.classList.add('d-none');
 
         // Load user data
         await this.cargarDatosEdicion(userId);
       } else {
-        document.title = 'Crear Nuevo Usuario';
-        if (this.formTitle) this.formTitle.textContent = 'Crear Nuevo Usuario';
-        if (this.btnText) this.btnText.textContent = 'Guardar Usuario';
+        document.title = 'Invitar Usuario';
+        if (this.formTitle) this.formTitle.textContent = 'Invitar Usuario';
+        if (this.btnText) this.btnText.textContent = 'Enviar Invitación';
         if (this.txtPasswordHelp) this.txtPasswordHelp.classList.add('d-none');
-        if (this.passwordInput) this.passwordInput.required = true;
+        if (this.passwordInput) {
+            this.passwordInput.required = false;
+            this.passwordInput.closest('.mb-3').classList.add('d-none'); // Hide password on create
+        }
+        const inviteAlert = this.querySelector('#inviteInfoAlert');
+        if (inviteAlert) inviteAlert.classList.remove('d-none');
 
         // Load empty roles Drag & Drop
         await this.cargarRolesCheckboxes();

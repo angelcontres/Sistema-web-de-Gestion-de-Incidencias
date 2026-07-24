@@ -33,12 +33,14 @@ class UserController extends Controller
     public function store(UserRequest $request)
     {
         $datosValidados = $request->validated();
+        
+        $password = $datosValidados['password'] ?? \Illuminate\Support\Str::random(16);
 
         $user = User::create([
             'name' => $datosValidados['name'],
             'username' => $datosValidados['username'],
             'email' => $datosValidados['email'],
-            'password' => $datosValidados['password'],
+            'password' => \Illuminate\Support\Facades\Hash::make($password),
             'activo' => $datosValidados['activo'] ?? true,
             'institucion_id' => $datosValidados['institucion_id'] ?? null,
         ]);
@@ -51,8 +53,23 @@ class UserController extends Controller
             $user->territorios()->sync($datosValidados['territorios']);
         }
 
+        if (empty($datosValidados['password'])) {
+            $token = \Illuminate\Support\Str::random(60);
+            
+            \App\Models\UserInvitation::where('email', $user->email)->delete();
+            
+            $invitation = \App\Models\UserInvitation::create([
+                'email' => $user->email,
+                'token' => $token,
+                'expires_at' => now()->addHours(24),
+            ]);
+
+            \Illuminate\Support\Facades\Notification::route('mail', $invitation->email)
+                ->notify(new \App\Notifications\UserInvitationNotification($invitation));
+        }
+
         return response()->json([
-            'message' => 'Usuario creado con éxito',
+            'message' => empty($datosValidados['password']) ? 'Usuario creado y se ha enviado la invitación exitosamente' : 'Usuario creado con éxito',
             'data' => $user->load('roles'),
         ], 201);
     }

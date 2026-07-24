@@ -28,9 +28,12 @@ class UserInvitationNotification extends Notification
         $frontendUrl = env('FRONTEND_URL', 'http://localhost:5500');
         $url = rtrim($frontendUrl, '/') . '/#/activate?token=' . $this->invitation->token;
 
+        $user = \App\Models\User::where('email', $this->invitation->email)->first();
+        $name = $user ? $user->name : 'Usuario';
+
         return (new MailMessage)
                     ->subject('Invitación a GeoIncidencias')
-                    ->greeting('¡Hola ' . $this->invitation->name . '!')
+                    ->greeting('¡Hola ' . $name . '!')
                     ->line('Has sido invitado para unirte al sistema GeoIncidencias con rol administrativo.')
                     ->line('Por favor, activa tu cuenta y configura tu contraseña haciendo clic en el siguiente botón:')
                     ->action('Activar mi cuenta', $url)
