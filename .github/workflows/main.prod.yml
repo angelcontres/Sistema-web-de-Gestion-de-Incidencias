@@ -30,6 +30,9 @@ jobs:
           if [ -d "grafana" ]; then
             docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
           fi
+          if [ -d "backend/api/tests/metrics-stg" ]; then
+            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/tests/metrics-stg/
+          fi
 
       # 3. Clonar el nuevo código
       - name: Copiar el código a la VAIO
