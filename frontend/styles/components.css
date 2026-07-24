@@ -9,7 +9,9 @@
   border-radius: var(--radius-md);
   padding: 1.5rem;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .ui-card:hover {
@@ -106,20 +108,27 @@
 /* ==========================================
    CARDS & CONTAINERS (PREMIUM SaaS STYLE)
    ========================================== */
-.card, .custom-card {
+.card,
+.custom-card {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color) !important;
   border-radius: var(--radius-lg) !important;
   box-shadow: var(--shadow-md) !important;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s ease;
 }
 
-.card:hover, .custom-card:hover {
+.card:hover,
+.custom-card:hover {
   border-color: rgba(13, 42, 76, 0.15) !important;
 }
 
 .stat-card-hover {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .stat-card-hover:hover {
@@ -178,7 +187,8 @@
 /* ==========================================
    FORMS AND INPUTS
    ========================================== */
-.form-control, .form-select {
+.form-control,
+.form-select {
   border-radius: var(--radius-md);
   border: 1px solid #cbd5e1;
   padding: 0.5rem 0.75rem;
@@ -187,7 +197,8 @@
   background-color: #ffffff;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px var(--primary-glow);
   outline: 0;
@@ -321,12 +332,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
   50% {
-    opacity: .6;
+    opacity: 0.6;
     transform: scale(0.95);
   }
 }
@@ -373,35 +385,39 @@
 
 /* Premium Micro-Animations & Aesthetic Tweaks */
 .custom-card {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(0,0,0,0.05) !important;
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 .custom-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
 }
 
 table.table-hover tbody tr {
-    transition: background-color 0.15s ease-in-out, transform 0.1s ease;
+  transition:
+    background-color 0.15s ease-in-out,
+    transform 0.1s ease;
 }
 table.table-hover tbody tr:hover {
-    background-color: rgba(var(--bs-primary-rgb), 0.03) !important;
-    transform: scale(1.001);
+  background-color: rgba(var(--bs-primary-rgb), 0.03) !important;
+  transform: scale(1.001);
 }
 
 .btn {
-    transition: all 0.2s ease;
+  transition: all 0.2s ease;
 }
 .btn:active {
-    transform: scale(0.96);
+  transform: scale(0.96);
 }
 
 /* Glassmorphism for floating dropdowns / modals */
 .dropdown-menu {
-    backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 
 /* Skeleton Loaders (Premium UI) */
@@ -474,9 +490,13 @@ table.table-hover tbody tr:hover {
   background-color: var(--card-bg) !important;
   border: 0;
   border-radius: 16px !important;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03) !important;
+  box-shadow:
+    0 10px 25px -5px rgba(15, 23, 42, 0.04),
+    0 4px 12px -2px rgba(15, 23, 42, 0.03) !important;
   padding: 1.5rem; /* p-4 equivalent */
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .premium-card:hover {
@@ -618,12 +638,9 @@ table.table-hover tbody tr:hover {
 /* To make border-radius work on tr, we need to hide overflow or apply it to td */
 .table tbody tr:hover > td {
   background-color: rgba(13, 42, 76, 0.02) !important;
-  cursor: pointer;
 }
 
 /* Remove top border from first row in tbody */
 .table tbody tr:first-child > td {
   border-top: none;
 }
-
-

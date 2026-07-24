@@ -357,11 +357,8 @@ export class UserFormComponent extends BaseComponent {
       activo,
       roles,
       territorios,
+      institucion_id: institucion_id ? parseInt(institucion_id) : null,
     };
-
-    if (institucion_id) {
-      payload.institucion_id = parseInt(institucion_id);
-    }
 
     if (password) {
       payload.password = password;

@@ -2,11 +2,10 @@
  * API Helper for fetch requests
  */
 
+import { environment } from '../../environment/environment.js';
+
 // Dynamically determine API base URL (uses Laravel port 8000 if running on a custom dev port like 5500 or 3000)
-export const API_BASE_URL =
-  window.location.port && window.location.port !== '80'
-    ? `${window.location.protocol}//${window.location.hostname}:8000/api/v1`
-    : '/api/v1';
+export const API_BASE_URL = `${environment.apiBaseUrl}/v1`;
 
 /**
  * Perform an authenticated HTTP request to the backend API.
@@ -64,7 +63,7 @@ export async function apiRequest(endpoint, options = {}) {
 
   if (!response.ok) {
     let errMsg = data.message || `Error del servidor (HTTP ${response.status})`;
-    
+
     // Extract validation errors if present (HTTP 422)
     if (response.status === 422 && data.errors) {
       const firstErrorKey = Object.keys(data.errors)[0];
@@ -73,10 +72,16 @@ export async function apiRequest(endpoint, options = {}) {
 
     // Mask raw SQL errors
     if (typeof errMsg === 'string' && errMsg.includes('SQLSTATE')) {
-      if (errMsg.includes('23505') || errMsg.includes('unique constraint') || errMsg.includes('Duplicate')) {
-        errMsg = 'Error de integridad: Ya existe un registro con esa información única (ej. email duplicado).';
+      if (
+        errMsg.includes('23505') ||
+        errMsg.includes('unique constraint') ||
+        errMsg.includes('Duplicate')
+      ) {
+        errMsg =
+          'Error de integridad: Ya existe un registro con esa información única (ej. email duplicado).';
       } else {
-        errMsg = 'Ocurrió un error en el servidor al intentar procesar los datos (Operación abortada por seguridad).';
+        errMsg =
+          'Ocurrió un error en el servidor al intentar procesar los datos (Operación abortada por seguridad).';
       }
     }
 

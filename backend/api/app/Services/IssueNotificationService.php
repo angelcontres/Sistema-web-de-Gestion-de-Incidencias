@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\EstadoIncidencia;
 use App\Models\ReporteIncidencia;
 use App\Models\User;
-use App\Models\EstadoIncidencia;
 use App\Notifications\IssueAssignedNotification;
 use App\Notifications\IssueStatusChangedNotification;
 use Illuminate\Support\Facades\Notification;
@@ -15,7 +15,7 @@ class IssueNotificationService
      * Gatillado por [FS-03]: Cuando el estado de una incidencia cambia.
      */
     public static function notifyStatusChange(
-        ReporteIncidencia $issue, 
+        ReporteIncidencia $issue,
         EstadoIncidencia $oldStatus
     ): void {
         // Carga ansiosa para evitar el problema N+1 y asegurar que existan los datos
@@ -23,7 +23,7 @@ class IssueNotificationService
 
         $newStatusName = $issue->estado->nombre ?? 'Actualizado';
         $tipoNombre = $issue->tipoIncidencia->nombre ?? 'Incidencia';
-        
+
         $payload = [
             'title' => "Cambio de Estado: {$tipoNombre} #{$issue->id}",
             'message' => "El estado cambió de '{$oldStatus->nombre}' a '{$newStatusName}'.",
@@ -69,7 +69,7 @@ class IssueNotificationService
 
     private static function getStatusColor(string $status): string
     {
-        return match(strtolower($status)) {
+        return match (strtolower($status)) {
             'resuelto', 'cerrado', 'controlado' => 'success',
             'en progreso', 'atendiendo', 'en ruta' => 'info',
             'crítico', 'urgente', 'pendiente' => 'danger',

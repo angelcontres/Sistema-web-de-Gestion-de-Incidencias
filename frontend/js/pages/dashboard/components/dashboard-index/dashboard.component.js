@@ -101,7 +101,7 @@ export class DashboardComponent extends BaseComponent {
       // Filtrar solo los menús de nivel superior y verificar permisos
       const rootMenus = menuList.filter((item) => {
         if (item.padre_id) return false;
-        
+
         // Check routing access rights
         if (item.ruta && item.ruta !== '#/' && !AuthService.canAccessRoute(item.ruta)) {
           return false;
@@ -340,8 +340,7 @@ export class DashboardComponent extends BaseComponent {
         const estadoClass = getSoftClass(inc.estado);
 
         return `
-        <tr data-id="${inc.id}" style="cursor: pointer;">
-          <td><span class="fw-bold text-dark">INC-${inc.id.toString().padStart(4, '0')}</span></td>
+        <tr data-id="${inc.id}">
           <td>
             <div class="fw-semibold text-dark text-truncate" style="max-width: 280px;" title="${inc.descripcion || ''}">${inc.descripcion || 'Sin descripción'}</div>
           </td>
@@ -366,15 +365,6 @@ export class DashboardComponent extends BaseComponent {
       `;
       })
       .join('');
-
-    // Dblclick listener para redirección a edición
-    const rows = container.querySelectorAll('tr[data-id]');
-    rows.forEach((row) => {
-      row.addEventListener('dblclick', () => {
-        const id = row.getAttribute('data-id');
-        window.location.hash = `#/incidencias/form?id=${id}`;
-      });
-    });
   }
 }
 

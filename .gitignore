@@ -9,3 +9,6 @@ dependency-check-report.*
 .eslintcache
 coverage/
 frontend/coverage
+
+# Archivos de entorno y secretos
+.env*

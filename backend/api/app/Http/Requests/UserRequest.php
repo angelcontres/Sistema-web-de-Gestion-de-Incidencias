@@ -31,6 +31,7 @@ class UserRequest extends FormRequest
             'roles.*' => 'integer|exists:roles,id',
             'territorios' => 'nullable|array',
             'territorios.*' => 'integer|exists:territorios,id',
+            'institucion_id' => 'nullable|integer|exists:instituciones,id',
         ];
     }
 }

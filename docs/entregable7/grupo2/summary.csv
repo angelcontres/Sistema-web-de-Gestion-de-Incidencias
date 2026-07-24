@@ -1,0 +1,8 @@
+Label,# Samples,Average,Min,Max,Std. Dev.,Error %,Throughput,Received KB/sec,Sent KB/sec,Avg. Bytes
+HTTP Request POST login admin,750,725,169,3260,444.56,0.000%,9.64680,7.41,3.44,786.1
+HTTP Request POST login ciudadano,750,694,163,3109,428.05,0.000%,9.67630,7.43,3.45,786.0
+HTTP Request POST login supervisor,750,684,162,3055,444.58,0.000%,9.68054,7.43,3.43,785.9
+HTTP Request POST login institucion,750,690,164,3078,407.08,0.000%,9.65201,7.41,3.61,786.1
+HTTP Request GET incidents,750,701,183,3068,445.23,0.000%,9.64990,98.91,2.63,10496.1
+HTTP Request GET dashboards metricas,750,679,164,3038,442.43,0.000%,9.65176,20.95,2.69,2223.2
+TOTAL,4500,696,162,3260,435.80,0.000%,57.01977,147.22,18.93,2643.9

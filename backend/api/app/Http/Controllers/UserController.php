@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use App\Services\Contracts\RoleServiceInterface;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -18,7 +19,7 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(\Illuminate\Http\Request $request)
+    public function index(Request $request)
     {
         $perPage = $request->input('per_page', 15);
         $users = User::with('roles')->paginate($perPage);
@@ -39,6 +40,7 @@ class UserController extends Controller
             'email' => $datosValidados['email'],
             'password' => $datosValidados['password'],
             'activo' => $datosValidados['activo'] ?? true,
+            'institucion_id' => $datosValidados['institucion_id'] ?? null,
         ]);
 
         if (! empty($datosValidados['roles'])) {
@@ -79,6 +81,7 @@ class UserController extends Controller
             'username' => $datosValidados['username'] ?? $user->username,
             'email' => $datosValidados['email'] ?? $user->email,
             'activo' => $datosValidados['activo'] ?? $user->activo,
+            'institucion_id' => array_key_exists('institucion_id', $datosValidados) ? $datosValidados['institucion_id'] : $user->institucion_id,
         ];
 
         // Only update password if a new one is provided

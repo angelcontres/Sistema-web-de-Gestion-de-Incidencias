@@ -22,6 +22,7 @@ class PermisoController extends Controller
         }
 
         $perPage = $request->input('per_page', 15);
+
         return response()->json($query->paginate($perPage), 200);
     }
 

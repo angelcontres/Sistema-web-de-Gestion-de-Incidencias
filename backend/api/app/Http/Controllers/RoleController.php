@@ -31,7 +31,8 @@ class RoleController extends Controller
         }
 
         $perPage = $request->input('per_page', 15);
-        $query = \App\Models\Role::query();
+        $query = Role::query();
+
         return response()->json($query->paginate($perPage), 200);
     }
 

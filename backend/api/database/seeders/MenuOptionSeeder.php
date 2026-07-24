@@ -82,7 +82,7 @@ class MenuOptionSeeder extends Seeder
         OpcionMenu::updateOrCreate(
             ['ruta' => '#/instituciones/kanban'],
             [
-                'nombre' => 'Tablero Kanban',
+                'nombre' => 'Progreso',
                 'icono' => 'bi bi-kanban-fill',
                 'padre_id' => null,
                 'created_by' => $user->id,

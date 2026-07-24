@@ -23,8 +23,6 @@ class CheckResourcePermission
             return response()->json(['message' => 'No autorizado'], 401);
         }
 
-
-
         // Action Mapping
         $method = $request->method();
         $accion = match ($method) {
@@ -59,7 +57,6 @@ class CheckResourcePermission
                     $hasPermission = true;
                     break 2;
                 }
-
 
             }
         }

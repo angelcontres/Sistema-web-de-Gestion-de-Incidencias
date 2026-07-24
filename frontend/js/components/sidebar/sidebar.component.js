@@ -53,8 +53,7 @@ export class SideBarComponent extends BaseComponent {
       this.classList.remove('d-none');
       this.classList.add('collapsed');
     } else {
-      this.classList.remove('d-none');
-      this.classList.remove('collapsed');
+      this.classList.remove('d-none', 'collapsed');
       if (!this.menuLoaded) {
         this.loadMenuData();
       }
@@ -78,7 +77,7 @@ export class SideBarComponent extends BaseComponent {
       }
 
       const response = await apiRequest('/me/menu', { method: 'GET' });
-      const menuList = Array.isArray(response) ? response : (response.data || []);
+      const menuList = Array.isArray(response) ? response : response.data || [];
       localStorage.setItem('user_menu', JSON.stringify(menuList));
 
       const menuTree = this.buildMenuTree(menuList);
@@ -139,7 +138,7 @@ export class SideBarComponent extends BaseComponent {
 
     // Filtrar ramas vacías (padres que se quedaron sin hijos permitidos)
     const filterTree = (nodes) => {
-      return nodes.filter(node => {
+      return nodes.filter((node) => {
         // Si el nodo originalmente tenía hijos en la BD, se renderizará como dropdown.
         // Pero como no tenemos ese flag, solo podemos ver si ahora tiene hijos.
         // Un menú es hoja válida si AuthService lo permitió.
@@ -152,7 +151,7 @@ export class SideBarComponent extends BaseComponent {
         // Sin embargo, AuthService.canAccessRoute deja pasar a todos por defecto si no están en su diccionario.
         // Para no romper la UI original, dejaremos que las hojas pasen.
         // El Dashboard SIEMPRE debe pasar.
-        return true; 
+        return true;
       });
     };
 
@@ -207,7 +206,7 @@ export class SideBarComponent extends BaseComponent {
 
     // Expand sidebar if collapsed when clicking any link
     const sidebarLinks = container.querySelectorAll('.sidebar-link');
-    sidebarLinks.forEach(link => {
+    sidebarLinks.forEach((link) => {
       link.addEventListener('click', () => {
         if (this.classList.contains('collapsed')) {
           this.dataset.userHidden = 'false';

@@ -27,7 +27,7 @@ class PermissionsSeeder extends Seeder
             'Incidencias' => 'Incidencia',
             'Instituciones' => 'Institución',
             'Despacho' => 'Despacho de Incidencia',
-            'Tablero Kanban' => 'Kanban',
+            'Progreso' => 'Kanban',
             'Historial de incidencias' => 'Historial',
             'Mantenimiento' => 'Mantenimiento',
         ];
@@ -50,7 +50,7 @@ class PermissionsSeeder extends Seeder
             'Incidencias' => 'incidencias',
             'Instituciones' => 'instituciones',
             'Despacho' => 'despacho',
-            'Tablero Kanban' => 'kanban',
+            'Progreso' => 'kanban',
             'Historial de incidencias' => 'historial',
             'Mantenimiento' => 'mantenimiento',
         ];

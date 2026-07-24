@@ -19,12 +19,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if (config('database.default') !== 'sqlite') {
-            Artisan::call('migrate', [
-                '--path' => 'database/migrations/olap',
-                '--force' => true,
-            ]);
-        }
+        // Asegurarse de que el esquema OLAP se reconstruya siempre en un entorno fresh
+        Artisan::call('migrate', [
+            '--path' => 'database/migrations/olap',
+            '--force' => true,
+        ]);
 
         // User::factory(10)->create();
 
@@ -163,6 +162,21 @@ class DatabaseSeeder extends Seeder
             $roleService->syncRolesToUser($pauloUser, [$pauloUserRole->id]);
         }
 
+        // Crear usuario llamado Evelyn del Pezo
+        $evelynUser = User::updateOrCreate(
+            ['email' => 'evelyn@example.com'],
+            [
+                'name' => 'Evelyn del Pezo',
+                'username' => 'evelyndelpezo1',
+                'password' => Hash::make('evelyn123'),
+                'activo' => true,
+            ]
+        );
+        $evelynUserRole = Role::where('nombre', 'Ciudadano')->first();
+        if ($evelynUserRole) {
+            $roleService->syncRolesToUser($evelynUser, [$evelynUserRole->id]);
+        }
+
         // 2. institucion@example.com (Institucion, linked to PNE / id 1)
         $institucionUser = User::updateOrCreate(
             ['email' => 'policianacional@example.com'],
@@ -244,8 +258,8 @@ class DatabaseSeeder extends Seeder
             ['email' => 'dma@example.com'],
             [
                 'name' => 'Dirección de Medio Ambiente Municipal',
-                'username' => 'dma_user',
-                'password' => Hash::make('dma123'),
+                'username' => 'dmamunicipal_user',
+                'password' => Hash::make('dmamunicipal123'),
                 'activo' => true,
                 'institucion_id' => 6,
             ]
@@ -286,10 +300,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call(NotificationSeeder::class);
 
-
-        if (config('database.default') !== 'sqlite') {
-            Artisan::call('etl:run');
-        }
+        // Ejecutar ETL inicial para asegurar que las dimensiones del Data Warehouse estén pobladas
+        Artisan::call('etl:run');
 
     }
 }

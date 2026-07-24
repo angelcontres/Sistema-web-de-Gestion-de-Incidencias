@@ -4,8 +4,8 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Notification;
 
 class IssueAssignedNotification extends Notification implements ShouldQueue
 {
@@ -37,23 +37,20 @@ class IssueAssignedNotification extends Notification implements ShouldQueue
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
-{
-    return [
-        'title' => $this->data['title'],
-        'message' => $this->data['message'],
-        'url' => $this->data['url'] ?? null,
-        'type' => $this->data['type'] ?? 'info',
-        'incidencia_id' => $this->data['incidencia_id'] ?? null,
-        'color_hex' => $this->data['color_hex'] ?? null, // <-- Vital para tu tabla prioridades
-        'action_timestamp' => now()->timestamp,
-    ];
-}
-
+    {
+        return [
+            'title' => $this->data['title'],
+            'message' => $this->data['message'],
+            'url' => $this->data['url'] ?? null,
+            'type' => $this->data['type'] ?? 'info',
+            'incidencia_id' => $this->data['incidencia_id'] ?? null,
+            'color_hex' => $this->data['color_hex'] ?? null, // <-- Vital para tu tabla prioridades
+            'action_timestamp' => now()->timestamp,
+        ];
+    }
 
     /**
      * Get the broadcastable representation of the notification.
-     * 
-     * @return \Illuminate\Notifications\Messages\BroadcastMessage
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
