@@ -14,6 +14,22 @@ use Tests\TestCase;
 
 class CatalogoTest extends TestCase
 {
+    const string MEXICO_NAME = 'México';
+
+    const string PERU_NAME = 'Perú';
+
+    const string LIMA_NAME = 'Lima';
+
+    const string LIMA_PROV_NAME = 'Lima Provincia';
+
+    const string CDMX_NAME = 'Ciudad de México';
+
+    const string SOPORTE_TECNICO_NAME = 'Soporte Técnico';
+
+    const string HARDWARE_NAME = 'Hardware';
+
+    const string PC_LAPTOP_NAME = 'PC / Laptop';
+
     use RefreshDatabase;
 
     protected User $user;
@@ -48,8 +64,8 @@ class CatalogoTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonCount(2);
-        $response->assertJsonFragment(['nombre' => 'Perú']);
-        $response->assertJsonFragment(['nombre' => 'México']);
+        $response->assertJsonFragment(['nombre' => self::PERU_NAME]);
+        $response->assertJsonFragment(['nombre' => self::MEXICO_NAME]);
         $response->assertJsonMissing(['nombre' => 'Inactivo']);
     }
 
@@ -57,27 +73,27 @@ class CatalogoTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $peru = Pais::create(['nombre' => 'Perú', 'codigo_iso' => 'PE']);
-        $mexico = Pais::create(['nombre' => 'México', 'codigo_iso' => 'MX']);
+        $peru = Pais::create(['nombre' => self::PERU_NAME, 'codigo_iso' => 'PE']);
+        $mexico = Pais::create(['nombre' => self::MEXICO_NAME, 'codigo_iso' => 'MX']);
 
         $limaDpto = Territorio::create([
             'pais_id' => $peru->id,
             'parent_id' => null,
-            'nombre' => 'Lima',
+            'nombre' => self::LIMA_NAME,
             'tipo' => 'Departamento',
         ]);
 
-        $limaProv = Territorio::create([
+        Territorio::create([
             'pais_id' => $peru->id,
             'parent_id' => $limaDpto->id,
-            'nombre' => 'Lima Provincia',
+            'nombre' => self::LIMA_PROV_NAME,
             'tipo' => 'Provincia',
         ]);
 
-        $cdmx = Territorio::create([
+        Territorio::create([
             'pais_id' => $mexico->id,
             'parent_id' => null,
-            'nombre' => 'Ciudad de México',
+            'nombre' => self::CDMX_NAME,
             'tipo' => 'Estado',
         ]);
 
@@ -95,32 +111,32 @@ class CatalogoTest extends TestCase
         $response = $this->getJson("/api/v1/catalogs/territories?pais_id={$peru->id}&parent_id=null");
         $response->assertStatus(200);
         $response->assertJsonCount(1);
-        $response->assertJsonFragment(['nombre' => 'Lima']);
+        $response->assertJsonFragment(['nombre' => self::LIMA_NAME]);
 
         // 4. Filtrado por parent_id específico
         $response = $this->getJson("/api/v1/catalogs/territories?parent_id={$limaDpto->id}");
         $response->assertStatus(200);
         $response->assertJsonCount(1);
-        $response->assertJsonFragment(['nombre' => 'Lima Provincia']);
+        $response->assertJsonFragment(['nombre' => self::LIMA_PROV_NAME]);
     }
 
     public function test_se_pueden_listar_direcciones_filtradas(): void
     {
         Sanctum::actingAs($this->user);
 
-        $peru = Pais::create(['nombre' => 'Perú', 'codigo_iso' => 'PE']);
+        $peru = Pais::create(['nombre' => self::PERU_NAME, 'codigo_iso' => 'PE']);
         $limaDpto = Territorio::create([
             'pais_id' => $peru->id,
             'parent_id' => null,
-            'nombre' => 'Lima',
+            'nombre' => self::LIMA_NAME,
         ]);
 
-        $dir1 = Direccion::create([
+        Direccion::create([
             'territorio_id' => $limaDpto->id,
             'detalle' => 'Av. Javier Prado 123',
         ]);
 
-        $dir2 = Direccion::create([
+        Direccion::create([
             'territorio_id' => $limaDpto->id,
             'detalle' => 'Calle Larco 456',
             'activo' => false, // inactivo
@@ -139,24 +155,24 @@ class CatalogoTest extends TestCase
 
         // Soporte (Raíz)
         $soporte = CategoriaIncidencia::create([
-            'nombre' => 'Soporte Técnico',
+            'nombre' => self::SOPORTE_TECNICO_NAME,
             'parent_id' => null,
         ]);
 
         // Hardware (Nivel medio)
         $hardware = CategoriaIncidencia::create([
-            'nombre' => 'Hardware',
+            'nombre' => self::HARDWARE_NAME,
             'parent_id' => $soporte->id,
         ]);
 
         // PC / Laptop (Hoja)
-        $pc = CategoriaIncidencia::create([
-            'nombre' => 'PC / Laptop',
+        CategoriaIncidencia::create([
+            'nombre' => self::PC_LAPTOP_NAME,
             'parent_id' => $hardware->id,
         ]);
 
         // Inactivo (Hijo inactivo)
-        $inactivo = CategoriaIncidencia::create([
+        CategoriaIncidencia::create([
             'nombre' => 'Equipo Especial',
             'parent_id' => $hardware->id,
             'activo' => false,
@@ -171,13 +187,13 @@ class CatalogoTest extends TestCase
         $response = $this->getJson('/api/v1/catalogs/incident-categories?parent_id=null');
         $response->assertStatus(200);
         $response->assertJsonCount(1);
-        $response->assertJsonFragment(['nombre' => 'Soporte Técnico']);
+        $response->assertJsonFragment(['nombre' => self::SOPORTE_TECNICO_NAME]);
 
         // 3. Listar subcategorías de Hardware
         $response = $this->getJson("/api/v1/catalogs/incident-categories?parent_id={$hardware->id}");
         $response->assertStatus(200);
         $response->assertJsonCount(1);
-        $response->assertJsonFragment(['nombre' => 'PC / Laptop']);
+        $response->assertJsonFragment(['nombre' => self::PC_LAPTOP_NAME]);
         $response->assertJsonMissing(['nombre' => 'Equipo Especial']);
 
         // 4. Listar únicamente nodos hoja (solo_hojas = true)
@@ -185,8 +201,8 @@ class CatalogoTest extends TestCase
         $response = $this->getJson('/api/v1/catalogs/incident-categories?solo_hojas=true');
         $response->assertStatus(200);
         $response->assertJsonCount(1);
-        $response->assertJsonFragment(['nombre' => 'PC / Laptop']);
-        $response->assertJsonMissing(['nombre' => 'Soporte Técnico']);
-        $response->assertJsonMissing(['nombre' => 'Hardware']);
+        $response->assertJsonFragment(['nombre' => self::PC_LAPTOP_NAME]);
+        $response->assertJsonMissing(['nombre' => self::SOPORTE_TECNICO_NAME]);
+        $response->assertJsonMissing(['nombre' => self::HARDWARE_NAME]);
     }
 }

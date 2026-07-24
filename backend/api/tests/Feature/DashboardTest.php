@@ -2,9 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Models\CategoriaIncidencia;
+use App\Models\Direccion;
+use App\Models\EstadoIncidencia;
+use App\Models\Incidencia;
 use App\Models\Institucion;
+use App\Models\Pais;
+use App\Models\Prioridad;
 use App\Models\Role;
+use App\Models\Territorio;
 use App\Models\User;
+use App\Services\TimezoneService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -12,6 +20,8 @@ use Tests\TestCase;
 
 class DashboardTest extends TestCase
 {
+    const string ALERT_TEXT_SQLITE_NO_SCHEMA = 'SQLite no soporta esquemas (metrics.*) de forma nativa';
+
     use RefreshDatabase;
 
     private User $admin;
@@ -95,6 +105,35 @@ class DashboardTest extends TestCase
 
     public function test_stats_returns_correct_structure()
     {
+        // Preparar datos para que pasen por los condicionales de estadísticas
+        $estado = EstadoIncidencia::firstOrCreate(['id' => 1], ['nombre' => 'Pendiente']);
+        EstadoIncidencia::firstOrCreate(['id' => 4], ['nombre' => 'Resuelto']);
+
+        $tipo = CategoriaIncidencia::firstOrCreate(['nombre' => 'Fuga de agua', 'activo' => true]);
+        $prioridad = Prioridad::firstOrCreate(['id' => 1], ['nombre' => 'Alta', 'color_hex' => '#f00']);
+
+        $pais = Pais::firstOrCreate(['codigo_iso' => 'EC'], ['nombre' => 'Ecuador', 'activo' => true]);
+        $territorio = Territorio::firstOrCreate(['nombre' => 'Pichincha', 'pais_id' => $pais->id], ['tipo' => 'Provincia']);
+
+        $direccion = Direccion::create([
+            'territorio_id' => $territorio->id,
+            'detalle' => 'Calle 1',
+            'activo' => true,
+            'latitud' => -0.22,
+            'longitud' => -78.52,
+        ]);
+
+        Incidencia::create([
+            'incidencia_descripcion' => 'Tubo roto',
+            'estado_id' => $estado->id,
+            'tipo_incidencia_id' => $tipo->id,
+            'direccion_id' => $direccion->id,
+            'cliente_id' => $this->ciudadano->id,
+            'prioridad_id' => $prioridad->id,
+            'created_at' => TimezoneService::nowLocal()->setTimezone('UTC')->subMinutes(30),
+            'updated_at' => TimezoneService::nowLocal()->setTimezone('UTC')->subMinutes(30),
+        ]);
+
         $response = $this->actingAs($this->admin)->getJson('/api/v1/dashboard/stats');
 
         $response->assertStatus(200)
@@ -109,7 +148,7 @@ class DashboardTest extends TestCase
     public function test_metrics_returns_correct_structure_for_ciudadano()
     {
         if (DB::getDriverName() === 'sqlite') {
-            $this->markTestSkipped('SQLite no soporta esquemas (metrics.*) de forma nativa');
+            $this->markTestSkipped(self::ALERT_TEXT_SQLITE_NO_SCHEMA);
         }
 
         $response = $this->actingAs($this->ciudadano)->getJson('/api/v1/dashboard/metrics?role=Ciudadano');
@@ -126,7 +165,7 @@ class DashboardTest extends TestCase
     public function test_metrics_returns_correct_structure_for_institucion()
     {
         if (DB::getDriverName() === 'sqlite') {
-            $this->markTestSkipped('SQLite no soporta esquemas (metrics.*) de forma nativa');
+            $this->markTestSkipped(self::ALERT_TEXT_SQLITE_NO_SCHEMA);
         }
 
         $response = $this->actingAs($this->institucionUser)->getJson('/api/v1/dashboard/metrics?role=Institucion');
@@ -142,7 +181,7 @@ class DashboardTest extends TestCase
     public function test_metrics_returns_correct_structure_for_admin()
     {
         if (DB::getDriverName() === 'sqlite') {
-            $this->markTestSkipped('SQLite no soporta esquemas (metrics.*) de forma nativa');
+            $this->markTestSkipped(self::ALERT_TEXT_SQLITE_NO_SCHEMA);
         }
 
         $response = $this->actingAs($this->admin)->getJson('/api/v1/dashboard/metrics?role=Admin');
@@ -159,7 +198,7 @@ class DashboardTest extends TestCase
     public function test_metrics_returns_correct_structure_for_supervisor()
     {
         if (DB::getDriverName() === 'sqlite') {
-            $this->markTestSkipped('SQLite no soporta esquemas (metrics.*) de forma nativa');
+            $this->markTestSkipped(self::ALERT_TEXT_SQLITE_NO_SCHEMA);
         }
 
         $response = $this->actingAs($this->supervisorUser)->getJson('/api/v1/dashboard/metrics?role=Supervisor');

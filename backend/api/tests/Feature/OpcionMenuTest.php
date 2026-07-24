@@ -9,6 +9,24 @@ use Tests\TestCase;
 
 class OpcionMenuTest extends TestCase
 {
+    const string CONFIGURACION_OPTION_NAME = 'Configuración';
+
+    const string USUARIOS_OPTION_NAME = 'Usuarios';
+
+    const string DASHBOARD_OPTION_NAME = 'Dashboard';
+
+    const string REPORTES_OPTION_NAME = 'Reportes';
+
+    const string ENDPOINT_MENU_OPTIONS = '/api/v1/menu-options';
+
+    const string MENU_OPTION_ROUTE_DASHBOARD = '/dashboard';
+
+    const string PANEL_PRINCIPAL_NAME = 'Panel Principal';
+
+    const string ROUTE_CONFIG = '/config';
+
+    const string ROUTE_CONFIG_USER = '/config/usuarios';
+
     use RefreshDatabase;
 
     private User $user;
@@ -23,19 +41,19 @@ class OpcionMenuTest extends TestCase
     public function test_can_list_menu_options_flat()
     {
         $padre = OpcionMenu::create([
-            'nombre' => 'Configuración',
-            'ruta' => '/config',
+            'nombre' => self::CONFIGURACION_OPTION_NAME,
+            'ruta' => self::ROUTE_CONFIG,
             'created_by' => $this->user->id,
         ]);
 
-        $hijo = OpcionMenu::create([
-            'nombre' => 'Usuarios',
-            'ruta' => '/config/usuarios',
+        OpcionMenu::create([
+            'nombre' => self::USUARIOS_OPTION_NAME,
+            'ruta' => self::ROUTE_CONFIG_USER,
             'padre_id' => $padre->id,
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/v1/menu-options');
+        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_MENU_OPTIONS);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -50,24 +68,24 @@ class OpcionMenuTest extends TestCase
     public function test_can_list_menu_options_as_tree()
     {
         $padre = OpcionMenu::create([
-            'nombre' => 'Configuración',
-            'ruta' => '/config',
+            'nombre' => self::CONFIGURACION_OPTION_NAME,
+            'ruta' => self::ROUTE_CONFIG,
             'created_by' => $this->user->id,
         ]);
 
-        $hijo = OpcionMenu::create([
+        OpcionMenu::create([
             'nombre' => 'Usuarios',
-            'ruta' => '/config/usuarios',
+            'ruta' => self::ROUTE_CONFIG_USER,
             'padre_id' => $padre->id,
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/api/v1/menu-options?tree=true');
+        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_MENU_OPTIONS.'?tree=true');
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data') // only root option
-            ->assertJsonPath('data.0.nombre', 'Configuración')
-            ->assertJsonPath('data.0.hijos.0.nombre', 'Usuarios');
+            ->assertJsonPath('data.0.nombre', self::CONFIGURACION_OPTION_NAME)
+            ->assertJsonPath('data.0.hijos.0.nombre', self::USUARIOS_OPTION_NAME);
     }
 
     public function test_can_create_menu_option()
@@ -78,7 +96,7 @@ class OpcionMenuTest extends TestCase
             'ruta' => '/reportes',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/v1/menu-options', $payload);
+        $response = $this->actingAs($this->user)->postJson(self::ENDPOINT_MENU_OPTIONS, $payload);
 
         $response->assertStatus(201)
             ->assertJsonPath('data.nombre', 'Reportes')
@@ -98,7 +116,7 @@ class OpcionMenuTest extends TestCase
             'padre_id' => 999, // non-existent
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/api/v1/menu-options', $payload);
+        $response = $this->actingAs($this->user)->postJson(self::ENDPOINT_MENU_OPTIONS, $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['padre_id']);
@@ -107,38 +125,38 @@ class OpcionMenuTest extends TestCase
     public function test_can_show_menu_option()
     {
         $opcion = OpcionMenu::create([
-            'nombre' => 'Dashboard',
-            'ruta' => '/dashboard',
+            'nombre' => self::DASHBOARD_OPTION_NAME,
+            'ruta' => self::MENU_OPTION_ROUTE_DASHBOARD,
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson("/api/v1/menu-options/{$opcion->id}");
+        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_MENU_OPTIONS."/{$opcion->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.nombre', 'Dashboard');
+            ->assertJsonPath('data.nombre', self::DASHBOARD_OPTION_NAME);
     }
 
     public function test_can_update_menu_option()
     {
         $opcion = OpcionMenu::create([
-            'nombre' => 'Dashboard',
-            'ruta' => '/dashboard',
+            'nombre' => self::DASHBOARD_OPTION_NAME,
+            'ruta' => self::MENU_OPTION_ROUTE_DASHBOARD,
             'created_by' => $this->user->id,
         ]);
 
         $payload = [
-            'nombre' => 'Panel Principal',
+            'nombre' => self::PANEL_PRINCIPAL_NAME,
         ];
 
-        $response = $this->actingAs($this->user)->putJson("/api/v1/menu-options/{$opcion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_MENU_OPTIONS."/{$opcion->id}", $payload);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.nombre', 'Panel Principal')
+            ->assertJsonPath('data.nombre', self::PANEL_PRINCIPAL_NAME)
             ->assertJsonPath('data.updated_by', $this->user->id);
 
         $this->assertDatabaseHas('opciones_menu', [
             'id' => $opcion->id,
-            'nombre' => 'Panel Principal',
+            'nombre' => self::PANEL_PRINCIPAL_NAME,
             'updated_by' => $this->user->id,
         ]);
     }
@@ -146,8 +164,8 @@ class OpcionMenuTest extends TestCase
     public function test_cannot_set_menu_option_as_its_own_parent()
     {
         $opcion = OpcionMenu::create([
-            'nombre' => 'Dashboard',
-            'ruta' => '/dashboard',
+            'nombre' => self::DASHBOARD_OPTION_NAME,
+            'ruta' => self::MENU_OPTION_ROUTE_DASHBOARD,
             'created_by' => $this->user->id,
         ]);
 
@@ -155,7 +173,7 @@ class OpcionMenuTest extends TestCase
             'padre_id' => $opcion->id,
         ];
 
-        $response = $this->actingAs($this->user)->putJson("/api/v1/menu-options/{$opcion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_MENU_OPTIONS."/{$opcion->id}", $payload);
 
         $response->assertStatus(422)
             ->assertJsonPath('status', 'error')
@@ -165,19 +183,19 @@ class OpcionMenuTest extends TestCase
     public function test_can_soft_delete_menu_option()
     {
         $padre = OpcionMenu::create([
-            'nombre' => 'Configuración',
-            'ruta' => '/config',
+            'nombre' => self::CONFIGURACION_OPTION_NAME,
+            'ruta' => self::ROUTE_CONFIG,
             'created_by' => $this->user->id,
         ]);
 
         $hijo = OpcionMenu::create([
             'nombre' => 'Usuarios',
-            'ruta' => '/config/usuarios',
+            'ruta' => self::ROUTE_CONFIG_USER,
             'padre_id' => $padre->id,
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson("/api/v1/menu-options/{$padre->id}");
+        $response = $this->actingAs($this->user)->deleteJson(self::ENDPOINT_MENU_OPTIONS."/{$padre->id}");
 
         $response->assertStatus(200);
 
