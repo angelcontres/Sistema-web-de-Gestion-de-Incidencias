@@ -145,6 +145,40 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 11,
+      "name": "complete_backend_test_files_under_50_percent",
+      "description": "Completar los archivos de prueba de los archivos del backend que tienen menos del 50% de cobertura.",
+      "acceptance": [
+        "Primero hay que listar todos los archivos de la ruta backend/api/app, y localizar los que tengan cobertura menor al 50%",
+        "Los archivos de prueba de los archivos del backend que tienen menos del 50% de cobertura se completarán.",
+        "Los archivos de prueba de los archivos del backend que tienen menos del 50% de cobertura se ejecutarán.",
+        "Los archivos de prueba de los archivos del backend que tienen menos del 50% de cobertura se verificarán.",
+        "Debes asegurarte de que la cobertura llegue al menos al 80% para poder pasar al siguiente archivo",
+        "Debes evitar code smells, duplicaciones de código y funciones con muchos 'return' (evitar deuda tecnica).",
+        "Si hay funciones con demasiadas lineas, descomponlas, aplica divide y vencerás",
+        "Si se da el caso, también puedes implementar test unitarios para funciones específicas, ya que hay archivos que no cubren al menos una linea y por eso tienen 100%"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 12,
+      "name": "refactor_backend_test_files_under_80",
+      "description": "Refactorizar los archivos de prueba de los archivos del backend que tengan cobertura menor al 80%.",
+      "acceptance": [
+        "Primero hay que listar todos los archivos de la ruta backend/api/app, y localizar los que tengan cobertura menor al 80%",
+        "Los archivos de prueba de los archivos del backend que tienen menos del 80% de cobertura se completarán.",
+        "Los archivos de prueba de los archivos del backend que tienen menos del 80% de cobertura se ejecutarán.",
+        "Los archivos de prueba de los archivos del backend que tienen menos del 80% de cobertura se verificarán.",
+        "Debes asegurarte de que la cobertura llegue al menos al 95% para poder pasar al siguiente archivo",
+        "Debes evitar code smells, duplicaciones de código y funciones con muchos 'return' (evitar deuda tecnica).",
+        "Si hay funciones con demasiadas lineas, descomponlas, aplica divide y vencerás",
+        "Implementa tests unitarios para funciones específicas, para evitar lineas rezagadas que puedan no cubrir el objetivo"
+      ],
+      "sdd": true,
+      "status": "pending"
     }
   ]
 }

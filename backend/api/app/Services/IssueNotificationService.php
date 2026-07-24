@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\EstadoIncidencia;
-use App\Models\ReporteIncidencia;
+use App\Models\Incidencia;
 use App\Models\User;
 use App\Notifications\IssueAssignedNotification;
 use App\Notifications\IssueStatusChangedNotification;
@@ -15,14 +15,14 @@ class IssueNotificationService
      * Gatillado por [FS-03]: Cuando el estado de una incidencia cambia.
      */
     public static function notifyStatusChange(
-        ReporteIncidencia $issue,
+        Incidencia $issue,
         EstadoIncidencia $oldStatus
     ): void {
         // Carga ansiosa para evitar el problema N+1 y asegurar que existan los datos
-        $issue->loadMissing(['estado', 'tipoIncidencia', 'prioridad', 'cliente']);
+        $issue->loadMissing(['estado', 'tipo', 'prioridad', 'cliente']);
 
         $newStatusName = $issue->estado->nombre ?? 'Actualizado';
-        $tipoNombre = $issue->tipoIncidencia->nombre ?? 'Incidencia';
+        $tipoNombre = $issue->tipo->nombre ?? 'Incidencia';
 
         $payload = [
             'title' => "Cambio de Estado: {$tipoNombre} #{$issue->id}",
@@ -47,11 +47,11 @@ class IssueNotificationService
     /**
      * Gatillado por [FS-02]: Cuando se asigna un usuario o responsable.
      */
-    public static function notifyAssignment(ReporteIncidencia $issue, User $assignedUser): void
+    public static function notifyAssignment(Incidencia $issue, User $assignedUser): void
     {
-        $issue->loadMissing(['tipoIncidencia', 'prioridad', 'direccion']);
+        $issue->loadMissing(['tipo', 'prioridad', 'direccion']);
 
-        $tipoNombre = $issue->tipoIncidencia->nombre ?? 'Incidencia';
+        $tipoNombre = $issue->tipo->nombre ?? 'Incidencia';
         // En tu BD no hay title, pero sí una dirección física real:
         $ubicacion = $issue->direccion->detalle ?? 'Ubicación no registrada';
 

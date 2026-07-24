@@ -14,6 +14,7 @@ use Tests\TestCase;
 class PaisTest extends TestCase
 {
     const string ENDPOINT_COUNTRIES = '/api/v1/countries';
+    const string ASSERT_NEW_COUNTRY = 'Nuevo Pais';
 
     use RefreshDatabase;
 
@@ -42,8 +43,8 @@ class PaisTest extends TestCase
             'codigo_iso' => 'NP',
             'activo' => true
         ]);
-        $response->assertStatus(201)->assertJsonFragment(['nombre' => 'Nuevo Pais']);
-        $this->assertDatabaseHas('paises', ['nombre' => 'Nuevo Pais 2']);
+        $response->assertStatus(201)->assertJsonFragment(['nombre' => self::ASSERT_NEW_COUNTRY]);
+        $this->assertDatabaseHas('paises', ['nombre' => self::ASSERT_NEW_COUNTRY]);
     }
 
     public function test_store_validates_required_fields()

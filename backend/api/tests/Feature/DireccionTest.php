@@ -137,4 +137,69 @@ class DireccionTest extends TestCase
             'id' => $direccion->id,
         ]);
     }
+
+    public function test_reverse_geocode_validation()
+    {
+        $response = $this->actingAs($this->user)->getJson('/api/v1/geocoding/reverse');
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['lat', 'lng']);
+    }
+
+    public function test_reverse_geocode_nominatim_success()
+    {
+        \Illuminate\Support\Facades\Http::fake([
+            'nominatim.openstreetmap.org/*' => \Illuminate\Support\Facades\Http::response([
+                'address' => [
+                    'postcode' => '12345',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/v1/geocoding/reverse?lat=-12.0&lng=-77.0');
+        $response->assertStatus(200)
+            ->assertJsonFragment(['postcode' => '12345']);
+    }
+
+    public function test_reverse_geocode_fallback_to_bigdatacloud()
+    {
+        \Illuminate\Support\Facades\Http::fake([
+            'nominatim.openstreetmap.org/*' => \Illuminate\Support\Facades\Http::response([], 500),
+            'api.bigdatacloud.net/*' => \Illuminate\Support\Facades\Http::response([
+                'postcode' => '67890',
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/v1/geocoding/reverse?lat=-12.0&lng=-77.0');
+        $response->assertStatus(200)
+            ->assertJsonFragment(['postcode' => '67890']);
+    }
+
+    public function test_non_admin_user_restricted_by_pais()
+    {
+        $nonAdminUser = User::factory()->create(['pais_id' => $this->pais->id]);
+        $role = \App\Models\Role::create(['nombre' => 'User', 'descripcion' => 'U', 'created_by' => $nonAdminUser->id]);
+        $otherPais = Pais::create(['nombre' => 'Otro', 'codigo_iso' => 'OT']);
+        $otherTerritorio = Territorio::create(['pais_id' => $otherPais->id, 'nombre' => 'T2', 'tipo' => 'Departamento']);
+        $permiso = \App\Models\Permiso::create([
+            'nombre' => 'Ver Direcciones',
+            'accion' => 'READ',
+            'recurso' => 'direcciones'
+        ]);
+        $role->permisos()->attach($permiso->id);
+        $nonAdminUser->roles()->attach($role->id);
+
+        $direccion = Direccion::create([
+            'territorio_id' => $otherTerritorio->id,
+            'detalle' => 'Detalle',
+        ]);
+
+        // Listar filtrado
+        $response = $this->actingAs($nonAdminUser)->getJson(self::ENDPOINT_ADDRESSES);
+        $response->assertStatus(200);
+        $this->assertEmpty($response->json('data'));
+
+        // Mostrar no autorizado
+        $response = $this->actingAs($nonAdminUser)->getJson(self::ENDPOINT_ADDRESSES . '/' . $direccion->id);
+        $response->assertStatus(403);
+    }
 }

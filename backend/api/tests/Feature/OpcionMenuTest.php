@@ -16,6 +16,8 @@ class OpcionMenuTest extends TestCase
     const string ENDPOINT_MENU_OPTIONS = '/api/v1/menu-options';
     const string MENU_OPTION_ROUTE_DASHBOARD = '/dashboard';
     const string PANEL_PRINCIPAL_NAME = 'Panel Principal';
+    const string ROUTE_CONFIG = '/config';
+    const string ROUTE_CONFIG_USER = '/config/usuarios';
 
     use RefreshDatabase;
 
@@ -32,13 +34,13 @@ class OpcionMenuTest extends TestCase
     {
         $padre = OpcionMenu::create([
             'nombre' => self::CONFIGURACION_OPTION_NAME,
-            'ruta' => '/config',
+            'ruta' => self::ROUTE_CONFIG,
             'created_by' => $this->user->id,
         ]);
 
         OpcionMenu::create([
             'nombre' => self::USUARIOS_OPTION_NAME,
-            'ruta' => '/config/usuarios',
+            'ruta' => self::ROUTE_CONFIG_USER,
             'padre_id' => $padre->id,
             'created_by' => $this->user->id,
         ]);
@@ -59,13 +61,13 @@ class OpcionMenuTest extends TestCase
     {
         $padre = OpcionMenu::create([
             'nombre' => self::CONFIGURACION_OPTION_NAME,
-            'ruta' => '/config',
+            'ruta' => self::ROUTE_CONFIG,
             'created_by' => $this->user->id,
         ]);
 
         OpcionMenu::create([
             'nombre' => 'Usuarios',
-            'ruta' => '/config/usuarios',
+            'ruta' => self::ROUTE_CONFIG_USER,
             'padre_id' => $padre->id,
             'created_by' => $this->user->id,
         ]);
@@ -174,13 +176,13 @@ class OpcionMenuTest extends TestCase
     {
         $padre = OpcionMenu::create([
             'nombre' => self::CONFIGURACION_OPTION_NAME,
-            'ruta' => '/config',
+            'ruta' => self::ROUTE_CONFIG,
             'created_by' => $this->user->id,
         ]);
 
         $hijo = OpcionMenu::create([
             'nombre' => 'Usuarios',
-            'ruta' => '/config/usuarios',
+            'ruta' => self::ROUTE_CONFIG_USER,
             'padre_id' => $padre->id,
             'created_by' => $this->user->id,
         ]);
