@@ -11,9 +11,9 @@ use Tests\TestCase;
 
 class PermisoTest extends TestCase
 {
-    const string ENDPOINT_PERMISSIONS = '/api/v1/permissions';
+    const ENDPOINT_PERMISSIONS = '/api/v1/permissions';
 
-    const string ASSERT_PERMISSION_NAME = 'Nuevo Permiso';
+    const ASSERT_PERMISSION_NAME = 'Nuevo Permiso';
 
     use RefreshDatabase;
 

@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 class PrioridadTest extends TestCase
 {
-    const string ENDPOINT_PRIORITIES = '/api/v1/priorities';
+    const ENDPOINT_PRIORITIES = '/api/v1/priorities';
 
     use RefreshDatabase;
 

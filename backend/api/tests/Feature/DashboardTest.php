@@ -20,7 +20,7 @@ use Tests\TestCase;
 
 class DashboardTest extends TestCase
 {
-    const string ALERT_TEXT_SQLITE_NO_SCHEMA = 'SQLite no soporta esquemas (metrics.*) de forma nativa';
+    const ALERT_TEXT_SQLITE_NO_SCHEMA = 'SQLite no soporta esquemas (metrics.*) de forma nativa';
 
     use RefreshDatabase;
 

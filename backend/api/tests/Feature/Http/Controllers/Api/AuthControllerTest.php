@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
-    const string EMAIL_TEST_STRING = 'test@test.com';
+    const EMAIL_TEST_STRING = 'test@test.com';
 
     use RefreshDatabase;
 

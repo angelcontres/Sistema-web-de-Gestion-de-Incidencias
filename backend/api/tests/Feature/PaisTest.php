@@ -13,9 +13,9 @@ use Tests\TestCase;
 
 class PaisTest extends TestCase
 {
-    const string ENDPOINT_COUNTRIES = '/api/v1/countries';
+    const ENDPOINT_COUNTRIES = '/api/v1/countries';
 
-    const string ASSERT_NEW_COUNTRY = 'Nuevo Pais';
+    const ASSERT_NEW_COUNTRY = 'Nuevo Pais';
 
     use RefreshDatabase;
 

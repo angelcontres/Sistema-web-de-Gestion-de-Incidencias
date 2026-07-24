@@ -10,11 +10,11 @@ use Tests\TestCase;
 
 class CategoriaIncidenciaTest extends TestCase
 {
-    const string ENDPOINT_CATEGORIES = '/api/v1/incident-categories';
+    const ENDPOINT_CATEGORIES = '/api/v1/incident-categories';
 
-    const string ASSERT_CATEGORY = 'Nueva Categoria';
+    const ASSERT_CATEGORY = 'Nueva Categoria';
 
-    const string ASSERT_NEW_NAME = 'New Name';
+    const ASSERT_NEW_NAME = 'New Name';
 
     use RefreshDatabase;
 

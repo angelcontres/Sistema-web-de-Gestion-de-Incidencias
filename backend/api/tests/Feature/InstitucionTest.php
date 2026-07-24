@@ -10,9 +10,9 @@ use Tests\TestCase;
 
 class InstitucionTest extends TestCase
 {
-    const string ENDPOINT_INSTITUTIONS = '/api/v1/institutions';
+    const ENDPOINT_INSTITUTIONS = '/api/v1/institutions';
 
-    const string ASSERT_INSTITUTION_NAME = 'Cruz Roja';
+    const ASSERT_INSTITUTION_NAME = 'Cruz Roja';
 
     use RefreshDatabase;
 

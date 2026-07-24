@@ -14,11 +14,11 @@ use Tests\TestCase;
 
 class DireccionTest extends TestCase
 {
-    const string ENDPOINT_ADDRESSES = '/api/v1/addresses';
+    const ENDPOINT_ADDRESSES = '/api/v1/addresses';
 
-    const string CALLE_MAGNOLIAS_NAME = 'Calle Las Magnolias 123';
+    const CALLE_MAGNOLIAS_NAME = 'Calle Las Magnolias 123';
 
-    const string CALLE_VERDADERA_NAME = 'Calle Verdadera 456';
+    const CALLE_VERDADERA_NAME = 'Calle Verdadera 456';
 
     use RefreshDatabase;
 

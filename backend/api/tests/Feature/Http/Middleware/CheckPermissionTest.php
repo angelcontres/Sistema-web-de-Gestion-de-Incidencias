@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 class CheckPermissionTest extends TestCase
 {
-    const string ROUTE_TEST = '/test';
+    const ROUTE_TEST = '/test';
 
     use RefreshDatabase;
 

@@ -9,23 +9,23 @@ use Tests\TestCase;
 
 class OpcionMenuTest extends TestCase
 {
-    const string CONFIGURACION_OPTION_NAME = 'Configuración';
+    const CONFIGURACION_OPTION_NAME = 'Configuración';
 
-    const string USUARIOS_OPTION_NAME = 'Usuarios';
+    const USUARIOS_OPTION_NAME = 'Usuarios';
 
-    const string DASHBOARD_OPTION_NAME = 'Dashboard';
+    const DASHBOARD_OPTION_NAME = 'Dashboard';
 
-    const string REPORTES_OPTION_NAME = 'Reportes';
+    const REPORTES_OPTION_NAME = 'Reportes';
 
-    const string ENDPOINT_MENU_OPTIONS = '/api/v1/menu-options';
+    const ENDPOINT_MENU_OPTIONS = '/api/v1/menu-options';
 
-    const string MENU_OPTION_ROUTE_DASHBOARD = '/dashboard';
+    const MENU_OPTION_ROUTE_DASHBOARD = '/dashboard';
 
-    const string PANEL_PRINCIPAL_NAME = 'Panel Principal';
+    const PANEL_PRINCIPAL_NAME = 'Panel Principal';
 
-    const string ROUTE_CONFIG = '/config';
+    const ROUTE_CONFIG = '/config';
 
-    const string ROUTE_CONFIG_USER = '/config/usuarios';
+    const ROUTE_CONFIG_USER = '/config/usuarios';
 
     use RefreshDatabase;
 

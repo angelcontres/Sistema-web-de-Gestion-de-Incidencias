@@ -14,21 +14,21 @@ use Tests\TestCase;
 
 class CatalogoTest extends TestCase
 {
-    const string MEXICO_NAME = 'México';
+    const MEXICO_NAME = 'México';
 
-    const string PERU_NAME = 'Perú';
+    const PERU_NAME = 'Perú';
 
-    const string LIMA_NAME = 'Lima';
+    const LIMA_NAME = 'Lima';
 
-    const string LIMA_PROV_NAME = 'Lima Provincia';
+    const LIMA_PROV_NAME = 'Lima Provincia';
 
-    const string CDMX_NAME = 'Ciudad de México';
+    const CDMX_NAME = 'Ciudad de México';
 
-    const string SOPORTE_TECNICO_NAME = 'Soporte Técnico';
+    const SOPORTE_TECNICO_NAME = 'Soporte Técnico';
 
-    const string HARDWARE_NAME = 'Hardware';
+    const HARDWARE_NAME = 'Hardware';
 
-    const string PC_LAPTOP_NAME = 'PC / Laptop';
+    const PC_LAPTOP_NAME = 'PC / Laptop';
 
     use RefreshDatabase;
 

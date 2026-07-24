@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 class IncidentGroupingServiceTest extends TestCase
 {
-    const string DETAIL_ADDRESS_NAME = 'Calle T';
+    const DETAIL_ADDRESS_NAME = 'Calle T';
 
     use RefreshDatabase;
 
