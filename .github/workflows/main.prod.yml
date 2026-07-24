@@ -89,6 +89,12 @@ jobs:
         run: |
           docker run --rm -v "$(pwd)/frontend:/app" -w /app node:18-alpine sh -c "npm install && npm run test:coverage && rm -rf node_modules" || true
 
+      - name: Limpiar almacenamiento temporal de pruebas (disks)
+        run: |
+          if [ -d "backend/api/storage/framework/testing/disks" ]; then
+            docker run --rm -v "$(pwd):/workspace" busybox rm -rf /workspace/backend/api/storage/framework/testing/disks
+          fi
+
       # 7. SonarQube
       - name: Esperar a que SonarQube inicie por completo
         run: |
