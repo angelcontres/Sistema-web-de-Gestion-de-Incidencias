@@ -2,5 +2,5 @@ projectKey=sistema-incidencias-sqa
 serverUrl=http://localhost:9000
 serverVersion=26.7.0.124771
 dashboardUrl=http://localhost:9000/dashboard?id=sistema-incidencias-sqa
-ceTaskId=bf3710ef-55a5-4045-a712-2f0665d9b8f8
-ceTaskUrl=http://localhost:9000/api/ce/task?id=bf3710ef-55a5-4045-a712-2f0665d9b8f8
+ceTaskId=92d2b00a-dd12-4d72-9b03-55b56805ae61
+ceTaskUrl=http://localhost:9000/api/ce/task?id=92d2b00a-dd12-4d72-9b03-55b56805ae61
