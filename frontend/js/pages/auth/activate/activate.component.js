@@ -1,6 +1,6 @@
-import { BaseComponent } from '../../../../core/base-component.js';
-import { apiRequest } from '../../../../core/api.js';
-import { ToastService } from '../../../../shared/services/toast.service.js';
+import { BaseComponent } from '../../../core/base-component.js';
+import { apiRequest } from '../../../core/api.js';
+import { ToastService } from '../../../shared/services/toast.service.js';
 
 export class ActivateAccountComponent extends BaseComponent {
   constructor() {

@@ -304,7 +304,7 @@ class SyncDimensionsJob implements ShouldQueue
             $records[] = [
                 'id' => $u->id,
                 'username' => $u->username,
-                'name' => $u->name,
+                'name' => $u->name ?? $u->username ?? 'Desconocido',
                 'email' => $u->email,
                 'rol_principal' => $rolPrincipal,
                 'created_at' => now(),

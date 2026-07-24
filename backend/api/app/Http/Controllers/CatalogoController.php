@@ -19,7 +19,7 @@ class CatalogoController extends Controller
     public function paises(): JsonResponse
     {
         $paises = Cache::remember('catalogo_paises', now()->addHours(24), function () {
-            return Pais::where('activo', true)->orderBy('nombre')->get();
+            return Pais::where('activo', true)->orderBy('nombre')->get()->toArray();
         });
 
         return response()->json($paises);
@@ -50,7 +50,7 @@ class CatalogoController extends Controller
                 }
             }
 
-            return $query->orderBy('nombre')->get();
+            return $query->orderBy('nombre')->get()->toArray();
         });
 
         return response()->json($territorios);
@@ -71,7 +71,7 @@ class CatalogoController extends Controller
                 $query->where('territorio_id', $request->input('territorio_id'));
             }
 
-            return $query->get();
+            return $query->get()->toArray();
         });
 
         return response()->json($direcciones);
@@ -103,7 +103,7 @@ class CatalogoController extends Controller
                 $query->whereDoesntHave('hijos');
             }
 
-            return $query->orderBy('nombre')->get();
+            return $query->orderBy('nombre')->get()->toArray();
         });
 
         return response()->json($categorias);
@@ -115,7 +115,7 @@ class CatalogoController extends Controller
     public function instituciones(): JsonResponse
     {
         $instituciones = Cache::remember('catalogo_instituciones', now()->addHours(24), function () {
-            return Institucion::where('activo', true)->orderBy('nombre')->get();
+            return Institucion::where('activo', true)->orderBy('nombre')->get()->toArray();
         });
 
         return response()->json($instituciones);

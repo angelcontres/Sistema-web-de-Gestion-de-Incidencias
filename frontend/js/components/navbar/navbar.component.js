@@ -63,7 +63,7 @@ export class NavbarComponent extends BaseComponent {
     const userNameDisplay = this.querySelector('#navUserName');
     if (userNameDisplay) {
       const user = AuthService.getCurrentUser() || {};
-      userNameDisplay.textContent = user.name || user.email || 'Usuario';
+      userNameDisplay.textContent = user.username || user.name || 'Usuario';
     }
 
     // Set up logout button listener

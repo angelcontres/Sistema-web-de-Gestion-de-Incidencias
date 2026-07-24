@@ -45,9 +45,18 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
+        $email = $validated['email'] ?? null;
+        $username = $validated['username'] ?? null;
+
+        if ($email && !$username) {
+            $username = strtolower(explode('@', $email)[0]) . '_' . rand(100, 999);
+        } elseif ($username && !$email) {
+            $email = $username . '@ciudadano.local';
+        }
+
         $user = User::create([
-            'email' => $validated['email'] ?? null,
-            'username' => $validated['username'] ?? null,
+            'email' => $email,
+            'username' => $username,
             'password' => Hash::make($validated['password']),
             'activo' => true,
         ]);
@@ -144,6 +153,7 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
+                'username' => $user->username,
                 'email' => $user->email,
                 'is_admin' => $isAdmin,
                 'permisos' => $permisosList,
