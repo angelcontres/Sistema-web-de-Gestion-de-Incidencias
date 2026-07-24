@@ -35,7 +35,7 @@ class PrioridadTest extends TestCase
     {
         $response = $this->postJson(self::ENDPOINT_PRIORITIES, [
             'nombre' => 'Urgente',
-            'color_hex' => '#000000'
+            'color_hex' => '#000000',
         ]);
         $response->assertStatus(201)->assertJsonFragment(['nombre' => 'Urgente']);
         $this->assertDatabaseHas('prioridades', ['nombre' => 'Urgente']);
@@ -51,16 +51,16 @@ class PrioridadTest extends TestCase
     public function test_show_returns_prioridad()
     {
         $pri = Prioridad::create(['nombre' => 'Media', 'color_hex' => '#00FF00']);
-        $response = $this->getJson(self::ENDPOINT_PRIORITIES . '/' . $pri->id);
+        $response = $this->getJson(self::ENDPOINT_PRIORITIES.'/'.$pri->id);
         $response->assertStatus(200)->assertJsonFragment(['nombre' => 'Media']);
     }
 
     public function test_update_modifies_prioridad()
     {
         $pri = Prioridad::create(['nombre' => 'Old', 'color_hex' => '#FFF']);
-        $response = $this->putJson(self::ENDPOINT_PRIORITIES . '/' . $pri->id, [
+        $response = $this->putJson(self::ENDPOINT_PRIORITIES.'/'.$pri->id, [
             'nombre' => 'New',
-            'color_hex' => '#000'
+            'color_hex' => '#000',
         ]);
         $response->assertStatus(200)->assertJsonFragment(['nombre' => 'New']);
         $this->assertDatabaseHas('prioridades', ['id' => $pri->id, 'nombre' => 'New']);
@@ -69,7 +69,7 @@ class PrioridadTest extends TestCase
     public function test_destroy_deletes_prioridad()
     {
         $pri = Prioridad::create(['nombre' => 'Del', 'color_hex' => '#FFF']);
-        $response = $this->deleteJson(self::ENDPOINT_PRIORITIES . '/' . $pri->id);
+        $response = $this->deleteJson(self::ENDPOINT_PRIORITIES.'/'.$pri->id);
         $response->assertStatus(200);
         $this->assertDatabaseMissing('prioridades', ['id' => $pri->id, 'deleted_at' => null]);
     }

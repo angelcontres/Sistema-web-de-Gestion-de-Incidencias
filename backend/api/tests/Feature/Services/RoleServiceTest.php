@@ -16,11 +16,11 @@ class RoleServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         Role::create(['nombre' => 'Role 1', 'descripcion' => 'Desc 1', 'created_by' => $user->id]);
         Role::create(['nombre' => 'Role 2', 'descripcion' => 'Desc 2', 'created_by' => $user->id]);
 
-        $service = new RoleService();
+        $service = new RoleService;
         $roles = $service->getAllRoles();
 
         $this->assertCount(2, $roles);
@@ -30,10 +30,10 @@ class RoleServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $role = Role::create(['nombre' => 'Role 1', 'descripcion' => 'Desc 1', 'created_by' => $user->id]);
 
-        $service = new RoleService();
+        $service = new RoleService;
         $foundRole = $service->getRoleById($role->id);
 
         $this->assertNotNull($foundRole);
@@ -44,10 +44,10 @@ class RoleServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $role = Role::create(['nombre' => 'Admin', 'descripcion' => 'Admin role', 'created_by' => $user->id]);
 
-        $service = new RoleService();
+        $service = new RoleService;
         $service->assignRoleToUser($user, 'Admin');
 
         $this->assertTrue($user->roles->contains($role));
@@ -57,8 +57,8 @@ class RoleServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
-        $service = new RoleService();
+
+        $service = new RoleService;
         $service->assignRoleToUser($user, 'NonExistentRole');
 
         $this->assertEmpty($user->roles);
@@ -68,11 +68,11 @@ class RoleServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $role1 = Role::create(['nombre' => 'Role 1', 'descripcion' => 'Desc 1', 'created_by' => $user->id]);
         $role2 = Role::create(['nombre' => 'Role 2', 'descripcion' => 'Desc 2', 'created_by' => $user->id]);
 
-        $service = new RoleService();
+        $service = new RoleService;
         $service->syncRolesToUser($user, [$role1->id, $role2->id]);
 
         $user->refresh();

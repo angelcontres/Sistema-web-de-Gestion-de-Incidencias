@@ -3,12 +3,11 @@
 namespace Tests\Feature\Services;
 
 use App\Models\CategoriaIncidencia;
-use App\Models\Direccion;
 use App\Models\EstadoIncidencia;
 use App\Models\Incidencia;
+use App\Models\Prioridad;
 use App\Models\User;
 use App\Services\IncidenciaService;
-use App\Services\IncidentGroupingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -29,20 +28,20 @@ class IncidenciaServiceTest extends TestCase
     public function test_calculate_priority_returns_null_if_no_base_priority()
     {
         $subtipo = CategoriaIncidencia::create(['nombre' => 'Test Sin Prioridad']);
-        
+
         $priority = $this->service->calculatePriority($subtipo->id, 1);
-        
+
         $this->assertNull($priority);
     }
 
     public function test_calculate_priority_escalates_priority_when_high_affected()
     {
-        \App\Models\Prioridad::create(['id' => 1, 'nombre' => 'P1', 'color_hex' => '#000']);
-        \App\Models\Prioridad::create(['id' => 2, 'nombre' => 'P2', 'color_hex' => '#000']);
-        \App\Models\Prioridad::create(['id' => 3, 'nombre' => 'P3', 'color_hex' => '#000']);
-        \App\Models\Prioridad::create(['id' => 4, 'nombre' => 'P4', 'color_hex' => '#000']);
-        \App\Models\Prioridad::create(['id' => 5, 'nombre' => 'P5', 'color_hex' => '#000']);
-        
+        Prioridad::create(['id' => 1, 'nombre' => 'P1', 'color_hex' => '#000']);
+        Prioridad::create(['id' => 2, 'nombre' => 'P2', 'color_hex' => '#000']);
+        Prioridad::create(['id' => 3, 'nombre' => 'P3', 'color_hex' => '#000']);
+        Prioridad::create(['id' => 4, 'nombre' => 'P4', 'color_hex' => '#000']);
+        Prioridad::create(['id' => 5, 'nombre' => 'P5', 'color_hex' => '#000']);
+
         $subtipoAlta = CategoriaIncidencia::create(['nombre' => 'Test', 'prioridad_id' => 2]);
         $this->assertEquals(1, $this->service->calculatePriority($subtipoAlta->id, 15));
 
@@ -59,24 +58,24 @@ class IncidenciaServiceTest extends TestCase
     public function test_process_base64_resources()
     {
         Storage::fake('public');
-        
+
         $estado = EstadoIncidencia::create(['nombre' => 'Abierto', 'color' => '#fff', 'icono' => 'icon']);
         $subtipo = CategoriaIncidencia::create(['nombre' => 'Test Subtipo']);
-        
+
         $incidencia = Incidencia::create([
             'titulo' => 'Test',
             'descripcion' => 'Test desc',
             'estado_id' => $estado->id,
             'categoria_id' => $subtipo->id,
         ]);
-        
+
         $recursos = [
             // Valid base64 image (a 1x1 transparent png)
             'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
             // Invalid base64
             'invalid_base_64_string',
             // Missing data prefix
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
         ];
 
         $this->service->processBase64Resources($incidencia, $recursos);
@@ -88,11 +87,11 @@ class IncidenciaServiceTest extends TestCase
     public function test_create_and_update_incidencia()
     {
         Storage::fake('public');
-        
+
         $user = User::factory()->create();
         $this->actingAs($user);
-        
-        \App\Models\Prioridad::create(['id' => 3, 'nombre' => 'P3', 'color_hex' => '#000']);
+
+        Prioridad::create(['id' => 3, 'nombre' => 'P3', 'color_hex' => '#000']);
         $estado = EstadoIncidencia::create(['nombre' => 'Abierto', 'color' => '#fff', 'icono' => 'icon']);
         $subtipo = CategoriaIncidencia::create(['nombre' => 'Test Subtipo', 'prioridad_id' => 3]);
 
@@ -105,10 +104,10 @@ class IncidenciaServiceTest extends TestCase
         ];
 
         $result = $this->service->createIncidencia($data, $user);
-        
+
         $this->assertArrayHasKey('data', $result);
         $incidencia = $result['data'];
-        
+
         $this->assertEquals('Test creation', $incidencia->incidencia_descripcion);
         $this->assertEquals(1, $incidencia->version);
 
@@ -118,7 +117,7 @@ class IncidenciaServiceTest extends TestCase
         ];
 
         $updateResult = $this->service->updateIncidencia($incidencia, $updateData, $user);
-        
+
         $updatedIncidencia = $updateResult['data'];
         $this->assertEquals('Updated description', $updatedIncidencia->incidencia_descripcion);
         $this->assertEquals(2, $updatedIncidencia->version);

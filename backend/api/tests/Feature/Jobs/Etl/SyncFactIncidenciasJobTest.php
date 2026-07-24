@@ -2,15 +2,18 @@
 
 namespace Tests\Feature\Jobs\Etl;
 
+use App\Jobs\Etl\SyncDimensionsJob;
 use App\Jobs\Etl\SyncFactIncidenciasJob;
 use App\Models\Direccion;
 use App\Models\Pais;
-use \App\Models\Prioridad;
+use App\Models\Prioridad;
 use App\Models\Territorio;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
-use Carbon\Carbon;
 
 class SyncFactIncidenciasJobTest extends TestCase
 {
@@ -19,7 +22,7 @@ class SyncFactIncidenciasJobTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--path' => 'database/migrations/olap']);
+        Artisan::call('migrate', ['--path' => 'database/migrations/olap']);
     }
 
     public function test_syncs_incidencias_and_calculates_times()
@@ -35,7 +38,7 @@ class SyncFactIncidenciasJobTest extends TestCase
         DB::table('estados_incidencia')->insertOrIgnore([
             ['id' => 1, 'nombre' => 'Pendiente'],
             ['id' => 3, 'nombre' => 'En Proceso'],
-            ['id' => 4, 'nombre' => 'Completado']
+            ['id' => 4, 'nombre' => 'Completado'],
         ]);
 
         DB::table('categorias_incidencia')->insertOrIgnore([
@@ -53,10 +56,10 @@ class SyncFactIncidenciasJobTest extends TestCase
             'sub_tipo_incidencia_id' => 2,
             'estado_id' => 4,
             'prioridad_id' => 1,
-            'cliente_id' => \App\Models\User::factory()->create()->id,
+            'cliente_id' => User::factory()->create()->id,
             'incidencia_descripcion' => 'Desc',
             'created_at' => $createdAt,
-            'updated_at' => $createdAt
+            'updated_at' => $createdAt,
         ]);
 
         // Mock history for time calculation
@@ -65,7 +68,7 @@ class SyncFactIncidenciasJobTest extends TestCase
             'estado_id' => 3, // En Proceso
             'created_at' => $createdAt->copy()->addMinutes(15),
             'updated_at' => $createdAt->copy()->addMinutes(15),
-            'usuario_id' => \App\Models\User::factory()->create()->id
+            'usuario_id' => User::factory()->create()->id,
         ]);
 
         DB::table('historial_incidencias')->insert([
@@ -73,13 +76,13 @@ class SyncFactIncidenciasJobTest extends TestCase
             'estado_id' => 4, // Resuelto
             'created_at' => $createdAt->copy()->addMinutes(45),
             'updated_at' => $createdAt->copy()->addMinutes(45),
-            'usuario_id' => \App\Models\User::factory()->create()->id
+            'usuario_id' => User::factory()->create()->id,
         ]);
 
-        $dimensionJob = new \App\Jobs\Etl\SyncDimensionsJob();
+        $dimensionJob = new SyncDimensionsJob;
         $dimensionJob->handle();
 
-        $job = new SyncFactIncidenciasJob();
+        $job = new SyncFactIncidenciasJob;
         $job->handle();
 
         $this->assertDatabaseHas('metrics.fact_incidencias', [

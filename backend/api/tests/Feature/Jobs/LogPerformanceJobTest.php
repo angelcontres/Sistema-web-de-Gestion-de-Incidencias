@@ -3,8 +3,8 @@
 namespace Tests\Feature\Jobs;
 
 use App\Jobs\LogPerformanceJob;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use \App\Models\User;
 use Tests\TestCase;
 
 class LogPerformanceJobTest extends TestCase

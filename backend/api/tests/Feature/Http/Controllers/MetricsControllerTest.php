@@ -13,8 +13,8 @@ class MetricsControllerTest extends TestCase
         // Create test metrics directories if they don't exist
         $dirs = ['tep', 'cf', 'dd', 'vco', 'trp'];
         foreach ($dirs as $dir) {
-            $path = base_path('tests/metrics-stg/' . $dir);
-            if (!File::exists($path)) {
+            $path = base_path('tests/metrics-stg/'.$dir);
+            if (! File::exists($path)) {
                 File::makeDirectory($path, 0755, true);
             }
         }
@@ -24,7 +24,7 @@ class MetricsControllerTest extends TestCase
     {
         $dirs = ['tep', 'cf', 'dd', 'vco', 'trp'];
         foreach ($dirs as $dir) {
-            $path = base_path('tests/metrics-stg/' . $dir);
+            $path = base_path('tests/metrics-stg/'.$dir);
             File::cleanDirectory($path);
         }
         parent::tearDown();
@@ -35,8 +35,8 @@ class MetricsControllerTest extends TestCase
         $assertDate = '2023-01-01';
 
         $dir = base_path('tests/metrics-stg/tep');
-        File::put($dir . '/tep-2023-01-01.json', json_encode(['fecha_procesamiento' => '2023-01-01', 'value' => 1]));
-        File::put($dir . '/tep-2023-01-02.json', json_encode(['fecha_procesamiento' => '2023-01-02', 'value' => 2]));
+        File::put($dir.'/tep-2023-01-01.json', json_encode(['fecha_procesamiento' => '2023-01-01', 'value' => 1]));
+        File::put($dir.'/tep-2023-01-02.json', json_encode(['fecha_procesamiento' => '2023-01-02', 'value' => 2]));
 
         $response = $this->get('/api/v1/metrics/tep');
         $response->assertStatus(200);
@@ -49,9 +49,9 @@ class MetricsControllerTest extends TestCase
     {
         $assertDate = '2023-04-04';
         $dir = base_path('tests/metrics-stg/cf');
-        File::put($dir . '/cf-2023-04-04.json', json_encode(['fecha_procesamiento' => '2023-04-04', 'value' => 1]));
+        File::put($dir.'/cf-2023-04-04.json', json_encode(['fecha_procesamiento' => '2023-04-04', 'value' => 1]));
 
-        $response = $this->get('/api/v1/metrics/cf/' . $assertDate);
+        $response = $this->get('/api/v1/metrics/cf/'.$assertDate);
         $response->assertStatus(200);
         $data = $response->json();
         $this->assertEquals(1, $data['value']);
@@ -74,7 +74,7 @@ class MetricsControllerTest extends TestCase
     public function test_trp_finds_file_with_partial_date()
     {
         $dir = base_path('tests/metrics-stg/trp');
-        File::put($dir . '/trp-2025-05-05T00-00-00.json', json_encode(['fecha_procesamiento' => '2025-05-05', 'value' => 5]));
+        File::put($dir.'/trp-2025-05-05T00-00-00.json', json_encode(['fecha_procesamiento' => '2025-05-05', 'value' => 5]));
 
         $response = $this->get('/api/v1/metrics/trp/2025-05-05');
         $response->assertStatus(200);

@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Models;
 
+use App\Models\EstadoIncidencia;
 use App\Models\Incidencia;
 use App\Models\RecursoIncidencia;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class RecursoIncidenciaModelTest extends TestCase
@@ -14,9 +16,9 @@ class RecursoIncidenciaModelTest extends TestCase
 
     public function test_relationships_and_accessors()
     {
-        \Illuminate\Support\Facades\Storage::fake('s3');
+        Storage::fake('s3');
         $user = User::factory()->create();
-        $estado = \App\Models\EstadoIncidencia::create(['nombre' => 'Test', 'color_hex' => '#fff']);
+        $estado = EstadoIncidencia::create(['nombre' => 'Test', 'color_hex' => '#fff']);
         $incidencia = Incidencia::create([
             'incidencia_descripcion' => 'Test Desc',
             'estado_id' => $estado->id,

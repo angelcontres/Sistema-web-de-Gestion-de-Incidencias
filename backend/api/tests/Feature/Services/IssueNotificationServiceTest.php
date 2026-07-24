@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Services;
 
+use App\Models\Direccion;
 use App\Models\EstadoIncidencia;
 use App\Models\Incidencia;
+use App\Models\Institucion;
 use App\Models\Pais;
 use App\Models\Territorio;
-use App\Models\Direccion;
 use App\Models\User;
-use \App\Models\Institucion;
 use App\Notifications\IssueAssignedNotification;
 use App\Notifications\IssueStatusChangedNotification;
 use App\Services\IssueNotificationService;
@@ -51,7 +51,7 @@ class IssueNotificationServiceTest extends TestCase
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
             'estado_id' => $oldStatus->id,
-            'descripcion' => 'Desc'
+            'descripcion' => 'Desc',
         ]);
 
         IssueNotificationService::notifyStatusChange($incidencia, $oldStatus);
@@ -60,7 +60,7 @@ class IssueNotificationServiceTest extends TestCase
             [$cliente, $userInstitucion],
             IssueStatusChangedNotification::class,
             function ($notification, $channels) use ($incidencia, $cliente) {
-                return str_contains($notification->toArray($cliente)['url'], (string)$incidencia->id);
+                return str_contains($notification->toArray($cliente)['url'], (string) $incidencia->id);
             }
         );
     }
@@ -82,7 +82,7 @@ class IssueNotificationServiceTest extends TestCase
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
             'estado_id' => $status->id,
-            'descripcion' => 'Desc'
+            'descripcion' => 'Desc',
         ]);
 
         IssueNotificationService::notifyAssignment($incidencia, $assignedUser);
@@ -91,7 +91,7 @@ class IssueNotificationServiceTest extends TestCase
             $assignedUser,
             IssueAssignedNotification::class,
             function ($notification, $channels) use ($incidencia, $assignedUser) {
-                return str_contains($notification->toArray($assignedUser)['url'], (string)$incidencia->id);
+                return str_contains($notification->toArray($assignedUser)['url'], (string) $incidencia->id);
             }
         );
     }
@@ -113,7 +113,7 @@ class IssueNotificationServiceTest extends TestCase
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
             'estado_id' => $estadoCritico->id, // Forzamos el color 'danger'
-            'descripcion' => 'Desc'
+            'descripcion' => 'Desc',
         ]);
 
         // Ejecutamos para el estado Crítico

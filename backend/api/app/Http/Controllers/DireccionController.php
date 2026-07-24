@@ -170,6 +170,7 @@ class DireccionController extends Controller
             if ($postcode) {
                 $result['territorio_detectado'] = $this->detectTerritoryFromPostcode($postcode);
             }
+
             return response()->json($result, 200);
         }
 
@@ -200,6 +201,7 @@ class DireccionController extends Controller
         } catch (\Exception $e) {
             // Continuar silenciosamente al plan B
         }
+
         return null;
     }
 
@@ -216,6 +218,7 @@ class DireccionController extends Controller
 
             if ($response->successful()) {
                 $bdc = $response->json();
+
                 return [
                     'address' => [
                         'country' => $bdc['countryName'] ?? null,
@@ -240,6 +243,7 @@ class DireccionController extends Controller
         } catch (\Exception $e) {
             // Ignorar para retornar null
         }
+
         return null;
     }
 
@@ -256,12 +260,14 @@ class DireccionController extends Controller
         }
 
         $canton = $this->findCantonByPostcode($postcode);
+
         return $canton ? $this->formatCantonResult($canton) : null;
     }
 
     private function findParroquiaByPostcode($postcode): ?Territorio
     {
         $codigoLimpio = (string) (int) $postcode;
+
         return Territorio::where('tipo', 'Parroquia')
             ->where(function ($query) use ($postcode, $codigoLimpio) {
                 $query->where('codigo', $postcode)->orWhere('codigo', $codigoLimpio);
@@ -271,6 +277,7 @@ class DireccionController extends Controller
     private function findTerritorioByDireccionMapeada($postcode): ?Territorio
     {
         $direccion = Direccion::with('territorio')->where('codigo_postal', $postcode)->first();
+
         return $direccion?->territorio;
     }
 
@@ -289,6 +296,7 @@ class DireccionController extends Controller
     private function formatCantonResult(Territorio $canton)
     {
         $provincia = $canton->parent;
+
         return [
             'parroquia_id' => null,
             'canton_id' => $canton->id,
@@ -320,6 +328,7 @@ class DireccionController extends Controller
         }
 
         $territorio = Territorio::findOrFail($territorioId);
+
         return $territorio->pais_id == $user->pais_id;
     }
 }

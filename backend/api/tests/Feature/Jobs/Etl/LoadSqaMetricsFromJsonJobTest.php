@@ -13,20 +13,20 @@ class LoadSqaMetricsFromJsonJobTest extends TestCase
         Artisan::shouldReceive('call')
             ->once()
             ->with('sqa:vco');
-        
+
         Artisan::shouldReceive('call')
             ->once()
             ->with('sqa:dd');
-            
+
         Artisan::shouldReceive('call')
             ->once()
             ->with('sqa:cf');
-            
+
         Artisan::shouldReceive('call')
             ->once()
             ->with('sqa:tep');
 
-        $job = new LoadSqaMetricsFromJsonJob();
+        $job = new LoadSqaMetricsFromJsonJob;
         $job->handle();
     }
 }

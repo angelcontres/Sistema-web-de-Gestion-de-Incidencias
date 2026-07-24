@@ -13,7 +13,6 @@ use Tests\TestCase;
 
 class IncidentGroupingServiceTest extends TestCase
 {
-
     const string DETAIL_ADDRESS_NAME = 'Calle T';
 
     use RefreshDatabase;
@@ -30,14 +29,14 @@ class IncidentGroupingServiceTest extends TestCase
             ['id' => 1, 'nombre' => 'Pendiente'],
             ['id' => 2, 'nombre' => 'En Revisión'],
             ['id' => 3, 'nombre' => 'En Proceso'],
-            ['id' => 4, 'nombre' => 'Completado']
+            ['id' => 4, 'nombre' => 'Completado'],
         ]);
 
         DB::table('categorias_incidencia')->insertOrIgnore([
             ['id' => 1, 'nombre' => 'Cat 1', 'parent_id' => null],
             ['id' => 2, 'nombre' => 'Cat 2', 'parent_id' => 1],
             ['id' => 3, 'nombre' => 'Cat 3', 'parent_id' => 1],
-            ['id' => 4, 'nombre' => 'Cat 4', 'parent_id' => null]
+            ['id' => 4, 'nombre' => 'Cat 4', 'parent_id' => null],
         ]);
     }
 
@@ -58,10 +57,10 @@ class IncidentGroupingServiceTest extends TestCase
             'sub_tipo_incidencia_id' => 2,
             'estado_id' => 1,
             'direccion_id' => $direccion1->id,
-            'descripcion' => 'Desc'
+            'descripcion' => 'Desc',
         ]);
 
-        $service = new IncidentGroupingService();
+        $service = new IncidentGroupingService;
         $similar = $service->findSimilarIncident(1, 2, -12.046374, -77.031250);
 
         $this->assertNotNull($similar);
@@ -85,10 +84,10 @@ class IncidentGroupingServiceTest extends TestCase
             'sub_tipo_incidencia_id' => 2,
             'estado_id' => 1,
             'direccion_id' => $direccion1->id,
-            'descripcion' => 'Desc'
+            'descripcion' => 'Desc',
         ]);
 
-        $service = new IncidentGroupingService();
+        $service = new IncidentGroupingService;
         $similar = $service->findSimilarIncident(1, 2, -12.047500, -77.031250);
 
         $this->assertNull($similar);
@@ -111,10 +110,10 @@ class IncidentGroupingServiceTest extends TestCase
             'sub_tipo_incidencia_id' => 2,
             'estado_id' => 1,
             'direccion_id' => $direccion1->id,
-            'descripcion' => 'Desc'
+            'descripcion' => 'Desc',
         ]);
 
-        $service = new IncidentGroupingService();
+        $service = new IncidentGroupingService;
         $similar = $service->findSimilarIncident(1, 3, -12.046374, -77.031250);
         $this->assertNull($similar);
 
@@ -139,10 +138,10 @@ class IncidentGroupingServiceTest extends TestCase
             'sub_tipo_incidencia_id' => 2,
             'estado_id' => 4,
             'direccion_id' => $direccion1->id,
-            'descripcion' => 'Desc'
+            'descripcion' => 'Desc',
         ]);
 
-        $service = new IncidentGroupingService();
+        $service = new IncidentGroupingService;
         $similar = $service->findSimilarIncident(1, 2, -12.046374, -77.031250);
 
         $this->assertNull($similar);

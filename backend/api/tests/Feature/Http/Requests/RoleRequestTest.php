@@ -4,7 +4,6 @@ namespace Tests\Feature\Http\Requests;
 
 use App\Http\Requests\RoleRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 class RoleRequestTest extends TestCase
@@ -18,7 +17,7 @@ class RoleRequestTest extends TestCase
 
     public function test_authorize_returns_true()
     {
-        $request = new RoleRequest();
+        $request = new RoleRequest;
         $this->assertTrue($request->authorize());
     }
 
@@ -48,7 +47,7 @@ class RoleRequestTest extends TestCase
             'permisos.*' => 'integer|exists:permisos,id',
         ], $rules);
     }
-    
+
     public function test_rules_for_assigning_permissions_english_path()
     {
         $request = \Mockery::mock(RoleRequest::class)->makePartial();

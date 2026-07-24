@@ -13,6 +13,7 @@ class NotificationTest extends TestCase
     use RefreshDatabase;
 
     private const ENDPOINT = '/api/v1/notificaciones';
+
     private const ATTR_TITLE = 'title';
 
     private User $user;
@@ -33,7 +34,7 @@ class NotificationTest extends TestCase
                 self::ATTR_TITLE => 'TestTitle',
                 'message' => 'Msg',
                 'url' => '/link',
-                'type' => 'info'
+                'type' => 'info',
             ],
             'read_at' => null,
         ]);
@@ -53,9 +54,9 @@ class NotificationTest extends TestCase
             'read_at' => null,
         ]);
 
-        $response = $this->putJson(self::ENDPOINT . '/' . $notif->id . '/leer');
+        $response = $this->putJson(self::ENDPOINT.'/'.$notif->id.'/leer');
         $response->assertStatus(200);
-        
+
         $this->assertNotNull($notif->fresh()->read_at);
         $response->assertJsonFragment(['unread_count' => 0]);
     }
@@ -69,9 +70,9 @@ class NotificationTest extends TestCase
             'read_at' => null,
         ]);
 
-        $response = $this->putJson(self::ENDPOINT . '/leer-todas');
+        $response = $this->putJson(self::ENDPOINT.'/leer-todas');
         $response->assertStatus(200);
-        
+
         $this->assertEquals(0, $this->user->unreadNotifications()->count());
     }
 }

@@ -14,7 +14,9 @@ class AuthTest extends TestCase
     use RefreshDatabase;
 
     const string ENDPOINT_INCIDENTS = '/api/v1/incidents';
+
     const string ENDPOINT_ROLES = '/api/v1/roles';
+
     const string ENDPOINT_ME_MENU = '/api/v1/me/menu';
 
     // CP-S-01: Acceso sin autenticación

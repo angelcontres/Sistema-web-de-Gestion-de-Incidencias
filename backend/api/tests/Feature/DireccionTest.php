@@ -4,9 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Direccion;
 use App\Models\Pais;
+use App\Models\Permiso;
+use App\Models\Role;
 use App\Models\Territorio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class DireccionTest extends TestCase
@@ -14,6 +17,7 @@ class DireccionTest extends TestCase
     const string ENDPOINT_ADDRESSES = '/api/v1/addresses';
 
     const string CALLE_MAGNOLIAS_NAME = 'Calle Las Magnolias 123';
+
     const string CALLE_VERDADERA_NAME = 'Calle Verdadera 456';
 
     use RefreshDatabase;
@@ -110,7 +114,7 @@ class DireccionTest extends TestCase
             'detalle' => self::CALLE_VERDADERA_NAME,
         ];
 
-        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_ADDRESSES . "/{$direccion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_ADDRESSES."/{$direccion->id}", $payload);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.detalle', self::CALLE_VERDADERA_NAME);
@@ -129,7 +133,7 @@ class DireccionTest extends TestCase
             'activo' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson(self::ENDPOINT_ADDRESSES . "/{$direccion->id}");
+        $response = $this->actingAs($this->user)->deleteJson(self::ENDPOINT_ADDRESSES."/{$direccion->id}");
 
         $response->assertStatus(200);
 
@@ -147,8 +151,8 @@ class DireccionTest extends TestCase
 
     public function test_reverse_geocode_nominatim_success()
     {
-        \Illuminate\Support\Facades\Http::fake([
-            'nominatim.openstreetmap.org/*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            'nominatim.openstreetmap.org/*' => Http::response([
                 'address' => [
                     'postcode' => '12345',
                 ],
@@ -162,9 +166,9 @@ class DireccionTest extends TestCase
 
     public function test_reverse_geocode_fallback_to_bigdatacloud()
     {
-        \Illuminate\Support\Facades\Http::fake([
-            'nominatim.openstreetmap.org/*' => \Illuminate\Support\Facades\Http::response([], 500),
-            'api.bigdatacloud.net/*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            'nominatim.openstreetmap.org/*' => Http::response([], 500),
+            'api.bigdatacloud.net/*' => Http::response([
                 'postcode' => '67890',
             ], 200),
         ]);
@@ -177,13 +181,13 @@ class DireccionTest extends TestCase
     public function test_non_admin_user_restricted_by_pais()
     {
         $nonAdminUser = User::factory()->create(['pais_id' => $this->pais->id]);
-        $role = \App\Models\Role::create(['nombre' => 'User', 'descripcion' => 'U', 'created_by' => $nonAdminUser->id]);
+        $role = Role::create(['nombre' => 'User', 'descripcion' => 'U', 'created_by' => $nonAdminUser->id]);
         $otherPais = Pais::create(['nombre' => 'Otro', 'codigo_iso' => 'OT']);
         $otherTerritorio = Territorio::create(['pais_id' => $otherPais->id, 'nombre' => 'T2', 'tipo' => 'Departamento']);
-        $permiso = \App\Models\Permiso::create([
+        $permiso = Permiso::create([
             'nombre' => 'Ver Direcciones',
             'accion' => 'READ',
-            'recurso' => 'direcciones'
+            'recurso' => 'direcciones',
         ]);
         $role->permisos()->attach($permiso->id);
         $nonAdminUser->roles()->attach($role->id);
@@ -199,7 +203,7 @@ class DireccionTest extends TestCase
         $this->assertEmpty($response->json('data'));
 
         // Mostrar no autorizado
-        $response = $this->actingAs($nonAdminUser)->getJson(self::ENDPOINT_ADDRESSES . '/' . $direccion->id);
+        $response = $this->actingAs($nonAdminUser)->getJson(self::ENDPOINT_ADDRESSES.'/'.$direccion->id);
         $response->assertStatus(403);
     }
 }

@@ -15,13 +15,19 @@ use Tests\TestCase;
 class CatalogoTest extends TestCase
 {
     const string MEXICO_NAME = 'México';
+
     const string PERU_NAME = 'Perú';
+
     const string LIMA_NAME = 'Lima';
+
     const string LIMA_PROV_NAME = 'Lima Provincia';
+
     const string CDMX_NAME = 'Ciudad de México';
 
     const string SOPORTE_TECNICO_NAME = 'Soporte Técnico';
+
     const string HARDWARE_NAME = 'Hardware';
+
     const string PC_LAPTOP_NAME = 'PC / Laptop';
 
     use RefreshDatabase;
@@ -84,7 +90,7 @@ class CatalogoTest extends TestCase
             'tipo' => 'Provincia',
         ]);
 
-       Territorio::create([
+        Territorio::create([
             'pais_id' => $mexico->id,
             'parent_id' => null,
             'nombre' => self::CDMX_NAME,

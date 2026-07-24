@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Console;
 
-use \Illuminate\Support\Facades\Artisan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class CalculateVcoTest extends TestCase
@@ -21,12 +21,12 @@ class CalculateVcoTest extends TestCase
         // Esto ejecutará "composer audit" que debería existir.
         // Y escaneará el frontend si existe.
         $this->artisan('sqa:vco')
-             ->assertExitCode(0);
+            ->assertExitCode(0);
     }
 
     public function test_calculate_vco_command_invalid_path()
     {
         $this->artisan('sqa:vco', ['--path' => 'invalid/path/that/does/not/exist'])
-             ->assertExitCode(1);
+            ->assertExitCode(1);
     }
 }

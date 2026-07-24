@@ -12,8 +12,11 @@ class TrpTest extends TestCase
     use RefreshDatabase;
 
     private const ENDPOINT_BASE = '/api/v1/trp/';
+
     private const ATTR_TRP = 'trp';
+
     private const ATTR_ENDPOINT = 'endpoint';
+
     private const ATTR_METODO = 'metodo';
 
     protected function setUp(): void
@@ -33,7 +36,7 @@ class TrpTest extends TestCase
             'logged_at' => now(),
         ]);
 
-        $response = $this->getJson(self::ENDPOINT_BASE . 'performance-stats');
+        $response = $this->getJson(self::ENDPOINT_BASE.'performance-stats');
         $response->assertStatus(200);
         $response->assertJsonStructure(['timeline', 'top_slowest']);
     }
@@ -48,7 +51,7 @@ class TrpTest extends TestCase
             'logged_at' => now(),
         ]);
 
-        $response = $this->get(self::ENDPOINT_BASE . 'performance-logs/export');
+        $response = $this->get(self::ENDPOINT_BASE.'performance-logs/export');
         $response->assertStatus(200);
         $this->assertStringContainsString('120', $response->streamedContent());
     }

@@ -11,6 +11,7 @@ use Tests\TestCase;
 class InstitucionTest extends TestCase
 {
     const string ENDPOINT_INSTITUTIONS = '/api/v1/institutions';
+
     const string ASSERT_INSTITUTION_NAME = 'Cruz Roja';
 
     use RefreshDatabase;
@@ -38,7 +39,7 @@ class InstitucionTest extends TestCase
         Institucion::create(['nombre' => 'Bomberos Test', 'siglas' => 'BOM']);
         Institucion::create(['nombre' => 'Policia Test', 'siglas' => 'POL']);
 
-        $response = $this->getJson(self::ENDPOINT_INSTITUTIONS . '?search=Bomberos');
+        $response = $this->getJson(self::ENDPOINT_INSTITUTIONS.'?search=Bomberos');
         $response->assertStatus(200);
         $this->assertCount(1, $response->json('data'));
         $this->assertEquals('Bomberos Test', $response->json('data.0.nombre'));
@@ -47,7 +48,7 @@ class InstitucionTest extends TestCase
     public function test_index_returns_all_without_pagination()
     {
         Institucion::create(['nombre' => 'Inst1', 'siglas' => 'I1']);
-        $response = $this->getJson(self::ENDPOINT_INSTITUTIONS . '?all=true');
+        $response = $this->getJson(self::ENDPOINT_INSTITUTIONS.'?all=true');
         $response->assertStatus(200);
         $this->assertIsArray($response->json());
     }
@@ -56,7 +57,7 @@ class InstitucionTest extends TestCase
     {
         $response = $this->postJson(self::ENDPOINT_INSTITUTIONS, [
             'nombre' => 'Cruz Roja',
-            'siglas' => 'CR'
+            'siglas' => 'CR',
         ]);
 
         $response->assertStatus(201)
@@ -76,16 +77,16 @@ class InstitucionTest extends TestCase
     public function test_show_returns_institucion()
     {
         $inst = Institucion::create(['nombre' => 'Inst Show', 'siglas' => 'ISH']);
-        $response = $this->getJson(self::ENDPOINT_INSTITUTIONS . '/' . $inst->id);
+        $response = $this->getJson(self::ENDPOINT_INSTITUTIONS.'/'.$inst->id);
         $response->assertStatus(200)->assertJsonFragment(['nombre' => 'Inst Show']);
     }
 
     public function test_update_modifies_institucion()
     {
         $inst = Institucion::create(['nombre' => 'Old', 'siglas' => 'O']);
-        $response = $this->putJson(self::ENDPOINT_INSTITUTIONS . '/' . $inst->id, [
+        $response = $this->putJson(self::ENDPOINT_INSTITUTIONS.'/'.$inst->id, [
             'nombre' => 'New',
-            'siglas' => 'N'
+            'siglas' => 'N',
         ]);
         $response->assertStatus(200)->assertJsonFragment(['nombre' => 'New']);
         $this->assertDatabaseHas('instituciones', ['id' => $inst->id, 'nombre' => 'New']);
@@ -94,7 +95,7 @@ class InstitucionTest extends TestCase
     public function test_destroy_deletes_institucion()
     {
         $inst = Institucion::create(['nombre' => 'Del', 'siglas' => 'D']);
-        $response = $this->deleteJson(self::ENDPOINT_INSTITUTIONS . '/' . $inst->id);
+        $response = $this->deleteJson(self::ENDPOINT_INSTITUTIONS.'/'.$inst->id);
         $response->assertStatus(200);
         $this->assertDatabaseMissing('instituciones', ['id' => $inst->id, 'deleted_at' => null]);
     }

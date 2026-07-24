@@ -12,6 +12,7 @@ use Tests\TestCase;
 class IncidenciaPerformanceTest extends TestCase
 {
     const string EMAIL_TEST_EXAMPLE = 'test@example.com';
+
     const string ENDPOINT_INCIDENTS = '/api/v1/incidents';
 
     const string ENDPOINT_DASHBOARD_STATS = '/api/v1/dashboard/stats';

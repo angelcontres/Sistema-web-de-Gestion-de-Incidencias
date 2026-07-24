@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\OpcionMenu;
+use App\Models\Permiso;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\Permiso;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -15,15 +15,16 @@ class UserMenuTest extends TestCase
     use RefreshDatabase;
 
     private const ENDPOINT = '/api/v1/me/menu';
+
     private const ATTR_NOMBRE = 'nombre';
 
     public function test_index_returns_all_for_admin()
     {
         $admin = $this->createAdminUser();
         OpcionMenu::create([self::ATTR_NOMBRE => 'TestMenu1', 'ruta' => '/test1', 'icono' => 'icon', 'created_by' => $admin->id]);
-        
+
         Sanctum::actingAs($admin);
-        
+
         $response = $this->getJson(self::ENDPOINT);
         $response->assertStatus(200);
         $this->assertGreaterThan(0, count($response->json('data')));
@@ -43,7 +44,7 @@ class UserMenuTest extends TestCase
 
         $response = $this->getJson(self::ENDPOINT);
         $response->assertStatus(200);
-        
+
         $nombres = collect($response->json('data'))->pluck(self::ATTR_NOMBRE)->toArray();
         $this->assertContains('TestMenu2', $nombres);
     }

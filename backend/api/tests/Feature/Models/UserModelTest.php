@@ -19,7 +19,7 @@ class UserModelTest extends TestCase
     {
         $pais = Pais::create(['nombre' => 'Pais T', 'codigo_iso' => 'PT']);
         $institucion = Institucion::create(['nombre' => 'Inst T', 'siglas' => 'IT']);
-        
+
         $user = User::factory()->create([
             'pais_id' => $pais->id,
             'institucion_id' => $institucion->id,
@@ -49,7 +49,7 @@ class UserModelTest extends TestCase
         $permiso = Permiso::create([
             'nombre' => 'Crear Test',
             'accion' => 'CREATE',
-            'recurso' => 'test'
+            'recurso' => 'test',
         ]);
         $role->permisos()->attach($permiso->id);
 

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Jobs\Etl;
 
-use \Illuminate\Support\Facades\Artisan;
 use App\Jobs\Etl\SyncPerformanceLogsJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -35,7 +35,7 @@ class SyncPerformanceLogsJobTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $job = new SyncPerformanceLogsJob();
+        $job = new SyncPerformanceLogsJob;
         $job->handle();
 
         $this->assertDatabaseHas('metrics.dim_endpoint', [

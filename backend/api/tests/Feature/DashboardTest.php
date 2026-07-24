@@ -12,6 +12,7 @@ use App\Models\Prioridad;
 use App\Models\Role;
 use App\Models\Territorio;
 use App\Models\User;
+use App\Services\TimezoneService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -119,7 +120,7 @@ class DashboardTest extends TestCase
             'detalle' => 'Calle 1',
             'activo' => true,
             'latitud' => -0.22,
-            'longitud' => -78.52
+            'longitud' => -78.52,
         ]);
 
         Incidencia::create([
@@ -129,8 +130,8 @@ class DashboardTest extends TestCase
             'direccion_id' => $direccion->id,
             'cliente_id' => $this->ciudadano->id,
             'prioridad_id' => $prioridad->id,
-            'created_at' => \App\Services\TimezoneService::nowLocal()->setTimezone('UTC')->subMinutes(30),
-            'updated_at' => \App\Services\TimezoneService::nowLocal()->setTimezone('UTC')->subMinutes(30),
+            'created_at' => TimezoneService::nowLocal()->setTimezone('UTC')->subMinutes(30),
+            'updated_at' => TimezoneService::nowLocal()->setTimezone('UTC')->subMinutes(30),
         ]);
 
         $response = $this->actingAs($this->admin)->getJson('/api/v1/dashboard/stats');

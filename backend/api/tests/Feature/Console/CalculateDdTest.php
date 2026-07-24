@@ -2,9 +2,8 @@
 
 namespace Tests\Feature\Console;
 
-use \Illuminate\Support\Facades\Artisan;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class CalculateDdTest extends TestCase
@@ -22,10 +21,10 @@ class CalculateDdTest extends TestCase
         // El comando usa cloc y git, los cuales están disponibles.
         // Va a calcular y guardar la métrica en la BD.
         $this->artisan('sqa:dd')
-             ->assertExitCode(0);
+            ->assertExitCode(0);
 
         $this->assertDatabaseHas('metrics.dim_metric', [
-            'codigo' => 'DD'
+            'codigo' => 'DD',
         ]);
 
         $this->assertDatabaseCount('metrics.fact_quality', 1);
@@ -34,7 +33,7 @@ class CalculateDdTest extends TestCase
     public function test_calculate_dd_command_invalid_path()
     {
         $this->artisan('sqa:dd', ['--path' => 'invalid/path/that/does/not/exist'])
-             ->expectsOutput('La ruta especificada (invalid/path/that/does/not/exist) no es válida o no existe.')
-             ->assertExitCode(1);
+            ->expectsOutput('La ruta especificada (invalid/path/that/does/not/exist) no es válida o no existe.')
+            ->assertExitCode(1);
     }
 }

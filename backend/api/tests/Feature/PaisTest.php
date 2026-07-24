@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Pais;
 use App\Models\Permiso;
-use \App\Models\Role;
+use App\Models\Role;
 use App\Models\Territorio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,6 +14,7 @@ use Tests\TestCase;
 class PaisTest extends TestCase
 {
     const string ENDPOINT_COUNTRIES = '/api/v1/countries';
+
     const string ASSERT_NEW_COUNTRY = 'Nuevo Pais';
 
     use RefreshDatabase;
@@ -41,7 +42,7 @@ class PaisTest extends TestCase
         $response = $this->postJson(self::ENDPOINT_COUNTRIES, [
             'nombre' => 'Nuevo Pais',
             'codigo_iso' => 'NP',
-            'activo' => true
+            'activo' => true,
         ]);
         $response->assertStatus(201)->assertJsonFragment(['nombre' => self::ASSERT_NEW_COUNTRY]);
         $this->assertDatabaseHas('paises', ['nombre' => self::ASSERT_NEW_COUNTRY]);
@@ -57,15 +58,15 @@ class PaisTest extends TestCase
     public function test_show_returns_pais()
     {
         $pais = Pais::create(['nombre' => 'Pais Show', 'codigo_iso' => 'PS']);
-        $response = $this->getJson(self::ENDPOINT_COUNTRIES . '/' . $pais->id);
+        $response = $this->getJson(self::ENDPOINT_COUNTRIES.'/'.$pais->id);
         $response->assertStatus(200)->assertJsonFragment(['nombre' => 'Pais Show']);
     }
 
     public function test_update_modifies_pais()
     {
         $pais = Pais::create(['nombre' => 'Old', 'codigo_iso' => 'OL']);
-        $response = $this->putJson(self::ENDPOINT_COUNTRIES . '/' . $pais->id, [
-            'nombre' => 'New'
+        $response = $this->putJson(self::ENDPOINT_COUNTRIES.'/'.$pais->id, [
+            'nombre' => 'New',
         ]);
         $response->assertStatus(200)->assertJsonFragment(['nombre' => 'New']);
         $this->assertDatabaseHas('paises', ['id' => $pais->id, 'nombre' => 'New']);
@@ -74,7 +75,7 @@ class PaisTest extends TestCase
     public function test_destroy_deletes_pais()
     {
         $pais = Pais::create(['nombre' => 'Del', 'codigo_iso' => 'DE']);
-        $response = $this->deleteJson(self::ENDPOINT_COUNTRIES . '/' . $pais->id);
+        $response = $this->deleteJson(self::ENDPOINT_COUNTRIES.'/'.$pais->id);
         $response->assertStatus(200);
         $this->assertDatabaseMissing('paises', ['id' => $pais->id]);
     }
@@ -84,7 +85,7 @@ class PaisTest extends TestCase
         $pais = Pais::create(['nombre' => 'Parent', 'codigo_iso' => 'PA']);
         Territorio::create(['nombre' => 'Terr', 'pais_id' => $pais->id, 'tipo' => 'Provincia']);
 
-        $response = $this->deleteJson(self::ENDPOINT_COUNTRIES . '/' . $pais->id);
+        $response = $this->deleteJson(self::ENDPOINT_COUNTRIES.'/'.$pais->id);
         $response->assertStatus(400)->assertJsonFragment(['message' => 'No se puede eliminar el país porque tiene territorios asociados.']);
         $this->assertDatabaseHas('paises', ['id' => $pais->id]);
     }
@@ -116,7 +117,7 @@ class PaisTest extends TestCase
         $user = User::factory()->create(['pais_id' => $pais->id]);
         Sanctum::actingAs($user);
 
-        $response = $this->getJson(self::ENDPOINT_COUNTRIES . '/' . $otroPais->id);
+        $response = $this->getJson(self::ENDPOINT_COUNTRIES.'/'.$otroPais->id);
         $response->assertStatus(403);
     }
 }

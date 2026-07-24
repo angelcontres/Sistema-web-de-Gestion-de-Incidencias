@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Models;
 
+use App\Models\OpcionMenu;
 use App\Models\Permiso;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\OpcionMenu;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,9 +17,9 @@ class PermisoModelTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $opcion = OpcionMenu::create(['nombre' => 'Test Opcion', 'ruta' => '/test', 'icono' => 'icon']);
-        
+
         $permiso = Permiso::create([
             'nombre' => 'Test Permiso',
             'accion' => 'CREATE',
@@ -35,7 +35,7 @@ class PermisoModelTest extends TestCase
             'descripcion' => 'Test',
             'created_by' => $user->id,
         ]);
-        
+
         $permiso->roles()->attach($role);
 
         $this->assertInstanceOf(User::class, $permiso->PermisoCreater);

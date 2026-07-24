@@ -20,12 +20,12 @@ class AuthControllerTest extends TestCase
     {
         User::factory()->create([
             'email' => self::EMAIL_TEST_STRING,
-            'password' => Hash::make('password123')
+            'password' => Hash::make('password123'),
         ]);
 
         $response = $this->postJson('/api/v1/login', [
             'email' => self::EMAIL_TEST_STRING,
-            'password' => 'password123'
+            'password' => 'password123',
         ]);
 
         $response->assertStatus(200)
@@ -36,12 +36,12 @@ class AuthControllerTest extends TestCase
     {
         User::factory()->create([
             'email' => self::EMAIL_TEST_STRING,
-            'password' => Hash::make('password123')
+            'password' => Hash::make('password123'),
         ]);
 
         $response = $this->postJson('/api/v1/login', [
             'email' => self::EMAIL_TEST_STRING,
-            'password' => 'wrongpassword'
+            'password' => 'wrongpassword',
         ]);
 
         $response->assertStatus(401)
@@ -69,7 +69,7 @@ class AuthControllerTest extends TestCase
         $permiso = Permiso::create([
             'nombre' => 'Ver',
             'accion' => 'READ',
-            'recurso' => 'algo'
+            'recurso' => 'algo',
         ]);
         $role->permisos()->attach($permiso->id);
 

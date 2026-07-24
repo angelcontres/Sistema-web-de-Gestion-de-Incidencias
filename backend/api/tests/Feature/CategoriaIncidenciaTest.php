@@ -11,7 +11,9 @@ use Tests\TestCase;
 class CategoriaIncidenciaTest extends TestCase
 {
     const string ENDPOINT_CATEGORIES = '/api/v1/incident-categories';
+
     const string ASSERT_CATEGORY = 'Nueva Categoria';
+
     const string ASSERT_NEW_NAME = 'New Name';
 
     use RefreshDatabase;
@@ -35,10 +37,10 @@ class CategoriaIncidenciaTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['id', 'nombre', 'activo']
+                    '*' => ['id', 'nombre', 'activo'],
                 ],
                 'current_page',
-                'total'
+                'total',
             ]);
 
         $this->assertGreaterThanOrEqual(2, count($response->json('data')));
@@ -48,7 +50,7 @@ class CategoriaIncidenciaTest extends TestCase
     {
         CategoriaIncidencia::create(['nombre' => 'Cat1', 'activo' => true]);
 
-        $response = $this->getJson(self::ENDPOINT_CATEGORIES . '?all=true');
+        $response = $this->getJson(self::ENDPOINT_CATEGORIES.'?all=true');
 
         $response->assertStatus(200);
         $this->assertIsArray($response->json());
@@ -67,7 +69,7 @@ class CategoriaIncidenciaTest extends TestCase
             ->assertJsonFragment(['nombre' => self::ASSERT_CATEGORY, 'descripcion' => 'Desc de prueba']);
 
         $this->assertDatabaseHas('categorias_incidencia', [
-            'nombre' => self::ASSERT_CATEGORY
+            'nombre' => self::ASSERT_CATEGORY,
         ]);
     }
 
@@ -83,7 +85,7 @@ class CategoriaIncidenciaTest extends TestCase
     {
         $cat = CategoriaIncidencia::create(['nombre' => 'Cat Show']);
 
-        $response = $this->getJson(self::ENDPOINT_CATEGORIES . '/' . $cat->id);
+        $response = $this->getJson(self::ENDPOINT_CATEGORIES.'/'.$cat->id);
 
         $response->assertStatus(200)
             ->assertJsonFragment(['nombre' => 'Cat Show']);
@@ -91,7 +93,7 @@ class CategoriaIncidenciaTest extends TestCase
 
     public function test_show_returns_404_if_not_found()
     {
-        $response = $this->getJson(self::ENDPOINT_CATEGORIES . '/9999');
+        $response = $this->getJson(self::ENDPOINT_CATEGORIES.'/9999');
 
         $response->assertStatus(404);
     }
@@ -100,8 +102,8 @@ class CategoriaIncidenciaTest extends TestCase
     {
         $cat = CategoriaIncidencia::create(['nombre' => 'Old Name']);
 
-        $response = $this->putJson(self::ENDPOINT_CATEGORIES . '/' . $cat->id, [
-            'nombre' => 'New Name'
+        $response = $this->putJson(self::ENDPOINT_CATEGORIES.'/'.$cat->id, [
+            'nombre' => 'New Name',
         ]);
 
         $response->assertStatus(200)
@@ -109,7 +111,7 @@ class CategoriaIncidenciaTest extends TestCase
 
         $this->assertDatabaseHas('categorias_incidencia', [
             'id' => $cat->id,
-            'nombre' => self::ASSERT_NEW_NAME
+            'nombre' => self::ASSERT_NEW_NAME,
         ]);
     }
 
@@ -118,8 +120,8 @@ class CategoriaIncidenciaTest extends TestCase
         $parent = CategoriaIncidencia::create(['nombre' => 'Parent']);
         $child = CategoriaIncidencia::create(['nombre' => 'Child', 'parent_id' => $parent->id]);
 
-        $response = $this->putJson(self::ENDPOINT_CATEGORIES . '/' . $parent->id, [
-            'parent_id' => $child->id
+        $response = $this->putJson(self::ENDPOINT_CATEGORIES.'/'.$parent->id, [
+            'parent_id' => $child->id,
         ]);
 
         $response->assertStatus(422)
@@ -130,7 +132,7 @@ class CategoriaIncidenciaTest extends TestCase
     {
         $cat = CategoriaIncidencia::create(['nombre' => 'To Delete']);
 
-        $response = $this->deleteJson(self::ENDPOINT_CATEGORIES . '/' . $cat->id);
+        $response = $this->deleteJson(self::ENDPOINT_CATEGORIES.'/'.$cat->id);
 
         $response->assertStatus(200);
         $this->assertDatabaseMissing('categorias_incidencia', ['id' => $cat->id]);
@@ -141,7 +143,7 @@ class CategoriaIncidenciaTest extends TestCase
         $parent = CategoriaIncidencia::create(['nombre' => 'Parent']);
         CategoriaIncidencia::create(['nombre' => 'Child', 'parent_id' => $parent->id]);
 
-        $response = $this->deleteJson(self::ENDPOINT_CATEGORIES . '/' . $parent->id);
+        $response = $this->deleteJson(self::ENDPOINT_CATEGORIES.'/'.$parent->id);
 
         $response->assertStatus(400)
             ->assertJsonFragment(['message' => 'No se puede eliminar la categoría porque tiene subcategorías asociadas.']);

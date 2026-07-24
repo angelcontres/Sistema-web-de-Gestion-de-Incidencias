@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Models;
 
+use App\Models\CategoriaIncidencia;
 use App\Models\EstadoIncidencia;
 use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
@@ -16,15 +17,15 @@ class HistorialIncidenciaModelTest extends TestCase
     public function test_historial_incidencia_relations()
     {
         $estado = EstadoIncidencia::create([
-            'nombre' => 'Abierto', 
+            'nombre' => 'Abierto',
             'descripcion' => 'Estado inicial',
             'color' => '#FFFFFF',
-            'icono' => 'icon'
+            'icono' => 'icon',
         ]);
         $usuario = User::factory()->create();
-        
-        $categoria = \App\Models\CategoriaIncidencia::create(['nombre' => 'Test Cat', 'activo' => true]);
-        
+
+        $categoria = CategoriaIncidencia::create(['nombre' => 'Test Cat', 'activo' => true]);
+
         $incidencia = Incidencia::create([
             'titulo' => 'Test',
             'descripcion' => 'Test desc',

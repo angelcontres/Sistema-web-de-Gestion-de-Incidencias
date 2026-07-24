@@ -285,6 +285,7 @@ class IncidenciaController extends Controller
         }
 
         $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+
         return $incidencia->direccion && in_array($incidencia->direccion->territorio_id, $descendientesIds);
     }
 

@@ -19,16 +19,16 @@ class PermissionServiceTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
         $role = Role::create(['nombre' => 'Test Role', 'descripcion' => 'Test', 'created_by' => $user->id]);
-        
+
         $permiso = Permiso::create([
             'nombre' => PermissionsEnum::READ_INCIDENCIAS->value,
             'accion' => 'READ',
             'recurso' => 'incidencias',
             'descripcion' => 'Ver incidencias',
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
 
-        $service = new PermissionService();
+        $service = new PermissionService;
         $service->grantPermissionsToRole($role, [PermissionsEnum::READ_INCIDENCIAS]);
 
         $this->assertTrue($role->permisos->contains($permiso));
@@ -39,11 +39,11 @@ class PermissionServiceTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
         $role = Role::create(['nombre' => 'Test Role', 'descripcion' => 'Test', 'created_by' => $user->id]);
-        
+
         $permiso1 = Permiso::create(['nombre' => 'Perm1', 'accion' => 'A1', 'recurso' => 'R1', 'descripcion' => 'Desc1', 'created_by' => $user->id]);
         $permiso2 = Permiso::create(['nombre' => 'Perm2', 'accion' => 'A2', 'recurso' => 'R2', 'descripcion' => 'Desc2', 'created_by' => $user->id]);
 
-        $service = new PermissionService();
+        $service = new PermissionService;
         $service->syncPermissionsToRole($role, [$permiso1->id, $permiso2->id]);
 
         $role->refresh();
@@ -62,7 +62,7 @@ class PermissionServiceTest extends TestCase
             'accion' => 'READ',
             'recurso' => 'incidencias',
             'descripcion' => 'Ver incidencias',
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
 
         $role->permisos()->attach($permiso);
@@ -70,7 +70,7 @@ class PermissionServiceTest extends TestCase
 
         $user->load('roles.permisos');
 
-        $service = new PermissionService();
+        $service = new PermissionService;
         $this->assertTrue($service->userHasPermission($user, PermissionsEnum::READ_INCIDENCIAS));
     }
 
@@ -79,11 +79,11 @@ class PermissionServiceTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
         $role = Role::create(['nombre' => 'Admin', 'descripcion' => 'Admin role', 'created_by' => $user->id]);
-        
+
         $user->roles()->attach($role);
         $user->load('roles.permisos');
 
-        $service = new PermissionService();
+        $service = new PermissionService;
         $this->assertFalse($service->userHasPermission($user, PermissionsEnum::READ_INCIDENCIAS));
     }
 }

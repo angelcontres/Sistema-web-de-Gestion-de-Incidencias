@@ -10,13 +10,13 @@ class LoginRequestTest extends TestCase
 {
     public function test_authorize_returns_true()
     {
-        $request = new LoginRequest();
+        $request = new LoginRequest;
         $this->assertTrue($request->authorize());
     }
 
     public function test_rules_validation()
     {
-        $request = new LoginRequest();
+        $request = new LoginRequest;
         $rules = $request->rules();
 
         $validator = Validator::make([

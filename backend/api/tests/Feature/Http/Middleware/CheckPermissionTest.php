@@ -13,8 +13,8 @@ use Tests\TestCase;
 
 class CheckPermissionTest extends TestCase
 {
-
     const string ROUTE_TEST = '/test';
+
     use RefreshDatabase;
 
     public function test_admin_bypasses_permissions()
@@ -28,7 +28,7 @@ class CheckPermissionTest extends TestCase
             return $user;
         });
 
-        $middleware = new CheckPermission();
+        $middleware = new CheckPermission;
         $response = $middleware->handle($request, function () {
             return new Response('OK');
         }, 'CUALQUIER_PERMISO');
@@ -46,7 +46,7 @@ class CheckPermissionTest extends TestCase
         $permiso = Permiso::create([
             'nombre' => 'Ver Incidencias',
             'accion' => 'READ',
-            'recurso' => 'incidencias'
+            'recurso' => 'incidencias',
         ]);
         $role->permisos()->attach($permiso->id);
 
@@ -55,7 +55,7 @@ class CheckPermissionTest extends TestCase
             return $user;
         });
 
-        $middleware = new CheckPermission();
+        $middleware = new CheckPermission;
         $response = $middleware->handle($request, function () {
             return new Response('OK');
         }, 'READ_INCIDENCIAS');
@@ -73,7 +73,7 @@ class CheckPermissionTest extends TestCase
             return $user;
         });
 
-        $middleware = new CheckPermission();
+        $middleware = new CheckPermission;
         $response = $middleware->handle($request, function () {
             return new Response('OK');
         }, 'READ_INCIDENCIAS');
@@ -90,7 +90,7 @@ class CheckPermissionTest extends TestCase
             return $user;
         });
 
-        $middleware = new CheckPermission();
+        $middleware = new CheckPermission;
         $response = $middleware->handle($request, function () {
             return new Response('OK');
         }, 'Ver Opción de Menú');

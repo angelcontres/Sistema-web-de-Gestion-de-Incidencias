@@ -5,6 +5,7 @@ namespace Tests\Feature\Models;
 use App\Models\Permiso;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +17,7 @@ class RoleModelTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $role = Role::create([
             'nombre' => 'Test Role',
             'descripcion' => 'Test',
@@ -28,13 +29,13 @@ class RoleModelTest extends TestCase
             'accion' => 'CREATE',
             'recurso' => 'test',
         ]);
-        
+
         $role->permisos()->attach($permiso);
         $role->users()->attach($user);
 
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $role->RoleCreater());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $role->RoleEditor());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $role->RoleDeleter());
+        $this->assertInstanceOf(BelongsTo::class, $role->RoleCreater());
+        $this->assertInstanceOf(BelongsTo::class, $role->RoleEditor());
+        $this->assertInstanceOf(BelongsTo::class, $role->RoleDeleter());
 
         $this->assertTrue($role->permisos->contains($permiso));
         $this->assertTrue($role->users->contains($user));

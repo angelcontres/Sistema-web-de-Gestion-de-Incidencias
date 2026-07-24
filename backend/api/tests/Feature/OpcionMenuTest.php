@@ -10,13 +10,21 @@ use Tests\TestCase;
 class OpcionMenuTest extends TestCase
 {
     const string CONFIGURACION_OPTION_NAME = 'Configuración';
+
     const string USUARIOS_OPTION_NAME = 'Usuarios';
+
     const string DASHBOARD_OPTION_NAME = 'Dashboard';
+
     const string REPORTES_OPTION_NAME = 'Reportes';
+
     const string ENDPOINT_MENU_OPTIONS = '/api/v1/menu-options';
+
     const string MENU_OPTION_ROUTE_DASHBOARD = '/dashboard';
+
     const string PANEL_PRINCIPAL_NAME = 'Panel Principal';
+
     const string ROUTE_CONFIG = '/config';
+
     const string ROUTE_CONFIG_USER = '/config/usuarios';
 
     use RefreshDatabase;
@@ -72,7 +80,7 @@ class OpcionMenuTest extends TestCase
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_MENU_OPTIONS . '?tree=true');
+        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_MENU_OPTIONS.'?tree=true');
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data') // only root option
@@ -122,7 +130,7 @@ class OpcionMenuTest extends TestCase
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_MENU_OPTIONS . "/{$opcion->id}");
+        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_MENU_OPTIONS."/{$opcion->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('data.nombre', self::DASHBOARD_OPTION_NAME);
@@ -140,7 +148,7 @@ class OpcionMenuTest extends TestCase
             'nombre' => self::PANEL_PRINCIPAL_NAME,
         ];
 
-        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_MENU_OPTIONS . "/{$opcion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_MENU_OPTIONS."/{$opcion->id}", $payload);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.nombre', self::PANEL_PRINCIPAL_NAME)
@@ -157,7 +165,7 @@ class OpcionMenuTest extends TestCase
     {
         $opcion = OpcionMenu::create([
             'nombre' => self::DASHBOARD_OPTION_NAME,
-        'ruta' => self::MENU_OPTION_ROUTE_DASHBOARD,
+            'ruta' => self::MENU_OPTION_ROUTE_DASHBOARD,
             'created_by' => $this->user->id,
         ]);
 
@@ -165,7 +173,7 @@ class OpcionMenuTest extends TestCase
             'padre_id' => $opcion->id,
         ];
 
-        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_MENU_OPTIONS . "/{$opcion->id}", $payload);
+        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_MENU_OPTIONS."/{$opcion->id}", $payload);
 
         $response->assertStatus(422)
             ->assertJsonPath('status', 'error')
@@ -187,7 +195,7 @@ class OpcionMenuTest extends TestCase
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson(self::ENDPOINT_MENU_OPTIONS . "/{$padre->id}");
+        $response = $this->actingAs($this->user)->deleteJson(self::ENDPOINT_MENU_OPTIONS."/{$padre->id}");
 
         $response->assertStatus(200);
 
