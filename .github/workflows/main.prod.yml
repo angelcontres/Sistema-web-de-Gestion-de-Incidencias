@@ -103,6 +103,11 @@ jobs:
             --network="host" \
             -v "$(pwd):/usr/src" \
             sonarsource/sonar-scanner-cli \
+            -Dsonar.projectKey=Sistema-web-gestion-incidencias \
+            -Dsonar.sources=. \
+            -Dsonar.exclusions="**/vendor/**,**/node_modules/**,**/public/build/**,**/storage/**,**/bootstrap/cache/**,**/dist/**" \
+            -Dsonar.host.url="http://localhost:9009" \
+            -Dsonar.php.tests.reportPath="backend/api/build/logs/junit.xml" \
             -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
             -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
 
