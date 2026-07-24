@@ -143,6 +143,7 @@ class AuthTest extends TestCase
             'tokenable_type' => User::class,
         ]);
     }
+
     public function test_citizen_frictionless_signup()
     {
         $admin = User::factory()->create();
@@ -152,7 +153,7 @@ class AuthTest extends TestCase
         // Fallo de validación
         $responseInvalid = $this->postJson('/api/v1/auth/register-citizen', [
             'username' => 'testuser',
-            'password' => '123'
+            'password' => '123',
         ]);
         $responseInvalid->assertStatus(422);
 

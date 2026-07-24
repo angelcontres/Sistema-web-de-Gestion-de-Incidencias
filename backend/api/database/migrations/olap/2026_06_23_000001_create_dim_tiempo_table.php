@@ -9,8 +9,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (config("database.default") === "sqlite") { return; // skip for sqlite
- }
+        if (config('database.default') === 'sqlite') {
+            return; // skip for sqlite
+        }
         if (config('database.default') !== 'sqlite') {
             DB::statement('CREATE SCHEMA IF NOT EXISTS metrics');
         }
@@ -30,8 +31,9 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (config("database.default") === "sqlite") { return; // skip for sqlite
- }
+        if (config('database.default') === 'sqlite') {
+            return; // skip for sqlite
+        }
         Schema::dropIfExists('metrics.dim_tiempo');
     }
 };

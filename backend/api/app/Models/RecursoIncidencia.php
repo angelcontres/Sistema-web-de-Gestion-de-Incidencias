@@ -14,7 +14,6 @@ class RecursoIncidencia extends Model
 {
     use HasLocalTimezone;
 
-
     protected $fillable = [
         'incidencia_id',
         'url',

@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use App\Models\UserInvitation;
-use Illuminate\Support\Facades\Notification;
-use App\Notifications\UserInvitationNotification;
 use App\Notifications\UserActivatedNotification;
+use App\Notifications\UserInvitationNotification;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
+use Tests\TestCase;
 
 class AdminInvitationTest extends TestCase
 {

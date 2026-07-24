@@ -4,8 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Models\UserInvitation;
+use App\Notifications\UserInvitationNotification;
 use App\Services\Contracts\RoleServiceInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -33,14 +38,14 @@ class UserController extends Controller
     public function store(UserRequest $request)
     {
         $datosValidados = $request->validated();
-        
-        $password = $datosValidados['password'] ?? \Illuminate\Support\Str::random(16);
+
+        $password = $datosValidados['password'] ?? Str::random(16);
 
         $user = User::create([
             'name' => $datosValidados['name'],
             'username' => $datosValidados['username'],
             'email' => $datosValidados['email'],
-            'password' => \Illuminate\Support\Facades\Hash::make($password),
+            'password' => Hash::make($password),
             'activo' => $datosValidados['activo'] ?? true,
             'institucion_id' => $datosValidados['institucion_id'] ?? null,
         ]);
@@ -54,18 +59,18 @@ class UserController extends Controller
         }
 
         if (empty($datosValidados['password'])) {
-            $token = \Illuminate\Support\Str::random(60);
-            
-            \App\Models\UserInvitation::where('email', $user->email)->delete();
-            
-            $invitation = \App\Models\UserInvitation::create([
+            $token = Str::random(60);
+
+            UserInvitation::where('email', $user->email)->delete();
+
+            $invitation = UserInvitation::create([
                 'email' => $user->email,
                 'token' => $token,
                 'expires_at' => now()->addHours(24),
             ]);
 
-            \Illuminate\Support\Facades\Notification::route('mail', $invitation->email)
-                ->notify(new \App\Notifications\UserInvitationNotification($invitation));
+            Notification::route('mail', $invitation->email)
+                ->notify(new UserInvitationNotification($invitation));
         }
 
         return response()->json([
