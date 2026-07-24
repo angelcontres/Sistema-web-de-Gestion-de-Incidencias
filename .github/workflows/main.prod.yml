@@ -40,6 +40,8 @@ jobs:
       # 3. Clonar el nuevo código
       - name: Copiar el código a la VAIO
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # 4. Configurar variables de entorno de Laravel (STAGING) usando GitHub Secrets
       - name: Configurar entorno (.env) de Staging

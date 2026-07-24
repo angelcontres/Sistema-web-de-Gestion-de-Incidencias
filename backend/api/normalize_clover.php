@@ -30,17 +30,18 @@ foreach ($files as $file) {
         continue;
     }
 
-    // 1. Reemplazar rutas absolutas de Windows por relativas
-    if (!empty($projectRoot)) {
+    // 1. Reemplazar rutas absolutas de Docker en producción (/var/www/html/ -> backend/api/)
+    if (strpos($content, '/var/www/html/') !== false) {
+        $content = str_replace('/var/www/html/', 'backend/api/', $content);
+    } 
+    // 2. Reemplazar rutas absolutas de Windows/Local por relativas
+    elseif (!empty($projectRoot)) {
         $rootWithSlash = $projectRoot . '/';
         $rootWithBackslash = str_replace('/', '\\', $projectRoot) . '\\';
         
         $content = str_replace($rootWithSlash, '', $content);
         $content = str_replace($rootWithBackslash, '', $content);
     }
-
-    // 2. Reemplazar rutas absolutas de Docker en producción (/var/www/html/ -> backend/api/)
-    $content = str_replace('/var/www/html/', 'backend/api/', $content);
 
     // Guardar cambios
     if (file_put_contents($file, $content) !== false) {
