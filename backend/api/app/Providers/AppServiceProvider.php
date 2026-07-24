@@ -28,8 +28,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if (app()->environment('testing') && DB::connection()->getDriverName() === 'sqlite') {
-            DB::statement("ATTACH DATABASE ':memory:' AS metrics");
+        if (app()->environment('testing')) {
+            if (DB::connection()->getDriverName() === 'sqlite') {
+                DB::statement("ATTACH DATABASE ':memory:' AS metrics");
+            }
+            $this->loadMigrationsFrom(database_path('migrations/olap'));
         }
     }
 }

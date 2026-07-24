@@ -12,11 +12,6 @@ class SyncPerformanceLogsJobTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Artisan::call('migrate', ['--path' => 'database/migrations/olap']);
-    }
 
     public function test_syncs_endpoints_and_logs()
     {

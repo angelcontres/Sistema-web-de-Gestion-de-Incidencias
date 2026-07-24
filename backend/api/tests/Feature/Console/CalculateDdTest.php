@@ -10,11 +10,6 @@ class CalculateDdTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Artisan::call('migrate', ['--path' => 'database/migrations/olap']);
-    }
 
     public function test_calculate_dd_command_success()
     {
