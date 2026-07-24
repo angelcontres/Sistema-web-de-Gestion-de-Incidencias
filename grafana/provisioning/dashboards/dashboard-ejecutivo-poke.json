@@ -1,0 +1,1186 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "adts5kt2",
+    "namespace": "default",
+    "uid": "1653d50f-c7b1-45c8-8729-9b6feca7ade4",
+    "resourceVersion": "1784357339625012",
+    "generation": 23,
+    "creationTimestamp": "2026-07-17T21:17:38Z",
+    "labels": {
+      "grafana.app/deprecatedInternalID": "2068225641259008"
+    },
+    "annotations": {
+      "grafana.app/createdBy": "user:afrnkrbsna8e8a",
+      "grafana.app/folder": "bfs98s0u2nncwd",
+      "grafana.app/saved-from-ui": "Grafana v13.1.0 (b309c9bb3b)",
+      "grafana.app/updatedBy": "user:afrnkrbsna8e8a",
+      "grafana.app/updatedTimestamp": "2026-07-18T06:48:59Z",
+      "grafana.app/folderTitle": "Pokemon-BI",
+      "grafana.app/folderUrl": "/dashboards/f/bfs98s0u2nncwd/pokemon-bi"
+    }
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Seleccionar pokemon",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "gestion_incidencias",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT                                                                                      \n    nombre_jefe,\n                                                                               \n    tipo_1,                                                                                 \n    tipo_2,\n    url_imagen,\n    CASE WHEN nombre_jefe LIKE 'SHADOW%' THEN true ELSE false END AS is_shadow,\n    salud_fija_incursion,\n    -- Calculamos el porcentaje tomando como referencia 15,000 HP de las incursiones top\n    ROUND((salud_fija_incursion * 100.0) / 15000.0) AS hp_porcentaje\nFROM                                                                                        \n    dim_jefe_incursion                                                                      \nWHERE                                                                                       \n    estado_evento = 'Ongoing'                                                               \nORDER BY                                                                                    \n    salud_fija_incursion DESC                                                               \nLIMIT 15;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "(function () {\n  context.element.addEventListener('click', function (event) {\n    var card = event.target.closest('.clickable-poke-card');\n    if (card) {\n      event.preventDefault();\n      var pokemonName = card.getAttribute('data-pokemon');\n      if (pokemonName) {\n        context.grafana.locationService.partial({ 'var-Pokemon': pokemonName });\n      }\n    }\n  });\n})();",
+                "content": "<div class=\"poke-carousel-container\">\n  <div class=\"poke-carousel-track\">\n    {{#each data}}\n    <div class=\"poke-card-wrapper\">\n\n      <!-- Ejemplo del div de la tarjeta en tu HTML de Content -->\n      <!-- Busca esta línea en tu pestaña de Content y verifica que esté así: -->\n      <div class=\"poke-card poke-border-{{tipo_1}} clickable-poke-card\" data-pokemon=\"{{nombre_jefe}}\"\n        style=\"cursor: pointer;\">\n\n        <div class=\"poke-card-header\">\n          <div class=\"poke-card-title\">⚔️ {{nombre_jefe}}</div>\n          <div class=\"poke-card-hp\"><span>PS</span>{{salud_fija_incursion}}</div>\n        </div>\n\n        <div class=\"poke-card-image-container {{#if is_shadow}}is-shadow-bg{{/if}}\">\n\n          \n          \n          {{#if url_imagen}}\n          {{#unless (eq url_imagen \"N/A\")}}\n          <img src=\"{{url_imagen}}\" alt=\"{{nombre_jefe}}\">\n            {{else}}\n          <div class=\"poke-no-img\">?</div>\n          {{/unless}}\n          {{else}}\n          <div class=\"poke-no-img\">?</div>\n          {{/if}}\n        </div>\n\n        <div class=\"poke-card-body\">\n          <div class=\"poke-card-types\">\n            <span class=\"poke-type-badge poke-type-{{tipo_1}}\">{{tipo_1}}</span>\n            {{#if tipo_2}}\n            {{#unless (eq tipo_2 \"None\")}}\n            <span class=\"poke-type-badge poke-type-{{tipo_2}}\">{{tipo_2}}</span>\n            {{/unless}}\n            {{/if}}\n          </div>\n\n          <div class=\"poke-hp-bar-outer\">\n            <div class=\"poke-hp-bar-inner\" style=\"width: {{hp_porcentaje}}%\"></div>\n          </div>\n        </div>\n      </div>\n\n    </div>\n    {{/each}}\n  </div>\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<style>\n  /* --- ESTILOS EXCLUSIVOS PARA LA TARJETA DEFAULT --- */\n  .poke-card-default {\n    background: radial-gradient(circle, #2a1e35 10%, #110b18 90%) !important;\n    /* Tono morado misterioso de huevo */\n    border-color: #a855f7 !important;\n    /* Borde morado de evento */\n  }\n\n  /* Animación de pulso para el huevo de incursión */\n  @keyframes egg-pulse {\n    0% {\n      transform: scale(1);\n      filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.4));\n    }\n\n    50% {\n      transform: scale(1.05);\n      filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.8));\n    }\n\n    100% {\n      transform: scale(1);\n      filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.4));\n    }\n  }\n\n  .poke-egg-animated {\n    font-size: 50px !important;\n    animation: egg-pulse 2s infinite ease-in-out !important;\n    user-select: none !important;\n  }\n\n  .poke-card-text-waiting {\n    color: #a855f7 !important;\n    font-size: 11px !important;\n    text-transform: uppercase !important;\n    font-weight: bold !important;\n    letter-spacing: 1px !important;\n    text-align: center !important;\n    margin-top: 10px !important;\n    text-shadow: 1px 1px 2px #000 !important;\n  }\n</style>\n\n<div class=\"poke-carousel-container\">\n  <div class=\"poke-carousel-track\">\n    <div class=\"poke-card-wrapper\">\n\n      <!-- Tarjeta temática de Huevo de Incursión esperando datos -->\n      <div class=\"poke-card poke-card-default\">\n\n        <div class=\"poke-card-header\">\n          <div class=\"poke-card-title\">⏳ PREPARANDO...</div>\n          <div class=\"poke-card-hp\"><span>NIVEL</span>??</div>\n        </div>\n\n        <div class=\"poke-card-image-container\">\n          <!-- Huevo de incursión misterioso -->\n          <div class=\"poke-egg-animated\">🥚</div>\n        </div>\n\n        <div class=\"poke-card-body\">\n          <div class=\"poke-card-types\">\n            <span class=\"poke-type-badge\" style=\"background-color: #a855f7 !important;\">MISTERIO</span>\n          </div>\n\n          <!-- Barra de carga en modo espera -->\n          <div class=\"poke-hp-bar-outer\" style=\"border-color: #a855f7 !important;\">\n            <div class=\"poke-hp-bar-inner\"\n              style=\"width: 100%; background: linear-gradient(to right, #a855f7, #6b21a8) !important; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6) !important;\">\n            </div>\n          </div>\n\n          <div class=\"poke-card-text-waiting\">\n            Buscando incursiones activas...\n          </div>\n        </div>\n\n      </div>\n\n    </div>\n  </div>\n</div>",
+                "editor": {
+                  "format": "auto",
+                  "language": "html"
+                },
+                "editors": [
+                  "afterRender",
+                  "styles"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "/* === POKÉDEX·BI — MASTER RESET === */\n.poke-carousel-container *,.poke-carousel-container *::before,.poke-carousel-container *::after{box-sizing:border-box}, .is-shadow-bg\n\n/* === AURA SHADOW DINÁMICA === */\n.is-shadow-bg {\n  background-image: url('https://cdn.leekduck.com/assets/img/icons/shadow/shadow_fire_bg_0007.png') !important;\n  background-size: cover !important;\n  background-position: center !important;\n  background-repeat: no-repeat !important;\n}\n\n/* --- CONTENEDOR PRINCIPAL --- */\n.poke-carousel-container {\n  width: 100% !important;\n  height: 100% !important;\n  display: flex !important;\n  align-items: center !important;\n  overflow: hidden !important;\n  background-color: transparent !important;\n  box-sizing: border-box !important;\n  font-family: 'Courier New', Courier, monospace !important;\n}\n\n.poke-carousel-track {\n  display: flex !important;\n  flex-direction: row !important;\n  flex-wrap: nowrap !important;\n  overflow-x: auto !important;\n  scroll-snap-type: x mandatory !important;\n  scroll-behavior: smooth !important;\n  width: 100% !important;\n  padding: 15px 5px !important;\n  box-sizing: border-box !important;\n  gap: 12px !important;\n  -webkit-overflow-scrolling: touch;\n}\n\n.poke-carousel-track::-webkit-scrollbar { height: 4px !important; }\n.poke-carousel-track::-webkit-scrollbar-track { background: rgba(15,17,21,0.8) !important; border-radius: 2px !important; }\n.poke-carousel-track::-webkit-scrollbar-thumb { background: rgba(255,203,5,0.5) !important; border-radius: 10px !important; }\n\n.poke-card-wrapper {\n  flex: 0 0 clamp(180px, 28vw, 260px) !important;\n  scroll-snap-align: start !important;\n  display: flex !important;\n  justify-content: center !important;\n  box-sizing: border-box !important;\n}\n\n.poke-card {\n  width: 100% !important;\n  background: radial-gradient(circle, #2d323c 10%, #15171c 90%) !important;\n  border: 5px solid #ffcb05 !important;\n  outline: 2px solid #111113 !important;\n  border-radius: 16px !important;\n  padding: 12px !important;\n  position: relative !important;\n  overflow: hidden !important;\n  display: flex !important;\n  flex-direction: column !important;\n  box-shadow: 0 8px 16px rgba(0,0,0,0.6), inset 0 0 15px rgba(255,255,255,0.05) !important;\n  box-sizing: border-box !important;\n}\n\n.poke-card::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -20px !important;\n  bottom: -20px !important;\n  width: 110px !important;\n  height: 110px !important;\n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239,68,68,0.35) 50%, rgba(243,244,246,0.25) 50.5%) !important;\n  border: 3px solid rgba(255,255,255,0.15) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important;\n  z-index: 1 !important;\n  pointer-events: none !important;\n}\n\n.poke-card-header {\n  display: flex !important;\n  justify-content: space-between !important;\n  align-items: center !important;\n  border-bottom: 2px solid #ffcb05 !important;\n  padding-bottom: 4px !important;\n  margin-bottom: 8px !important;\n  z-index: 2 !important;\n}\n\n.poke-card-title {\n  font-size: clamp(9px, 1.4vw, 12px) !important;\n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n  white-space: nowrap !important;\n  overflow: hidden !important;\n  text-overflow: ellipsis !important;\n  max-width: 65% !important;\n}\n\n.poke-card-hp {\n  font-size: clamp(10px, 1.8vw, 14px) !important;\n  font-weight: 900 !important;\n  color: #ff3e3e !important;\n  text-shadow: 1px 1px 0px #000 !important;\n  flex-shrink: 0 !important;\n}\n\n.poke-card-hp span {\n  font-size: clamp(7px, 1vw, 9px) !important;\n  color: #9ca3af !important;\n  font-weight: bold !important;\n  margin-right: 2px !important;\n}\n\n.poke-card-image-container {\n  width: 100% !important;\n  height: 110px !important;\n  background: linear-gradient(135deg, #1e293b, #0f172a, #334155) !important;\n  border: 3px solid #b58d1d !important;\n  box-shadow: inset 0 0 8px #000 !important;\n  border-radius: 6px !important;\n  display: flex !important;\n  justify-content: center !important;\n  align-items: center !important;\n  z-index: 2 !important;\n}\n\n.poke-card-image-container img {\n  max-width: 85% !important;\n  max-height: 85% !important;\n  object-fit: contain !important;\n  filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5)) !important;\n}\n\n.poke-no-img { font-size: 24px !important; color: #4b5563 !important; font-weight: bold !important; }\n.poke-card-body { margin-top: 8px !important; z-index: 2 !important; }\n.poke-card-types { margin-bottom: 8px !important; display: flex !important; gap: 4px !important; flex-wrap: wrap !important; }\n\n.poke-type-badge {\n  padding: 2px 7px !important;\n  border-radius: 6px !important;\n  font-size: clamp(7px, 1vw, 9px) !important;\n  font-weight: bold !important;\n  color: white !important;\n  text-transform: uppercase !important;\n  border: 1px solid rgba(255,255,255,0.15) !important;\n  white-space: nowrap !important;\n}\n\n.poke-hp-bar-outer {\n  width: 100% !important;\n  height: 8px !important;\n  background-color: #0f1115 !important;\n  border-radius: 10px !important;\n  overflow: hidden !important;\n  border: 1.5px solid #ffcb05 !important;\n  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5) !important;\n}\n\n.poke-hp-bar-inner {\n  height: 100% !important;\n  background: linear-gradient(to right, #00ff66, #009933) !important;\n  border-radius: 10px !important;\n}\n\n/* === 18 TIPOS — BADGE === */\n.poke-type-Normal   { background-color: #9a9a7b !important; }\n.poke-type-Fire     { background-color: #e8622c !important; }\n.poke-type-Water    { background-color: #3b82f6 !important; }\n.poke-type-Grass    { background-color: #5a9e3a !important; }\n.poke-type-Electric { background-color: #d0a800 !important; color: #1a1a1a !important; }\n.poke-type-Ice      { background-color: #6dc8c8 !important; color: #1a1a1a !important; }\n.poke-type-Fighting { background-color: #ef4444 !important; }\n.poke-type-Poison   { background-color: #a855f7 !important; }\n.poke-type-Ground   { background-color: #d97706 !important; }\n.poke-type-Flying   { background-color: #a5b4fc !important; color: #1a1a1a !important; }\n.poke-type-Psychic  { background-color: #ec4899 !important; }\n.poke-type-Bug      { background-color: #84cc16 !important; color: #1a1a1a !important; }\n.poke-type-Rock     { background-color: #ca8a04 !important; }\n.poke-type-Ghost    { background-color: #8b5cf6 !important; }\n.poke-type-Dragon   { background-color: #6366f1 !important; }\n.poke-type-Dark     { background-color: #4b5563 !important; }\n.poke-type-Steel    { background-color: #9ca3af !important; color: #1a1a1a !important; }\n.poke-type-Fairy    { background-color: #f472b6 !important; color: #1a1a1a !important; }\n\n/* === 18 TIPOS — BORDE DINÁMICO === */\n.poke-border-Normal  { border-color: #9a9a7b !important; }\n.poke-border-Fire    { border-color: #e8622c !important; }\n.poke-border-Water   { border-color: #3b82f6 !important; }\n.poke-border-Grass   { border-color: #5a9e3a !important; }\n.poke-border-Electric{ border-color: #d0a800 !important; }\n.poke-border-Ice     { border-color: #6dc8c8 !important; }\n.poke-border-Fighting{ border-color: #ef4444 !important; }\n.poke-border-Poison  { border-color: #a855f7 !important; }\n.poke-border-Ground  { border-color: #d97706 !important; }\n.poke-border-Flying  { border-color: #a5b4fc !important; }\n.poke-border-Psychic { border-color: #ec4899 !important; }\n.poke-border-Bug     { border-color: #84cc16 !important; }\n.poke-border-Rock    { border-color: #ca8a04 !important; }\n.poke-border-Ghost   { border-color: #8b5cf6 !important; }\n.poke-border-Dragon  { border-color: #6366f1 !important; }\n.poke-border-Dark    { border-color: #4b5563 !important; }\n.poke-border-Steel   { border-color: #9ca3af !important; }\n.poke-border-Fairy   { border-color: #f472b6 !important; }",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "postgres",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "                                                                                               \n    WITH Tipos AS (                                                                             \n        SELECT 'Normal' AS atacante, 'Rock' AS defensor, 0.625 AS mult UNION ALL SELECT 'Normal',\n  'Ghost', 0.390625 UNION ALL SELECT 'Normal', 'Steel', 0.625 UNION ALL                         \n        SELECT 'Fighting', 'Normal', 1.6 UNION ALL SELECT 'Fighting', 'Flying', 0.625 UNION ALL \n  SELECT 'Fighting', 'Poison', 0.625 UNION ALL SELECT 'Fighting', 'Rock', 1.6 UNION ALL SELECT  \n  'Fighting', 'Bug', 0.625 UNION ALL SELECT 'Fighting', 'Ghost', 0.390625 UNION ALL SELECT      \n  'Fighting', 'Steel', 1.6 UNION ALL SELECT 'Fighting', 'Psychic', 0.625 UNION ALL SELECT       \n  'Fighting', 'Ice', 1.6 UNION ALL SELECT 'Fighting', 'Dark', 1.6 UNION ALL SELECT 'Fighting',  \n  'Fairy', 0.625 UNION ALL                                                                      \n        SELECT 'Flying', 'Fighting', 1.6 UNION ALL SELECT 'Flying', 'Rock', 0.625 UNION ALL     \n  SELECT 'Flying', 'Bug', 1.6 UNION ALL SELECT 'Flying', 'Steel', 0.625 UNION ALL SELECT        \n  'Flying', 'Grass', 1.6 UNION ALL SELECT 'Flying', 'Electric', 0.625 UNION ALL                 \n        SELECT 'Poison', 'Poison', 0.625 UNION ALL SELECT 'Poison', 'Ground', 0.625 UNION ALL   \n  SELECT 'Poison', 'Rock', 0.625 UNION ALL SELECT 'Poison', 'Ghost', 0.625 UNION ALL SELECT     \n  'Poison', 'Steel', 0.390625 UNION ALL SELECT 'Poison', 'Grass', 1.6 UNION ALL SELECT 'Poison',\n  'Fairy', 1.6 UNION ALL                                                                        \n        SELECT 'Ground', 'Flying', 0.390625 UNION ALL SELECT 'Ground', 'Poison', 1.6 UNION ALL  \n  SELECT 'Ground', 'Rock', 1.6 UNION ALL SELECT 'Ground', 'Bug', 0.625 UNION ALL SELECT 'Ground',\n  'Steel', 1.6 UNION ALL SELECT 'Ground', 'Fire', 1.6 UNION ALL SELECT 'Ground', 'Grass', 0.625 \n  UNION ALL SELECT 'Ground', 'Electric', 1.6 UNION ALL                                          \n        SELECT 'Rock', 'Fighting', 0.625 UNION ALL SELECT 'Rock', 'Flying', 1.6 UNION ALL SELECT\n  'Rock', 'Ground', 0.625 UNION ALL SELECT 'Rock', 'Bug', 1.6 UNION ALL SELECT 'Rock', 'Steel', \n  0.625 UNION ALL SELECT 'Rock', 'Fire', 1.6 UNION ALL SELECT 'Rock', 'Ice', 1.6 UNION ALL      \n        SELECT 'Bug', 'Fighting', 0.625 UNION ALL SELECT 'Bug', 'Flying', 0.625 UNION ALL SELECT\n  'Bug', 'Poison', 0.625 UNION ALL SELECT 'Bug', 'Ghost', 0.625 UNION ALL SELECT 'Bug', 'Steel',\n  0.625 UNION ALL SELECT 'Bug', 'Fire', 0.625 UNION ALL SELECT 'Bug', 'Grass', 1.6 UNION ALL    \n  SELECT 'Bug', 'Psychic', 1.6 UNION ALL SELECT 'Bug', 'Dark', 1.6 UNION ALL SELECT 'Bug',      \n  'Fairy', 0.625 UNION ALL                                                                      \n        SELECT 'Ghost', 'Normal', 0.390625 UNION ALL SELECT 'Ghost', 'Ghost', 1.6 UNION ALL     \n  SELECT 'Ghost', 'Psychic', 1.6 UNION ALL SELECT 'Ghost', 'Dark', 0.625 UNION ALL              \n        SELECT 'Steel', 'Rock', 1.6 UNION ALL SELECT 'Steel', 'Steel', 0.625 UNION ALL SELECT   \n  'Steel', 'Fire', 0.625 UNION ALL SELECT 'Steel', 'Water', 0.625 UNION ALL SELECT 'Steel',     \n  'Electric', 0.625 UNION ALL SELECT 'Steel', 'Ice', 1.6 UNION ALL SELECT 'Steel', 'Fairy', 1.6 \n  UNION ALL                                                                                     \n        SELECT 'Fire', 'Rock', 0.625 UNION ALL SELECT 'Fire', 'Bug', 1.6 UNION ALL SELECT 'Fire',\n  'Steel', 1.6 UNION ALL SELECT 'Fire', 'Fire', 0.625 UNION ALL SELECT 'Fire', 'Water', 0.625   \n  UNION ALL SELECT 'Fire', 'Grass', 1.6 UNION ALL SELECT 'Fire', 'Ice', 1.6 UNION ALL SELECT    \n  'Fire', 'Dragon', 0.625 UNION ALL                                                             \n        SELECT 'Water', 'Ground', 1.6 UNION ALL SELECT 'Water', 'Rock', 1.6 UNION ALL SELECT    \n  'Water', 'Fire', 1.6 UNION ALL SELECT 'Water', 'Water', 0.625 UNION ALL SELECT 'Water',       \n  'Grass', 0.625 UNION ALL SELECT 'Water', 'Dragon', 0.625 UNION ALL                            \n        SELECT 'Grass', 'Flying', 0.625 UNION ALL SELECT 'Grass', 'Poison', 0.625 UNION ALL     \n  SELECT 'Grass', 'Ground', 1.6 UNION ALL SELECT 'Grass', 'Rock', 1.6 UNION ALL SELECT 'Grass', \n  'Bug', 0.625 UNION ALL SELECT 'Grass', 'Steel', 0.625 UNION ALL SELECT 'Grass', 'Fire', 0.625 \n  UNION ALL SELECT 'Grass', 'Water', 1.6 UNION ALL SELECT 'Grass', 'Grass', 0.625 UNION ALL     \n  SELECT 'Grass', 'Dragon', 0.625 UNION ALL                                                     \n        SELECT 'Electric', 'Flying', 1.6 UNION ALL SELECT 'Electric', 'Ground', 0.390625 UNION  \n  ALL SELECT 'Electric', 'Water', 1.6 UNION ALL SELECT 'Electric', 'Grass', 0.625 UNION ALL     \n  SELECT 'Electric', 'Electric', 0.625 UNION ALL SELECT 'Electric', 'Dragon', 0.625 UNION ALL   \n        SELECT 'Psychic', 'Fighting', 1.6 UNION ALL SELECT 'Psychic', 'Poison', 1.6 UNION ALL   \n  SELECT 'Psychic', 'Steel', 0.625 UNION ALL SELECT 'Psychic', 'Psychic', 0.625 UNION ALL SELECT\n  'Psychic', 'Dark', 0.390625 UNION ALL                                                         \n        SELECT 'Ice', 'Flying', 1.6 UNION ALL SELECT 'Ice', 'Ground', 1.6 UNION ALL SELECT 'Ice',\n  'Steel', 0.625 UNION ALL SELECT 'Ice', 'Fire', 0.625 UNION ALL SELECT 'Ice', 'Water', 0.625   \n  UNION ALL SELECT 'Ice', 'Grass', 1.6 UNION ALL SELECT 'Ice', 'Ice', 0.625 UNION ALL SELECT    \n  'Ice', 'Dragon', 1.6 UNION ALL                                                                \n        SELECT 'Dragon', 'Steel', 0.625 UNION ALL SELECT 'Dragon', 'Dragon', 1.6 UNION ALL      \n  SELECT 'Dragon', 'Fairy', 0.390625 UNION ALL                                                  \n        SELECT 'Dark', 'Fighting', 0.625 UNION ALL SELECT 'Dark', 'Ghost', 1.6 UNION ALL SELECT \n  'Dark', 'Psychic', 1.6 UNION ALL SELECT 'Dark', 'Dark', 0.625 UNION ALL SELECT 'Dark', 'Fairy',\n  0.625 UNION ALL                                                                               \n        SELECT 'Fairy', 'Fighting', 1.6 UNION ALL SELECT 'Fairy', 'Poison', 0.625 UNION ALL     \n  SELECT 'Fairy', 'Steel', 0.625 UNION ALL SELECT 'Fairy', 'Fire', 0.625 UNION ALL SELECT       \n  'Fairy', 'Dragon', 1.6 UNION ALL SELECT 'Fairy', 'Dark', 1.6                                  \n    ),                                                                                          \n    Efectividad AS (                                                                            \n        SELECT atacante, defensor, mult FROM Tipos                                              \n        UNION ALL                                                                               \n        SELECT a.tipo, d.tipo, 1.0 FROM                                                         \n        (SELECT DISTINCT atacante AS tipo FROM Tipos UNION SELECT DISTINCT defensor FROM Tipos) \n  a                                                                                             \n        CROSS JOIN (SELECT DISTINCT atacante AS tipo FROM Tipos UNION SELECT DISTINCT defensor  \n  FROM Tipos) d                                                                                 \n        WHERE NOT EXISTS (SELECT 1 FROM Tipos t WHERE t.atacante = a.tipo AND t.defensor = d.   \n  tipo)                                                                                         \n    ),                                                                                          \n    Jefe AS (                                                                                   \n        SELECT tipo_1, tipo_2                                                                   \n        FROM public.dim_jefe_incursion                                                          \n        WHERE LOWER(nombre_jefe) = LOWER('${Pokemon}')                                          \n        LIMIT 1                                                                                 \n    ),                                                                                          \n    TiposExistentes AS (                                                                        \n        SELECT DISTINCT atacante AS tipo_ataque FROM Tipos UNION SELECT DISTINCT defensor FROM  \n  Tipos                                                                                         \n    ),                                                                                          \n    Multiplicadores AS (                                                                        \n        SELECT                                                                                  \n            t.tipo_ataque,                                                                      \n            COALESCE(e1.mult, 1.0) *                                                            \n            CASE                                                                                \n                WHEN j.tipo_2 = 'None' OR j.tipo_2 IS NULL THEN 1.0                             \n                ELSE COALESCE(e2.mult, 1.0)                                                     \n            END AS mult_total                                                                   \n        FROM TiposExistentes t                                                                  \n        CROSS JOIN Jefe j\n        LEFT JOIN Efectividad e1 ON e1.atacante = t.tipo_ataque AND e1.defensor = j.tipo_1      \n        LEFT JOIN Efectividad e2 ON e2.atacante = t.tipo_ataque AND e2.defensor = j.tipo_2      \n    )\n    SELECT \n        tipo_ataque AS \"Tipo de Ataque\",\n        CASE \n            WHEN mult_total > 1 THEN '+' || ROUND(CAST((mult_total - 1) * 100 AS numeric), 1) ||\n  '%'\n            WHEN mult_total < 1 THEN '-' || ROUND(CAST((1 - mult_total) * 100 AS numeric), 1) ||\n  '%'\n        END AS \"Efectividad\",\n        CASE \n            WHEN mult_total > 1 THEN 'Vulnerabilidad'\n            WHEN mult_total < 1 THEN 'Resistencia'\n        END AS \"Categoría\"\n    FROM Multiplicadores\n    WHERE mult_total != 1.0\n    ORDER BY mult_total DESC;\n",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "",
+                "content": "<div class=\"pokedex-spectrometer\">\n  <div class=\"spec-header\">DIAGNÓSTICO DE EFECTIVIDAD DE TIPOS</div>\n  \n  <div class=\"spec-axis-label\">\n    <span class=\"lbl-res\">Resiste (- daño)</span>\n    <span class=\"lbl-vuln\">Débil (+ daño)</span>\n  </div>\n\n  <div class=\"spec-grid\">\n    {{#each data}}\n    <div class=\"spec-row\">\n      \n      <!-- LADO IZQUIERDO: Resistencias -->\n      <div class=\"spec-side spec-left\">\n        {{#if (eq Categoría \"Resistencia\")}}\n          <div class=\"spec-bar-wrapper res-wrapper\">\n            <!-- Evaluamos de forma adaptativa el tamaño de la barra según el texto -->\n            <div class=\"spec-bar bar-res-fill\" style=\"width: {{#if (eq Efectividad '-37.5%')}}37{{else}}{{#if (eq Efectividad '-60.9%')}}61{{else}}100{{/if}}{{/if}}%;\"></div>\n          </div>\n          <span class=\"spec-val val-res\">{{Efectividad}}</span>\n        {{/if}}\n      </div>\n\n      <!-- EJE CENTRAL: Tipo de Ataque -->\n      <div class=\"spec-center\">\n        <div class=\"spec-pill type-{{[Tipo de Ataque]}}\">{{[Tipo de Ataque]}}</div>\n      </div>\n\n      <!-- LADO DERECHO: Vulnerabilidades -->\n      <div class=\"spec-side spec-right\">\n        {{#if (eq Categoría \"Vulnerabilidad\")}}\n          <span class=\"spec-val val-vuln\">{{Efectividad}}</span>\n          <div class=\"spec-bar-wrapper vuln-wrapper\">\n            <div class=\"spec-bar bar-vuln-fill\" style=\"width: {{#if (eq Efectividad '+60%')}}60{{else}}100{{/if}}%;\"></div>\n          </div>\n        {{/if}}\n      </div>\n\n    </div>\n    {{/each}}\n  </div>\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<div class=\"sp-nd\" style=\"width: 100%; padding: 40px 20px; text-align: center; font-size: 13px; color: #888; font-weight: bold; letter-spacing: 0.5px;\">\n    ESPERANDO DATOS DE AFINIDAD ELEMENTAL...\n  </div>",
+                "editor": {
+                  "format": "auto",
+                  "language": "markdown"
+                },
+                "editors": [
+                  "styles"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "*, *::before, *::after { box-sizing: border-box !important; }\n\n/* Contenedor Principal Estilo Dispositivo Médico/Científico Fluido y Sin Bordes Pesados */\n.pokedex-spectrometer {\n  background: radial-gradient(circle at 50% 50%, #2d323c 10%, #15171c 90%) !important;\n  \n  /* SE ELIMINAN LOS BORDES Y OUTLINES DE KPI */\n  border: none !important;\n  outline: none !important;\n  \n  border-radius: 12px !important;\n  padding: 22px !important; /* Más aire interno para albergar fuentes grandes */\n  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;\n  width: 100% !important;\n  position: relative !important;\n  overflow: hidden !important;\n  font-family: 'Courier New', monospace !important;\n}\n\n/* ==========================================================================\n   AQUÍ ESTÁ: La Pokébola flotando por encima con z-index y gradiente corregidos\n   ========================================================================== */\n.pokedex-spectrometer::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -25px !important;\n  bottom: -25px !important;\n  width: 130px !important; /* Escalado perfecto para las fuentes grandes */\n  height: 130px !important;\n  \n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 50%, rgba(255, 255, 255, 0.08) 50.5%) !important;\n  \n  border: 2px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important;\n  z-index: 3 !important; /* Pasa al frente por encima de las barras gráficas */\n  pointer-events: none !important;\n}\n\n/* Cabecera Técnica */\n.spec-header {\n  text-align: center !important;\n  font-size: 14px !important; /* Letra grande incrementada */\n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  letter-spacing: 1.5px !important;\n  margin-bottom: 18px !important;\n  border-bottom: 2px solid #ffcb05 !important;\n  padding-bottom: 8px !important;\n  z-index: 2 !important;\n  position: relative !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n}\n\n/* Indicadores de los ejes */\n.spec-axis-label {\n  display: flex !important;\n  justify-content: space-between !important;\n  font-size: 12px !important; /* Letra grande incrementada */\n  font-weight: 900 !important;\n  margin-bottom: 16px !important;\n  padding: 0 10px !important;\n  text-transform: uppercase !important;\n  z-index: 2 !important;\n  position: relative !important;\n}\n.lbl-res { color: #4dadf7 !important; text-shadow: 0 0 8px rgba(77, 173, 247, 0.3) !important; }\n.lbl-vuln { color: #ff6b6b !important; text-shadow: 0 0 8px rgba(255, 107, 107, 0.3) !important; }\n\n/* Filas del Espectrómetro */\n.spec-grid {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 12px !important;\n  z-index: 2 !important;\n  position: relative !important;\n}\n.spec-row {\n  display: flex !important;\n  align-items: center !important;\n  height: 32px !important; /* Ligeramente más alto para balancear el texto */\n  position: relative !important;\n}\n\n/* Alineaciones Simétricas */\n.spec-side {\n  flex: 1 !important;\n  display: flex !important;\n  align-items: center !important;\n  gap: 12px !important;\n}\n.spec-left { justify-content: flex-end !important; }\n.spec-right { justify-content: flex-start !important; }\n\n/* Nodo del Centro */\n.spec-center {\n  width: 120px !important; /* Más ancho para que el texto grande respire */\n  text-align: center !important;\n  flex-shrink: 0 !important;\n  z-index: 4 !important; /* Por encima del reflejo de la Pokébola */\n}\n\n/* Píldoras de Tipo estilizadas */\n.spec-pill {\n  display: inline-block !important;\n  font-size: 11px !important; /* Letra grande incrementada */\n  font-weight: 900 !important;\n  padding: 5px 0 !important;\n  border-radius: 6px !important;\n  color: #fff !important;\n  text-transform: uppercase !important;\n  width: 95px !important; /* Ampliado para fuentes legibles */\n  letter-spacing: 0.5px !important;\n  border: 1px solid rgba(255, 255, 255, 0.15) !important;\n  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4) !important;\n}\n\n/* Contenedores de las barras de energía */\n.spec-bar-wrapper {\n  width: 90px !important; /* Más largas para que luzca la fluidez */\n  height: 10px !important; /* Un toque más gruesas */\n  background: rgba(0, 0, 0, 0.4) !important;\n  border-radius: 9999px !important;\n  overflow: hidden !important;\n  border: 1px solid rgba(255, 255, 255, 0.05) !important;\n}\n.res-wrapper { direction: rtl !important; } \n\n/* Barras animadas con brillos neón */\n.spec-bar {\n  height: 100% !important;\n  border-radius: 9999px !important;\n  transition: width 0.4s ease-out !important;\n}\n.bar-vuln-fill {\n  background: linear-gradient(90deg, #ff4444, #ff6b6b) !important;\n  box-shadow: 0 0 10px rgba(255, 68, 68, 0.8), 0 0 4px #ff4444 !important;\n}\n.bar-res-fill {\n  background: linear-gradient(90deg, #4dadf7, #1a6fbc) !important;\n  box-shadow: 0 0 10px rgba(77, 173, 247, 0.8), 0 0 4px #1a6fbc !important;\n}\n\n/* Texto de Valores */\n.spec-val {\n  font-size: 14px !important; /* Letra grande incrementada */\n  font-family: monospace !important;\n  font-weight: 900 !important;\n  min-width: 60px !important; /* Ajustado el ancho */\n}\n.val-vuln { color: #ff6b6b !important; text-shadow: 0 0 6px rgba(255, 107, 107, 0.6) !important; text-align: left !important; }\n.val-res { color: #4dadf7 !important; text-shadow: 0 0 6px rgba(77, 173, 247, 0.6) !important; text-align: right !important; }\n\n/* Paleta Oficial de Colores para Fondos de Tipos */\n.type-Normal   { background: #8a8a6a !important; }\n.type-Fire     { background: #e25822 !important; }\n.type-Water    { background: #1a6fbc !important; }\n.type-Grass    { background: #5d9e4f !important; }\n.type-Electric { background: #d4ac00 !important; color: #111 !important; }\n.type-Ice      { background: #4ab8c4 !important; }\n.type-Fighting { background: #8c3224 !important; }\n.type-Poison   { background: #8b3fa8 !important; }\n.type-Ground   { background: #b4883c !important; }\n.type-Flying   { background: #6070c0 !important; }\n.type-Psychic  { background: #c0396b !important; }\n.type-Bug      { background: #7a8e20 !important; }\n.type-Rock     { background: #927c40 !important; }\n.type-Ghost    { background: #5a4870 !important; }\n.type-Dragon   { background: #4040c0 !important; }\n.type-Dark     { background: #3d3244 !important; }\n.type-Steel    { background: #787888 !important; }\n.type-Fairy    { background: #d685ad !important; }",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "postgres",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH min_players AS (                                                                       \n        SELECT MIN(h.estimacion_jugadores_necesarios) AS raw_min                                \n        FROM public.hechos_simulacion_combate h                                                 \n        JOIN public.dim_jefe_incursion dj ON h.id_jefe_incursion = CAST(dj.id_jefe_incursion AS \n  integer)                                                                                      \n        WHERE LOWER(dj.nombre_jefe) = LOWER('${Pokemon}')                                       \n    )                                                                                           \n    SELECT                                                                                      \n        CEIL(raw_min) AS minimo_entrenadores,                                                   \n        (CEIL(raw_min) + 1) || ' a ' || (CEIL(raw_min) + 3) AS tamano_optimo,                   \n        (CEIL(raw_min) + 4) || '+' AS victoria_facil                                            \n    FROM min_players;  ",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "",
+                "content": "<div class=\"poke-gauge-container\">\n  {{#each data}}\n\n  <div class=\"gauge-master-layout\">\n\n    <!-- CABECERA DEL COMPONENTE -->\n    <div class=\"gauge-header\">\n      <div class=\"gauge-title\">REQUISITOS DE COMBATE Y PERSONAL</div>\n      <div class=\"gauge-subtitle\">Umbrales de Personal de Incursión</div>\n    </div>\n\n    <!-- CONTENEDOR FLUIDO EN PARALELO PARA LOS 3 MEDIDORES -->\n    <div class=\"gauge-triple-split\">\n\n      <!-- MEDIDOR 1: MÍNIMO ESTRICTO -->\n      <div class=\"gauge-wrapper item-min\">\n        <div class=\"poke-gauge-arc\" style=\"--gauge-value: calc({{minimo_entrenadores}} * 12.5);\">\n          <div class=\"poke-gauge-background\"></div>\n          <div class=\"poke-gauge-fill\"></div>\n          <div class=\"poke-gauge-center-text\">\n            <div class=\"poke-gauge-number\">{{minimo_entrenadores}}</div>\n            <div class=\"poke-gauge-unit\">Mínimo</div>\n          </div>\n        </div>\n        <div class=\"gauge-card-label\">Límite Crítico</div>\n      </div>\n\n      <!-- MEDIDOR 2: TAMAÑO ÓPTIMO -->\n      <!-- Usamos un promedio estimado del string (ej: si es \"3 a 5\", se asume rango medio ~4) para la aguja visual -->\n      <div class=\"gauge-wrapper item-opt\">\n        <div class=\"poke-gauge-arc\" style=\"--gauge-value: 55%;\">\n          <div class=\"poke-gauge-background\"></div>\n          <div class=\"poke-gauge-fill\"></div>\n          <div class=\"poke-gauge-center-text\">\n            <div class=\"poke-gauge-number\" style=\"font-size: clamp(16px, 2.5vw, 24px) !important;\">{{tamano_optimo}}\n            </div>\n            <div class=\"poke-gauge-unit\">Escuadra</div>\n          </div>\n        </div>\n        <div class=\"gauge-card-label\">Recomendado</div>\n      </div>\n\n      <!-- MEDIDOR 3: VICTORIA FÁCIL -->\n      <div class=\"gauge-wrapper item-easy\">\n        <div class=\"poke-gauge-arc\" style=\"--gauge-value: 85%;\">\n          <div class=\"poke-gauge-background\"></div>\n          <div class=\"poke-gauge-fill\"></div>\n          <div class=\"poke-gauge-center-text\">\n            <div class=\"poke-gauge-number\">{{victoria_facil}}</div>\n            <div class=\"poke-gauge-unit\">Garantizado</div>\n          </div>\n        </div>\n        <div class=\"gauge-card-label\">Victoria Cómoda</div>\n      </div>\n\n    </div>\n\n    <!-- Etiqueta inferior estilo Pokédex -->\n    <div class=\"poke-gauge-status-label\">\n      EVALUACIÓN TÁCTICA DE AMENAZA ACTIVA EN BASE A LA CAPACIDAD DE LA ESCUADRA\n    </div>\n\n  </div>\n\n  {{/each}}\n</div>",
+                "contentPartials": [],
+                "defaultContent": "The query didn't return any results.",
+                "editor": {
+                  "format": "auto",
+                  "language": "html"
+                },
+                "editors": [
+                  "styles"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "/* === POKÉDEX·BI — MASTER RESET === */\n.poke-gauge-container * , \n.poke-gauge-container *::before, \n.poke-gauge-container *::after {\n  box-sizing: border-box !important;\n}\n\n.poke-gauge-container {\n  width: 100% !important;\n  height: 100% !important;\n  display: flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n  background: radial-gradient(circle at 50% 50%, #2d323c 10%, #15171c 90%) !important;\n  \n  /* SIN BORDES EXTERNOS DE KPI */\n  border: none !important;\n  outline: none !important;\n  \n  /* FLUIDO Y GRANDE */\n  border-radius: 12px !important;\n  box-sizing: border-box !important;\n  padding: 22px !important;\n  font-family: 'Courier New', Courier, monospace !important;\n  box-shadow: 0 12px 32px rgba(0,0,0,0.6) !important;\n  position: relative !important;\n  overflow: hidden !important;\n}\n\n/* ==========================================================================\n   AQUÍ ESTÁ: Icono de Pokébola de Fondo Recuperado para los 3 medidores\n   ========================================================================== */\n.poke-gauge-container::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -25px !important;\n  bottom: -25px !important;\n  width: 130px !important; \n  height: 130px !important;\n  \n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 50%, rgba(255, 255, 255, 0.08) 50.5%) !important;\n  \n  border: 2px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important;\n  z-index: 3 !important; /* Salta al frente por encima de las cajas de fondo */\n  pointer-events: none !important;\n}\n\n/* Layout General del Contenido */\n.gauge-master-layout {\n  width: 100% !important;\n  display: flex !important;\n  flex-direction: column !important;\n  z-index: 2 !important;\n  position: relative !important;\n}\n\n/* Cabecera Principal */\n.gauge-header {\n  border-bottom: 2px solid #ffcb05 !important;\n  padding-bottom: 10px !important;\n  margin-bottom: 24px !important;\n}\n\n.gauge-title {\n  font-size: 16px !important; \n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1.5px !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n}\n\n.gauge-subtitle {\n  font-size: 14px !important; \n  color: #ffffff !important;\n  font-weight: 800 !important;\n  letter-spacing: 0.5px !important;\n}\n\n/* Distribución de los 3 arcos en horizontal */\n.gauge-triple-split {\n  display: flex !important;\n  flex-direction: row !important;\n  gap: 20px !important;\n  width: 100% !important;\n  justify-content: space-between !important;\n}\n\n/* Contenedor individual de cada medidor */\n.gauge-wrapper {\n  flex: 1 !important;\n  display: flex !important;\n  flex-direction: column !important;\n  align-items: center !important;\n  background: rgba(0, 0, 0, 0.15) !important;\n  padding: 14px 8px !important;\n  border-radius: 8px !important;\n  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important;\n  position: relative !important;\n  z-index: 2 !important;\n}\n\n/* Estructura del Semicírculo */\n.poke-gauge-arc {\n  position: relative !important;\n  width: 160px !important; \n  height: 80px !important;\n  overflow: hidden !important;\n  display: flex !important;\n  align-items: flex-end !important;\n  justify-content: center !important;\n}\n\n.poke-gauge-background {\n  position: absolute !important;\n  top: 0 !important;\n  left: 0 !important;\n  width: 100% !important;\n  height: 200% !important;\n  border-radius: 50% !important;\n  border: 16px solid #1a1c23 !important;\n  box-sizing: border-box !important;\n}\n\n/* El arco de colores cónicos */\n.poke-gauge-fill {\n  position: absolute !important;\n  top: 0 !important;\n  left: 0 !important;\n  width: 100% !important;\n  height: 200% !important;\n  border-radius: 50% !important;\n  box-sizing: border-box !important;\n  border: 16px solid transparent !important;\n  transform-origin: center 50% !important;\n  border-image: conic-gradient(\n    #10b981 0% 30%,\n    #eab308 30% 65%,\n    #ff3e3e 65% 100%\n  ) 1 !important;\n  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);\n  -webkit-mask-composite: xor;\n  mask-composite: exclude;\n  transform: rotate(calc(-180deg + (180deg * (var(--gauge-value) / 100)))) !important;\n  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;\n}\n\n.poke-gauge-center-text {\n  position: absolute !important;\n  bottom: 0 !important;\n  text-align: center !important;\n  z-index: 5 !important;\n}\n\n/* Letras de los indicadores centrales */\n.poke-gauge-number {\n  font-size: clamp(20px, 3.5vw, 28px) !important; \n  font-weight: 900 !important;\n  color: #ffffff !important;\n  line-height: 1 !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n}\n\n.poke-gauge-unit {\n  font-size: 10px !important; \n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n  margin-top: 4px !important;\n}\n\n/* Etiquetas del pie de cada medidor */\n.gauge-card-label {\n  font-size: 11px !important;\n  font-weight: 800 !important;\n  text-transform: uppercase !important;\n  margin-top: 12px !important;\n  letter-spacing: 0.5px !important;\n}\n\n/* Colores de subtítulos por jerarquía */\n.item-min .gauge-card-label { color: #ff5555 !important; }\n.item-opt .gauge-card-label { color: #ffe066 !important; }\n.item-easy .gauge-card-label { color: #39ff14 !important; }\n\n.poke-gauge-status-label {\n  font-size: 11px !important; \n  font-weight: 800 !important;\n  color: #9ca3af !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1px !important;\n  margin-top: 22px !important;\n  text-align: center !important;\n}\n\n/* Adaptación responsiva (cae a vertical en monitores angostos o móviles) */\n@media (max-width: 620px) {\n  .gauge-triple-split {\n    flex-direction: column !important;\n    gap: 16px !important;\n  }\n  .gauge-wrapper {\n    padding: 10px 8px !important;\n  }\n}",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "postgres",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT \n    ROUND(CAST(MAX(h.dps_cubico_por_tdo) AS numeric), 2) AS mejor_d3t,\n    -- Comparamos si el máximo de este Pokémon es igual o mayor al récord de los eventos activos ('Ongoing')\n    CASE \n        WHEN MAX(h.dps_cubico_por_tdo) >= (\n            SELECT MAX(h_global.dps_cubico_por_tdo) \n            FROM hechos_simulacion_combate h_global \n            JOIN dim_jefe_incursion dj_global ON h_global.id_jefe_incursion = dj_global.id_jefe_incursion \n            WHERE dj_global.estado_evento = 'Ongoing'\n        ) THEN 1\n        ELSE 0\n    END AS es_record\nFROM hechos_simulacion_combate h \nJOIN dim_jefe_incursion dj ON h.id_jefe_incursion = dj.id_jefe_incursion \nWHERE dj.nombre_jefe = '${Pokemon}';",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "",
+                "content": "<div class=\"poke-carousel-container\">\n  <div class=\"poke-carousel-track\">\n    {{#each data}}\n\n    <div class=\"poke-card-wrapper\">\n      <!-- Si es récord aplicamos la clase is-record-card -->\n      <div class=\"poke-card {{#if es_record}}is-record-card{{/if}}\">\n\n        <!-- Cabecera de la carta -->\n        <div class=\"poke-card-header\">\n          <div class=\"poke-card-title\">\n            {{#if es_record}}\n            🔥 MAX D³T STAT\n            {{else}}\n            ⚡ D³T STAT\n            {{/if}}\n          </div>\n          <div class=\"poke-card-hp\">\n            <span>LV.</span>100\n          </div>\n        </div>\n\n        <!-- Caja de valor (Ilustración Foil) -->\n        <div class=\"poke-card-value-container\">\n          <div class=\"poke-card-number\">\n            {{#if mejor_d3t}}\n            {{mejor_d3t}}\n            {{else}}\n            0.00\n            {{/if}}\n          </div>\n        </div>\n\n        <!-- Cuerpo/Descripción -->\n        <div class=\"poke-card-body\">\n          <div class=\"poke-card-label\">Rendimiento Cúbico</div>\n          <div class=\"poke-card-subtext\">Métrica de análisis táctico.</div>\n\n          {{#if es_record}}\n          <div class=\"record-badge\">🏆 RÉCORD ACTIVO</div>\n          {{/if}}\n        </div>\n\n      </div>\n    </div>\n\n    {{/each}}\n  </div>\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<div class=\"poke-carousel-container\">\n  <div class=\"poke-carousel-track\">\n    <div class=\"poke-card-wrapper\">\n      <div class=\"poke-card\">\n        <div class=\"poke-card-header\">\n          <span class=\"poke-card-title\">⚡ D³T STAT</span>\n          <span class=\"poke-card-hp\">— <span>LV.</span></span>\n        </div>\n        <div class=\"poke-card-value-container\">\n          <span class=\"poke-card-number\" style=\"opacity:0.25\">—</span>\n        </div>\n        <div class=\"poke-card-body\">\n          <div class=\"poke-card-label\">Sin datos</div>\n          <div class=\"poke-card-subtext\">Esperando resultados...</div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>",
+                "editor": {
+                  "format": "auto",
+                  "language": "html"
+                },
+                "editors": [
+                  "styles",
+                  "afterRender"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "*, *::before, *::after { box-sizing: border-box !important; }\n\n/* --- CONTENEDOR PRINCIPAL CAROUSEL --- */\n.poke-carousel-container {\n  width: 100% !important;\n  height: 100% !important;\n  display: flex !important;\n  align-items: center !important;\n  overflow: hidden !important;\n  background-color: transparent !important;\n  box-sizing: border-box !important;\n  font-family: 'Courier New', monospace !important;\n}\n\n/* Track deslizable horizontal */\n.poke-carousel-track {\n  display: flex !important;\n  flex-direction: row !important;\n  flex-wrap: nowrap !important;\n  overflow-x: auto !important;\n  scroll-snap-type: x mandatory !important;\n  scroll-behavior: smooth !important;\n  width: 100% !important;\n  padding: 15px 5px !important;\n  box-sizing: border-box !important;\n  gap: 14px !important; /* Más aire entre tarjetas */\n  -webkit-overflow-scrolling: touch;\n}\n\n/* Barra de scroll estética */\n.poke-carousel-track::-webkit-scrollbar {\n  height: 4px !important;\n}\n.poke-carousel-track::-webkit-scrollbar-thumb {\n  background: rgba(254, 203, 5, 0.4) !important;\n  border-radius: 10px !important;\n}\n\n/* Responsividad de las tarjetas en fila */\n.poke-card-wrapper {\n  flex: 1 1 280px !important; /* Más fluida y ligeramente más ancha */\n  scroll-snap-align: start !important;\n  display: flex !important;\n  justify-content: center !important;\n  box-sizing: border-box !important;\n}\n\n/* --- CARTA POKÉMON TCG MODERNA (Sin Bordes Pesados y 100% Fluida) --- */\n.poke-card {\n  width: 100% !important;\n  background: radial-gradient(circle at 50% 50%, #2d323c 10%, #15171c 90%) !important;\n  \n  /* SE ELIMINAN LOS BORDES Y OUTLINES DE KPI */\n  border: none !important;\n  outline: none !important;\n  \n  border-radius: 12px !important;\n  padding: 18px !important; /* Más espacio interno para las fuentes grandes */\n  position: relative !important;\n  overflow: hidden !important;\n  display: flex !important;\n  flex-direction: column !important;\n  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;\n  box-sizing: border-box !important;\n}\n\n/* ==========================================================================\n   AQUÍ ESTÁ COLOCADO: La Pokébola flotando por encima con z-index corregido\n   ========================================================================== */\n.poke-card::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -25px !important;\n  bottom: -25px !important;\n  width: 130px !important; /* Escalado para el nuevo tamaño de letra */\n  height: 130px !important;\n  \n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 50%, rgba(255, 255, 255, 0.08) 50.5%) !important;\n  \n  border: 2px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important;\n  z-index: 3 !important; /* Pasa al frente de la caja responsiva interna */\n  pointer-events: none !important;\n}\n\n/* Cabecera */\n.poke-card-header {\n  display: flex !important;\n  justify-content: space-between !important;\n  align-items: center !important;\n  border-bottom: 2px solid #ffcb05 !important;\n  padding-bottom: 8px !important;\n  margin-bottom: 16px !important;\n  z-index: 2 !important;\n}\n\n.poke-card-title {\n  font-size: clamp(12px, 2vw, 15px) !important; /* Letra más grande */\n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n  white-space: nowrap !important;\n  overflow: hidden !important;\n  text-overflow: ellipsis !important;\n}\n\n.poke-card-hp {\n  font-size: 15px !important; /* Letra más grande */\n  font-weight: 900 !important;\n  color: #ff3e3e !important;\n  text-shadow: 1px 1px 0px #000 !important;\n}\n\n.poke-card-hp span {\n  font-size: 10px !important; /* Letra más grande */\n  color: #9ca3af !important;\n  font-weight: bold !important;\n  margin-right: 3px !important;\n}\n\n/* Recuadro de Valor Adaptado */\n.poke-card-value-container {\n  width: 100% !important;\n  height: 110px !important; /* Ligeramente más alto para albergar fuentes grandes */\n  background: linear-gradient(135deg, #1e293b, #0f172a, #334155) !important;\n  \n  /* Removido borde tosco b58d1d */\n  border: 1px solid rgba(255, 255, 255, 0.05) !important;\n  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6) !important;\n  \n  border-radius: 8px !important;\n  display: flex !important;\n  justify-content: center !important;\n  align-items: center !important;\n  z-index: 2 !important;\n  position: relative !important;\n}\n\n.poke-card-number {\n  font-size: clamp(32px, 6vw, 44px) !important; /* Letra más grande */\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  letter-spacing: -1px !important;\n  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2) !important;\n}\n\n/* Pie de la Carta */\n.poke-card-body {\n  margin-top: 12px !important;\n  z-index: 2 !important;\n  text-align: center !important;\n}\n\n.poke-card-label {\n  font-size: 12px !important; /* Letra más grande */\n  font-weight: 800 !important;\n  color: #ffffff !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n  text-shadow: 1px 1px 1px #000 !important;\n  margin-bottom: 4px !important;\n}\n\n.poke-card-subtext {\n  font-size: 10px !important; /* Letra más grande */\n  color: #9ca3af !important;\n  font-style: italic !important;\n  line-height: 1.3 !important;\n}\n\n/* --- ESTILOS DINÁMICOS DE RÉCORD EN PANTALLA COMPLETA --- */\n.is-record-card {\n  border: none !important; /* Consistencia limpia */\n  box-shadow: 0 12px 32px rgba(239, 68, 68, 0.2) !important;\n}\n\n.is-record-card .poke-card-header {\n  border-bottom-color: #ff3e3e !important;\n}\n\n.is-record-card .poke-card-title {\n  color: #ff3e3e !important;\n}\n\n.is-record-card .poke-card-value-container {\n  background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%) !important;\n  border-color: transparent !important;\n}\n\n.is-record-card .poke-card-number {\n  color: #111113 !important;\n  text-shadow: none !important;\n}\n\n/* Medalla de Récord */\n.record-badge {\n  display: inline-block !important;\n  background-color: #ff3e3e !important;\n  color: #ffffff !important;\n  font-size: 10px !important; /* Letra más grande */\n  font-weight: 900 !important;\n  padding: 4px 10px !important;\n  border: 1px solid rgba(255, 255, 255, 0.3) !important;\n  border-radius: 4px !important;\n  margin-top: 10px !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n  box-shadow: 2px 2px 0px rgba(0,0,0,0.3) !important;\n}",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "gestion_incidencias",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT \n    ROUND(CAST(AVG(h.multiplicador_clima_aplicado) AS numeric), 2) AS bonus_clima,\n    -- Miramos directamente si el promedio de las simulaciones de HOY aplicó el boost de 1.20\n    CASE \n        WHEN AVG(h.multiplicador_clima_aplicado) >= 1.20 THEN 1\n        ELSE 0\n    END AS clima_boost_activo\nFROM \n    hechos_simulacion_combate h \nJOIN \n    dim_jefe_incursion dj ON h.id_jefe_incursion = dj.id_jefe_incursion\nJOIN\n    dim_tiempo dt ON h.id_tiempo = dt.id_tiempo -- Unimos los hechos con el tiempo real\nWHERE \n    dj.estado_evento = 'Ongoing'\n    AND dj.nombre_jefe = '${Pokemon}'\n    AND dt.fecha = CURRENT_DATE; -- Solo tomamos en cuenta el estado de hoy",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "",
+                "content": "<div class=\"weather-stat-container\">\n  {{#each data}}\n\n  <!-- Evaluamos si el clima está potenciado para aplicar los estilos de carta de fuego/crítico -->\n  <div class=\"weather-card {{#if clima_boost_activo}}weather-boosted-card{{/if}}\">\n\n    <div class=\"weather-header\">\n      <div class=\"weather-title\">\n        {{#if clima_boost_activo}}\n        ☀️ CLIMA POTENCIADO\n        {{else}}\n        ☁️ ESTADO DE CLIMA\n        {{/if}}\n      </div>\n    </div>\n\n    <div class=\"weather-value-box\">\n\n      <!-- Multiplicador dinámico -->\n      <div class=\"weather-number\">\n        {{#if bonus_clima}}\n        {{bonus_clima}}x\n        {{else}}\n        1.00x\n        {{/if}}\n      </div>\n\n      <!-- Nombre de estado dinámico -->\n      <div class=\"weather-state-text\">\n        {{#if clima_boost_activo}}\n        POTENCIADO\n        {{else}}\n        NORMAL\n        {{/if}}\n      </div>\n\n      <!-- Insignia de detalle dinámica -->\n      {{#if clima_boost_activo}}\n      <div class=\"weather-badge badge-boosted\">✨ BONUS +20%</div>\n      {{else}}\n      <div class=\"weather-badge badge-normal\">SIN BONUS</div>\n      {{/if}}\n\n    </div>\n\n  </div>\n\n  {{/each}}\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<div class=\"weather-stat-container\">\n  <div class=\"weather-card\">\n    <div class=\"weather-header\">\n      <span class=\"weather-title\">☁ Estado de Clima</span>\n    </div>\n    <div class=\"weather-value-box\">\n      <div class=\"weather-number\" style=\"opacity:0.25\">—</div>\n      <div class=\"weather-state-text\">Sin datos</div>\n      <span class=\"weather-badge badge-normal\">SIN BONUS</span>\n    </div>\n  </div>\n</div>",
+                "editor": {
+                  "format": "auto",
+                  "language": "html"
+                },
+                "editors": [
+                  "afterRender",
+                  "styles"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "*, *::before, *::after { box-sizing: border-box !important; }\n\n/* --- CONTENEDOR DEL INDICADOR CLIMA --- */\n.weather-stat-container {\n  width: 100% !important;\n  height: 100% !important;\n  display: flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n  background-color: transparent !important;\n  box-sizing: border-box !important;\n  padding: 10px !important;\n  font-family: 'Courier New', monospace !important;\n}\n\n/* Tarjeta de Clima Integrada (Estilo Dashboard Fluido y Sin Bordes Pesados) */\n.weather-card {\n  width: 100% !important;\n  max-width: 100% !important; \n  background: radial-gradient(circle at 50% 50%, #2d323c 10%, #15171c 90%) !important;\n  \n  border: none !important;\n  outline: none !important;\n  \n  border-radius: 12px !important;\n  padding: 18px !important; \n  position: relative !important;\n  overflow: hidden !important;\n  display: flex !important;\n  flex-direction: column !important;\n  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;\n  box-sizing: border-box !important;\n  transition: all 0.3s ease !important;\n}\n\n/* ==========================================================================\n   AQUÍ ESTÁ COLOCADO: La Pokébola flotando por encima con z-index corregido\n   ========================================================================== */\n.weather-card::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -25px !important;\n  bottom: -25px !important;\n  width: 130px !important; \n  height: 130px !important;\n  \n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 50%, rgba(255, 255, 255, 0.08) 50.5%) !important;\n  \n  border: 2px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important; \n  z-index: 3 !important; /* Pasa al frente de la caja responsiva */\n  pointer-events: none !important;\n}\n\n/* Cabecera */\n.weather-header {\n  display: flex !important;\n  justify-content: center !important;\n  border-bottom: 2px solid #ffcb05 !important;\n  padding-bottom: 8px !important;\n  margin-bottom: 16px !important;\n  z-index: 2 !important;\n}\n\n.weather-title {\n  font-size: clamp(12px, 2vw, 15px) !important; \n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n}\n\n/* Caja del Valor Adaptada */\n.weather-value-box {\n  width: 100% !important;\n  background: linear-gradient(135deg, #1e293b, #0f172a, #334155) !important;\n  border: 1px solid rgba(255, 255, 255, 0.05) !important;\n  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6) !important;\n  border-radius: 8px !important;\n  padding: 18px 12px !important;\n  text-align: center !important;\n  z-index: 2 !important;\n  position: relative !important;\n}\n\n/* Multiplicador Dinámico */\n.weather-number {\n  font-size: clamp(32px, 6vw, 44px) !important; \n  font-weight: 900 !important;\n  color: #ffffff !important;\n  line-height: 1 !important;\n  letter-spacing: -1px !important;\n  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2) !important;\n  transition: all 0.3s ease !important;\n}\n\n.weather-state-text {\n  font-size: 14px !important; \n  font-weight: 900 !important;\n  color: #9ca3af !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1px !important;\n  margin-top: 8px !important;\n  text-shadow: 1px 1px 1px #000 !important;\n}\n\n/* Insignias */\n.weather-badge {\n  display: inline-block !important;\n  font-size: 10px !important; \n  font-weight: 900 !important;\n  padding: 4px 10px !important;\n  border-radius: 4px !important;\n  margin-top: 10px !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n  box-shadow: 2px 2px 0px rgba(0,0,0,0.3) !important;\n}\n\n.badge-normal {\n  background-color: #374151 !important;\n  color: #9ca3af !important;\n  border: 1px solid rgba(255, 255, 255, 0.1) !important;\n}\n\n.badge-boosted {\n  background-color: #ff3e3e !important;\n  color: #ffffff !important;\n  border: 1px solid rgba(255, 255, 255, 0.3) !important;\n}\n\n/* --- ESTADO POTENCIADO --- */\n.weather-boosted-card {\n  border: none !important; \n  box-shadow: 0 12px 32px rgba(239, 68, 68, 0.2) !important;\n}\n\n.weather-boosted-card .weather-header {\n  border-bottom-color: #ff3e3e !important;\n}\n\n.weather-boosted-card .weather-title {\n  color: #ff3e3e !important;\n}\n\n.weather-boosted-card .weather-value-box {\n  background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%) !important;\n  border-color: transparent !important;\n}\n\n.weather-boosted-card .weather-number {\n  color: #111113 !important;\n  text-shadow: none !important;\n}\n\n.weather-boosted-card .weather-state-text {\n  color: #111113 !important;\n  text-shadow: none !important;\n}",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "gestion_incidencias",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": " SELECT                                                                                      \n        dj.nombre_jefe AS metric,                                                               \n                                                                                                \n        -- Tus columnas reales de recompensas                                                   \n        dr.nivel_tier,                                                                          \n        dr.probabilidad_shiny,                                                                  \n        dr.recompensa_caramelos_xl,                                                             \n        dr.costo_pase_monedas,                                                                  \n                                                                                                \n        -- Cálculos del ROI                                                                     \n        ROUND(CAST(AVG(dr.puntaje_roi_incursion) AS numeric), 2) AS roi_actual,                 \n        (                                                                                       \n            SELECT ROUND(CAST(AVG(dr_glob.puntaje_roi_incursion) AS numeric), 2)                \n            FROM public.dim_recompensas_evento dr_glob                                          \n        ) AS roi_historico,                                                                     \n        CASE                                                                                    \n            WHEN AVG(dr.puntaje_roi_incursion) >= (\n                SELECT AVG(dr_glob2.puntaje_roi_incursion)\n                FROM public.dim_recompensas_evento dr_glob2\n            ) THEN 1\n            ELSE 0\n        END AS es_rentable\n        \n    FROM public.dim_recompensas_evento dr\n    JOIN public.dim_jefe_incursion dj ON dr.id_recompensa_evento = dj.id_recompensa_evento      \n    WHERE dj.estado_evento = 'Ongoing'\n      AND dj.nombre_jefe = '${Pokemon}'\n      \n    GROUP BY \n        dj.nombre_jefe,\n        dr.nivel_tier,\n        dr.probabilidad_shiny,\n        dr.recompensa_caramelos_xl,\n        dr.costo_pase_monedas; \n",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "",
+                "content": "<div class=\"poke-raid-container-horizontal\">\n  {{#each data}}\n\n  <div class=\"raid-card-horizontal\">\n\n    <!-- Bloque 1: Identidad del Boss -->\n    <div class=\"raid-section-identity\">\n      <div class=\"raid-tier-badge\">TIER {{nivel_tier}}</div>\n      <div class=\"raid-boss-name\"> {{metric}}</div>\n\n      {{#if es_rentable}}\n      <div class=\"profit-badge-pill is-profitable\">✓ RENTABLE</div>\n      {{else}}\n      <div class=\"profit-badge-pill not-profitable\">✗ BAJO RENDIM.</div>\n      {{/if}}\n    </div>\n\n    <!-- Divisor Visual 1 -->\n    <div class=\"raid-divider\"></div>\n\n    <!-- Bloque 2: ROI Central -->\n    <div class=\"raid-section-roi\">\n      <div class=\"roi-label\">ROI ACTUAL</div>\n      <div class=\"roi-val-huge\">{{roi_actual}}%</div>\n      <div class=\"roi-sub-label\">Histórico: {{roi_historico}}%</div>\n    </div>\n\n    <!-- Divisor Visual 2 -->\n    <div class=\"raid-divider\"></div>\n\n    <!-- Bloque 3: Barra de Progreso y Detalles de Inversión -->\n    <div class=\"raid-section-details\">\n\n      <!-- Barra en cápsula redondeada para probabilidad Shiny -->\n      <div class=\"raid-bar-section\">\n        <div class=\"bar-label-row\">\n          <span>✨ PROB. SHINY</span>\n          <span>{{probabilidad_shiny}}%</span>\n        </div>\n        <div class=\"bar-track\">\n          <!-- Multiplicador gráfico dinámico -->\n          <div class=\"bar-fill\" style=\"width: calc({{probabilidad_shiny}} * 1000%); max-width: 100%;\"></div>\n        </div>\n      </div>\n\n      <!-- Fila de Costo y Recompensa -->\n      <div class=\"raid-stats-row\">\n        <div class=\"stat-pill\">\n          Costo: <span>🪙 {{costo_pase_monedas}}</span>\n        </div>\n        <div class=\"stat-pill\">\n          Premio: <span>🍬 +{{recompensa_caramelos_xl}} XL</span>\n        </div>\n      </div>\n\n    </div>\n\n  </div>\n\n  {{/each}}\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<div class=\"poke-raid-container-horizontal\">\n  <div class=\"raid-card-horizontal\">\n\n    <div class=\"raid-section-identity\">\n      <div class=\"raid-tier-badge\">— TIER</div>\n      <div class=\"raid-boss-name\" style=\"opacity:0.35\">Sin incursión activa</div>\n      <div class=\"profit-badge-pill not-profitable\">SIN DATOS</div>\n    </div>\n\n    <div class=\"raid-divider\"></div>\n\n    <div class=\"raid-section-roi\">\n      <div class=\"roi-label\">ROI ACTUAL</div>\n      <div class=\"roi-val-huge\" style=\"opacity:0.35\">—%</div>\n      <div class=\"roi-sub-label\">Histórico: —%</div>\n    </div>\n\n    <div class=\"raid-divider\"></div>\n\n    <div class=\"raid-section-details\">\n      <div class=\"raid-bar-section\">\n        <div class=\"bar-label-row\">\n          <span>✨ PROB. SHINY</span>\n          <span>—%</span>\n        </div>\n        <div class=\"bar-track\">\n          <div class=\"bar-fill\" style=\"width:0%\"></div>\n        </div>\n      </div>\n      <div class=\"raid-stats-row\">\n        <div class=\"stat-pill\">Costo: <span>🪙 —</span></div>\n        <div class=\"stat-pill\">Premio: <span>🍬 — XL</span></div>\n      </div>\n    </div>\n\n  </div>\n</div>",
+                "editor": {
+                  "format": "auto",
+                  "language": "html"
+                },
+                "editors": [
+                  "styles"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "*, *::before, *::after { box-sizing: border-box !important; }\n\n/* --- CONTENEDOR PRINCIPAL CAROUSEL / GRID --- */\n.poke-raid-container-horizontal {\n  width: 100% !important;\n  height: 100% !important;\n  display: flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n  background-color: transparent !important;\n  box-sizing: border-box !important;\n  padding: 10px !important;\n  font-family: 'Courier New', monospace !important;\n}\n\n/* Tarjeta Horizontal Suprema (Estilo Dashboard Fluido y Sin Bordes Pesados) */\n.raid-card-horizontal {\n  width: 100% !important;\n  max-width: 100% !important; /* Expansión responsiva completa al 100% */\n  background: radial-gradient(circle at 20% 50%, #2d323c 10%, #15171c 90%) !important;\n  \n  /* SE ELIMINAN LOS BORDES Y OUTLINES DE KPI */\n  border: none !important;\n  outline: none !important;\n  \n  border-radius: 12px !important;\n  padding: 18px 22px !important; /* Más aire interno para las fuentes grandes */\n  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;\n  display: flex !important;\n  flex-direction: row !important;\n  align-items: center !important;\n  justify-content: space-between !important;\n  gap: 24px !important;\n  position: relative !important;\n  overflow: hidden !important;\n  box-sizing: border-box !important;\n}\n\n/* ==========================================================================\n   AQUÍ ESTÁ: La Pokébola flotando por encima con z-index corregido\n   ========================================================================== */\n.raid-card-horizontal::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -25px !important;\n  bottom: -25px !important;\n  width: 130px !important; /* Ajustado al nuevo tamaño de letra */\n  height: 130px !important;\n  \n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 50%, rgba(255, 255, 255, 0.08) 50.5%) !important;\n  \n  border: 2px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important;\n  z-index: 3 !important; /* Pasa al frente por encima de las secciones internas */\n  pointer-events: none !important;\n}\n\n.raid-divider {\n  width: 2px !important;\n  height: 60px !important; /* Un toque más alto para el balance */\n  background-color: rgba(255, 255, 255, 0.05) !important;\n  border-right: 1px solid rgba(0, 0, 0, 0.3) !important;\n  z-index: 2 !important;\n}\n\n/* --- BLOQUE 1: IDENTIDAD DEL JEFE --- */\n.raid-section-identity {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 6px !important;\n  min-width: 160px !important;\n  z-index: 2 !important;\n}\n\n.raid-boss-name {\n  font-size: clamp(14px, 2.2vw, 18px) !important; /* Letra más grande */\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n}\n\n.raid-tier-badge {\n  font-size: 10px !important; /* Letra más grande */\n  font-weight: 900 !important;\n  background-color: #ff3e3e !important;\n  color: #ffffff !important;\n  padding: 3px 8px !important;\n  border-radius: 4px !important;\n  border: 1px solid rgba(255, 255, 255, 0.3) !important;\n  align-self: flex-start !important;\n  letter-spacing: 0.5px !important;\n}\n\n.profit-badge-pill {\n  font-size: 10px !important; /* Letra más grande */\n  font-weight: 950 !important;\n  padding: 3px 8px !important;\n  border-radius: 4px !important;\n  text-transform: uppercase !important;\n  align-self: flex-start !important;\n  margin-top: 4px !important;\n}\n\n.is-profitable {\n  background-color: #10b981 !important;\n  color: #ffffff !important;\n  border: 1px solid rgba(255, 255, 255, 0.3) !important;\n}\n\n.not-profitable {\n  background-color: #ef4444 !important;\n  color: #ffffff !important;\n  border: 1px solid rgba(255, 255, 255, 0.3) !important;\n}\n\n/* --- BLOQUE 2: METRICAS CENTRALES (ROI) --- */\n.raid-section-roi {\n  display: flex !important;\n  flex-direction: column !important;\n  align-items: center !important;\n  min-width: 120px !important;\n  z-index: 2 !important;\n}\n\n.roi-label {\n  font-size: 10px !important; /* Letra más grande */\n  font-weight: 800 !important;\n  color: #9ca3af !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1px !important;\n}\n\n.roi-val-huge {\n  font-size: clamp(24px, 4.5vw, 34px) !important; /* Letra más grande */\n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  line-height: 1.1 !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n}\n\n.roi-sub-label {\n  font-size: 10px !important; /* Letra más grande */\n  color: #9ca3af !important;\n  font-weight: bold !important;\n}\n\n/* --- BLOQUE 3: DETALLES Y BARRA --- */\n.raid-section-details {\n  flex-grow: 1 !important;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 10px !important;\n  z-index: 2 !important;\n}\n\n.raid-bar-section {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 4px !important;\n}\n\n.bar-label-row {\n  display: flex !important;\n  justify-content: space-between !important;\n  font-size: 11px !important; /* Letra más grande */\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  text-shadow: 1px 1px 0px #000 !important;\n}\n\n.bar-track {\n  width: 100% !important;\n  height: 12px !important; /* Un poco más gruesa */\n  background-color: rgba(255, 255, 255, 0.04) !important;\n  border-radius: 9999px !important;\n  overflow: hidden !important;\n}\n\n.bar-fill {\n  height: 100% !important;\n  border-radius: 9999px !important;\n  background-color: #e2e8f0 !important;\n  box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.3) !important;\n  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;\n}\n\n.raid-stats-row {\n  display: flex !important;\n  gap: 10px !important;\n}\n\n.stat-pill {\n  flex-grow: 1 !important;\n  background: rgba(0, 0, 0, 0.25) !important;\n  border: 1px solid rgba(255, 255, 255, 0.05) !important;\n  border-radius: 6px !important;\n  padding: 6px 10px !important;\n  font-size: 11px !important; /* Letra más grande */\n  font-weight: 800 !important;\n  color: #9ca3af !important;\n  display: flex !important;\n  justify-content: space-between !important;\n}\n\n.stat-pill span {\n  color: #ffcb05 !important;\n}\n\n/* --- RESPONSIVIDAD INTEGRADA --- */\n@media (max-width: 650px) { /* Ajustado umbral para las fuentes grandes */\n  .raid-card-horizontal {\n    flex-direction: column !important;\n    align-items: stretch !important;\n    gap: 16px !important;\n  }\n  .raid-divider {\n    display: none !important;\n  }\n  .raid-section-identity, .raid-section-roi {\n    align-items: center !important;\n    text-align: center !important;\n  }\n  .raid-tier-badge, .profit-badge-pill {\n    align-self: center !important;\n  }\n}",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "gestion_incidencias",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT                                                                                      \n        CASE                                                                                    \n            WHEN pc.id_perfil_combatiente = 100 THEN 'Mega ' || dp.nombre_pokemon               \n            WHEN pc.es_oscuro::text ILIKE 'true' THEN dp.nombre_pokemon || ' oscuro'            \n            ELSE dp.nombre_pokemon                                                              \n        END as \"Counter\",                                                                       \n        dp.tipo_1 as \"Tipo\",                                                                    \n        ROUND(CAST(MAX(h.dps) AS numeric), 2) as \"DPS\",                                         \n        ROUND(CAST(MAX(h.tdo) AS numeric), 2) as \"TDO\",                                         \n        ROUND(CAST(MAX(h.dps_cubico_por_tdo) AS numeric), 2) as \"D3T\"                           \n    FROM hechos_simulacion_combate h\n    JOIN dim_especie_pokemon dp ON h.id_especie = dp.id_especie\n    LEFT JOIN dim_perfil_combatiente pc ON h.id_perfil_combatiente = pc.id_perfil_combatiente   \n    JOIN dim_jefe_incursion dj ON h.id_jefe_incursion = dj.id_jefe_incursion\n    WHERE dj.nombre_jefe = '${Pokemon}'\n    GROUP BY \n        dp.id_especie, \n        dp.nombre_pokemon, \n        dp.tipo_1,\n        pc.id_perfil_combatiente,\n        pc.es_oscuro\n    ORDER BY \"D3T\" DESC \n    LIMIT 6;\n",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "(function () {\n  context.element.addEventListener('click', function (event) {\n    var card = event.target.closest('.pokemon-card');\n    if (card) {\n      var name = card.getAttribute('data-pokemon');\n      if (name) {\n        context.grafana.locationService.partial({ 'var-Pokemon_counter': name });\n      }\n    }\n  });\n})();",
+                "content": "<div class=\"counters-panel-container\">\n  <div class=\"counters-card\">\n\n    <div class=\"counters-header\">\n      <div class=\"counters-title\">🛡️ TOP 6 COUNTERS</div>\n      <div class=\"counters-subtitle\">Métrica: D³T</div>\n    </div>\n\n    <div class=\"counters-list\">\n      {{#each data}}\n\n      <!-- Añadimos la clase 'pokemon-card' y el atributo 'data-pokemon' -->\n      <div class=\"counter-item pokemon-card\" data-pokemon=\"{{Counter}}\">\n        <div class=\"counter-row-header\">\n          <div class=\"counter-name-box\">\n            <span class=\"counter-name\">{{Counter}}</span>\n          </div>\n          <span class=\"type-badge type-{{Tipo}}\">{{Tipo}}</span>\n        </div>\n\n        <div class=\"bar-container\">\n          <div class=\"bar-track type-{{Tipo}}\">\n            <div class=\"bar-fill type-{{Tipo}}\" style=\"width: calc({{D3T}} * 2.5%); max-width: 100%;\"></div>\n          </div>\n          <div class=\"d3t-value\">{{D3T}} D³T</div>\n        </div>\n\n        <div class=\"specs-row\">\n          <div>DPS: <span>{{DPS}}</span></div>\n          <div>TDO: <span>{{TDO}}</span></div>\n        </div>\n      </div>\n\n      {{/each}}\n    </div>\n\n  </div>\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<div class=\"counters-panel-container\">\n  <div class=\"counters-card\">\n\n    <div class=\"counters-header\">\n      <div class=\"counters-title\">🛡️ TOP 6 COUNTERS</div>\n      <div class=\"counters-subtitle\">Sin jefe activo</div>\n    </div>\n\n    <div class=\"counters-list\">\n\n      <div class=\"counter-item\" style=\"opacity:0.35\">\n        <div class=\"counter-row-header\">\n          <div class=\"counter-name-box\">\n            <span class=\"counter-name\">Selecciona una incursión</span>\n          </div>\n          <span class=\"type-badge\" style=\"background:#374151\">—</span>\n        </div>\n        <div class=\"bar-container\">\n          <div class=\"bar-track\"><div class=\"bar-fill\" style=\"width:0%;background:#ffcb05\"></div></div>\n          <div class=\"d3t-value\">— D³T</div>\n        </div>\n        <div class=\"specs-row\"><div>DPS: <span>—</span></div><div>TDO: <span>—</span></div></div>\n      </div>\n\n      <div class=\"counter-item\" style=\"opacity:0.2\">\n        <div class=\"counter-row-header\">\n          <div class=\"counter-name-box\">\n            <span class=\"counter-name\">Counter #2</span>\n          </div>\n          <span class=\"type-badge\" style=\"background:#374151\">—</span>\n        </div>\n        <div class=\"bar-container\">\n          <div class=\"bar-track\"><div class=\"bar-fill\" style=\"width:0%;background:#ffcb05\"></div></div>\n          <div class=\"d3t-value\">— D³T</div>\n        </div>\n        <div class=\"specs-row\"><div>DPS: <span>—</span></div><div>TDO: <span>—</span></div></div>\n      </div>\n\n      <div class=\"counter-item\" style=\"opacity:0.1\">\n        <div class=\"counter-row-header\">\n          <div class=\"counter-name-box\">\n            <span class=\"counter-name\">Counter #3</span>\n          </div>\n          <span class=\"type-badge\" style=\"background:#374151\">—</span>\n        </div>\n        <div class=\"bar-container\">\n          <div class=\"bar-track\"><div class=\"bar-fill\" style=\"width:0%;background:#ffcb05\"></div></div>\n          <div class=\"d3t-value\">— D³T</div>\n        </div>\n        <div class=\"specs-row\"><div>DPS: <span>—</span></div><div>TDO: <span>—</span></div></div>\n      </div>\n\n    </div>\n  </div>\n</div>",
+                "editor": {
+                  "format": "auto",
+                  "language": "html"
+                },
+                "editors": [
+                  "styles",
+                  "afterRender"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "*, *::before, *::after { box-sizing: border-box !important; }\n\n/* --- CONTENEDOR DE LOS COUNTERS --- */\n.counters-panel-container {\n  width: 100% !important;\n  height: 100% !important;\n  display: flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n  background-color: transparent !important;\n  box-sizing: border-box !important;\n  padding: 10px !important;\n  font-family: 'Courier New', monospace !important;\n}\n\n/* Tarjeta responsiva sin bordes pesados que abarca todo el espacio */\n.counters-card {\n  width: 100% !important; \n  background: radial-gradient(circle at 50% 50%, #2d323c 10%, #15171c 90%) !important;\n  \n  /* Sin bordes pesados de KPI */\n  border: none !important;\n  outline: none !important;\n  \n  border-radius: 12px !important;\n  padding: 16px !important;\n  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;\n  box-sizing: border-box !important;\n  position: relative !important;\n  overflow: hidden !important;\n}\n\n/* ==========================================================================\n   AQUÍ ESTÁ: La Pokébola flotando por encima con z-index y gradiente corregidos\n   ========================================================================== */\n.counters-card::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -30px !important;\n  bottom: -30px !important;\n  width: 150px !important;\n  height: 150px !important;\n  \n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 50%, rgba(255, 255, 255, 0.08) 50.5%) !important;\n              \n  border: 2px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important;\n  z-index: 3 !important; /* Salta al frente por encima de las filas de la lista */\n  pointer-events: none !important;\n}\n\n.counters-header {\n  border-bottom: 2px solid #ffcb05 !important;\n  padding-bottom: 8px !important;\n  margin-bottom: 16px !important;\n  display: flex !important;\n  justify-content: space-between !important;\n  align-items: center !important;\n  z-index: 2 !important;\n  position: relative !important;\n}\n\n.counters-title {\n  font-size: clamp(10px, 1.8vw, 13px) !important; \n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1.5px !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n}\n\n.counters-subtitle {\n  font-size: 10px !important;\n  color: #9ca3af !important;\n  font-weight: 800 !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.5px !important;\n}\n\n.counters-list {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 12px !important;\n  counter-reset: rank-counter !important;\n  z-index: 2 !important;\n  position: relative !important;\n}\n\n/* Filas individuales fluidas */\n.counter-item {\n  display: flex !important;\n  flex-direction: column !important;\n  background: linear-gradient(135deg, #1e293b, #0f172a, #334155) !important;\n  border: 1px solid rgba(255, 255, 255, 0.05) !important;\n  border-radius: 8px !important;\n  padding: 10px 14px !important;\n  position: relative !important;\n  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6) !important;\n  cursor: pointer !important;\n  user-select: none !important;\n  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;\n  z-index: 2 !important; /* Mantiene la fila interactiva por debajo del reflejo pero responsiva */\n}\n\n.counter-item:hover {\n  border-color: #ffcb05 !important;\n  transform: translateY(-2px) !important;\n  box-shadow: 0 4px 12px rgba(255, 203, 5, 0.15), inset 0 0 10px rgba(0, 0, 0, 0.6) !important;\n}\n\n.counter-item:active {\n  transform: translateY(1px) !important;\n}\n\n.counter-row-header {\n  display: flex !important;\n  justify-content: space-between !important;\n  align-items: center !important;\n  margin-bottom: 6px !important;\n}\n\n.counter-name-box {\n  display: flex !important;\n  align-items: center !important;\n  gap: 8px !important;\n}\n\n.counter-name-box::before {\n  counter-increment: rank-counter !important;\n  content: \"#\" counter(rank-counter) !important;\n  font-size: 11px !important;\n  font-weight: 900 !important;\n  color: #111113 !important;\n  background: #ffcb05 !important;\n  padding: 2px 6px !important;\n  border-radius: 4px !important;\n  box-shadow: 1px 1px 0px #000 !important;\n}\n\n.counter-name {\n  font-size: clamp(11px, 1.8vw, 14px) !important;\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  text-shadow: 1px 1px 1px #000 !important;\n}\n\n.type-badge {\n  font-size: 8.5px !important;\n  font-weight: 900 !important;\n  padding: 3px 9px !important;\n  border-radius: 6px !important;\n  text-transform: uppercase !important;\n  color: #ffffff !important;\n  letter-spacing: 0.5px !important;\n  border: 1px solid rgba(255, 255, 255, 0.2) !important;\n  box-shadow: 1.5px 1.5px 0px #000 !important;\n}\n\n.bar-container {\n  display: flex !important;\n  align-items: center !important;\n  gap: 12px !important;\n  width: 100% !important;\n}\n\n.bar-track {\n  flex-grow: 1 !important;\n  height: 14px !important;\n  background-color: rgba(255, 255, 255, 0.04) !important;\n  border-radius: 9999px !important;\n  position: relative !important;\n  border: none !important;\n  overflow: hidden !important;\n}\n\n.bar-fill {\n  height: 100% !important;\n  border-radius: 9999px !important;\n  background-color: inherit !important;\n  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;\n  box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.2) !important;\n}\n\n.d3t-value {\n  font-size: 11px !important;\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  text-shadow: 1px 1px 0px #000 !important;\n  min-width: 55px !important;\n  text-align: right !important;\n}\n\n.specs-row {\n  display: flex !important;\n  gap: 16px !important;\n  margin-top: 6px !important;\n  font-size: 9.5px !important;\n  font-weight: 900 !important;\n  color: #9ca3af !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;\n  padding-top: 6px !important;\n}\n\n.specs-row span {\n  color: #ffffff !important;\n}\n\n/* --- PALETA ELEMENTAL --- */\n.type-Fuego, .type-Fire { background-color: #f97316 !important; }\n.type-Agua, .type-Water { background-color: #3b82f6 !important; }\n.type-Planta, .type-Grass { background-color: #10b981 !important; }\n.type-Electrico, .type-Electric { background-color: #eab308 !important; color: #111113 !important; }\n.type-Dragon, .type-Dragon2 { background-color: #6366f1 !important; }\n.type-Fantasma, .type-Ghost { background-color: #8b5cf6 !important; }\n.type-Roca, .type-Rock { background-color: #ca8a04 !important; }\n.type-Lucha, .type-Fighting { background-color: #ef4444 !important; }\n.type-Psiquico, .type-Psychic { background-color: #ec4899 !important; }\n.type-Hielo, .type-Ice { background-color: #67e8f9 !important; color: #111113 !important; }\n.type-Tierra, .type-Ground { background-color: #d97706 !important; }\n.type-Volador, .type-Flying { background-color: #93c5fd !important; }\n.type-Bicho, .type-Bug { background-color: #84cc16 !important; }\n.type-Veneno, .type-Poison { background-color: #a855f7 !important; }\n.type-Siniestro, .type-Dark { background-color: #4b5563 !important; }\n.type-Acero, .type-Steel { background-color: #9ca3af !important; color: #111113 !important; }\n.type-Hada, .type-Fairy { background-color: #f472b6 !important; color: #111113 !important; }\n.type-Normal { background-color: #9ca3af !important; color: #111113 !important; }",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Detalles de counter",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "postgres",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT                                                                                      \n        dep.ataque_base,                                                                        \n        dep.defensa_base,                                                                       \n        dep.stamina_base,                                                                       \n        COALESCE((                                                                              \n            SELECT json_agg(t)                                                                  \n            FROM (                                                                              \n                SELECT                                                                          \n                    dm.nombre_ataque_rapido AS rapido,                                          \n                    dm.tipo_ataque_rapido AS \"tipoR\",                                           \n                    dm.daño_base_rapido AS \"dmgR\",                                              \n                    dm.tiene_stab_rapido AS \"stabR\",                                            \n                    dm.nombre_ataque_cargado AS cargado,                                        \n                    dm.tipo_ataque_cargado AS \"tipoC\",                                          \n                    dm.daño_base_cargado AS \"dmgC\",                                             \n                    dm.barras_energia_cargado AS barras,                                        \n                    dm.tiene_stab_cargado AS \"stabC\",                                           \n                    ROUND(CAST(AVG(h.dps) AS numeric), 2) AS avg_dps,                           \n                    ROUND(CAST(AVG(h.multiplicador_efectividad_aplicado) AS numeric), 2) AS     \n  efectividad                                                                                   \n                FROM public.hechos_simulacion_combate h                                         \n                JOIN public.dim_jefe_incursion dj ON h.id_jefe_incursion = dj.id_jefe_incursion \n                JOIN public.dim_movimientos dm ON h.id_set_movimientos_atacante = dm.           \n  id_set_movimientos                                                                            \n                WHERE h.id_especie = dep.id_especie                                             \n                  AND dj.nombre_jefe = '${Pokemon}'                                             \n                  AND h.multiplicador_efectividad_aplicado >= 1.6                               \n                GROUP BY                                                                        \n                    dm.nombre_ataque_rapido,                                                    \n                    dm.tipo_ataque_rapido,                                                      \n                    dm.daño_base_rapido,\n                    dm.tiene_stab_rapido,\n                    dm.nombre_ataque_cargado,\n                    dm.tipo_ataque_cargado,\n                    dm.daño_base_cargado,\n                    dm.barras_energia_cargado,\n                    dm.tiene_stab_cargado\n                ORDER BY avg_dps DESC\n                LIMIT 5\n            ) t\n        ), '[]'::json) AS attacks\n    FROM public.dim_especie_pokemon dep\n    WHERE dep.nombre_pokemon = REPLACE(REPLACE('${Pokemon_counter}', 'Mega ', ''), ' oscuro',   \n  '')\n    LIMIT 1;\n",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "(function () {\n  var s = context.panelData && context.panelData.series;\n  if (!s || !s.length) return;\n\n  function vl(fr, nm) {\n    if (!fr || !fr.fields) return [];\n    var f = fr.fields.find(function (x) { return x.name === nm; });\n    if (!f || f.values == null) return [];\n    var v = f.values;\n    if (Array.isArray(v)) return v;\n    var a = [], n = v.length || 0;\n    for (var i = 0; i < n; i++) a.push(v.get ? v.get(i) : v[i]);\n    return a;\n  }\n\n  var sf = s[0];\n  var atk = Number(vl(sf, 'ataque_base')[0]) || 0;\n  var def = Number(vl(sf, 'defensa_base')[0]) || 0;\n  var sta = Number(vl(sf, 'stamina_base')[0]) || 0;\n  var attacksRaw = vl(sf, 'attacks')[0];\n  var attacks = [];\n\n  try {\n    attacks = typeof attacksRaw === 'string' ? JSON.parse(attacksRaw) : (attacksRaw || []);\n  } catch (e) {\n    console.error(\"Error parseando ataques:\", e);\n  }\n\n  /* --- Pills --- */\n  var pills = context.element.querySelector('.sp-pills');\n  if (pills) {\n    pills.innerHTML =\n      '<div class=\"sp-pill atk-p\"><span>ATK</span> <span>' + atk + '</span></div>' +\n      '<div class=\"sp-pill def-p\"><span>DEF</span> <span>' + def + '</span></div>' +\n      '<div class=\"sp-pill sta-p\"><span>STA</span> <span>' + sta + '</span></div>';\n  }\n\n  /* --- Canvas Radar --- */\n  var canvas = context.element.querySelector('#sp-canvas');\n  if (canvas && canvas.getContext) {\n    var ctx = canvas.getContext('2d');\n    var W = 140, H = 140, cx = 70, cy = 72, R = 44;\n    var axes = [\n      { label: 'ATK', val: atk, max: 370, angle: -Math.PI / 2, color: '#ff8800' },\n      { label: 'DEF', val: def, max: 340, angle: Math.PI / 6, color: '#4488ff' },\n      { label: 'STA', val: sta, max: 500, angle: 5 * Math.PI / 6, color: '#44cc44' }\n    ];\n\n    function pt(r, a) {\n      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };\n    }\n\n    ctx.clearRect(0, 0, W, H);\n\n    // Redes concéntricas\n    for (var lv = 1; lv <= 4; lv++) {\n      ctx.beginPath();\n      var rr = R * lv / 4;\n      ctx.moveTo(pt(rr, axes[0].angle).x, pt(rr, axes[0].angle).y);\n      for (var ai = 1; ai < axes.length; ai++) {\n        var p = pt(rr, axes[ai].angle);\n        ctx.lineTo(p.x, p.y);\n      }\n      ctx.closePath();\n      ctx.strokeStyle = 'rgba(255, 255, 255, ' + (0.05 + lv * 0.03) + ')';\n      ctx.lineWidth = 0.8;\n      ctx.stroke();\n    }\n\n    // Ejes radiales\n    axes.forEach(function (a) {\n      var p = pt(R, a.angle);\n      ctx.beginPath();\n      ctx.moveTo(cx, cy);\n      ctx.lineTo(p.x, p.y);\n      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';\n      ctx.lineWidth = 1;\n      ctx.stroke();\n    });\n\n    // Polígono de poder\n    ctx.beginPath();\n    axes.forEach(function (a, i) {\n      var r = R * Math.min(a.val / a.max, 1);\n      var p = pt(r, a.angle);\n      if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);\n    });\n    ctx.closePath();\n    ctx.fillStyle = 'rgba(255, 165, 0, 0.25)';\n    ctx.fill();\n    ctx.strokeStyle = '#ffcb05';\n    ctx.lineWidth = 1.8;\n    ctx.stroke();\n\n    // Nodos y etiquetas de texto\n    axes.forEach(function (a) {\n      var r = R * Math.min(a.val / a.max, 1);\n      var p = pt(r, a.angle);\n\n      ctx.beginPath();\n      ctx.arc(p.x, p.y, 3.5, 0, 2 * Math.PI);\n      ctx.fillStyle = a.color;\n      ctx.fill();\n      ctx.strokeStyle = '#fff';\n      ctx.lineWidth = 1;\n      ctx.stroke();\n\n      var lp = pt(R + 14, a.angle);\n      ctx.font = 'bold 9px \"Courier New\", monospace';\n      ctx.fillStyle = a.color;\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'middle';\n      ctx.fillText(a.label, lp.x, lp.y - 4);\n\n      ctx.font = '8px \"Courier New\", monospace';\n      ctx.fillStyle = '#ffe066';\n      ctx.fillText(a.val, lp.x, lp.y + 6);\n    });\n  }\n\n  /* --- Attacks List --- */\n  var el = context.element.querySelector('.sp-moves');\n  if (!el) return;\n  if (!attacks || !attacks.length) {\n    el.innerHTML = '<div class=\"sp-nd\">Sin movimientos superefectivos (>= 1.6x)</div>';\n    return;\n  }\n\n  var html = '';\n  for (var i = 0; i < attacks.length; i++) {\n    var a = attacks[i];\n    var dps = a.avg_dps ? parseFloat(a.avg_dps).toFixed(1) : '—';\n    var bars = a.barras ? '▊'.repeat(Math.min(parseInt(a.barras), 3)) : '';\n    var efec = a.efectividad ? 'x' + parseFloat(a.efectividad).toFixed(2) : '';\n\n    html += '<div class=\"atk-card\"><div class=\"atk-rk\">#' + (i + 1) + '</div>';\n    html += '<div class=\"atk-mv\">';\n\n    // Fila del Ataque Rápido\n    html += '<div class=\"mv\">' +\n      '<span class=\"mv-t t-' + a.tipoR + '\">' + a.tipoR + '</span>' +\n      '<span class=\"mv-n\">' + a.rapido + '</span>' +\n      '<span class=\"mv-d\">⚡' + a.dmgR + '</span>' +\n      (a.stabR ? '<span class=\"stab\">STAB</span>' : '') +\n      '</div>';\n\n    // Fila del Ataque Cargado (con indicador de efectividad)\n    html += '<div class=\"mv\">' +\n      '<span class=\"mv-t t-' + a.tipoC + '\">' + a.tipoC + '</span>' +\n      '<span class=\"mv-n\">' + a.cargado + '</span>' +\n      '<span class=\"mv-d\">💥' + a.dmgC + '</span>' +\n      (bars ? '<span class=\"enb\">' + bars + '</span>' : '') +\n      (a.stabC ? '<span class=\"stab\">STAB</span>' : '') +\n      (efec ? '<span class=\"efec-badge\">' + efec + '</span>' : '') +\n      '</div>';\n\n    html += '</div><div class=\"atk-dps\">' + dps + '<br><span class=\"dps-l\">DPS</span></div></div>';\n  }\n  el.innerHTML = html;\n})();",
+                "content": "<div class=\"sp-container-col\">\n  <!-- Sección de Stats (Columna Superior) -->\n  <div class=\"sp-section\">\n    <div class=\"sp-title\">Stats Base</div>\n    <div class=\"sp-stats-content\">\n      <div class=\"sp-radar-wrap\">\n        <canvas id=\"sp-canvas\" width=\"140\" height=\"140\"></canvas>\n      </div>\n      <div class=\"sp-pills\"></div>\n    </div>\n  </div>\n\n  <hr class=\"sp-divider\" />\n\n  <!-- Sección de Ataques (Columna Inferior) -->\n  <div class=\"sp-section\">\n    <div class=\"sp-title\">Mejores Ataques Súper Efectivos</div>\n    <div class=\"sp-moves\"></div>\n  </div>\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<div class=\"sp-container-col\" style=\"align-items:center;justify-content:center;\">\n  <div class=\"sp-section\" style=\"align-items:center;text-align:center;gap:16px;\">\n    <div class=\"sp-title\" style=\"border:none;font-size:12px;\">← Selecciona un Counter</div>\n    <div style=\"font-size:40px;opacity:0.15;line-height:1;\">⚔️</div>\n    <div style=\"font-size:9px;color:#9ca3af;font-family:'Courier New',monospace;line-height:1.6;\">\n      Haz clic en un Pokémon del panel<br>\n      <span style=\"color:#ffcb05;\">Top 6 Counters</span> para ver<br>\n      sus stats y mejores ataques.\n    </div>\n  </div>\n</div>",
+                "editor": {
+                  "format": "auto",
+                  "language": "markdown"
+                },
+                "editors": [
+                  "afterRender",
+                  "styles"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "*, *::before, *::after { box-sizing: border-box !important; }\n\n/* --- CONTENEDOR DE STATS Y MOVES RESPONSIVO --- */\n.sp-container-col {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 10px !important;\n  padding: 16px !important;\n  height: 100% !important;\n  box-sizing: border-box !important;\n  font-family: 'Courier New', monospace !important;\n  background: radial-gradient(circle at 50% 50%, #2d323c 10%, #15171c 90%) !important;\n  \n  /* SE ELIMINAN LOS BORDES Y OUTLINES DE KPI */\n  border: none !important;\n  outline: none !important;\n  \n  /* AHORA ES COMPLETAMENTE FLUIDO Y RESPONDE AL ENTORNO */\n  border-radius: 12px !important; \n  width: 100% !important; \n  max-width: 100% !important; \n  margin: 0 !important; \n  overflow-y: auto !important;\n  position: relative !important;\n}\n\n/* ==========================================================================\n   AQUÍ ESTÁ: Icono de Pokébola de Fondo con Z-Index corregido al frente\n   ========================================================================== */\n.sp-container-col::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -25px !important;\n  bottom: -25px !important;\n  width: 130px !important;\n  height: 130px !important;\n  \n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 50%, rgba(255, 255, 255, 0.08) 50.5%) !important;\n              \n  border: 2px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important;\n  z-index: 3 !important; /* Pasa adelante de las tarjetas de movimientos */\n  pointer-events: none !important;\n}\n\n.sp-section {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 8px !important;\n  width: 100% !important;\n  position: relative !important;\n  z-index: 2 !important;\n}\n\n.sp-title {\n  color: #ffe066 !important;\n  font-size: 13px !important; /* Letra grande */\n  font-weight: bold !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1px !important;\n  border-bottom: 1px solid rgba(255,220,0,0.3) !important;\n  padding-bottom: 5px !important;\n  width: 100% !important;\n  text-shadow: 0 0 6px rgba(255,220,0,0.5) !important;\n  margin-bottom: 6px !important;\n}\n\n.sp-stats-content {\n  display: flex !important;\n  align-items: center !important;\n  justify-content: space-around !important;\n  gap: 12px !important;\n  width: 100% !important;\n}\n\n.sp-radar-wrap {\n  display: flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n  flex-shrink: 0 !important;\n}\n\n.sp-pills {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 6px !important;\n  width: 130px !important;\n}\n\n.sp-pill {\n  font-size: 11px !important; /* Letra grande */\n  font-weight: bold !important;\n  padding: 5px 10px !important;\n  border-radius: 8px !important;\n  letter-spacing: 0.5px !important;\n  display: flex !important;\n  justify-content: space-between !important;\n  box-shadow: inset 0 0 6px rgba(0,0,0,0.5) !important;\n}\n\n.atk-p { background: rgba(255,136,0,0.15) !important; color: #ff9900 !important; border: 1px solid #ff8800 !important; }\n.def-p { background: rgba(68,136,255,0.15) !important; color: #66aaff !important; border: 1px solid #4488ff !important; }\n.sta-p { background: rgba(68,204,68,0.15) !important; color: #66cc66 !important; border: 1px solid #44cc44 !important; }\n\n.sp-divider {\n  border: 0 !important;\n  border-top: 1px dashed rgba(255, 224, 102, 0.25) !important;\n  margin: 10px 0 !important;\n  width: 100% !important;\n  position: relative !important;\n  z-index: 2 !important;\n}\n\n.sp-moves {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 6px !important;\n  position: relative !important;\n  z-index: 2 !important;\n}\n\n.atk-card {\n  display: flex !important;\n  align-items: center !important;\n  gap: 8px !important;\n  background: rgba(255,255,255,0.03) !important;\n  border: 1px solid rgba(255,255,255,0.05) !important;\n  border-radius: 6px !important;\n  padding: 8px 10px !important;\n}\n\n.atk-rk {\n  color: #ffe066 !important;\n  font-size: 13px !important; /* Letra grande */\n  font-weight: bold !important;\n  width: 22px !important;\n  flex-shrink: 0 !important;\n}\n\n.atk-mv {\n  flex: 1 !important;\n  min-width: 0 !important;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 4px !important;\n}\n\n.mv {\n  display: flex !important;\n  align-items: center !important;\n  gap: 6px !important;\n}\n\n.mv-t {\n  font-size: 9px !important; /* Letra grande */\n  padding: 2px 5px !important;\n  border-radius: 3px !important;\n  color: #fff !important;\n  font-weight: bold !important;\n  text-transform: uppercase !important;\n  flex-shrink: 0 !important;\n  width: 50px !important;\n  text-align: center !important;\n}\n\n.mv-n {\n  font-size: 12px !important; /* Letra grande */\n  color: #eee !important;\n  white-space: nowrap !important;\n  overflow: hidden !important;\n  text-overflow: ellipsis !important;\n  max-width: 140px !important;\n}\n\n.mv-d {\n  font-size: 10px !important; /* Letra grande */\n  color: #999 !important;\n  font-weight: bold !important;\n  flex-shrink: 0 !important;\n}\n\n.enb {\n  font-size: 11px !important; /* Letra grande */\n  color: #55ccff !important;\n  letter-spacing: -1px !important;\n  font-weight: bold !important;\n}\n\n.stab {\n  font-size: 9px !important; /* Letra grande */\n  background: #ffa500 !important;\n  color: #000 !important;\n  padding: 1.5px 4px !important;\n  border-radius: 2px !important;\n  font-weight: bold !important;\n  flex-shrink: 0 !important;\n}\n\n.efec-badge {\n  font-size: 9px !important; /* Letra grande */\n  background: rgba(57, 255, 20, 0.15) !important;\n  color: #39ff14 !important;\n  border: 1px solid #39ff14 !important;\n  padding: 1.5px 4px !important;\n  border-radius: 2px !important;\n  font-weight: bold !important;\n  flex-shrink: 0 !important;\n  text-shadow: 0 0 4px #39ff14 !important;\n}\n\n.atk-dps {\n  font-size: 14px !important; /* Letra grande */\n  color: #ff5555 !important;\n  font-weight: bold !important;\n  text-align: right !important;\n  white-space: nowrap !important;\n  flex-shrink: 0 !important;\n  width: 60px !important;\n  line-height: 1.1 !important;\n}\n\n.dps-l {\n  font-size: 10px !important; /* Letra grande */\n  color: #888 !important;\n  font-weight: normal !important;\n}\n\n.sp-nd {\n  color: #888 !important;\n  font-size: 12px !important;\n  padding: 14px !important;\n  text-align: center !important;\n  width: 100% !important;\n}\n\n/* --- MEDALLAS ELEMENTALES --- */\n.t-Normal{background:#8a8a6a}.t-Fuego,.t-Fire{background:#e25822}.t-Agua,.t-Water{background:#1a6fbc}\n.t-Planta,.t-Grass{background:#5d9e4f}.t-Electrico,.t-Electric{background:#d4ac00;color:#111!important}\n.t-Hielo,.t-Ice{background:#4ab8c4}.t-Lucha,.t-Fighting{background:#8c3224}.t-Veneno,.t-Poison{background:#8b3fa8}\n.t-Tierra,.t-Ground{background:#b4883c}.t-Volador,.t-Flying{background:#6070c0}.t-Psiquico,.t-Psychic{background:#c0396b}\n.t-Bicho,.t-Bug{background:#7a8e20}.t-Roca,.t-Rock{background:#927c40}.t-Fantasma,.t-Ghost{background:#5a4870}\n.t-Dragon{background:#4040c0}.t-Siniestro,.t-Dark{background:#3d3244}.t-Acero,.t-Steel{background:#787888}\n.t-Hada,.t-Fairy{background:#d685ad}",
+                "wrap": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Tasa de Captura",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "dataset": "postgres",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": " WITH base_data AS (                                                                         \n        SELECT                                                                                  \n            dj.nombre_jefe,                                                                     \n            CASE                                                                                \n                WHEN dep.tasa_captura_base <= 5 THEN 0.01674                                    \n                WHEN dep.tasa_captura_base <= 45 THEN 0.10                                      \n                WHEN dep.tasa_captura_base <= 120 THEN 0.20                                     \n                ELSE 0.40                                                                       \n            END AS p_base                                                                       \n        FROM public.dim_jefe_incursion dj                                                       \n        JOIN public.dim_recompensas_evento dr ON dj.id_recompensa_evento = dr.                  \n  id_recompensa_evento                                                                          \n                                                                                                \n        -- FIX: Match inteligente para formas Regionales, Oscuras, Megas, etc.                  \n        JOIN public.dim_especie_pokemon dep                                                     \n          ON dj.nombre_jefe ILIKE '%' || dep.nombre_pokemon || '%'                              \n                                                                                                \n        -- FIX: Volvemos a ignorar mayúsculas/minúsculas y eliminamos restricción 'Ongoing'     \n        WHERE LOWER(dj.nombre_jefe) = LOWER('${Pokemon}')                                       \n                                                                                                \n        -- Seleccionamos el match más largo (Ej: Evita confundir Mew con Mewtwo)                \n        ORDER BY LENGTH(dep.nombre_pokemon) DESC                                                \n        LIMIT 1                                                                                 \n    ),                                                                                          \n    multipliers(condicion, baya_m, curva_m) AS (                                                \n        VALUES                                                                                  \n            ('1. Sin Baya (Normal)'::text, 1.0::numeric, 1.0::numeric),                         \n            ('2. Sin Baya (Curva)'::text, 1.0::numeric, 1.7::numeric),                          \n            ('3. Frambu (Normal)'::text, 1.5::numeric, 1.0::numeric),                           \n            ('4. Frambu (Curva)'::text, 1.5::numeric, 1.7::numeric),                            \n            ('5. Pinia Plata (Normal)'::text, 1.8::numeric, 1.0::numeric),\n            ('6. Pinia Plata (Curva)'::text, 1.8::numeric, 1.7::numeric),\n            ('7. Dorada (Normal)'::text, 2.5::numeric, 1.0::numeric),\n            ('8. Dorada (Curva)'::text, 2.5::numeric, 1.7::numeric)\n    )\n    SELECT \n        b.nombre_jefe AS pokemon_analizado,\n        m.condicion AS objeto_estilo,\n        ROUND(CAST((1 - POWER(1 - b.p_base, m.baya_m * m.curva_m * 1.0)) * 100 AS numeric), 2)  \n  AS p_normal,\n        ROUND(CAST((1 - POWER(1 - b.p_base, m.baya_m * m.curva_m * 1.15)) * 100 AS numeric), 2) \n  AS p_nice,\n        ROUND(CAST((1 - POWER(1 - b.p_base, m.baya_m * m.curva_m * 1.5)) * 100 AS numeric), 2)  \n  AS p_great,\n        ROUND(CAST((1 - POWER(1 - b.p_base, m.baya_m * m.curva_m * 1.85)) * 100 AS numeric), 2) \n  AS p_excellent\n    FROM multipliers m\n    CROSS JOIN base_data b\n    ORDER BY m.condicion;\n  \n",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "",
+                "content": "<div class=\"poke-analysis-container-horizontal\">\n  <div class=\"analysis-master-card-horizontal\">\n\n    <!-- CABECERA GENERAL -->\n    <div class=\"analysis-header\">\n      <div class=\"analysis-title\">SISTEMA DE RATIO DE CAPTURA</div>\n      <!-- Tomamos el nombre del Pokémon directamente de la primera fila -->\n      <div class=\"analysis-subtitle\">{{data.[0].pokemon_analizado}}</div>\n    </div>\n\n    <!-- CONTENEDOR SPLIT HORIZONTAL -->\n    <div class=\"analysis-split-layout\">\n\n      <!-- COLUMNA IZQUIERDA: MATRIZ DE PROBABILIDADES EXACTAS -->\n      <div class=\"layout-column table-column-side\">\n        <div class=\"section-minor-title\">MATRIZ DE PROBABILIDADES EXACTAS</div>\n        <div class=\"catch-table-wrapper\">\n          <table class=\"catch-table\">\n            <thead>\n              <tr>\n                <th>Condición</th>\n                <th>Normal</th>\n                <th>Good</th>\n                <th>Great</th>\n                <th>Excellent</th>\n              </tr>\n            </thead>\n            <tbody>\n              {{#each data}}\n              <tr>\n                <td class=\"condition-cell\">\n                  <!-- Corregido: Quitamos el inline de alto contraste para dar jerarquía visual limpia -->\n                  <span class=\"throw-type\">\n                    {{objeto_estilo}}\n                  </span>\n                </td>\n                <td>\n                  <div class=\"cell-pill\">\n                    {{p_normal}}%\n                    <div class=\"mini-bar\">\n                      <div class=\"mini-fill\" style=\"width: {{p_normal}}%;\"></div>\n                    </div>\n                  </div>\n                </td>\n                <td>\n                  <div class=\"cell-pill\">\n                    {{p_nice}}%\n                    <div class=\"mini-bar\">\n                      <div class=\"mini-fill\" style=\"width: {{p_nice}}%;\"></div>\n                    </div>\n                  </div>\n                </td>\n                <td>\n                  <div class=\"cell-pill\">\n                    {{p_great}}%\n                    <div class=\"mini-bar\">\n                      <div class=\"mini-fill\" style=\"width: {{p_great}}%;\"></div>\n                    </div>\n                  </div>\n                </td>\n                <td>\n                  <div class=\"cell-pill highlighting-max\">\n                    {{p_excellent}}%\n                    <div class=\"mini-bar\">\n                      <div class=\"mini-fill\" style=\"width: {{p_excellent}}%;\"></div>\n                    </div>\n                  </div>\n                </td>\n              </tr>\n              {{/each}}\n            </tbody>\n          </table>\n        </div>\n      </div>\n\n      <!-- DIVISOR VERTICAL INTERNO -->\n      <div class=\"analysis-layout-divider\"></div>\n\n      <!-- COLUMNA DERECHA: GRÁFICO DE BARRAS AGRUPADAS -->\n      <div class=\"layout-column chart-column-side\">\n        <div class=\"section-minor-title\">RENDIMIENTO MAX COMPENSADO (EXCELLENT)</div>\n\n        <div class=\"poke-chart-list\">\n          {{#each data}}\n          <div class=\"baya-group-box\">\n            <div class=\"baya-group-header\">\n              <!-- Corregido: Reemplazado badge genérico por un texto sutil con buena fuente -->\n              <span class=\"baya-group-title\" style=\"font-size: 11px; font-weight: 800; color: #9ca3af; text-transform: uppercase;\">\n                {{objeto_estilo}}\n              </span>\n            </div>\n            <div class=\"chart-row-item\">\n              <div class=\"row-info-label\">Excelente</div>\n              <div class=\"bar-gauge-track\">\n                <!-- Como ya es un número puro, la barra gráfica se estira EXACTAMENTE lo que vale el porcentaje de captura -->\n                <!-- Multiplicamos por 1.5 solo para dar mayor impacto visual si los ratios base son muy bajos (ej: Kyogre) -->\n                <div class=\"bar-gauge-fill rate-god\" style=\"width: calc({{p_excellent}}% * 1.5); max-width: 100%;\">\n                </div>\n              </div>\n              <div class=\"rate-max-value highlighting-txt\">\n                {{p_excellent}}%\n              </div>\n            </div>\n          </div>\n          {{/each}}\n        </div>\n      </div>\n\n    </div>\n\n  </div>\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<div class=\"sp-nd\"\n  style=\"width: 100%; padding: 40px 20px; text-align: center; font-size: 13px; color: #888; font-weight: bold; letter-spacing: 0.5px;\">\n  ESPERANDO CONSULTA DE INCURSIÓN TÁCTICA...\n</div>",
+                "editor": {
+                  "format": "auto",
+                  "language": "html"
+                },
+                "editors": [
+                  "styles",
+                  "afterRender"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "/* --- CONTENEDOR GENERAL HORIZONTAL --- */\n.poke-analysis-container-horizontal {\n  width: 100% !important;\n  height: 100% !important;\n  display: flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n  background-color: transparent !important;\n  box-sizing: border-box !important;\n  padding: 12px !important;\n  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;\n}\n\n/* Macro Tarjeta Libre de Bordes (Estilo Dashboard Integrado y 100% Fluido) */\n.analysis-master-card-horizontal {\n  width: 100% !important;\n  max-width: 100% !important; /* Ahora abarca todo el espacio disponible */\n  background: radial-gradient(circle at 50% 5%, #2d323c 10%, #15171c 90%) !important; \n  \n  /* SE ELIMINAN LOS BORDES Y OUTLINES DE KPI */\n  border: none !important; \n  outline: none !important; \n  \n  border-radius: 12px !important;\n  padding: 22px !important;\n  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;\n  position: relative !important;\n  overflow: hidden !important;\n  box-sizing: border-box !important;\n}\n\n/* ==========================================================================\n   AQUÍ ESTÁ: La Pokébola flotando por encima con z-index y gradiente corregidos\n   ========================================================================== */\n.analysis-master-card-horizontal::after {\n  content: \"\" !important;\n  position: absolute !important;\n  right: -30px !important;\n  top: -30px !important;\n  width: 180px !important;\n  height: 180px !important;\n  \n  background: radial-gradient(circle, transparent 18%, #15171c 18.5%, #15171c 26%, transparent 26.5%),\n              linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 50%, rgba(255, 255, 255, 0.08) 50.5%) !important;\n              \n  border: 2px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 50% !important;\n  opacity: 0.8 !important;\n  z-index: 3 !important; /* Salta al frente por encima de las columnas */\n  pointer-events: none !important;\n}\n\n/* Cabecera Principal */\n.analysis-header {\n  border-bottom: 2px solid #ffcb05 !important;\n  padding-bottom: 10px !important;\n  margin-bottom: 22px !important;\n  z-index: 2 !important;\n  position: relative !important;\n}\n\n.analysis-title {\n  font-size: 16px !important; /* Letra grande */\n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1.5px !important;\n  text-shadow: 1.5px 1.5px 0px #111 !important;\n}\n\n.analysis-subtitle {\n  font-size: 14px !important; /* Letra grande */\n  color: #ffffff !important;\n  font-weight: 800 !important;\n  letter-spacing: 0.5px !important;\n}\n\n/* --- GRID / SPLIT LAYOUT EN PARALELO --- */\n.analysis-split-layout {\n  display: flex !important;\n  flex-direction: row !important;\n  gap: 24px !important;\n  z-index: 2 !important;\n  position: relative !important;\n  align-items: stroke !important;\n}\n\n.layout-column {\n  flex: 1 !important;\n  display: flex !important;\n  flex-direction: column !important;\n  min-width: 0 !important;\n}\n\n/* Divisor Vertical Interno */\n.analysis-layout-divider {\n  width: 2px !important;\n  align-self: stretch !important;\n  background-color: rgba(255, 255, 255, 0.05) !important;\n  border-right: 1px solid rgba(0, 0, 0, 0.3) !important;\n}\n\n.section-minor-title {\n  font-size: 12px !important; /* Letra grande */\n  font-weight: 900 !important;\n  color: #ffcb05 !important;\n  margin-bottom: 16px !important;\n  letter-spacing: 0.5px !important;\n  text-transform: uppercase !important;\n}\n\n/* --- SECCIÓN 1: COMPONENTE TABLA --- */\n.catch-table-wrapper {\n  width: 100% !important;\n  overflow-x: auto !important;\n  border-radius: 8px !important;\n}\n\n.catch-table {\n  width: 100% !important;\n  border-collapse: collapse !important;\n  text-align: left !important;\n  background-color: rgba(0, 0, 0, 0.15) !important;\n}\n\n.catch-table th {\n  background-color: #111113 !important;\n  color: #ffcb05 !important;\n  font-size: 11px !important; /* Letra grande */\n  font-weight: 900 !important;\n  text-transform: uppercase !important;\n  padding: 12px !important;\n  border-bottom: 2px solid #ffcb05 !important;\n}\n\n.catch-table td {\n  padding: 10px 12px !important; /* Espaciado cómodo */\n  border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;\n  vertical-align: middle !important;\n}\n\n.condition-cell {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 4px !important;\n  min-width: 110px !important;\n}\n\n.throw-type {\n  font-size: 11px !important; /* Letra grande */\n  font-weight: 800 !important;\n  color: #9ca3af !important;\n  text-transform: uppercase !important;\n}\n\n.throw-type.curve { color: #3b82f6 !important; }\n\n.cell-pill {\n  background: linear-gradient(135deg, #1e293b, #0f172a) !important;\n  border: 1px solid rgba(255, 255, 255, 0.06) !important;\n  border-radius: 5px !important;\n  padding: 6px 8px !important;\n  font-size: 12px !important; /* Letra grande */\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 4px !important;\n  box-shadow: inset 0 0 4px rgba(0,0,0,0.5) !important;\n}\n\n.cell-pill.highlighting { border-color: #eab308 !important; color: #facc15 !important; }\n.cell-pill.highlighting-max { border-color: #10b981 !important; color: #10b981 !important; }\n\n.mini-bar {\n  width: 100% !important;\n  height: 4px !important;\n  background-color: rgba(255, 255, 255, 0.05) !important;\n  border-radius: 999px !important;\n  overflow: hidden !important;\n}\n\n.mini-fill { height: 100% !important; background-color: #ffcb05 !important; }\n.highlighting .mini-fill { background-color: #eab308 !important; }\n.highlighting-max .mini-fill { background-color: #10b981 !important; }\n\n/* --- SECCIÓN 2: COMPONENTE GRAFICO --- */\n.poke-chart-list {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 10px !important;\n}\n\n.baya-group-box {\n  display: flex !important;\n  flex-direction: column !important;\n  background: linear-gradient(135deg, #1e293b, #0f172a, #334155) !important;\n  border: 1px solid rgba(255, 255, 255, 0.05) !important;\n  border-radius: 8px !important;\n  padding: 10px 14px !important;\n  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6) !important;\n}\n\n.baya-group-header { margin-bottom: 6px !important; }\n\n.chart-row-item {\n  display: flex !important;\n  align-items: center !important;\n  gap: 12px !important;\n  margin-bottom: 6px !important;\n}\n\n.chart-row-item:last-child { margin-bottom: 0 !important; }\n\n.row-info-label {\n  font-size: 11px !important; /* Letra grande */\n  font-weight: 800 !important;\n  color: #9ca3af !important;\n  width: 65px !important;\n  text-transform: uppercase !important;\n}\n\n.row-info-label.curve-label { color: #3b82f6 !important; }\n\n.bar-gauge-track {\n  flex-grow: 1 !important;\n  height: 12px !important;\n  background-color: rgba(255, 255, 255, 0.04) !important;\n  border-radius: 9999px !important;\n  position: relative !important;\n  overflow: hidden !important;\n}\n\n.bar-gauge-fill {\n  height: 100% !important;\n  border-radius: 9999px !important;\n  transition: width 0.8s ease-in-out !important;\n  box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.2) !important;\n}\n\n.rate-max-value {\n  font-size: 12px !important; /* Letra grande */\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  min-width: 55px !important;\n  text-align: right !important;\n}\n\n.highlighting-txt { color: #10b981 !important; }\n\n.rate-low { background-color: #6b7280 !important; }\n.rate-mid { background-color: #f59e0b !important; }\n.rate-high { background-color: #facc15 !important; }\n.rate-god { background-color: #10b981 !important; }\n\n.catch-table-wrapper::-webkit-scrollbar { height: 4px !important; }\n.catch-table-wrapper::-webkit-scrollbar-thumb { background: rgba(254, 203, 5, 0.2) !important; border-radius: 10px !important; }\n\n/* --- RESPONSIVIDAD INTEGRADA --- */\n@media (max-width: 820px) {\n  .analysis-split-layout {\n    flex-direction: column !important;\n    gap: 18px !important;\n  }\n  .analysis-layout-divider {\n    display: none !important;\n  }\n}",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "RowsLayout",
+      "spec": {
+        "rows": [
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Incursiones y clima actual",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 19,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-1"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 19,
+                        "y": 0,
+                        "width": 5,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Detalles de la incrusion",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 13,
+                        "height": 7,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-5"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 13,
+                        "y": 0,
+                        "width": 11,
+                        "height": 11,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-10"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 7,
+                        "width": 13,
+                        "height": 11,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-2"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 13,
+                        "y": 11,
+                        "width": 11,
+                        "height": 7,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-3"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 18,
+                        "width": 24,
+                        "height": 23,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-8"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Counters",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 10,
+                        "height": 20,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-6"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 10,
+                        "y": 0,
+                        "width": 14,
+                        "height": 20,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-7"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "2026-07-14T14:57:16.707Z",
+      "to": "2026-07-18T14:57:16.707Z",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": true,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Resumen ejecutivo v2",
+    "variables": [
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "Pokemon_counter",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Counter",
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "Pokemon",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Pokemon",
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      }
+    ],
+    "preferences": {
+      "layout": {
+        "kind": "GridLayout",
+        "spec": {
+          "items": []
+        }
+      }
+    }
+  }
+}
