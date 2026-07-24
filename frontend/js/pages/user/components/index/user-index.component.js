@@ -48,11 +48,14 @@ export class UserIndexComponent extends BaseComponent {
           },
           {
             header: 'Estado',
-            render: (user) => `
-              <span class="badge bg-${user.activo ? 'success' : 'danger'}-soft text-${user.activo ? 'success' : 'danger'} small fw-semibold">
+            render: (user) => {
+              if (user.email_verified_at === null) {
+                return `<span class="badge bg-warning-soft text-warning small fw-semibold">Pendiente de Confirmación</span>`;
+              }
+              return `<span class="badge bg-${user.activo ? 'success' : 'danger'}-soft text-${user.activo ? 'success' : 'danger'} small fw-semibold">
                 ${user.activo ? 'Activo' : 'Inactivo'}
-              </span>
-            `,
+              </span>`;
+            }
           },
           {
             header: 'Creado el',
