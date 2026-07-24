@@ -3,13 +3,11 @@
 namespace Tests\Feature\Console;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class CalculateCfTest extends TestCase
 {
     use RefreshDatabase;
-
 
     public function test_calculate_cf_command_success()
     {

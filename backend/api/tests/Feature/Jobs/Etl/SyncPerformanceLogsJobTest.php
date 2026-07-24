@@ -4,14 +4,12 @@ namespace Tests\Feature\Jobs\Etl;
 
 use App\Jobs\Etl\SyncPerformanceLogsJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SyncPerformanceLogsJobTest extends TestCase
 {
     use RefreshDatabase;
-
 
     public function test_syncs_endpoints_and_logs()
     {

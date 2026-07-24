@@ -11,14 +11,12 @@ use App\Models\Territorio;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SyncFactIncidenciasJobTest extends TestCase
 {
     use RefreshDatabase;
-
 
     public function test_syncs_incidencias_and_calculates_times()
     {
