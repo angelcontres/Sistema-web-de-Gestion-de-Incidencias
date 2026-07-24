@@ -13,10 +13,16 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
+    const ENDPOINT_INCIDENTS = '/api/v1/incidents';
+
+    const ENDPOINT_ROLES = '/api/v1/roles';
+
+    const ENDPOINT_ME_MENU = '/api/v1/me/menu';
+
     // CP-S-01: Acceso sin autenticación
     public function test_cannot_access_protected_route_without_token()
     {
-        $response = $this->getJson('/api/v1/incidents');
+        $response = $this->getJson(self::ENDPOINT_INCIDENTS);
         $response->assertStatus(401);
     }
 
@@ -28,7 +34,7 @@ class AuthTest extends TestCase
         $ciudadano->roles()->sync([$rolCiudadano->id]);
 
         // Intentar acceder a rutas de administración de roles (requiere Admin)
-        $response = $this->actingAs($ciudadano)->getJson('/api/v1/roles');
+        $response = $this->actingAs($ciudadano)->getJson(self::ENDPOINT_ROLES);
 
         // Verifica si retorna 403 Forbidden
         $response->assertStatus(403);
@@ -39,7 +45,7 @@ class AuthTest extends TestCase
     {
         $response = $this->withHeaders([
             'Authorization' => 'Bearer invalid_and_manipulated_token_string',
-        ])->getJson('/api/v1/incidents');
+        ])->getJson(self::ENDPOINT_INCIDENTS);
 
         $response->assertStatus(401);
     }
@@ -57,7 +63,7 @@ class AuthTest extends TestCase
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$token,
-        ])->getJson('/api/v1/incidents');
+        ])->getJson(self::ENDPOINT_INCIDENTS);
 
         $response->assertStatus(401);
     }
@@ -83,12 +89,12 @@ class AuthTest extends TestCase
         $rolAdmin->permisos()->sync([$permisoAdmin->id]);
 
         // Admin debería ver la opción
-        $responseAdmin = $this->actingAs($admin)->getJson('/api/v1/me/menu');
+        $responseAdmin = $this->actingAs($admin)->getJson(self::ENDPOINT_ME_MENU);
         $responseAdmin->assertStatus(200);
         $dataAdmin = $responseAdmin->json('data');
 
         // Ciudadano no debería ver la opción
-        $responseCiudadano = $this->actingAs($ciudadano)->getJson('/api/v1/me/menu');
+        $responseCiudadano = $this->actingAs($ciudadano)->getJson(self::ENDPOINT_ME_MENU);
         $responseCiudadano->assertStatus(200);
         $dataCiudadano = $responseCiudadano->json('data');
 

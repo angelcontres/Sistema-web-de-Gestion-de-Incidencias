@@ -33,17 +33,8 @@ class CalculateCf extends Command
         $testMappings = $this->extractTestMappings();
 
         // 3. Leer reporte XML de PHPUnit
-        $xmlPath = base_path($this->option('xml'));
-        if (! File::exists($xmlPath)) {
-            $this->error("No se encontró el reporte XML en: {$xmlPath}. Ejecuta: php artisan test --log-junit tests/results.xml");
-
-            return 1;
-        }
-
-        $xml = simplexml_load_file($xmlPath);
-        if ($xml === false || ! isset($xml->testsuite[0])) {
-            $this->error('Formato XML no válido.');
-
+        $xml = $this->loadXmlReport($this->option('xml'));
+        if ($xml === null) {
             return 1;
         }
 
@@ -51,6 +42,46 @@ class CalculateCf extends Command
         $testResults = $this->parseXmlTestResults($xml);
 
         // 4. Calcular CF
+        [$husCubiertas, $detalleHUs] = $this->calculateCoverage($husDelSistema, $testMappings, $testResults);
+
+        $totalHus = count($husDelSistema);
+        $cf = $totalHus > 0 ? ($husCubiertas / $totalHus) * 100 : 0;
+
+        // 5. Imprimir y guardar resultados
+        $this->printCoverageReport($husCubiertas, $totalHus, $cf, $detalleHUs);
+        $this->saveMetricsToOlap($cf, $detalleHUs);
+
+        return 0;
+    }
+
+    /**
+     * Carga y valida el archivo de reporte XML.
+     */
+    private function loadXmlReport(string $relativeXmlPath): ?SimpleXMLElement
+    {
+        $xmlPath = base_path($relativeXmlPath);
+        if (! File::exists($xmlPath)) {
+            $this->error("No se encontró el reporte XML en: {$xmlPath}. Ejecuta: php artisan test --log-junit tests/results.xml");
+
+            return null;
+        }
+
+        $xml = simplexml_load_file($xmlPath);
+        if ($xml === false || ! isset($xml->testsuite[0])) {
+            $this->error('Formato XML no válido.');
+
+            return null;
+        }
+
+        return $xml;
+    }
+
+    /**
+     * Calcula la cobertura funcional para cada historia de usuario.
+     * Devuelve un array de dos elementos: [int $husCubiertas, array $detalleHUs]
+     */
+    private function calculateCoverage(array $husDelSistema, array $testMappings, array $testResults): array
+    {
         $husCubiertas = 0;
         $detalleHUs = [];
 
@@ -68,24 +99,7 @@ class CalculateCf extends Command
             }
 
             // Validar todos los tests de esta HU
-            $huAprobada = true;
-            $testsDeHu = $testMappings[$huId];
-            $motivoFallo = null;
-
-            foreach ($testsDeHu as $testName) {
-                // Si el test no está en los resultados (no se ejecutó) o no aprobó
-                if (! isset($testResults[$testName])) {
-                    $huAprobada = false;
-                    $motivoFallo = "Test no ejecutado o no encontrado en XML: {$testName}";
-                    break;
-                }
-
-                if (! $testResults[$testName]['passed']) {
-                    $huAprobada = false;
-                    $motivoFallo = "Test falló: {$testName}";
-                    break;
-                }
-            }
+            [$huAprobada, $motivoFallo] = $this->validateTestsForHu($testMappings[$huId], $testResults);
 
             if ($huAprobada) {
                 $husCubiertas++;
@@ -105,9 +119,34 @@ class CalculateCf extends Command
             }
         }
 
-        // 5. Cálculo Final y Exportación
-        $totalHus = count($husDelSistema);
-        $cf = $totalHus > 0 ? ($husCubiertas / $totalHus) * 100 : 0;
+        return [$husCubiertas, $detalleHUs];
+    }
+
+    /**
+     * Valida si todos los tests asignados a una historia de usuario fueron exitosos.
+     * Devuelve [bool $aprobada, ?string $motivoFallo]
+     */
+    private function validateTestsForHu(array $testsDeHu, array $testResults): array
+    {
+        foreach ($testsDeHu as $testName) {
+            // Si el test no está en los resultados o no aprobó
+            if (! isset($testResults[$testName])) {
+                return [false, "Test no ejecutado o no encontrado en XML: {$testName}"];
+            }
+
+            if (! $testResults[$testName]['passed']) {
+                return [false, "Test falló: {$testName}"];
+            }
+        }
+
+        return [true, null];
+    }
+
+    /**
+     * Imprime el resultado de la cobertura funcional en la consola y log de terminal.
+     */
+    private function printCoverageReport(int $husCubiertas, int $totalHus, float $cf, array $detalleHUs): void
+    {
         $cfFormatted = number_format($cf, 2);
 
         $this->comment("\n==========================================");
@@ -126,8 +165,13 @@ class CalculateCf extends Command
                 $this->error("[x] {$id}: {$info['estado']}");
             }
         }
+    }
 
-        // Guardar en esquema analítico OLAP
+    /**
+     * Guarda la métrica de cobertura y el detalle de HUs en el esquema analítico OLAP.
+     */
+    private function saveMetricsToOlap(float $cf, array $detalleHUs): void
+    {
         $now = now()->timezone('America/Guayaquil');
         $tiempoId = (int) $now->format('YmdH');
 
@@ -199,8 +243,6 @@ class CalculateCf extends Command
         }
 
         $this->info("\nMétrica de Cobertura Funcional (CF) guardada exitosamente en el esquema OLAP (fact_quality y fact_cobertura).");
-
-        return 0;
     }
 
     /**
@@ -245,7 +287,7 @@ class CalculateCf extends Command
             $content = file_get_contents($file->getRealPath());
 
             // Usamos parser simple para extraer los bloques de comentarios y el método que le sigue
-            preg_match_all('/\/\*\*([\s\S]*?)\*\/\s*public\s+function\s+(test_[a-zA-Z0-9_]+)/', $content, $matches, PREG_SET_ORDER);
+            preg_match_all('/\/\*\*(.*?)\*\/\s*public\s+function\s+(test_\w+)/s', $content, $matches, PREG_SET_ORDER);
 
             foreach ($matches as $match) {
                 $docBlock = $match[1];

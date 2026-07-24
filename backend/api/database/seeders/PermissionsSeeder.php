@@ -80,6 +80,7 @@ class PermissionsSeeder extends Seeder
             'paises' => 'País',
             'territorios' => 'Territorio',
             'direcciones' => 'Dirección',
+            'prioridades' => 'Prioridad',
         ];
         foreach ($subRecursos as $recursoSub => $nombreSingular) {
             foreach ($acciones as $verbo => $metodo) {
