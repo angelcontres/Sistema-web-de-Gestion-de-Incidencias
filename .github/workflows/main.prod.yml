@@ -45,6 +45,9 @@ jobs:
       - name: Generar clave de seguridad de Laravel
         run: docker exec sistema_laravel_prod php artisan key:generate
 
+      - name: Limpiar caché (Previene el error de correos atascados en array)
+        run: docker exec sistema_laravel_prod php artisan optimize:clear
+
       - name: Esperar a que la base de datos esté lista
         run: |
           until docker exec sistema_postgres_prod pg_isready -U angeltux; do
