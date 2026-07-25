@@ -12,36 +12,16 @@ jobs:
         run: |
           docker compose -f docker-compose.staging.yml down || true
 
-      # 2. Limpieza agresiva de archivos generados como root
-      - name: Eliminar residuos bloqueados usando Docker
-        run: |
-          if [ -d "backend/api/vendor" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
-          fi
-          if [ -d "backend/api/build" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
-          fi
-          if [ -d "frontend/coverage" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/coverage
-          fi
-          if [ -d "frontend/node_modules" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/node_modules
-          fi
-          if [ -d "grafana" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
-          fi
-          if [ -d "backend/api/tests/metrics-stg" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/tests/metrics-stg
-          fi
-          if [ -d "backend/api/storage/framework/testing/disks" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/storage/framework/testing/disks
-          fi
+      # 2. Restaurar permisos (No borra nada, pero previene errores de checkout)
+      - name: Restaurar permisos de la carpeta usando Docker
+        run: docker run --rm -v "$(pwd):/workspace" busybox chown -R $(id -u):$(id -g) /workspace
 
-      # 3. Clonar el nuevo código
+      # 3. Clonar el nuevo código sin borrar los archivos no trackeados (como storage)
       - name: Copiar el código a la VAIO
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          clean: false
 
       # 4. Configurar variables de entorno de Laravel (STAGING) usando GitHub Secrets
       - name: Configurar entorno (.env) de Staging
@@ -81,8 +61,11 @@ jobs:
         run: docker exec sistema_laravel_prod php artisan migrate --path=database/migrations/olap --force
 
       # 6. Pruebas y Cobertura
+      - name: Crear base de datos de pruebas temporal
+        run: docker exec sistema_postgres_prod psql -U angeltux -c "CREATE DATABASE testing;" || true
+
       - name: Ejecutar pruebas automatizadas (Backend)
-        run: docker exec sistema_laravel_prod php artisan test --coverage-clover build/logs/clover.xml --log-junit build/logs/junit.xml || true
+        run: docker exec -e DB_DATABASE=testing sistema_laravel_prod php artisan test --coverage-clover build/logs/clover.xml --log-junit build/logs/junit.xml || true
 
       - name: Normalizar rutas de cobertura para SonarQube
         run: docker exec sistema_laravel_prod php normalize_clover.php || true
