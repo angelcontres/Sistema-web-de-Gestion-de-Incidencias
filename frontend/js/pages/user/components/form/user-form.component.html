@@ -91,7 +91,9 @@
 
           <!-- Asignación de Roles (Drag and Drop) -->
           <div class="mb-3">
-            <label class="form-label fw-semibold text-secondary small d-block"
+            <label
+              for="rolesDisponiblesList"
+              class="form-label fw-semibold text-secondary small d-block"
               >Asignación de Roles</label
             >
             <div class="row g-2">
@@ -139,7 +141,12 @@
             <label for="territorios_select" class="form-label fw-semibold text-secondary small"
               >Cobertura Territorial (Provincias) *</label
             >
-            <select class="form-select bg-light" id="territorios_select" multiple style="height: 120px;">
+            <select
+              class="form-select bg-light"
+              id="territorios_select"
+              multiple
+              style="height: 120px"
+            >
               <!-- Se cargará dinámicamente -->
             </select>
             <div class="invalid-feedback">Debe seleccionar al menos una provincia.</div>
@@ -167,12 +174,11 @@
               class="btn btn-primary px-4 d-flex align-items-center gap-2"
               id="btnSubmit"
             >
-              <span
+              <output
                 class="spinner-border spinner-border-sm d-none"
                 id="loadingSpinner"
-                role="status"
                 aria-hidden="true"
-              ></span>
+              ></output>
               <span id="btnText">Guardar Usuario</span>
             </button>
           </div>
