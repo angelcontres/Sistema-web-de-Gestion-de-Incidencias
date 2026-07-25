@@ -179,6 +179,39 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 13,
+      "name": "fix_frontend_issues",
+      "title": "Estabilizar indice de problemas en el frontend",
+      "description": "Corregir los errores y malas practicas encontrados en el frontend",
+      "acceptance": [
+        "Usar el archivo local frontend_issues_list.json como checklist de desarrollo para resolver todas las incidencias de frontend con severidad 'MAJOR' o superior.",
+        "Ejecutar un nuevo análisis completo de SonarQube para actualizar el estado en el servidor.",
+        "Verificar la resolución de forma optimizada consultando a la API (usando `ps=1` y `severities=MAJOR,CRITICAL,BLOCKER`), asegurando que el total de issues abiertas devueltas sea exactamente 0.",
+        "Evitar introducir nuevos code smells, duplicaciones de código o funciones redundantes (deuda técnica).",
+        "Refactorizar funciones excesivamente complejas aplicando modularización (divide y vencerás)."
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 14,
+      "name": "cover_frontend_test",
+      "title": "Cobertura de pruebas en el frontend",
+      "description": "Completar los archivos de prueba del frontend que tengan cobertura menor al 80%.",
+      "acceptance": [
+        "Primero hay que listar todos los archivos de la ruta frontend/js, y localizar los que tengan cobertura menor al 80%",
+        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se completarán.",
+        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se ejecutarán.",
+        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se verificarán.",
+        "Debes asegurarte de que la cobertura llegue al menos al 95% para poder pasar al siguiente archivo",
+        "Debes evitar code smells, duplicaciones de código y funciones con muchos 'return' (evitar deuda tecnica).",
+        "Si hay funciones con demasiadas lineas, descomponlas, aplica divide y vencerás",
+        "Implementa tests unitarios para funciones específicas, para evitar lineas rezagadas que puedan no cubrir el objetivo"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
     }
   ]
 }

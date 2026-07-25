@@ -20,7 +20,6 @@ export class ToastComponent extends BaseComponent {
     const iconEl = this.querySelector('#toast-icon');
     const titleEl = this.querySelector('#toast-title');
     const messageEl = this.querySelector('#toast-message');
-    const closeBtn = this.querySelector('#toast-btn-close');
 
     let icon;
     let colorClass;
