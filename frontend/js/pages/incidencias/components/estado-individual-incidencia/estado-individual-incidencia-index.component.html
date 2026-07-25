@@ -16,7 +16,9 @@
     <div>
       <!-- Title & Priority -->
       <div class="d-flex align-items-center mb-2">
-        <h2 class="fw-bold text-dark mb-0 me-3" id="lbl-descripcion-header"></h2>
+        <h2 class="fw-bold text-dark mb-0 me-3" id="lbl-descripcion-header">
+          Descripción de la incidencia
+        </h2>
         <span id="lbl-prioridad"></span>
       </div>
 
@@ -35,9 +37,9 @@
   </div>
 </div>
 
-<div class="row h-100 g-4">
+<div class="row g-4">
   <!-- PANEL IZQUIERDO: Chat y Comentarios y Adjuntos -->
-  <div class="col-lg-8 d-flex flex-column h-100">
+  <div class="col-lg-9 d-flex flex-column">
     <!-- Chat Card -->
     <div
       class="premium-card d-flex flex-column mb-4"
@@ -51,12 +53,11 @@
 
       <!-- Contenedor del chat con scroll -->
       <div
-        class="card-body p-4 d-flex flex-column gap-3 overflow-auto chat-container flex-grow-1"
+        class="card-body border rounded-3 bg-light p-4 d-flex flex-column gap-3 overflow-auto flex-grow-1"
         id="chat-container"
-        style="background-color: #f8f9fa"
       >
         <div class="text-center d-none" id="loading-more">
-          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          <output class="spinner-border spinner-border-sm text-primary"></output>
           <span class="small text-muted ms-2">Cargando anteriores...</span>
         </div>
 
@@ -66,9 +67,10 @@
       </div>
 
       <!-- Formulario de nuevo comentario -->
-      <div class="card-footer bg-white border-top p-3 rounded-bottom-4">
+      <div class="card-footer bg-white border-top pt-2 rounded-bottom-4">
         <form id="form-comentario">
           <div class="input-group">
+            <label for="nuevo-comentario" class="visually-hidden">Comentarios</label>
             <textarea
               id="nuevo-comentario"
               class="form-control"
@@ -107,7 +109,7 @@
   </div>
 
   <!-- PANEL DERECHO: Ciclo de vida y Detalles de la Incidencia -->
-  <div class="col-lg-4">
+  <div class="col-lg-3">
     <!-- TARJETA CICLO DE VIDA -->
     <div class="premium-card mb-4">
       <div class="premium-card-header bg-white border-bottom py-3">
@@ -115,7 +117,7 @@
           <i class="bi bi-check-circle text-primary me-2"></i>Ciclo de Vida
         </h5>
       </div>
-      <div class="card-body p-4">
+      <div class="card-body p-3">
         <div id="timeline-container" class="position-relative ms-2">
           <!-- Timeline items inserted dynamically -->
         </div>
@@ -124,12 +126,12 @@
 
     <!-- TARJETA DETALLE DE INCIDENCIA -->
     <div class="premium-card mb-4">
-      <div class="premium-card-header bg-white border-bottom py-3">
+      <div class="premium-card-header bg-white border-bottom mb-0 py-3">
         <h5 class="premium-card-title mb-0">
           <i class="bi bi-info-circle text-info me-2"></i>Detalle de Incidencia
         </h5>
       </div>
-      <div class="card-body p-4">
+      <div class="card-body p-3">
         <div class="mb-3">
           <div class="d-flex align-items-center">
             <i class="bi bi-geo-alt text-danger me-2"></i>
@@ -138,8 +140,9 @@
         </div>
 
         <div class="mb-0">
-          <div class="fw-medium">
-            <i class="bi bi-building me-2 text-secondary"></i><span id="lbl-institucion"></span>
+          <div class="d-flex align-items-center">
+            <i class="bi bi-building me-2 text-secondary"></i
+            ><span id="lbl-institucion" class="fw-medium"></span>
           </div>
         </div>
       </div>
@@ -149,13 +152,11 @@
     <div class="premium-card mb-4 d-none" id="container-reportantes">
       <div class="premium-card-header bg-white border-bottom py-3">
         <h5 class="premium-card-title mb-0">
-          <i class="bi bi-people text-secondary me-2"></i>Reportantes Vinculados (<span
-            id="lbl-afectados"
-          ></span
-          >)
+          <i class="bi bi-people text-secondary me-2"></i>Reportantes Vinculados
+          <span id="lbl-afectados" class="badge bg-primary rounded-pill"></span>
         </h5>
       </div>
-      <div class="card-body p-4">
+      <div class="card-body p-3">
         <div id="list-reportantes" class="d-flex flex-wrap gap-3"></div>
       </div>
     </div>

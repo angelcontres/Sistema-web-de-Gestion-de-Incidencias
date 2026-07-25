@@ -134,8 +134,8 @@ export class IncidenciaFormComponent extends BaseComponent {
     if (this.btnSeleccionarMapa) {
       this.btnSeleccionarMapa.addEventListener('click', () => this.habilitarMapaInteractivo());
     }
-    
-    // Si el usuario modifica la dirección autocompletada, desvinculamos el ID 
+
+    // Si el usuario modifica la dirección autocompletada, desvinculamos el ID
     // para forzar la creación de una NUEVA dirección con sus detalles personalizados.
     if (this.dirDetalleInput) {
       this.dirDetalleInput.addEventListener('input', () => {
@@ -430,12 +430,6 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
 
       const user = AuthService.getCurrentUser();
-      const isCitizen =
-        user &&
-        user.roles &&
-        user.roles.every(
-          (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
-        );
 
       if (matchedDbDir) {
         this.selectedDireccionId = matchedDbDir.id;
@@ -459,85 +453,75 @@ export class IncidenciaFormComponent extends BaseComponent {
 
   async autofillTerritoriosCascading(paisId, address, territorioDetectado) {
     if (territorioDetectado) {
-      const td = territorioDetectado;
-      await this.cargarDropdownNivel1(paisId);
-      if (td.provincia_id && this.dirNivel1Select) {
-        this.dirNivel1Select.value = td.provincia_id;
-
-        await this.cargarDropdownNivel2(paisId, td.provincia_id);
-        if (td.canton_id && this.dirNivel2Select) {
-          this.dirNivel2Select.value = td.canton_id;
-
-          await this.cargarDropdownNivel3(paisId, td.canton_id);
-          if (td.parroquia_id && this.dirNivel3Select) {
-            this.dirNivel3Select.value = td.parroquia_id;
-          } else if (!td.parroquia_id && this.dirNivel3Select) {
-            const possibleNivel3Names = [
-              address.parish,
-              address.suburb,
-              address.neighbourhood,
-              address.quarter,
-            ].filter(Boolean);
-            const n3Name = possibleNivel3Names[0] || '';
-            if (n3Name) {
-              const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
-              if (opt3) this.dirNivel3Select.value = opt3.value;
-            }
-          }
-        }
-      }
+      await this.handleTerritorioDetectado(paisId, address, territorioDetectado);
       return;
     }
+    await this.handleTerritorioNoDetectado(paisId, address);
+  }
 
-    // 1. Siempre cargar Nivel 1 para el país seleccionado
+  async handleTerritorioDetectado(paisId, address, td) {
+    await this.cargarDropdownNivel1(paisId);
+    if (!td.provincia_id || !this.dirNivel1Select) return;
+
+    this.dirNivel1Select.value = td.provincia_id;
+    await this.cargarDropdownNivel2(paisId, td.provincia_id);
+
+    if (!td.canton_id || !this.dirNivel2Select) return;
+    this.dirNivel2Select.value = td.canton_id;
+
+    await this.cargarDropdownNivel3(paisId, td.canton_id);
+
+    if (td.parroquia_id && this.dirNivel3Select) {
+      this.dirNivel3Select.value = td.parroquia_id;
+    } else if (!td.parroquia_id && this.dirNivel3Select) {
+      this.autofillNivel3FromAddress(address);
+    }
+  }
+
+  autofillNivel3FromAddress(address) {
+    const possibleNivel3Names = [
+      address.parish,
+      address.suburb,
+      address.neighbourhood,
+      address.quarter,
+    ].filter(Boolean);
+    const n3Name = possibleNivel3Names[0] || '';
+    if (n3Name) {
+      const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
+      if (opt3) this.dirNivel3Select.value = opt3.value;
+    }
+  }
+
+  async handleTerritorioNoDetectado(paisId, address) {
     await this.cargarDropdownNivel1(paisId);
 
     const possibleNivel1Names = [address.state, address.region, address.province].filter(Boolean);
     const n1Name = possibleNivel1Names[0] || '';
+    if (!n1Name) return;
 
-    if (n1Name) {
-      const opt1 = this.findOptionMatchingText(this.dirNivel1Select, n1Name);
-      if (opt1) {
-        this.dirNivel1Select.value = opt1.value;
+    const opt1 = this.findOptionMatchingText(this.dirNivel1Select, n1Name);
+    if (!opt1) return;
 
-        // 2. Siempre cargar Nivel 2 si se encontró y seleccionó Nivel 1
-        await this.cargarDropdownNivel2(paisId, opt1.value);
+    this.dirNivel1Select.value = opt1.value;
+    await this.cargarDropdownNivel2(paisId, opt1.value);
 
-        const possibleNivel2Names = [
-          address.county,
-          address.city,
-          address.town,
-          address.municipality,
-        ].filter(Boolean);
-        const n2Name = possibleNivel2Names[0] || '';
-        if (n2Name) {
-          const opt2 = this.findOptionMatchingText(this.dirNivel2Select, n2Name);
-          if (opt2) {
-            this.dirNivel2Select.value = opt2.value;
+    const possibleNivel2Names = [
+      address.county,
+      address.city,
+      address.town,
+      address.municipality,
+    ].filter(Boolean);
+    const n2Name = possibleNivel2Names[0] || '';
+    if (!n2Name) return;
 
-            // 3. Siempre cargar Nivel 3 si se encontró y seleccionó Nivel 2
-            await this.cargarDropdownNivel3(paisId, opt2.value);
+    const opt2 = this.findOptionMatchingText(this.dirNivel2Select, n2Name);
+    if (!opt2) return;
 
-            const possibleNivel3Names = [
-              address.parish,
-              address.suburb,
-              address.neighbourhood,
-              address.quarter,
-            ].filter(Boolean);
-            const n3Name = possibleNivel3Names[0] || '';
+    this.dirNivel2Select.value = opt2.value;
+    await this.cargarDropdownNivel3(paisId, opt2.value);
 
-            if (n3Name) {
-              const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
-              if (opt3) {
-                this.dirNivel3Select.value = opt3.value;
-              }
-            }
-          }
-        }
-      }
-    }
+    this.autofillNivel3FromAddress(address);
   }
-
 
   actualizarIndicadorMinimalista() {
     const detalle = this.dirDetalleInput.value;
@@ -1021,7 +1005,6 @@ export class IncidenciaFormComponent extends BaseComponent {
 
       this.limpiarErrores();
       this.btnSubmit.disabled = true;
-      this.querySelector('#loadingSpinner').classList.remove('d-none');
 
       try {
         // 1. Guardar la dirección primero
@@ -1039,7 +1022,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         };
 
         const incData = id ? await IncidenciaService.getById(id) : null;
-        if (incData && incData.direccion_id) {
+        if (incData?.direccion_id) {
           direccionId = incData.direccion_id;
           await UbicacionesService.updateDireccion(direccionId, dirPayload);
         } else {
@@ -1236,11 +1219,9 @@ export class IncidenciaFormComponent extends BaseComponent {
               height *= MAX_WIDTH / width;
               width = MAX_WIDTH;
             }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
+          } else if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
           }
 
           canvas.width = width;
@@ -1251,9 +1232,9 @@ export class IncidenciaFormComponent extends BaseComponent {
           const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
           resolve(webpDataUrl);
         };
-        img.onerror = (err) => reject(err);
+        img.onerror = () => reject(new Error('Error al cargar la imagen.'));
       };
-      reader.onerror = (err) => reject(err);
+      reader.onerror = () => reject(new Error('Error al leer el archivo.'));
     });
   }
 
