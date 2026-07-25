@@ -24,7 +24,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/v1/login', [
-            'email' => self::EMAIL_TEST_STRING,
+            'login' => self::EMAIL_TEST_STRING,
             'password' => 'password123',
         ]);
 
@@ -40,7 +40,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/v1/login', [
-            'email' => self::EMAIL_TEST_STRING,
+            'login' => self::EMAIL_TEST_STRING,
             'password' => 'wrongpassword',
         ]);
 
