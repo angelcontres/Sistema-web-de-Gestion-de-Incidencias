@@ -17,19 +17,15 @@ jobs:
     runs-on: [self-hosted, aws-production]
 
     steps:
-      - name: Eliminar archivos bloqueados por root (Docker)
+      - name: Restaurar permisos de archivos bloqueados por Docker
         run: |
-          # Como Laravel corre como root, los archivos de vendor/ quedan bloqueados y rompen el checkout.
-          # Usamos un contenedor temporal para borrarlos con permisos de root.
-          if [ -d "backend/api/vendor" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
-          fi
-          if [ -d "backend/api/build" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
-          fi
+          # Restaurar permisos en vez de borrar para evitar fallos de checkout y no perder archivos
+          docker run --rm -v "$(pwd):/workspace" busybox chown -R $(id -u):$(id -g) /workspace
 
-      - name: Bajar el nuevo código directamente al servidor
+      - name: Bajar el nuevo código directamente al servidor (sin borrar archivos locales)
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Configurar archivos .env (Variables de Entorno)
         env:
@@ -58,6 +54,9 @@ jobs:
           # Tu archivo anterior de AWS no corría migraciones, ¡ahora sí lo hará automáticamente!
           docker exec sistema_laravel_prod composer install --no-ansi --no-interaction --no-progress
           docker exec sistema_laravel_prod php artisan key:generate
+          
+          # Limpiamos caché para asegurar que no se atasque la configuración de los correos
+          docker exec sistema_laravel_prod php artisan optimize:clear
           
           until docker exec sistema_postgres_prod pg_isready -U angeltux; do
             echo "Esperando a que la BD responda..."

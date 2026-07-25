@@ -3,19 +3,28 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ActivateAccountRequest;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Models\Role;
 use App\Models\User;
+use App\Models\UserInvitation;
+use App\Notifications\UserActivatedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 
 class AuthController extends Controller
 {
     //
     public function login(LoginRequest $request): JsonResponse
     {
-        // 1. Buscar al usuario
-        $user = User::where('email', $request->email)->first();
+        $login = $request->input('login');
+        // 1. Buscar al usuario por email o por username
+        $user = User::where('email', $login)
+            ->orWhere('username', $login)
+            ->first();
 
         // 2. Verificar credenciales
         if (! $user || ! Hash::check($request->password, $user->password)) {
@@ -29,6 +38,83 @@ class AuthController extends Controller
 
         // 4. Retornar respuesta
         return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 200);
+    }
+
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $email = $validated['email'] ?? null;
+        $username = $validated['username'] ?? null;
+
+        if ($email && ! $username) {
+            $username = strtolower(explode('@', $email)[0]).'_'.rand(100, 999);
+        } elseif ($username && ! $email) {
+            $email = $username.'@ciudadano.local';
+        }
+
+        $user = User::create([
+            'email' => $email,
+            'username' => $username,
+            'password' => Hash::make($validated['password']),
+            'activo' => true,
+        ]);
+        $user->email_verified_at = now();
+        $user->save();
+
+        // Asignar rol Ciudadano
+        $role = Role::where('nombre', 'Ciudadano')->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'username' => $user->username,
+            ],
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 201);
+    }
+
+    public function activate(ActivateAccountRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $invitation = UserInvitation::where('token', $validated['token'])->first();
+
+        if (! $invitation) {
+            return response()->json(['message' => 'El enlace de activación es inválido o ya fue usado.'], 422);
+        }
+
+        if (now()->greaterThan($invitation->expires_at)) {
+            return response()->json(['message' => 'El enlace de activación ha expirado.'], 422);
+        }
+
+        $user = User::where('email', $invitation->email)->first();
+        if (! $user) {
+            return response()->json(['message' => 'Usuario no encontrado.'], 404);
+        }
+
+        $user->password = Hash::make($validated['password']);
+        $user->email_verified_at = now();
+        $user->save();
+
+        $invitation->delete();
+
+        Notification::route('mail', $user->email)->notify(new UserActivatedNotification($user));
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Cuenta activada exitosamente.',
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 200);
@@ -65,6 +151,7 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
+                'username' => $user->username,
                 'email' => $user->email,
                 'is_admin' => $isAdmin,
                 'permisos' => $permisosList,

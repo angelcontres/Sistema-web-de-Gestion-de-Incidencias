@@ -20,16 +20,16 @@ class LoginRequestTest extends TestCase
         $rules = $request->rules();
 
         $validator = Validator::make([
-            'email' => 'invalid-email',
+            'login' => '',
             'password' => 'short',
         ], $rules);
 
         $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('email'));
+        $this->assertTrue($validator->errors()->has('login'));
         $this->assertTrue($validator->errors()->has('password'));
 
         $validatorValid = Validator::make([
-            'email' => 'valid@example.com',
+            'login' => 'valid@example.com',
             'password' => 'password123',
         ], $rules);
 

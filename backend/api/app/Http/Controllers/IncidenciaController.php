@@ -306,13 +306,17 @@ class IncidenciaController extends Controller
                 ->unique('id');
 
             foreach ($destinatarios as $destinatario) {
-                $destinatario->notify(new IssueStatusChangedNotification([
-                    'title' => "Incidencia #{$incidencia->id}: Cambio de Estado",
-                    'message' => 'El reporte ha cambiado a: '.($incidencia->estado->nombre ?? 'Actualizado'),
-                    'url' => "/tramites/estado-individual?id={$incidencia->id}",
-                    'type' => 'info',
-                    'incidencia_id' => $incidencia->id,
-                ]));
+                try {
+                    $destinatario->notify(new IssueStatusChangedNotification([
+                        'title' => "Incidencia #{$incidencia->id}: Cambio de Estado",
+                        'message' => 'El reporte ha cambiado a: '.($incidencia->estado->nombre ?? 'Actualizado'),
+                        'url' => "/tramites/estado-individual?id={$incidencia->id}",
+                        'type' => 'info',
+                        'incidencia_id' => $incidencia->id,
+                    ]));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Error enviando notificación de cambio de estado: " . $e->getMessage());
+                }
             }
         }
 
@@ -324,14 +328,18 @@ class IncidenciaController extends Controller
             $nuevosOperadores = User::whereIn('id', $nuevosAsignadosIds)->get();
 
             foreach ($nuevosOperadores as $operador) {
-                $operador->notify(new IssueAssignedNotification([
-                    'title' => "Nueva Incidencia Asignada (#{$incidencia->id})",
-                    'message' => 'Se te ha despachado para atender: '.($incidencia->direccion->calle ?? 'Ubicación registrada'),
-                    'url' => '/instituciones/kanban',
-                    'type' => 'danger',
-                    'incidencia_id' => $incidencia->id,
-                    'color_hex' => '#dc3545',
-                ]));
+                try {
+                    $operador->notify(new IssueAssignedNotification([
+                        'title' => "Nueva Incidencia Asignada (#{$incidencia->id})",
+                        'message' => 'Se te ha despachado para atender: '.($incidencia->direccion->calle ?? 'Ubicación registrada'),
+                        'url' => '/instituciones/kanban',
+                        'type' => 'danger',
+                        'incidencia_id' => $incidencia->id,
+                        'color_hex' => '#dc3545',
+                    ]));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Error enviando notificación de asignación: " . $e->getMessage());
+                }
             }
         }
     }

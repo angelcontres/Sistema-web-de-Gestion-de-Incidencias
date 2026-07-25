@@ -143,4 +143,34 @@ class AuthTest extends TestCase
             'tokenable_type' => User::class,
         ]);
     }
+
+    public function test_citizen_frictionless_signup()
+    {
+        $admin = User::factory()->create();
+        Role::firstOrCreate(['nombre' => 'Ciudadano'], ['descripcion' => 'Ciudadano', 'created_by' => $admin->id]);
+        Role::firstOrCreate(['nombre' => 'Admin'], ['descripcion' => 'Admin', 'created_by' => $admin->id]);
+
+        // Fallo de validación
+        $responseInvalid = $this->postJson('/api/v1/auth/register-citizen', [
+            'username' => 'testuser',
+            'password' => '123',
+        ]);
+        $responseInvalid->assertStatus(422);
+
+        // Registro exitoso
+        $responseSuccess = $this->postJson('/api/v1/auth/register-citizen', [
+            'username' => 'newcitizen',
+            'email' => 'citizen@example.com',
+            'password' => 'secret123',
+            'role' => 'Admin', // Intentar inyectar Admin
+        ]);
+
+        $responseSuccess->assertStatus(201);
+        $responseSuccess->assertJsonStructure(['access_token', 'user' => ['id', 'email', 'username']]);
+
+        $user = User::where('email', 'citizen@example.com')->first();
+        $this->assertNotNull($user->email_verified_at);
+        $this->assertTrue($user->roles->contains('nombre', 'Ciudadano'));
+        $this->assertFalse($user->roles->contains('nombre', 'Admin'));
+    }
 }

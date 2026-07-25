@@ -76,15 +76,27 @@ export class UserFormComponent extends BaseComponent {
     if (this.formTitle) this.formTitle.textContent = 'Editar Usuario';
     if (this.btnText) this.btnText.textContent = 'Actualizar Usuario';
     if (this.txtPasswordHelp) this.txtPasswordHelp.classList.remove('d-none');
-    if (this.passwordInput) this.passwordInput.required = false;
+    if (this.passwordInput) {
+      this.passwordInput.required = false;
+      const mb3 = this.passwordInput.closest('.mb-3');
+      if (mb3) mb3.classList.remove('d-none');
+    }
+    const inviteAlert = this.querySelector('#inviteInfoAlert');
+    if (inviteAlert) inviteAlert.classList.add('d-none');
   }
 
   configurarModoCreacion() {
-    document.title = 'Crear Nuevo Usuario';
-    if (this.formTitle) this.formTitle.textContent = 'Crear Nuevo Usuario';
-    if (this.btnText) this.btnText.textContent = 'Guardar Usuario';
+    document.title = 'Invitar Usuario';
+    if (this.formTitle) this.formTitle.textContent = 'Invitar Usuario';
+    if (this.btnText) this.btnText.textContent = 'Enviar Invitación';
     if (this.txtPasswordHelp) this.txtPasswordHelp.classList.add('d-none');
-    if (this.passwordInput) this.passwordInput.required = true;
+    if (this.passwordInput) {
+      this.passwordInput.required = false;
+      const mb3 = this.passwordInput.closest('.mb-3');
+      if (mb3) mb3.classList.add('d-none'); // Hide password on create
+    }
+    const inviteAlert = this.querySelector('#inviteInfoAlert');
+    if (inviteAlert) inviteAlert.classList.remove('d-none');
   }
 
   async cargarDatosModo(userId) {
@@ -338,7 +350,6 @@ export class UserFormComponent extends BaseComponent {
     this.mostrarError('No se pudieron cargar los datos del usuario.');
     if (this.btnSubmit) this.btnSubmit.disabled = true;
   }
-
 
   async guardarUsuario(e) {
     e.preventDefault();

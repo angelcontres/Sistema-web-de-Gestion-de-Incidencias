@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ use Override;
  * @property Collection<int, Permiso> $permisos
  * @property Collection<int, User> $users
  */
+#[Table('roles')]
 #[Fillable(['nombre', 'descripcion', 'padre_id', 'created_by', 'updated_by', 'deleted_by'])]
 class Role extends Model
 {
