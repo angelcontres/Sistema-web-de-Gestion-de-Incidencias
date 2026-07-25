@@ -43,7 +43,7 @@ La IA no adivina lo que quieres hacer. Debes definir el alcance primero.
    - Redactará 3 archivos ahí dentro:
      - `requirements.md` (Requisitos exactos).
      - `design.md` (Cómo planea hacerlo a nivel de código y base de datos).
-     - `tasks.md` (Checklist paso a paso).
+     - `tasks.md` (Checklist paso a paso).<
    - Cambiará el status en el JSON a `"spec_ready"`.
    - **Se detendrá y te pedirá permiso para continuar.**
 

@@ -1,24 +1,25 @@
 <?php
+
 /**
  * normalize_clover.php
- * 
+ *
  * Este script convierte las rutas absolutas (de Windows o de Docker /var/www/html/)
  * en los archivos clover.xml y junit.xml a rutas relativas al proyecto (ej. backend/api/app/...)
  * para que SonarQube pueda mapear correctamente las métricas.
  */
-
 $files = [
-    __DIR__ . '/build/logs/clover.xml',
-    __DIR__ . '/build/logs/junit.xml'
+    __DIR__.'/build/logs/clover.xml',
+    __DIR__.'/build/logs/junit.xml',
 ];
 
 // Ruta base del proyecto para desarrollo local (Windows)
-$projectRoot = dirname(__DIR__, 2); 
+$projectRoot = dirname(__DIR__, 2);
 $projectRoot = str_replace('\\', '/', $projectRoot);
 
 foreach ($files as $file) {
-    if (!file_exists($file)) {
+    if (! file_exists($file)) {
         echo "Aviso: No se encontró el archivo $file (saltando...)\n";
+
         continue;
     }
 
@@ -27,18 +28,19 @@ foreach ($files as $file) {
 
     if ($content === false) {
         echo "Error al leer el archivo $file\n";
+
         continue;
     }
 
     // 1. Reemplazar rutas absolutas de Docker en producción (/var/www/html/ -> backend/api/)
     if (strpos($content, '/var/www/html/') !== false) {
         $content = str_replace('/var/www/html/', 'backend/api/', $content);
-    } 
+    }
     // 2. Reemplazar rutas absolutas de Windows/Local por relativas
-    elseif (!empty($projectRoot)) {
-        $rootWithSlash = $projectRoot . '/';
-        $rootWithBackslash = str_replace('/', '\\', $projectRoot) . '\\';
-        
+    elseif (! empty($projectRoot)) {
+        $rootWithSlash = $projectRoot.'/';
+        $rootWithBackslash = str_replace('/', '\\', $projectRoot).'\\';
+
         $content = str_replace($rootWithSlash, '', $content);
         $content = str_replace($rootWithBackslash, '', $content);
     }

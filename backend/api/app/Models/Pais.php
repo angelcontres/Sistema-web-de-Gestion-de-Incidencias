@@ -4,18 +4,18 @@ namespace App\Models;
 
 use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Table('paises')]
 #[Fillable(['nombre', 'codigo_iso', 'activo'])]
 class Pais extends Model
 {
     use HasFactory;
     use HasLocalTimezone;
-
-    protected $table = 'paises';
 
     /**
      * Mutator para asegurar que el código ISO siempre se guarde en mayúsculas y sin espacios.

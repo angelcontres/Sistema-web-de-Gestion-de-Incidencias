@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,13 +22,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $pais_id
  * @property Territorio|null $territorio
  */
+#[Table('direcciones')]
 #[Fillable(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'latitud', 'longitud', 'precision_gps', 'activo'])]
 class Direccion extends Model
 {
     use HasFactory;
     use HasLocalTimezone;
-
-    protected $table = 'direcciones';
 
     protected function casts(): array
     {

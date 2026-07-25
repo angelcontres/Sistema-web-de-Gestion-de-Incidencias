@@ -154,7 +154,7 @@ services:
     networks:
       - sistema_incidencias_net
 
-  # Servidor SonarQube (Calidad de Código / SQA)
+    # Servidor SonarQube (Calidad de Código / SQA)
   sonarqube:
     image: sonarqube:lts-community
     container_name: sistema_sonarqube
@@ -172,6 +172,17 @@ services:
     depends_on:
       - sonarqube_db
       - sonarqube_init
+    networks:
+      - sistema_incidencias_net
+
+  # Mailpit para pruebas de envío de correos en local
+  mailpit:
+    image: axllent/mailpit
+    container_name: sistema_mailpit
+    restart: always
+    ports:
+      - "8025:8025" # Interfaz Web
+      - "1025:1025" # Servidor SMTP falso
     networks:
       - sistema_incidencias_net
 

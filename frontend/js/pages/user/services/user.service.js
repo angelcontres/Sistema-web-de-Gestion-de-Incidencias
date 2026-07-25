@@ -30,4 +30,5 @@ export const UserService = {
       method: 'DELETE',
     });
   },
+
 };

@@ -2,6 +2,8 @@ import { AuthService } from './core/auth.service.js';
 
 const routes = {
   '#/login': 'app-login',
+  '#/signup': 'app-signup',
+  '#/activate': 'app-activate-account',
   '#/': 'app-dashboard',
   '#/opciones-menu': 'app-menu-options-list',
   '#/opciones-menu/form': 'app-menu-options-form',
@@ -36,12 +38,12 @@ function navigate() {
 
   // Auth Route Protection
   if (!isAuthenticated) {
-    if (hash !== '#/login') {
+    if (hash !== '#/login' && hash !== '#/signup' && !hash.startsWith('#/activate')) {
       window.location.hash = '#/login';
       return;
     }
   } else {
-    if (hash === '#/login') {
+    if (hash === '#/login' || hash === '#/signup' || hash.startsWith('#/activate')) {
       window.location.hash = '#/';
       return;
     }

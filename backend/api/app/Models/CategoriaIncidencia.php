@@ -4,18 +4,18 @@ namespace App\Models;
 
 use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Table('categorias_incidencia')]
 #[Fillable(['parent_id', 'prioridad_id', 'institucion_id', 'nombre', 'descripcion', 'activo'])]
 class CategoriaIncidencia extends Model
 {
     use HasFactory;
     use HasLocalTimezone;
-
-    protected $table = 'categorias_incidencia';
 
     protected function casts(): array
     {

@@ -17,19 +17,13 @@
         <p class="text-muted">Ingresa tus credenciales para acceder a la plataforma</p>
       </div>
 
-      <!-- Error Alert Container -->
-      <div id="loginErrorAlert" class="alert alert-danger premium-alert d-none shadow-sm border-0" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <span id="loginErrorMessage">Credenciales incorrectas.</span>
-      </div>
-
       <!-- Login Form -->
       <form id="loginForm" novalidate>
         <div class="premium-form-group mb-4">
-          <label for="emailInput" class="premium-label fw-bold text-dark mb-2">Correo Electrónico</label>
+          <label for="emailInput" class="premium-label fw-bold text-dark mb-2">Correo Electrónico / Usuario</label>
           <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
-            <span class="input-group-text border-0 text-muted px-4" style="background: var(--color-bg-input, #f8fafc);"><i class="bi bi-envelope"></i></span>
-            <input type="email" class="form-control border-0 fs-6 py-3" id="emailInput" placeholder="correo@ejemplo.com" required style="background: var(--color-bg-input, #f8fafc);">
+            <span class="input-group-text border-0 text-muted px-4" style="background: var(--color-bg-input, #f8fafc);"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control border-0 fs-6 py-3" id="emailInput" placeholder="correo@ejemplo.com o usuario" required style="background: var(--color-bg-input, #f8fafc);">
           </div>
         </div>
 
@@ -45,17 +39,22 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="button" id="loginSubmitBtn" class="btn w-100 py-3 fs-6 fw-bold d-flex align-items-center justify-content-center gap-2 shadow rounded-3 transition-all text-white" style="background-color: var(--primary-color); letter-spacing: 0.5px; border: none;">
+        <button type="submit" id="loginSubmitBtn" class="btn w-100 py-3 fs-6 fw-bold d-flex align-items-center justify-content-center gap-2 shadow rounded-3 transition-all text-white" style="background-color: var(--primary-color); letter-spacing: 0.5px; border: none;">
           <span>Ingresar al Sistema</span>
           <div id="loginSpinner" class="spinner-border spinner-border-sm text-white d-none" role="status">
             <span class="visually-hidden">Cargando...</span>
           </div>
           <i class="bi bi-arrow-right ms-1"></i>
         </button>
+
+        <!-- Signup Link -->
+        <div class="text-center mt-4">
+          <p class="text-muted mb-0">¿No tienes cuenta? <a href="#/signup" class="text-decoration-none fw-bold" style="color: var(--primary-color);">Regístrate aquí</a></p>
+        </div>
       </form>
 
       <!-- Credentials Helper Tip -->
-      <div class="mt-5 p-3 rounded-3 small text-muted border shadow-sm" style="background-color: var(--card-bg, #F4EFE3); border-color: rgba(13, 42, 76, 0.05);">
+      <div class="mt-4 p-3 rounded-3 small text-muted border shadow-sm" style="background-color: var(--card-bg, #F4EFE3); border-color: rgba(13, 42, 76, 0.05);">
         <p class="mb-2 fw-bold d-flex align-items-center gap-2" style="color: var(--primary-color);">
           <i class="bi bi-info-circle-fill" style="color: var(--secondary-color);"></i> Credenciales de Prueba:
         </p>

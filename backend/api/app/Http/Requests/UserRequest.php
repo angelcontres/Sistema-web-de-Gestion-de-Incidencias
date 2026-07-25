@@ -25,7 +25,7 @@ class UserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username'.($userId ? ','.$userId : ''),
             'email' => 'required|email|max:255|unique:users,email'.($userId ? ','.$userId : ''),
-            'password' => $userId ? 'nullable|string|min:8' : 'required|string|min:8', // password optional on update
+            'password' => 'nullable|string|min:8', // siempre opcional para soportar invitaciones
             'activo' => 'nullable|boolean',
             'roles' => 'nullable|array',
             'roles.*' => 'integer|exists:roles,id',

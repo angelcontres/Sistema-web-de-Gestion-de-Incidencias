@@ -20,10 +20,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Asegurarse de que el esquema OLAP se reconstruya siempre en un entorno fresh
-        Artisan::call('migrate', [
-            '--path' => 'database/migrations/olap',
-            '--force' => true,
-        ]);
+        if (config('database.default') !== 'sqlite') {
+            Artisan::call('migrate', [
+                '--path' => 'database/migrations/olap',
+                '--force' => true,
+            ]);
+        }
 
         // User::factory(10)->create();
 
@@ -301,7 +303,9 @@ class DatabaseSeeder extends Seeder
         $this->call(NotificationSeeder::class);
 
         // Ejecutar ETL inicial para asegurar que las dimensiones del Data Warehouse estén pobladas
-        Artisan::call('etl:run');
+        if (config('database.default') !== 'sqlite') {
+            Artisan::call('etl:run');
+        }
 
     }
 }
