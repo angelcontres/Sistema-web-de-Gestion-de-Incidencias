@@ -10,12 +10,7 @@
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
         <h5 class="modal-title fw-bold text-dark" id="permisoModalLabel">Nuevo Permiso</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body px-4 pb-4">
         <!-- Alerta de Error interna del modal -->
@@ -26,18 +21,16 @@
 
         <!-- Spinner de carga -->
         <div id="loadingSpinner" class="d-none text-center py-4">
-          <div class="spinner-border text-primary" role="status">
+          <output class="spinner-border text-primary">
             <span class="visually-hidden">Cargando...</span>
-          </div>
+          </output>
         </div>
 
         <form id="permisoForm" novalidate>
           <input type="hidden" id="permisoId" />
 
           <div class="mb-3">
-            <label for="nombre" class="form-label fw-semibold text-dark"
-              >Nombre del Permiso</label
-            >
+            <label for="nombre" class="form-label fw-semibold text-dark">Nombre del Permiso</label>
             <input
               type="text"
               class="form-control"

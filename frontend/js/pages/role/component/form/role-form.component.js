@@ -34,7 +34,7 @@ export class RoleFormComponent extends BaseComponent {
   }
 
   disconnectedCallback() {
-    if (this.modalEl && this.modalEl.parentNode === document.body) {
+    if (this.modalEl?.parentNode === document.body) {
       this.modalEl.remove();
     }
   }
@@ -116,7 +116,7 @@ export class RoleFormComponent extends BaseComponent {
     const nombre = this.nombreInput.value.trim();
     const descripcion = this.descripcionInput.value.trim();
     const padreSelectVal = this.padreSelect.value;
-    const padre_id = padreSelectVal ? parseInt(padreSelectVal) : null;
+    const padre_id = padreSelectVal ? Number.parseInt(padreSelectVal, 10) : null;
 
     const payload = { nombre, descripcion, padre_id };
 
