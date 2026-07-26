@@ -9,7 +9,7 @@ async function withCache(key, ttlMinutes, fetcher) {
   if (cachedItem) {
     try {
       const { value, expiry } = JSON.parse(cachedItem);
-      if (new Date().now() < expiry) {
+      if (Date.now() < expiry) {
         return value;
       }
       localStorage.removeItem(key);
@@ -21,7 +21,7 @@ async function withCache(key, ttlMinutes, fetcher) {
 
   const data = await fetcher();
   if (data) {
-    const expiry = new Date().now() + ttlMinutes * 60 * 1000;
+    const expiry = Date.now() + ttlMinutes * 60 * 1000;
     localStorage.setItem(key, JSON.stringify({ value: data, expiry }));
   }
   return data;
