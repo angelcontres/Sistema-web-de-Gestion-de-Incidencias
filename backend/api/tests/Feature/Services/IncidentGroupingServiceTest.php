@@ -3,6 +3,7 @@
 namespace Tests\Feature\Services;
 
 use App\Models\Direccion;
+use App\Models\EstadoIncidencia;
 use App\Models\Incidencia;
 use App\Models\Pais;
 use App\Models\Territorio;
@@ -55,7 +56,7 @@ class IncidentGroupingServiceTest extends TestCase
         $incidencia = Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
+            'estado_id' => EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -82,7 +83,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
+            'estado_id' => EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -108,7 +109,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
+            'estado_id' => EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -136,7 +137,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Resuelto')->value('id'),
+            'estado_id' => EstadoIncidencia::where('nombre', 'Resuelto')->value('id'),
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);

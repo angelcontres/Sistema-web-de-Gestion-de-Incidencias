@@ -5,6 +5,7 @@ namespace Tests\Feature\Jobs\Etl;
 use App\Jobs\Etl\SyncDimensionsJob;
 use App\Jobs\Etl\SyncFactIncidenciasJob;
 use App\Models\Direccion;
+use App\Models\EstadoIncidencia;
 use App\Models\Pais;
 use App\Models\Prioridad;
 use App\Models\Territorio;
@@ -47,7 +48,7 @@ class SyncFactIncidenciasJobTest extends TestCase
             'direccion_id' => $direccion->id,
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Resuelto')->value('id'),
+            'estado_id' => EstadoIncidencia::where('nombre', 'Resuelto')->value('id'),
             'prioridad_id' => 1,
             'cliente_id' => User::factory()->create()->id,
             'incidencia_descripcion' => 'Desc',
@@ -58,7 +59,7 @@ class SyncFactIncidenciasJobTest extends TestCase
         // Mock history for time calculation
         DB::table('historial_incidencias')->insert([
             'incidencia_id' => $incidenciaId,
-            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'En Proceso')->value('id'), // En Proceso
+            'estado_id' => EstadoIncidencia::where('nombre', 'En Proceso')->value('id'), // En Proceso
             'created_at' => $createdAt->copy()->addMinutes(15),
             'updated_at' => $createdAt->copy()->addMinutes(15),
             'usuario_id' => User::factory()->create()->id,
@@ -66,7 +67,7 @@ class SyncFactIncidenciasJobTest extends TestCase
 
         DB::table('historial_incidencias')->insert([
             'incidencia_id' => $incidenciaId,
-            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Resuelto')->value('id'), // Resuelto
+            'estado_id' => EstadoIncidencia::where('nombre', 'Resuelto')->value('id'), // Resuelto
             'created_at' => $createdAt->copy()->addMinutes(45),
             'updated_at' => $createdAt->copy()->addMinutes(45),
             'usuario_id' => User::factory()->create()->id,
