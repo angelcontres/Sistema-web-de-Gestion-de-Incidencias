@@ -55,7 +55,7 @@ class IncidentGroupingServiceTest extends TestCase
         $incidencia = Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 1,
+            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -82,7 +82,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 1,
+            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -108,7 +108,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 1,
+            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -136,7 +136,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 4,
+            'estado_id' => \App\Models\EstadoIncidencia::where('nombre', 'Resuelto')->value('id'),
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
