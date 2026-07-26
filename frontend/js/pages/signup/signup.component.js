@@ -32,25 +32,10 @@ export class SignupComponent extends BaseComponent {
 
   async handleSignup(e) {
     e.preventDefault();
-    this.form.classList.add('was-validated');
+    if (!this.validarFormulario()) return;
 
-    if (!this.form.checkValidity()) {
-      ToastService.warning('Por favor completa todos los campos requeridos correctamente.', 'Faltan datos');
-      return;
-    }
-
-    this.submitBtn.disabled = true;
-    this.spinner.classList.remove('d-none');
-
-    const data = {
-      username: this.querySelector('#username').value,
-      password: this.querySelector('#password').value,
-    };
-    
-    if (data.username.includes('@')) {
-      data.email = data.username;
-      delete data.username;
-    }
+    this.setEstadoCarga(true);
+    const data = this.construirPayloadRegistro();
 
     try {
       await AuthService.register(data);
@@ -58,20 +43,55 @@ export class SignupComponent extends BaseComponent {
       window.dispatchEvent(new CustomEvent('auth-change'));
       window.location.hash = '#/';
     } catch (error) {
-      this.submitBtn.disabled = false;
-      this.spinner.classList.add('d-none');
-      
-      let message = 'Error inesperado.';
-      if (error && error.status === 422 && error.data && error.data.errors) {
-         const firstKey = Object.keys(error.data.errors)[0];
-         message = error.data.errors[firstKey][0];
-      } else if (error && error.data && error.data.message) {
-         message = error.data.message;
-      } else if (error && error.message) {
-         message = error.message;
-      }
-      ToastService.error(message, 'Error de Registro');
+      this.setEstadoCarga(false);
+      this.manejarErrorRegistro(error);
     }
+  }
+
+  validarFormulario() {
+    this.form.classList.add('was-validated');
+    if (!this.form.checkValidity()) {
+      ToastService.warning(
+        'Por favor completa todos los campos requeridos correctamente.',
+        'Faltan datos'
+      );
+      return false;
+    }
+    return true;
+  }
+
+  construirPayloadRegistro() {
+    const data = {
+      username: this.querySelector('#username').value,
+      password: this.querySelector('#password').value,
+    };
+
+    if (data.username.includes('@')) {
+      data.email = data.username;
+      delete data.username;
+    }
+
+    return data;
+  }
+
+  manejarErrorRegistro(error) {
+    let message = 'Error inesperado.';
+
+    if (error?.status === 422 && error?.data?.errors) {
+      const firstKey = Object.keys(error?.data?.errors)[0];
+      message = error?.data?.errors[firstKey][0];
+    } else if (error?.data?.message) {
+      message = error?.data?.message;
+    } else if (error?.message) {
+      message = error?.message;
+    }
+
+    ToastService.warning(message, 'Error de Registro');
+  }
+
+  setEstadoCarga(cargando) {
+    if (this.submitBtn) this.submitBtn.disabled = cargando;
+    if (this.spinner) this.spinner.classList.toggle('d-none', !cargando);
   }
 }
 
