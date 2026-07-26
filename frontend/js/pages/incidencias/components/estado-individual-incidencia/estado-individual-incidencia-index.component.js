@@ -120,7 +120,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       
       const modalEl = this.querySelector('#modalApoyo');
       if (modalEl) {
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
       }
     } catch (e) {

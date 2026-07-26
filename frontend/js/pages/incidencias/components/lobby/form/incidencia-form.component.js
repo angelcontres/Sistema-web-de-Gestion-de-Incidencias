@@ -125,7 +125,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         if (!this.containerModalApoyoForm) return;
         const modalEl = this.querySelector('#modalApoyoForm');
         if (modalEl) {
-          const modal = new bootstrap.Modal(modalEl);
+          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
           modal.show();
         }
       });
