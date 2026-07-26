@@ -37,7 +37,7 @@ class IncidenciaPerformanceTest extends TestCase
         for ($i = 0; $i < 2; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 1',
-                'estado_id' => EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
+                'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
                 'cliente_id' => $user->id,
             ]);
         }
@@ -51,7 +51,7 @@ class IncidenciaPerformanceTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 2',
-                'estado_id' => EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
+                'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
                 'cliente_id' => $user->id,
             ]);
         }
@@ -75,7 +75,7 @@ class IncidenciaPerformanceTest extends TestCase
         for ($i = 0; $i < 2; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 1',
-                'estado_id' => EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
+                'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
                 'cliente_id' => $user->id,
             ]);
         }
@@ -89,7 +89,7 @@ class IncidenciaPerformanceTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 2',
-                'estado_id' => EstadoIncidencia::where('nombre', 'Pendiente')->value('id'),
+                'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
                 'cliente_id' => $user->id,
             ]);
         }

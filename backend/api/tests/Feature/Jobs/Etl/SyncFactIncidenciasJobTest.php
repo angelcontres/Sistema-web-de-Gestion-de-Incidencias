@@ -48,7 +48,7 @@ class SyncFactIncidenciasJobTest extends TestCase
             'direccion_id' => $direccion->id,
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => EstadoIncidencia::where('nombre', 'Resuelto')->value('id'),
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Resuelto'])->id,
             'prioridad_id' => 1,
             'cliente_id' => User::factory()->create()->id,
             'incidencia_descripcion' => 'Desc',
@@ -59,7 +59,7 @@ class SyncFactIncidenciasJobTest extends TestCase
         // Mock history for time calculation
         DB::table('historial_incidencias')->insert([
             'incidencia_id' => $incidenciaId,
-            'estado_id' => EstadoIncidencia::where('nombre', 'En Proceso')->value('id'), // En Proceso
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'En Proceso'])->id, // En Proceso
             'created_at' => $createdAt->copy()->addMinutes(15),
             'updated_at' => $createdAt->copy()->addMinutes(15),
             'usuario_id' => User::factory()->create()->id,
@@ -67,7 +67,7 @@ class SyncFactIncidenciasJobTest extends TestCase
 
         DB::table('historial_incidencias')->insert([
             'incidencia_id' => $incidenciaId,
-            'estado_id' => EstadoIncidencia::where('nombre', 'Resuelto')->value('id'), // Resuelto
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Resuelto'])->id, // Resuelto
             'created_at' => $createdAt->copy()->addMinutes(45),
             'updated_at' => $createdAt->copy()->addMinutes(45),
             'usuario_id' => User::factory()->create()->id,

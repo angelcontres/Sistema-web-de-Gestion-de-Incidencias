@@ -369,7 +369,7 @@ class IncidenciaTest extends TestCase
             'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
             'prioridad_id' => $this->alta->id,
             'cantidad_afectados_incidencia' => 1,
-            'estado_id' => EstadoIncidencia::where('nombre', 'En Revisión')->value('id'), // En Revisión
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'En Revisión'])->id, // En Revisión
             'version' => 1,
             'created_by' => $this->admin->id,
             'updated_by' => $this->admin->id,
