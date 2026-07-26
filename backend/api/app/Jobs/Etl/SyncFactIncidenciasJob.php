@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Etl;
 
+use App\Models\EstadoIncidencia;
 use App\Services\TimezoneService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -17,9 +18,9 @@ class SyncFactIncidenciasJob implements ShouldQueue
 
     public function handle(): void
     {
-        $enRevisionId = \App\Models\EstadoIncidencia::where('nombre', 'En Revisión')->value('id') ?? 2;
-        $enProcesoId = \App\Models\EstadoIncidencia::where('nombre', 'En Proceso')->value('id') ?? 3;
-        $resueltoId = \App\Models\EstadoIncidencia::where('nombre', 'Resuelto')->value('id') ?? 4;
+        $enRevisionId = EstadoIncidencia::where('nombre', 'En Revisión')->value('id') ?? 2;
+        $enProcesoId = EstadoIncidencia::where('nombre', 'En Proceso')->value('id') ?? 3;
+        $resueltoId = EstadoIncidencia::where('nombre', 'Resuelto')->value('id') ?? 4;
 
         // 1. Obtener todas las incidencias operacionales
         $incidencias = DB::table('reporte_incidencias')
