@@ -57,6 +57,7 @@ jobs:
           
           # Limpiamos caché para asegurar que no se atasque la configuración de los correos
           docker exec sistema_laravel_prod php artisan optimize:clear
+          docker exec sistema_laravel_prod php artisan queue:restart
           
           until docker exec sistema_postgres_prod pg_isready -U angeltux; do
             echo "Esperando a que la BD responda..."
