@@ -37,6 +37,14 @@ class InstitucionController extends Controller
     public function store(InstitucionesRequest $request): JsonResponse
     {
         $data = $request->only(['nombre', 'siglas', 'activo']);
+
+        if ($restored = $this->restoreIfTrashed($data)) {
+            return response()->json([
+                'message' => 'Institución restaurada y reactivada con éxito',
+                'data' => $restored,
+            ], 200);
+        }
+
         if (auth()->check()) {
             $data['created_by'] = auth()->id();
         }
@@ -97,5 +105,33 @@ class InstitucionController extends Controller
         return response()->json([
             'message' => 'Institución eliminada con éxito',
         ], 200);
+    }
+
+    /**
+     * Restaura y actualiza una institución si existía en la papelera (Soft Deletes).
+     */
+    private function restoreIfTrashed(array $data): ?Institucion
+    {
+        /** @var Institucion|null $trashed */
+        $trashed = Institucion::onlyTrashed()
+            ->where(function ($query) use ($data) {
+                $query->where('nombre', $data['nombre'])
+                    ->orWhere('siglas', $data['siglas']);
+            })
+            ->first();
+
+        if (! $trashed) {
+            return null;
+        }
+
+        $trashed->restore();
+
+        if (auth()->check()) {
+            $data['updated_by'] = auth()->id();
+        }
+
+        $trashed->update($data);
+
+        return $trashed;
     }
 }

@@ -81,6 +81,7 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
         <button id="btnSeleccionarMapa"></button>
         
         <input id="dirCodigoPostal" />
+        <output class="spinner-border spinner-border-sm d-none"></output>
         
         <div class="modal" id="modalRegistrarDireccion">
           <input id="modalDirLat" />
@@ -341,7 +342,7 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
 
       // Simular que el metodo retorna una promesa que lanza Error
       const fakeGuardar = async () => {
-        console.error('API failure');
+        throw new Error('API failure');
       };
       await expect(fakeGuardar()).rejects.toThrow('API failure');
     });
