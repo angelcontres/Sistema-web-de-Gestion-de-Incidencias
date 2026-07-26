@@ -10,7 +10,11 @@ export class InstitucionFormComponent extends BaseComponent {
     this.modalElement = this.querySelector('#institucionModal');
 
     // Mover el modal al body para evitar problemas de z-index (sombra por encima)
+    // Limpiar cualquier modal previo u órfano en el body con el mismo ID para evitar conflictos y recargas
     if (this.modalElement) {
+      document.body.querySelectorAll('#institucionModal').forEach((el) => {
+        if (el !== this.modalElement) el.remove();
+      });
       document.body.appendChild(this.modalElement);
     }
 
@@ -91,7 +95,7 @@ export class InstitucionFormComponent extends BaseComponent {
       await this.ejecutarGuardadoInstitucion(payload);
 
       if (this.modalElement) {
-        const modal = bootstrap.Modal.getOrCreateInstance(this.modalElement);
+        const modal = bootstrap.Modal.getInstance(this.modalElement);
 
         if (modal) modal.hide();
       }
