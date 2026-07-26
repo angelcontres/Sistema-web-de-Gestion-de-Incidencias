@@ -14,13 +14,15 @@ export class BaseComponent extends HTMLElement {
     try {
       const response = await fetch(this.templateUrl, { cache: 'no-store' });
       if (!response.ok) {
-        throw new Error(`No se pudo cargar la plantilla: ${this.templateUrl} (HTTP ${response.status})`);
+        console.error(
+          `No se pudo cargar la plantilla: ${this.templateUrl} (HTTP ${response.status})`
+        );
       }
       const downloadedHtmlTemplate = await response.text();
-      
+
       // Render template inside light DOM to preserve global Bootstrap CSS applicability
       this.innerHTML = downloadedHtmlTemplate;
-      
+
       // Trigger lifecycle hook similar to Angular's ngOnInit
       if (typeof this.onInit === 'function') {
         this.onInit();

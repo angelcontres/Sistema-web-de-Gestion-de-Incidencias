@@ -83,55 +83,64 @@ export class InstitucionFormComponent extends BaseComponent {
   async guardarInstitucion(e) {
     e.preventDefault();
 
-    if (!this.form.checkValidity()) {
-      this.form.classList.add('was-validated');
-      return;
-    }
+    if (!this.validarFormulario()) return;
 
     if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.disabled = true;
 
-    const payload = {
+    try {
+      const payload = this.construirPayloadInstitucion();
+      await this.ejecutarGuardadoInstitucion(payload);
+
+      this.bsModal.hide();
+      this.dispatchEvent(
+        new CustomEvent('institucion-guardada', { bubbles: true, composed: true })
+      );
+    } catch (error) {
+      this.manejarErrorGuardado(error);
+    }
+  }
+
+  validarFormulario() {
+    if (!this.form.checkValidity()) {
+      this.form.classList.add('was-validated');
+      return false;
+    }
+    return true;
+  }
+
+  construirPayloadInstitucion() {
+    return {
       nombre: this.nombreInput.value.trim(),
       siglas: this.siglasInput.value.trim(),
       activo: this.activoInput ? this.activoInput.checked : true,
     };
+  }
 
-    try {
-      if (this.institucionId) {
-        await InstitucionService.update(this.institucionId, payload);
-      } else {
-        await InstitucionService.create(payload);
-      }
-
-      this.bsModal.hide();
-
-      // Dispatch event to parent to reload table
-      this.dispatchEvent(
-        new CustomEvent('institucion-guardada', {
-          bubbles: true,
-          composed: true,
-        })
-      );
-    } catch (error) {
-      console.error('Error al guardar institución:', error);
-
-      let errorMsg = 'Error al procesar el formulario.';
-      if (error.response && error.response.status === 422) {
-        const errors = error.response.data?.errors;
-        if (errors) {
-          const messages = Object.values(errors).flat().join('<br>');
-          errorMsg = messages;
-        }
-      } else if (error.message) {
-        errorMsg = error.message;
-      }
-
-      if (this.formAlertContainer && this.errorMessage) {
-        this.errorMessage.textContent = errorMsg;
-        this.formAlertContainer.classList.remove('d-none');
-      }
-      if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.disabled = false;
+  async ejecutarGuardadoInstitucion(payload) {
+    if (this.institucionId) {
+      await InstitucionService.update(this.institucionId, payload);
+    } else {
+      await InstitucionService.create(payload);
     }
+  }
+
+  extraerMensajeError(error) {
+    if (error?.response?.status === 422 && error.response.data?.errors) {
+      return Object.values(error.response.data.errors).flat().join('<br>');
+    }
+    return error?.message || 'Error al procesar el formulario.';
+  }
+
+  manejarErrorGuardado(error) {
+    console.error('Error al guardar institución:', error);
+
+    const errorMsg = this.extraerMensajeError(error);
+
+    if (this.formAlertContainer && this.errorMessage) {
+      this.errorMessage.textContent = errorMsg;
+      this.formAlertContainer.classList.remove('d-none');
+    }
+    if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.disabled = false;
   }
 }
 

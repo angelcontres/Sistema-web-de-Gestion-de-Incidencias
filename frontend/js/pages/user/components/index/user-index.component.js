@@ -3,8 +3,6 @@ import { UserService } from '../../services/user.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
-import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
-import { RoleService } from '../../../role/services/role.service.js';
 
 export class UserIndexComponent extends BaseComponent {
   constructor() {
@@ -18,7 +16,6 @@ export class UserIndexComponent extends BaseComponent {
     if (btnNuevoRegistro && !AuthService.hasPermission('CREATE', 'usuarios')) {
       btnNuevoRegistro.classList.add('d-none');
     }
-
 
     const tblDatos = this.querySelector('#tbl-datos-usuarios');
 
@@ -55,7 +52,7 @@ export class UserIndexComponent extends BaseComponent {
               return `<span class="badge bg-${user.activo ? 'success' : 'danger'}-soft text-${user.activo ? 'success' : 'danger'} small fw-semibold">
                 ${user.activo ? 'Activo' : 'Inactivo'}
               </span>`;
-            }
+            },
           },
           {
             header: 'Creado el',

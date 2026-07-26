@@ -1,4 +1,10 @@
-<div class="modal fade" id="direccionModal" tabindex="-1" aria-labelledby="direccionModalLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="direccionModal"
+  tabindex="-1"
+  aria-labelledby="direccionModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
@@ -10,17 +16,21 @@
           <i class="bi bi-exclamation-triangle-fill me-2"></i>
           <span id="direccionModalErrorMessage">Error.</span>
         </div>
-        
+
         <form id="direccionForm" novalidate>
           <input type="hidden" id="direccionId" />
-          
+
           <!-- Selectores Cascaded para el territorio -->
           <div class="bg-light p-3 rounded border mb-4">
-            <h6 class="fw-bold text-dark small mb-3"><i class="bi bi-geo-fill text-primary"></i> Ubicación Geográfica</h6>
+            <h6 class="fw-bold text-dark small mb-3">
+              <i class="bi bi-geo-fill text-primary"></i> Ubicación Geográfica
+            </h6>
             <div class="row g-3">
               <!-- País -->
               <div class="col-md-6">
-                <label for="dirPaisSelect" class="form-label small fw-semibold text-dark">País</label>
+                <label for="dirPaisSelect" class="form-label small fw-semibold text-dark"
+                  >País</label
+                >
                 <select id="dirPaisSelect" class="form-select form-select-sm" required>
                   <option value="">-- Seleccione --</option>
                   <!-- Se inyecta dinámicamente -->
@@ -29,62 +39,160 @@
               </div>
 
               <!-- Nivel 1 -->
-              <div class="col-md-6 d-none" id="colDirNivel1" style="opacity: 0; transform: translateY(-10px); transition: opacity 0.3s ease, transform 0.3s ease;">
-                <label id="lblDirNivel1" for="dirNivel1Select" class="form-label small fw-semibold text-dark">&nbsp;</label>
+              <div
+                class="col-md-6 d-none"
+                id="colDirNivel1"
+                style="
+                  opacity: 0;
+                  transform: translateY(-10px);
+                  transition:
+                    opacity 0.3s ease,
+                    transform 0.3s ease;
+                "
+              >
+                <label
+                  id="lblDirNivel1"
+                  for="dirNivel1Select"
+                  class="form-label small fw-semibold text-dark"
+                  >&nbsp;</label
+                >
                 <select id="dirNivel1Select" class="form-select form-select-sm" disabled>
                   <option value="">-- Seleccione País primero --</option>
                 </select>
               </div>
 
               <!-- Nivel 2 -->
-              <div class="col-md-6 d-none" id="colDirNivel2" style="opacity: 0; transform: translateY(-10px); transition: opacity 0.3s ease, transform 0.3s ease;">
-                <label id="lblDirNivel2" for="dirNivel2Select" class="form-label small fw-semibold text-dark">&nbsp;</label>
+              <div
+                class="col-md-6 d-none"
+                id="colDirNivel2"
+                style="
+                  opacity: 0;
+                  transform: translateY(-10px);
+                  transition:
+                    opacity 0.3s ease,
+                    transform 0.3s ease;
+                "
+              >
+                <label
+                  id="lblDirNivel2"
+                  for="dirNivel2Select"
+                  class="form-label small fw-semibold text-dark"
+                  >&nbsp;</label
+                >
                 <select id="dirNivel2Select" class="form-select form-select-sm" disabled>
                   <option value="">-- Seleccione Nivel 1 primero --</option>
                 </select>
               </div>
 
               <!-- Nivel 3 -->
-              <div class="col-md-6 d-none" id="colDirNivel3" style="opacity: 0; transform: translateY(-10px); transition: opacity 0.3s ease, transform 0.3s ease;">
-                <label id="lblDirNivel3" for="dirNivel3Select" class="form-label small fw-semibold text-dark">&nbsp;</label>
+              <div
+                class="col-md-6 d-none"
+                id="colDirNivel3"
+                style="
+                  opacity: 0;
+                  transform: translateY(-10px);
+                  transition:
+                    opacity 0.3s ease,
+                    transform 0.3s ease;
+                "
+              >
+                <label
+                  id="lblDirNivel3"
+                  for="dirNivel3Select"
+                  class="form-label small fw-semibold text-dark"
+                  >&nbsp;</label
+                >
                 <select id="dirNivel3Select" class="form-select form-select-sm" disabled>
                   <option value="">-- Seleccione Nivel 2 primero --</option>
                 </select>
               </div>
 
               <!-- Opciones de resolución para Parroquia Faltante -->
-              <div id="missingTerritoryResolver" class="col-12 d-none mt-2 border-top pt-3 animate-fade-in">
-                <div class="card border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 shadow-none">
+              <div
+                id="missingTerritoryResolver"
+                class="col-12 d-none mt-2 border-top pt-3 animate-fade-in"
+              >
+                <div
+                  class="card border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 shadow-none"
+                >
                   <div class="d-flex align-items-start gap-2 mb-2">
                     <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
                     <div>
-                      <span class="fw-bold text-dark d-block" style="font-size: 0.85rem;">Parroquia Faltante Detectada</span>
-                      <span class="text-secondary small" style="font-size: 0.8rem;">La parroquia "<span id="missingTerritoryNameSpan" class="fw-bold text-dark"></span>" no está registrada en tu base de datos.</span>
+                      <span class="fw-bold text-dark d-block" style="font-size: 0.85rem"
+                        >Parroquia Faltante Detectada</span
+                      >
+                      <span class="text-secondary small" style="font-size: 0.8rem"
+                        >La parroquia "<span
+                          id="missingTerritoryNameSpan"
+                          class="fw-bold text-dark"
+                        ></span
+                        >" no está registrada en tu base de datos.</span
+                      >
                     </div>
                   </div>
-                  
+
                   <div class="d-flex flex-column gap-2 mt-2 ps-4">
                     <!-- Opción 1: Asociar a la más cercana -->
                     <div class="form-check" id="resolveOptFallbackContainer">
-                      <input class="form-check-input" type="radio" name="territoryResolveOption" id="resolveOptFallback" value="fallback" checked>
-                      <label class="form-check-label text-dark small" for="resolveOptFallback" style="cursor: pointer;">
-                        <strong>Asociar a la más cercana:</strong> Usar la cabecera cantonal "<span id="fallbackParishNameSpan" class="fw-bold"></span>"
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="territoryResolveOption"
+                        id="resolveOptFallback"
+                        value="fallback"
+                        checked
+                      />
+                      <label
+                        class="form-check-label text-dark small"
+                        for="resolveOptFallback"
+                        style="cursor: pointer"
+                      >
+                        <strong>Asociar a la más cercana:</strong> Usar la cabecera cantonal "<span
+                          id="fallbackParishNameSpan"
+                          class="fw-bold"
+                        ></span
+                        >"
                       </label>
                     </div>
-                    
+
                     <!-- Opción 2: Seleccionar otra existente -->
                     <div class="form-check" id="resolveOptExistingContainer">
-                      <input class="form-check-input" type="radio" name="territoryResolveOption" id="resolveOptExisting" value="existing">
-                      <label class="form-check-label text-dark small" for="resolveOptExisting" style="cursor: pointer;">
-                        <strong>Seleccionar otra existente:</strong> Elegir manualmente de la lista de parroquias registradas
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="territoryResolveOption"
+                        id="resolveOptExisting"
+                        value="existing"
+                      />
+                      <label
+                        class="form-check-label text-dark small"
+                        for="resolveOptExisting"
+                        style="cursor: pointer"
+                      >
+                        <strong>Seleccionar otra existente:</strong> Elegir manualmente de la lista
+                        de parroquias registradas
                       </label>
                     </div>
-                    
+
                     <!-- Opción 3: Registrar nueva -->
                     <div class="form-check" id="resolveOptRegisterContainer">
-                      <input class="form-check-input" type="radio" name="territoryResolveOption" id="resolveOptRegister" value="register">
-                      <label class="form-check-label text-dark small" for="resolveOptRegister" style="cursor: pointer;">
-                        <strong>Crear y usar nueva:</strong> Registrar "<span id="newParishNameSpan" class="fw-bold"></span>" automáticamente al guardar
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="territoryResolveOption"
+                        id="resolveOptRegister"
+                        value="register"
+                      />
+                      <label
+                        class="form-check-label text-dark small"
+                        for="resolveOptRegister"
+                        style="cursor: pointer"
+                      >
+                        <strong>Crear y usar nueva:</strong> Registrar "<span
+                          id="newParishNameSpan"
+                          class="fw-bold"
+                        ></span
+                        >" automáticamente al guardar
                       </label>
                     </div>
                   </div>
@@ -98,67 +206,150 @@
             <div class="col-md-6">
               <!-- Campos Detalle, Referencia, CP -->
               <div class="mb-3">
-                <label for="direccionDetalle" class="form-label fw-semibold text-dark">Dirección (Detalle)</label>
-                <input type="text" class="form-control" id="direccionDetalle" required placeholder="Ej: Av. Francisco de Orellana" />
+                <label for="direccionDetalle" class="form-label fw-semibold text-dark"
+                  >Dirección (Detalle)</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="direccionDetalle"
+                  required
+                  placeholder="Ej: Av. Francisco de Orellana"
+                />
                 <div class="invalid-feedback">La dirección es obligatoria.</div>
               </div>
 
               <div class="mb-3">
-                <label for="direccionReferencia" class="form-label fw-semibold text-dark">Referencia</label>
-                <input type="text" class="form-control" id="direccionReferencia" placeholder="Ej: Frente al centro comercial" />
+                <label for="direccionReferencia" class="form-label fw-semibold text-dark"
+                  >Referencia</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="direccionReferencia"
+                  placeholder="Ej: Frente al centro comercial"
+                />
               </div>
 
               <div class="row g-3 mb-3">
                 <div class="col-6">
-                  <label for="direccionCodigoPostal" class="form-label fw-semibold text-dark">Cód. Postal</label>
-                  <input type="text" class="form-control" id="direccionCodigoPostal" placeholder="Ej: 15023" />
+                  <label for="direccionCodigoPostal" class="form-label fw-semibold text-dark"
+                    >Cód. Postal</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="direccionCodigoPostal"
+                    placeholder="Ej: 15023"
+                  />
                 </div>
                 <div class="col-6">
-                  <label class="form-label fw-semibold text-dark">Estado</label>
+                  <label for="direccionActivo" class="form-label fw-semibold text-dark"
+                    >Estado</label
+                  >
                   <div class="form-check form-switch pt-2">
-                    <input class="form-check-input" type="checkbox" role="switch" id="direccionActivo" checked />
-                    <label class="form-check-label fw-semibold text-dark" for="direccionActivo">Activa</label>
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      aria-checked="true"
+                      id="direccionActivo"
+                      checked
+                    />
+                    <label class="form-check-label fw-semibold text-dark" for="direccionActivo"
+                      >Activa</label
+                    >
                   </div>
                 </div>
               </div>
 
               <div class="row g-2 mb-3">
                 <div class="col-6">
-                  <label for="direccionLatitud" class="form-label small fw-semibold text-dark">Latitud</label>
-                  <input type="text" class="form-control form-control-sm" id="direccionLatitud" readonly placeholder="Clic en el mapa" />
+                  <label for="direccionLatitud" class="form-label small fw-semibold text-dark"
+                    >Latitud</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    id="direccionLatitud"
+                    readonly
+                    placeholder="Clic en el mapa"
+                  />
                 </div>
                 <div class="col-6">
-                  <label for="direccionLongitud" class="form-label small fw-semibold text-dark">Longitud</label>
-                  <input type="text" class="form-control form-control-sm" id="direccionLongitud" readonly placeholder="Clic en el mapa" />
+                  <label for="direccionLongitud" class="form-label small fw-semibold text-dark"
+                    >Longitud</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    id="direccionLongitud"
+                    readonly
+                    placeholder="Clic en el mapa"
+                  />
                 </div>
               </div>
 
               <!-- Info de ubicación detectada por GPS (Nominatim/BigDataCloud) -->
-              <div id="gpsLocationInfo" class="d-none p-3 mb-3 shadow-sm border" style="font-size: 0.85rem; border-radius: 12px; background: linear-gradient(135deg, #f9fbfe 0%, #f0f4f9 100%); border-color: rgba(13, 110, 253, 0.12) !important;">
+              <div
+                id="gpsLocationInfo"
+                class="d-none p-3 mb-3 shadow-sm border"
+                style="
+                  font-size: 0.85rem;
+                  border-radius: 12px;
+                  background: linear-gradient(135deg, #f9fbfe 0%, #f0f4f9 100%);
+                  border-color: rgba(13, 110, 253, 0.12) !important;
+                "
+              >
                 <div class="d-flex align-items-start gap-3">
-                  <div class="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 36px; height: 36px; flex-shrink: 0;">
+                  <div
+                    class="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle"
+                    style="width: 36px; height: 36px; flex-shrink: 0"
+                  >
                     <i class="bi bi-geo-alt-fill fs-5"></i>
                   </div>
                   <div class="flex-grow-1">
                     <div class="d-flex align-items-center gap-2 mb-1">
-                      <span class="fw-bold text-dark" style="font-size: 0.9rem;">Ubicación GPS Detectada</span>
-                      <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-0.5" style="font-size: 0.7rem; font-weight: 600;">
-                        <span class="spinner-grow spinner-grow-sm text-success me-1" role="status" style="width: 6px; height: 6px;"></span>
+                      <span class="fw-bold text-dark" style="font-size: 0.9rem"
+                        >Ubicación GPS Detectada</span
+                      >
+                      <span
+                        class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-0.5"
+                        style="font-size: 0.7rem; font-weight: 600"
+                      >
+                        <output
+                          class="spinner-grow spinner-grow-sm text-success me-1"
+                          style="width: 6px; height: 6px"
+                        ></output>
                         Sincronizado
                       </span>
                     </div>
-                    <span id="gpsLocationText" class="text-secondary fw-medium lh-sm d-block">Cargando...</span>
+                    <span id="gpsLocationText" class="text-secondary fw-medium lh-sm d-block"
+                      >Cargando...</span
+                    >
                   </div>
                 </div>
-                
+
                 <!-- Alerta de territorio faltante -->
-                <div id="missingTerritoryAlert" class="mt-3 p-2.5 rounded-3 border d-none" style="background-color: #fff8f8; border-color: rgba(220, 53, 69, 0.15) !important;">
+                <div
+                  id="missingTerritoryAlert"
+                  class="mt-3 p-2.5 rounded-3 border d-none"
+                  style="
+                    background-color: #fff8f8;
+                    border-color: rgba(220, 53, 69, 0.15) !important;
+                  "
+                >
                   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <span class="text-danger small fw-semibold d-flex align-items-center gap-1.5">
-                      <i class="bi bi-exclamation-triangle-fill fs-6"></i> 
+                      <i class="bi bi-exclamation-triangle-fill fs-6"></i>
                       <span id="missingTerritoryMessage">Territorio no registrado.</span>
                     </span>
-                    <button type="button" id="btnRegistrarTerritorioFaltante" class="btn btn-sm btn-danger fw-bold rounded-pill px-3 py-1 text-xs shadow-sm d-none hover-scale-up" style="transition: transform 0.2s;">
+                    <button
+                      type="button"
+                      id="btnRegistrarTerritorioFaltante"
+                      class="btn btn-sm btn-danger fw-bold rounded-pill px-3 py-1 text-xs shadow-sm d-none hover-scale-up"
+                      style="transition: transform 0.2s"
+                    >
                       <i class="bi bi-plus-lg"></i> Registrar
                     </button>
                   </div>
@@ -168,21 +359,34 @@
 
             <!-- Mapa lado derecho -->
             <div class="col-md-6">
-              <label class="form-label fw-semibold text-dark d-flex justify-content-between">
+              <h6 class="form-label fw-semibold text-dark d-flex justify-content-between">
                 <span>Pin en el Mapa</span>
-                <span class="text-muted small fw-normal"><i class="bi bi-info-circle"></i> Haz clic para marcar</span>
-              </label>
-              <div id="modalMap" class="border shadow-sm" style="height: 250px; border-radius: 8px; z-index: 1;"></div>
+                <span class="text-muted small fw-normal"
+                  ><i class="bi bi-info-circle"></i> Haz clic para marcar</span
+                >
+              </h6>
+              <div
+                id="modalMap"
+                class="border shadow-sm"
+                style="height: 250px; border-radius: 8px; z-index: 1"
+              ></div>
               <div id="autofillStatus" class="mt-2 small text-primary d-none">
-                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" style="width: 0.8rem; height: 0.8rem;"></span>
+                <output
+                  class="spinner-border spinner-border-sm me-1"
+                  style="width: 0.8rem; height: 0.8rem"
+                ></output>
                 <span id="autofillStatusText">Autorellenando ubicación...</span>
               </div>
             </div>
           </div>
 
           <div class="d-flex justify-content-end gap-2 mt-3">
-            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnDireccionSubmit">Guardar Dirección</button>
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnDireccionSubmit">
+              Guardar Dirección
+            </button>
           </div>
         </form>
       </div>

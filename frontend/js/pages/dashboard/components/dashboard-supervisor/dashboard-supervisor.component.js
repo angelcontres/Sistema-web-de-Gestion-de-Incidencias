@@ -104,7 +104,9 @@ export class DashboardSupervisorComponent extends BaseComponent {
       const chartTendencia = window.echarts.init(this.querySelector('#chartTendencia'));
       const xAxisData = (data.tendencia_temporal || []).map((item) => {
         const date = new Date(item.metric);
-        return isNaN(date.getTime()) ? String(item.metric) : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return Number.isNaN(date.getTime())
+          ? String(item.metric)
+          : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       });
       const seriesData = (data.tendencia_temporal || []).map((item) => Number(item.value));
       chartTendencia.setOption({

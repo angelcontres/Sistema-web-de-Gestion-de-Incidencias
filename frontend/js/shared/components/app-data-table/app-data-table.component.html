@@ -2,7 +2,10 @@
 <div class="premium-table-wrapper bg-white">
   <div class="premium-card-header px-4 pt-4 pb-3 mb-0 border-bottom">
     <h5 class="premium-card-title" id="title-container">Lista de Registros</h5>
-    <span class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small d-none" id="total-badge"></span>
+    <span
+      class="badge bg-primary-soft rounded-pill px-2.5 py-1 text-primary small d-none"
+      id="total-badge"
+    ></span>
   </div>
 
   <div class="card-body p-0 position-relative">
@@ -14,22 +17,12 @@
 
     <!-- Loading State (Skeleton Loaders) -->
     <div id="loading-spinner" class="d-none w-100">
-      <table class="table table-borderless mb-0 w-100">
-        <tbody>
-          <tr>
-            <td class="p-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
-          </tr>
-          <tr>
-            <td class="px-4 pb-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
-          </tr>
-          <tr>
-            <td class="px-4 pb-4"><div class="skeleton-box w-100" style="height: 40px;"></div></td>
-          </tr>
-          <tr>
-            <td class="px-4 pb-4"><div class="skeleton-box w-75" style="height: 40px;"></div></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="d-flex flex-column w-100">
+        <div class="p-4"><div class="skeleton-box w-100" style="height: 40px"></div></div>
+        <div class="px-4 pb-4"><div class="skeleton-box w-100" style="height: 40px"></div></div>
+        <div class="px-4 pb-4"><div class="skeleton-box w-100" style="height: 40px"></div></div>
+        <div class="px-4 pb-4"><div class="skeleton-box w-75" style="height: 40px"></div></div>
+      </div>
     </div>
 
     <!-- Empty State -->
@@ -54,14 +47,18 @@
   </div>
 
   <!-- Paginación (Card Footer) -->
-  <div class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center d-none" id="pagination-container">
+  <div
+    class="card-footer bg-white border-top py-3 d-flex justify-content-between align-items-center d-none"
+    id="pagination-container"
+  >
     <div class="small text-muted d-flex align-items-center gap-3" id="pagination-info">
       <div>
-        Mostrando <span class="fw-semibold text-dark" id="page-current">0</span> de <span class="fw-semibold text-dark" id="page-total">0</span> páginas
+        Mostrando <span class="fw-semibold text-dark" id="page-current">0</span> de
+        <span class="fw-semibold text-dark" id="page-total">0</span> páginas
       </div>
       <div class="d-flex align-items-center gap-2">
         <label for="select-per-page" class="mb-0">Por página:</label>
-        <select id="select-per-page" class="form-select form-select-sm" style="width: 70px;">
+        <select id="select-per-page" class="form-select form-select-sm" style="width: 70px">
           <option value="5">5</option>
           <option value="10">10</option>
           <option value="15" selected>15</option>

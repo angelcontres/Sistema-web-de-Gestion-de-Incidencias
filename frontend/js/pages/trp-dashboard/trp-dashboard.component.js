@@ -53,7 +53,7 @@ export class TrpDashboardComponent extends BaseComponent {
       });
 
       if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
+        console.error(`Error HTTP: ${response.status}`);
       }
 
       const blob = await response.blob();

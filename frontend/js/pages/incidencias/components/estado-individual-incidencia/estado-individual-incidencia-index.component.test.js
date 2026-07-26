@@ -193,4 +193,33 @@ describe('EstadoIndividualIncidenciaComponent', () => {
     const timeline = component.querySelector('#timeline-container');
     expect(timeline.innerHTML).toContain('Rechazado');
   });
+  it('crearBurbujaChat - covers R1 and R2 by using optional chaining and subroutines', async () => {
+    const component = await getComponent();
+    
+    // Simulating an item with optional chaining cases
+    const item = {
+      usuario_id: 1,
+      created_at: new Date().toISOString(),
+      comentario: '[RESOLUCIÓN] test res',
+      estado: { nombre: 'Resuelto' }
+    };
+    
+    // Calling the refactored function that proves R1 (subroutines) and R2 (optional chaining)
+    const bubble = component.crearBurbujaChat(item);
+    
+    expect(bubble.innerHTML).toContain('test res');
+    expect(bubble.innerHTML).toContain('Resuelto');
+  });
+
+  it('parseComentario - correctly parses different comments (R1)', async () => {
+    const component = await getComponent();
+    
+    let result = component.parseComentario('[VINCULADO] 123');
+    expect(result.comentario).toContain('Alguien más se vinculó');
+    expect(result.isStateChange).toBe(false);
+    
+    result = component.parseComentario('[RESOLUCIÓN] res');
+    expect(result.comentario).toBe('res');
+    expect(result.isStateChange).toBe(true);
+  });
 });

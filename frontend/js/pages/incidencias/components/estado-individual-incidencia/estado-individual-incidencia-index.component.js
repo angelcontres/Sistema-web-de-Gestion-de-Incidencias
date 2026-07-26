@@ -34,15 +34,9 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     this.scrollToBottom();
 
     // Hide comment form if user is Supervisor (Supervisor can only view, not comment)
-    if (
-      this.currentUser &&
-      this.currentUser.roles &&
-      this.currentUser.roles.some((r) => r.nombre === 'Supervisor')
-    ) {
+    if (this.currentUser?.roles?.some((r) => r.nombre === 'Supervisor')) {
       const formContainer = this.querySelector('.card-footer');
-      if (formContainer) {
-        formContainer.style.display = 'none';
-      }
+      if (formContainer) formContainer.style.display = 'none';
     }
   }
 
@@ -93,6 +87,13 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   }
 
   renderDetalles(inc) {
+    this._renderHeaderInfo(inc);
+    this.renderTimeline(inc);
+    this._renderReportantes(inc);
+    this._renderAdjuntos(inc);
+  }
+
+  _renderHeaderInfo(inc) {
     this.querySelector('#lbl-descripcion-header').textContent =
       inc.incidencia_descripcion || 'Sin descripción';
 
@@ -124,13 +125,11 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
 
     this.querySelector('#lbl-fecha-registro').innerHTML =
       `Registrado ${timeAgo} (<span class="fw-bold text-dark">${dateFormatted}</span>)`;
-    this.querySelector('#lbl-direccion').textContent = inc.direccion
-      ? inc.direccion.detalle
-      : 'Sin dirección';
+    this.querySelector('#lbl-direccion').textContent = inc.direccion?.detalle ?? 'Sin dirección';
     this.querySelector('#lbl-afectados').textContent = inc.cantidad_afectados_incidencia || 0;
 
     const inst = this.querySelector('#lbl-institucion');
-    inst.textContent = inc.institucion ? inc.institucion.nombre : 'No asignada';
+    inst.textContent = inc.institucion?.nombre ?? 'No asignada';
     if (!inc.institucion) inst.classList.add('text-muted');
 
     if (inc.prioridad) {
@@ -148,103 +147,86 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
           ${inc.estado.nombre}
         </span>`;
     }
+  }
 
-    this.renderTimeline(inc);
-
-    // Render reportantes vinculados
+  _renderReportantes(inc) {
     const reportantesContainer = this.querySelector('#container-reportantes');
     const reportantesList = this.querySelector('#list-reportantes');
 
-    if (reportantesContainer && reportantesList) {
-      const reportantes = inc.reportantes || [];
-      if (reportantes.length > 0) {
-        reportantesContainer.classList.remove('d-none');
+    if (!reportantesContainer || !reportantesList) return;
 
-        let html;
-        if (reportantes.length <= 3) {
-          html =
-            `<ul class="list-unstyled mb-0">` +
-            reportantes
-              .map((r) => {
-                const creadorText =
-                  r.id === inc.cliente_id
-                    ? ' <span class="text-muted small fst-italic">(creador)</span>'
-                    : '';
-                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
-              })
-              .join('') +
-            `</ul>`;
-        } else {
-          const visible = reportantes.slice(0, 3);
-          const others = reportantes.slice(3);
-          const othersNames = others
-            .map((r) => (r.id === inc.cliente_id ? `${r.name} (creador)` : r.name))
-            .join(', ');
-
-          html =
-            `<ul class="list-unstyled mb-0">` +
-            visible
-              .map((r) => {
-                const creadorText =
-                  r.id === inc.cliente_id
-                    ? ' <span class="text-muted small fst-italic">(creador)</span>'
-                    : '';
-                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
-              })
-              .join('') +
-            `</ul>` +
-            `<div class="small text-muted mt-2" title="${othersNames}">+ ${others.length} reportante(s) adicional(es)</div>`;
-        }
-        reportantesList.innerHTML = html;
-
-        setTimeout(() => {
-          const tooltipTriggerList = [].slice.call(
-            this.querySelectorAll('[data-bs-toggle="tooltip"]')
-          );
-          tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-          });
-        }, 100);
-      } else {
-        reportantesContainer.classList.add('d-none');
-      }
+    const reportantes = inc.reportantes || [];
+    if (reportantes.length === 0) {
+      reportantesContainer.classList.add('d-none');
+      return;
     }
 
-    // Render adjuntos
+    reportantesContainer.classList.remove('d-none');
+
+    const renderReportanteItem = (r) => {
+      const creadorText =
+        r.id === inc.cliente_id
+          ? ' <span class="text-muted small fst-italic">(creador)</span>'
+          : '';
+      return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+    };
+
+    if (reportantes.length <= 3) {
+      reportantesList.innerHTML = `<ul class="list-unstyled mb-0">${reportantes.map(renderReportanteItem).join('')}</ul>`;
+    } else {
+      const visible = reportantes.slice(0, 3);
+      const others = reportantes.slice(3);
+      const othersNames = others
+        .map((r) => (r.id === inc.cliente_id ? `${r.name} (creador)` : r.name))
+        .join(', ');
+
+      reportantesList.innerHTML = 
+        `<ul class="list-unstyled mb-0">${visible.map(renderReportanteItem).join('')}</ul>` +
+        `<div class="small text-muted mt-2" title="${othersNames}">+ ${others.length} reportante(s) adicional(es)</div>`;
+    }
+
+    setTimeout(() => {
+      const tooltipTriggerList = Array.prototype.slice.call(
+        this.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+    }, 100);
+  }
+
+  _renderAdjuntos(inc) {
     const containerAdjuntos = this.querySelector('#container-adjuntos');
     const msgNoAdjuntos = this.querySelector('#no-adjuntos-msg');
 
-    if (containerAdjuntos && msgNoAdjuntos) {
-      if (inc.recursos && inc.recursos.length > 0) {
-        msgNoAdjuntos.classList.add('d-none');
+    if (!containerAdjuntos || !msgNoAdjuntos) return;
 
-        let adjuntosHtml = '';
-        inc.recursos.forEach((recurso) => {
-          const fileName = recurso.url.substring(recurso.url.lastIndexOf('/') + 1) || 'adjunto';
-          const isImage = fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-          const icon = isImage ? 'bi-image' : 'bi-file-earmark-text';
+    Array.from(containerAdjuntos.children).forEach((child) => {
+      if (child.id !== 'no-adjuntos-msg') child.remove();
+    });
 
-          adjuntosHtml += `
-            <a href="${recurso.url}" target="_blank" class="text-decoration-none text-dark">
-              <div class="border rounded p-3 text-center bg-light" style="width: 120px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
-                <i class="bi ${icon} text-muted mb-2" style="font-size: 2rem;"></i>
-                <div class="small text-truncate" title="${fileName}">${fileName}</div>
-              </div>
-            </a>
-          `;
-        });
+    if (inc.recursos?.length > 0) {
+      msgNoAdjuntos.classList.add('d-none');
 
-        Array.from(containerAdjuntos.children).forEach((child) => {
-          if (child.id !== 'no-adjuntos-msg') child.remove();
-        });
+      let adjuntosHtml = '';
+      inc.recursos.forEach((recurso) => {
+        const fileName = recurso.url.substring(recurso.url.lastIndexOf('/') + 1) || 'adjunto';
+        const isImage = fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+        const icon = isImage ? 'bi-image' : 'bi-file-earmark-text';
 
-        containerAdjuntos.insertAdjacentHTML('beforeend', adjuntosHtml);
-      } else {
-        msgNoAdjuntos.classList.remove('d-none');
-        Array.from(containerAdjuntos.children).forEach((child) => {
-          if (child.id !== 'no-adjuntos-msg') child.remove();
-        });
-      }
+        adjuntosHtml += `
+          <a href="${recurso.url}" target="_blank" class="text-decoration-none text-dark">
+            <div class="border rounded p-3 text-center bg-light" style="width: 120px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
+              <i class="bi ${icon} text-muted mb-2" style="font-size: 2rem;"></i>
+              <div class="small text-truncate" title="${fileName}">${fileName}</div>
+            </div>
+          </a>
+        `;
+      });
+
+      containerAdjuntos.insertAdjacentHTML('beforeend', adjuntosHtml);
+    } else {
+      msgNoAdjuntos.classList.remove('d-none');
     }
   }
 
@@ -283,10 +265,11 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
         textClass = 'text-dark';
       }
 
+      const isPastColor = isPast ? 'var(--primary-color, #7c3aed)' : '#e9ecef';
       const isLast = index === steps.length - 1;
       const lineHtml = isLast
         ? ''
-        : `<div class="position-absolute" style="left: 11px; top: 24px; bottom: -8px; width: 2px; background-color: ${isPast ? 'var(--primary-color, #7c3aed)' : '#e9ecef'}; z-index: 0;"></div>`;
+        : `<div class="position-absolute" style="left: 11px; top: 24px; bottom: -8px; width: 2px; background-color: ${isPastColor}; z-index: 0;"></div>`;
 
       html += `
         <div class="position-relative mb-3 d-flex align-items-center" style="min-height: 32px;">
@@ -352,83 +335,94 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   }
 
   crearBurbujaChat(item) {
-    const isMine = this.currentUser && item.usuario_id === this.currentUser.id;
+    const isMine = this.currentUser?.id === item.usuario_id;
     const div = document.createElement('div');
 
     const alignClass = isMine ? 'align-self-end' : 'align-self-start';
-    const bgClass = isMine ? 'text-dark border shadow-sm' : 'bg-white text-dark border shadow-sm';
-    const timeClass = 'text-muted';
-
-    const autorNombre = item.usuario ? item.usuario.name : 'Sistema';
-    let comentario = item.comentario || 'Cambio de estado';
+    
+    const autorNombre = item.usuario?.name ?? 'Sistema';
     const fecha = new Date(item.created_at).toLocaleString();
+
+    let { comentario, isStateChange } = this.parseComentario(item.comentario);
+    const editadoHtml = this.obtenerEditadoHtml(item);
+    const estadoBadge = this.crearEstadoBadge(item, isStateChange);
+
+    div.className = `d-flex flex-column ${alignClass} mb-2`;
+    div.style.maxWidth = '75%';
+
+    div.innerHTML = this.obtenerPlantillaBurbuja(isMine, autorNombre, comentario, estadoBadge, fecha, editadoHtml);
+    return div;
+  }
+
+  obtenerEditadoHtml(item) {
+    if (item.updated_at && item.created_at !== item.updated_at) {
+      return '<span class="ms-2 fst-italic" style="font-size: 0.7em;">(Editado)</span>';
+    }
+    return '';
+  }
+
+  obtenerPlantillaBurbuja(isMine, autorNombre, comentario, estadoBadge, fecha, editadoHtml) {
+    const headerClass = isMine ? 'text-end text-primary' : 'text-secondary';
+    const bgClass = isMine ? 'text-dark border shadow-sm' : 'bg-white text-dark border shadow-sm';
+    const borderRadius = `border-bottom-${isMine ? 'right' : 'left'}-radius: 0;`;
+    const bgStyle = isMine ? 'background-color: #e9ecef; border-color: #dee2e6 !important;' : '';
+
+    return `
+      <div class="small fw-bold mb-1 ${headerClass}">
+        ${autorNombre}
+      </div>
+      <div class="${bgClass} rounded-4 p-3" style="${borderRadius} ${bgStyle}">
+        <div class="mb-0" style="word-wrap: break-word;">${comentario}</div>
+        ${estadoBadge}
+        <div class="mt-2 text-end small text-muted" style="font-size: 0.75rem;">
+          ${fecha} ${editadoHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  parseComentario(texto = 'Cambio de estado') {
+    let comentario = texto;
+    let isStateChange =
+      comentario === 'Cambio de estado' ||
+      comentario === 'Resolución confirmada por el solicitante/operador.';
 
     if (comentario.startsWith('[VINCULADO] ')) {
       comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(12);
     } else if (comentario.startsWith('Reporte ciudadano coincidente adjuntado: ')) {
       comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(41);
-    }
-
-    // UI logic for "(Editado)" - Assuming created_at and updated_at differ
-    let editadoHtml = '';
-    if (item.updated_at && item.created_at !== item.updated_at) {
-      editadoHtml = '<span class="ms-2 fst-italic" style="font-size: 0.7em;">(Editado)</span>';
-    }
-
-    let isStateChange = (comentario === 'Cambio de estado' || comentario === 'Resolución confirmada por el solicitante/operador.');
-    
-    if (comentario.startsWith('[RESOLUCIÓN] ')) {
+    } else if (comentario.startsWith('[RESOLUCIÓN] ')) {
       isStateChange = true;
       comentario = comentario.substring(13);
     }
 
-    // Badge for state change if applicable
-    let estadoBadge = '';
-    if (item.estado && isStateChange) {
-      let evidenciaHtml = '';
-      if (
-        item.estado.nombre === 'Resuelto' &&
-        this.currentIncidencia &&
-        this.currentIncidencia.recursos
-      ) {
-        const imagenes = this.currentIncidencia.recursos.filter((r) =>
-          r.url.match(/\.(jpeg|jpg|gif|png|webp)$/i)
-        );
-        if (imagenes.length > 0) {
-          const lastImage = imagenes[imagenes.length - 1];
-          const fileName =
-            lastImage.url.substring(lastImage.url.lastIndexOf('/') + 1) || 'evidencia';
-          evidenciaHtml = `
-            <div class="mt-2">
-              <a href="${lastImage.url}" target="_blank" class="text-decoration-none text-dark d-inline-block">
-                <div class="border rounded p-2 text-center bg-light" style="width: 100px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
-                  <i class="bi bi-image text-muted mb-1" style="font-size: 1.5rem;"></i>
-                  <div class="small text-truncate" style="font-size: 0.7rem;" title="${fileName}">Evidencia</div>
-                </div>
-              </a>
-            </div>
-          `;
-        }
+    return { comentario, isStateChange };
+  }
+
+  crearEstadoBadge(item, isStateChange) {
+    if (!item.estado || !isStateChange) return '';
+
+    let evidenciaHtml = '';
+    if (item.estado.nombre === 'Resuelto' && this.currentIncidencia?.recursos) {
+      const imagenes = this.currentIncidencia.recursos.filter((r) =>
+        r.url.match(/\.(jpeg|jpg|gif|png|webp)$/i)
+      );
+      if (imagenes.length > 0) {
+        const lastImage = imagenes[imagenes.length - 1];
+        const fileName = lastImage.url.substring(lastImage.url.lastIndexOf('/') + 1) || 'evidencia';
+        evidenciaHtml = `
+          <div class="mt-2">
+            <a href="${lastImage.url}" target="_blank" class="text-decoration-none text-dark d-inline-block">
+              <div class="border rounded p-2 text-center bg-light" style="width: 100px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
+                <i class="bi bi-image text-muted mb-1" style="font-size: 1.5rem;"></i>
+                <div class="small text-truncate" style="font-size: 0.7rem;" title="${fileName}">Evidencia</div>
+              </div>
+            </a>
+          </div>
+        `;
       }
-      estadoBadge = `<div class="mt-1"><span class="text-dark small fw-bold">${item.estado.nombre}</span>${evidenciaHtml}</div>`;
     }
-
-    div.className = `d-flex flex-column ${alignClass} mb-2`;
-    div.style.maxWidth = '75%';
-
-    div.innerHTML = `
-      <div class="small fw-bold mb-1 ${isMine ? 'text-end text-primary' : 'text-secondary'}">
-        ${autorNombre}
-      </div>
-      <div class="${bgClass} rounded-4 p-3" style="border-bottom-${isMine ? 'right' : 'left'}-radius: 0; ${isMine ? 'background-color: #e9ecef; border-color: #dee2e6 !important;' : ''}">
-        <div class="mb-0" style="word-wrap: break-word;">${comentario}</div>
-        ${estadoBadge}
-        <div class="mt-2 text-end small ${timeClass}" style="font-size: 0.75rem;">
-          ${fecha} ${editadoHtml}
-        </div>
-      </div>
-    `;
-    return div;
+    return `<div class="mt-1"><span class="text-dark small fw-bold">${item.estado.nombre}</span>${evidenciaHtml}</div>`;
   }
 
   async enviarComentario() {

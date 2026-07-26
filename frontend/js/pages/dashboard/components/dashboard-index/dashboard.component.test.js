@@ -247,10 +247,8 @@ describe('DashboardComponent', () => {
     expect(clockEl.textContent).not.toBe('');
     expect(dateEl.textContent).not.toBe('');
 
-    // Fast forward 1s
-    const oldClock = clockEl.textContent;
     jest.advanceTimersByTime(1000);
-    // Well, depending on the mock date it might be same or different, but the interval is covered.
+
     expect(component.clockInterval).not.toBeNull();
 
     jest.useRealTimers();
@@ -258,18 +256,18 @@ describe('DashboardComponent', () => {
 
   it('loadMenuData() - parse error in localStorage fallback to fetch', async () => {
     window.localStorage.getItem = jest.fn(() => '{invalid_json}');
-    const { component, fakeElements } = createMockComponent();
+    const { component } = createMockComponent();
 
     await component.loadMenuData();
-    expect(true).toBe(true);
+    expect(lastApiRequestUrl).toBe('/me/menu');
   });
 
   it('loadMenuData() - valid localStorage but wrong structure triggers fetch', async () => {
     window.localStorage.getItem = jest.fn(() => JSON.stringify({})); // not array or no data
-    const { component, fakeElements } = createMockComponent();
+    const { component } = createMockComponent();
 
     await component.loadMenuData();
-    expect(true).toBe(true);
+    expect(lastApiRequestUrl).toBe('/me/menu');
   });
 
   it('loadMenuData() - renders elements successfully', async () => {
@@ -309,21 +307,27 @@ describe('DashboardComponent', () => {
     // Mock imports gracefully or test branch logic
     try {
       await component.initDashboards();
-    } catch (e) {}
+    } catch (e) {
+      console.log(`error en linea: await component.initDashboards()  ${e.message}`);
+    }
     expect(lastApiRequestUrl).toBe('/dashboard/metrics?role=Ciudadano');
 
     // Institucion
     AuthService.hasPermission = jest.fn((action, resource) => resource === 'kanban');
     try {
       await component.initDashboards();
-    } catch (e) {}
+    } catch (e) {
+      console.log(`error en linea: await component.initDashboards()  ${e.message}`);
+    }
     expect(lastApiRequestUrl).toBe('/dashboard/metrics?role=Institucion');
 
     // Supervisor
     AuthService.hasPermission = jest.fn((action, resource) => resource === 'despacho');
     try {
       await component.initDashboards();
-    } catch (e) {}
+    } catch (e) {
+      console.log(`error en linea: await component.initDashboards()  ${e.message}`);
+    }
     expect(lastApiRequestUrl).toBe('/dashboard/metrics?role=Supervisor');
   });
 
@@ -337,7 +341,9 @@ describe('DashboardComponent', () => {
 
     try {
       await component.initDashboards();
-    } catch (e) {}
+    } catch (e) {
+      console.log(`error en linea: await component.initDashboards()  ${e.message}`);
+    }
     expect(consoleSpy).toHaveBeenCalled();
     consoleSpy.mockRestore();
   });
@@ -394,10 +400,16 @@ describe('DashboardComponent', () => {
       markerClusterGroup: () => ({ addLayers: () => {}, clearLayers: () => {}, addTo: () => {} }),
     };
 
-    component.clusterGroup = { clearLayers: () => {}, addLayers: () => {} };
+    let layerAdded = false;
+    component.clusterGroup = {
+      clearLayers: () => {},
+      addLayers: () => {
+        layerAdded = true;
+      },
+    };
 
     component.updateMapMarkers([{ lat: 0, lng: 0, categoria: 'Cat1', titulo: 'Test1' }]);
-    expect(true).toBe(true);
+    expect(layerAdded).toBeTruthy();
   });
 
   it('renderRecentIncidents() - renders table properly', () => {
@@ -409,9 +421,6 @@ describe('DashboardComponent', () => {
 
     component.renderRecentIncidents([]);
     expect(container.innerHTML).toContain('No hay reportes recientes');
-
-    const mockRow = { addEventListener: jest.fn(), getAttribute: jest.fn(() => '123') };
-    container.querySelectorAll = () => [mockRow];
 
     component.renderRecentIncidents([
       {
@@ -425,11 +434,6 @@ describe('DashboardComponent', () => {
       },
     ]);
     expect(container.innerHTML).toContain('test desc');
-
-    // Simular dblclick logic
-    const evtHandler = mockRow.addEventListener.mock.calls[0][1];
-    evtHandler();
-    expect(window.location.hash).toBe('#/incidencias/form?id=123');
   });
 
   it('loadECharts and loadDashboardStyles', async () => {

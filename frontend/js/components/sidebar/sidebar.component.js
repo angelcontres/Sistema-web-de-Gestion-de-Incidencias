@@ -57,7 +57,6 @@ export class SideBarComponent extends BaseComponent {
       if (!this.menuLoaded) {
         this.loadMenuData();
       }
-      this.renderUserCard();
     }
   }
 
@@ -221,52 +220,67 @@ export class SideBarComponent extends BaseComponent {
     const links = this.querySelectorAll('.sidebar-link');
 
     links.forEach((link) => {
+      if (!(link instanceof HTMLElement)) return;
+
       const href = link.getAttribute('href');
+      const isActive = href === currentHash && !link.dataset.bsToggle;
 
-      if (href === currentHash && !link.hasAttribute('data-bs-toggle')) {
-        link.classList.remove('text-dark', 'text-secondary', 'text-primary');
-        link.classList.add('active', 'bg-primary', 'text-white');
-
-        const icon = link.querySelector('i:first-child');
-        if (icon) {
-          icon.classList.remove('text-secondary');
-          icon.classList.add('text-white');
-        }
-
-        const parentCollapse = link.closest('.collapse');
-        if (parentCollapse) {
-          parentCollapse.classList.add('show');
-
-          // The toggle button that controls this collapse
-          const parentBtn = document.querySelector(`[data-bs-target="#${parentCollapse.id}"]`);
-          if (parentBtn) {
-            const parentLink = parentBtn.closest('.sidebar-link');
-            if (parentLink) {
-              parentLink.classList.remove('text-dark');
-              parentLink.classList.add('text-primary');
-            }
-          }
-        }
-      } else {
-        link.classList.remove('active', 'bg-primary', 'text-white', 'text-primary');
-
-        const icon = link.querySelector('i:first-child');
-        if (icon) {
-          icon.classList.remove('text-white');
-          icon.classList.add('text-secondary');
-        }
-
-        if (link.closest('.collapse')) {
-          link.classList.add('text-dark');
-        } else {
-          link.classList.add('text-dark');
-        }
+      // Si no es el enlace activo, lo limpiamos y pasamos al siguiente (Guard Clause)
+      if (!isActive) {
+        this._deactivateLink(link);
+        return;
       }
+
+      // Si es el enlace activo, lo encendemos
+      this._activateLink(link);
+      this._activateParentCollapse(link);
     });
   }
 
-  renderUserCard() {
-    // Deprecated: user profile info is shown in the top navbar dropdown.
+  // Métodos auxiliares para separar responsabilidades:
+
+  _activateLink(link) {
+    link.classList.remove('text-dark', 'text-secondary', 'text-primary');
+    link.classList.add('active', 'bg-primary', 'text-white');
+
+    const icon = link.querySelector('i:first-child');
+    if (icon) {
+      icon.classList.remove('text-secondary');
+      icon.classList.add('text-white');
+    }
+  }
+
+  _deactivateLink(link) {
+    link.classList.remove('active', 'bg-primary', 'text-white', 'text-primary');
+    link.classList.add('text-dark');
+
+    const icon = link.querySelector('i:first-child');
+    if (icon) {
+      icon.classList.remove('text-white');
+      icon.classList.add('text-secondary');
+    }
+
+    // nos aseguramos de que recupere el color oscuro si ya no está activo.
+    if (link.dataset.bsToggle) {
+      link.classList.remove('text-primary');
+      link.classList.add('text-dark');
+    }
+  }
+
+  _activateParentCollapse(link) {
+    const parentCollapse = link.closest('.collapse');
+    if (!parentCollapse) return; // Si no está dentro de un colapsable, terminamos
+
+    parentCollapse.classList.add('show');
+
+    // Buscamos el botón de Bootstrap que controla este colapsable
+    const parentBtn = document.querySelector(`[data-bs-target="#${parentCollapse.id}"]`);
+    const parentLink = parentBtn?.closest('.sidebar-link');
+
+    if (parentLink) {
+      parentLink.classList.remove('text-dark');
+      parentLink.classList.add('text-primary');
+    }
   }
 }
 
