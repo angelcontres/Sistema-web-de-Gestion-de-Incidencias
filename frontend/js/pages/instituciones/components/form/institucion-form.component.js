@@ -30,7 +30,17 @@ export class InstitucionFormComponent extends BaseComponent {
     this.institucionId = null;
 
     if (this.form) {
-      this.form.addEventListener('submit', (e) => this.guardarInstitucion(e));
+      this.form.addEventListener('submit', (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        this.guardarInstitucion(e);
+      });
+    }
+
+    if (this.btnGuardarInstitucion) {
+      this.btnGuardarInstitucion.addEventListener('click', (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        this.guardarInstitucion(e);
+      });
     }
 
     // Reset form when modal is hidden
@@ -84,7 +94,7 @@ export class InstitucionFormComponent extends BaseComponent {
   }
 
   async guardarInstitucion(e) {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
 
     if (!this.validarFormulario()) return;
 

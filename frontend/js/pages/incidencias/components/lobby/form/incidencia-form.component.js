@@ -564,15 +564,16 @@ export class IncidenciaFormComponent extends BaseComponent {
   async cargarCatalogosIniciales() {
     try {
       // 1. Fetch categories
-      this.categorias = (await CatalogoService.getCategoriasIncidencia()) || [];
+      const catRes = await CatalogoService.getCategoriasIncidencia();
+      this.categorias = Array.isArray(catRes) ? catRes : catRes?.data || [];
       const rootCategories = this.categorias.filter((c) => c.parent_id === null && c.activo);
       this.tipoSelect.innerHTML =
         '<option value="">-- Seleccione --</option>' +
         rootCategories.map((c) => `<option value="${c.id}">${c.nombre}</option>`).join('');
 
       // 2. Fetch countries
-      const paises = await CatalogoService.getPaises();
-      this.paisesList = paises || [];
+      const paisesRes = await CatalogoService.getPaises();
+      this.paisesList = Array.isArray(paisesRes) ? paisesRes : paisesRes?.data || [];
       const optionsHtml =
         '<option value="">-- Seleccione --</option>' +
         this.paisesList
@@ -585,7 +586,8 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
 
       // 3. Fetch institutions
-      const insts = await CatalogoService.getInstituciones();
+      const instsRes = await CatalogoService.getInstituciones();
+      const insts = Array.isArray(instsRes) ? instsRes : instsRes?.data || [];
       this.institucionSelect.innerHTML =
         '<option value="">-- Ninguna --</option>' +
         insts.map((i) => `<option value="${i.id}">${i.nombre} (${i.siglas})</option>`).join('');
