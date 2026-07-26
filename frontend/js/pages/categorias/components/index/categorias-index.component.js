@@ -49,7 +49,7 @@ export class CategoriasIndexComponent extends BaseComponent {
 
     try {
       const resp = await CategoriaIncidenciaService.getAll(1, 15, null, undefined, { all: true });
-      this.categoriasList = Array.isArray(resp) ? resp : (resp.data || []);
+      this.categoriasList = Array.isArray(resp) ? resp : resp.data || [];
 
       if (this.categoriasList.length === 0) {
         tbody.innerHTML =
@@ -281,7 +281,7 @@ export class CategoriasIndexComponent extends BaseComponent {
     const payload = {
       nombre: this.querySelector('#categoriaNombre').value,
       descripcion: this.querySelector('#categoriaDescripcion').value || null,
-      parent_id: parentVal ? parseInt(parentVal) : null,
+      parent_id: parentVal ? Number.parseInt(parentVal) : null,
       activo: this.querySelector('#categoriaActivo').checked,
     };
 

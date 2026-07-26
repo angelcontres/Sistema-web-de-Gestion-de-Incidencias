@@ -92,7 +92,7 @@ describe('UserFormComponent', () => {
     window.location.hash = '#/usuarios/form';
     await component.onInit();
 
-    expect(component.querySelector('#userModalLabel').textContent).toBe('Crear Nuevo Usuario');
+    expect(component.querySelector('#userModalLabel').textContent).toBe('Invitar Usuario');
     expect(InstitucionService.getAll).toHaveBeenCalled();
     expect(CatalogoService.getTerritorios).toHaveBeenCalled();
     expect(RoleService.getAll).toHaveBeenCalled();
@@ -187,9 +187,9 @@ describe('UserFormComponent', () => {
     expect(component.passwordInput.required).toBe(false);
 
     component.configurarModoCreacion();
-    expect(component.formTitle.textContent).toBe('Crear Nuevo Usuario');
-    expect(component.btnText.textContent).toBe('Guardar Usuario');
-    expect(component.passwordInput.required).toBe(true);
+    expect(component.formTitle.textContent).toBe('Invitar Usuario');
+    expect(component.btnText.textContent).toBe('Enviar Invitación');
+    expect(component.passwordInput.required).toBe(false);
   });
 
   it('debería manejar errores en cargarDatosEdicion al fallar el servicio', async () => {

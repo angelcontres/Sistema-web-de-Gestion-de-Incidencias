@@ -1,5 +1,4 @@
 import { BaseComponent } from '../../../../core/base-component.js';
-import { apiRequest } from '../../../../core/api.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
@@ -26,7 +25,7 @@ export class PermissionIndexComponent extends BaseComponent {
     if (formComponent) {
       formComponent.addEventListener('permiso-guardado', (e) => {
         this.mostrarAlertaExito(e.detail.mensaje);
-        if (tblDatos && tblDatos.load) {
+        if (tblDatos?.load) {
           tblDatos.load('/permissions');
         }
       });
@@ -105,7 +104,7 @@ export class PermissionIndexComponent extends BaseComponent {
       'Cancelar',
       'btn-danger'
     );
-    
+
     if (!isConfirmed) return;
 
     PermissionService.delete(id)
@@ -113,7 +112,7 @@ export class PermissionIndexComponent extends BaseComponent {
         ToastService.success('Permiso eliminado correctamente.');
 
         const tblDatos = this.querySelector('#tbl-datos-permisos');
-        if (tblDatos && tblDatos.load) {
+        if (tblDatos?.load) {
           tblDatos.load('/permissions');
         }
       })
