@@ -168,7 +168,8 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
         r.id === inc.cliente_id
           ? ' <span class="text-muted small fst-italic">(creador)</span>'
           : '';
-      return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+      const nombre = r.name || r.username || 'Usuario Anónimo';
+      return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${nombre}${creadorText}</li>`;
     };
 
     if (reportantes.length <= 3) {
@@ -177,7 +178,10 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       const visible = reportantes.slice(0, 3);
       const others = reportantes.slice(3);
       const othersNames = others
-        .map((r) => (r.id === inc.cliente_id ? `${r.name} (creador)` : r.name))
+        .map((r) => {
+          const nombre = r.name || r.username || 'Usuario Anónimo';
+          return r.id === inc.cliente_id ? `${nombre} (creador)` : nombre;
+        })
         .join(', ');
 
       reportantesList.innerHTML = 
@@ -340,7 +344,10 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
 
     const alignClass = isMine ? 'align-self-end' : 'align-self-start';
     
-    const autorNombre = item.usuario?.name ?? 'Sistema';
+    let autorNombre = 'Sistema';
+    if (item.usuario) {
+      autorNombre = item.usuario.name || item.usuario.username || 'Usuario Anónimo';
+    }
     const fecha = new Date(item.created_at).toLocaleString();
 
     let { comentario, isStateChange } = this.parseComentario(item.comentario);

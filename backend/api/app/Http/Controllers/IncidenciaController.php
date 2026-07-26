@@ -343,5 +343,26 @@ class IncidenciaController extends Controller
                 }
             }
         }
+
+        // 3. ¿ES UNA INCIDENCIA NUEVA? -> Notificamos a Supervisores y Administradores
+        if ($oldEstadoId === null) {
+            $supervisoresYAdmins = User::whereHas('roles', function ($q) {
+                $q->whereIn('nombre', ['Admin', 'Supervisor']);
+            })->get();
+
+            foreach ($supervisoresYAdmins as $admin) {
+                try {
+                    $admin->notify(new IssueStatusChangedNotification([
+                        'title' => "Nueva Incidencia Creada (#{$incidencia->id})",
+                        'message' => 'Un usuario ha reportado una nueva incidencia en: '.($incidencia->direccion->detalle ?? 'Ubicación registrada'),
+                        'url' => "/tramites/estado-individual?id={$incidencia->id}",
+                        'type' => 'warning',
+                        'incidencia_id' => $incidencia->id,
+                    ]));
+                } catch (\Exception $e) {
+                    Log::error('Error enviando notificación de nueva incidencia: '.$e->getMessage());
+                }
+            }
+        }
     }
 }
