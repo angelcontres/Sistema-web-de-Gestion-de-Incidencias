@@ -11,6 +11,7 @@ use App\Notifications\IssueAssignedNotification;
 use App\Notifications\IssueStatusChangedNotification;
 use App\Services\IncidenciaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class IncidenciaController extends Controller
@@ -315,7 +316,7 @@ class IncidenciaController extends Controller
                         'incidencia_id' => $incidencia->id,
                     ]));
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error("Error enviando notificación de cambio de estado: " . $e->getMessage());
+                    Log::error('Error enviando notificación de cambio de estado: '.$e->getMessage());
                 }
             }
         }
@@ -338,7 +339,7 @@ class IncidenciaController extends Controller
                         'color_hex' => '#dc3545',
                     ]));
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error("Error enviando notificación de asignación: " . $e->getMessage());
+                    Log::error('Error enviando notificación de asignación: '.$e->getMessage());
                 }
             }
         }
