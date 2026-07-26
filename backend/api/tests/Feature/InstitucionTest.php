@@ -13,8 +13,11 @@ class InstitucionTest extends TestCase
     use RefreshDatabase;
 
     const ENDPOINT_INSTITUTIONS = '/api/v1/institutions';
+
     const ASSERT_INSTITUTION_NAME = 'Cruz Roja';
+
     const INSTITUTION_NAME = 'Ministerio de Salud Publica';
+
     const INSTITUTION_SIGLAS = 'MSP';
 
     private User $admin;
