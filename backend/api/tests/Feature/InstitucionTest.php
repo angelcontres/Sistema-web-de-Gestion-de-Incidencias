@@ -11,8 +11,9 @@ use Tests\TestCase;
 class InstitucionTest extends TestCase
 {
     const ENDPOINT_INSTITUTIONS = '/api/v1/institutions';
-
     const ASSERT_INSTITUTION_NAME = 'Cruz Roja';
+    const INSTITUTION_NAME = 'Ministerio de Salud Publica';
+    const INSTITUTION_SIGLAS = 'MSP';
 
     use RefreshDatabase;
 
@@ -98,5 +99,22 @@ class InstitucionTest extends TestCase
         $response = $this->deleteJson(self::ENDPOINT_INSTITUTIONS.'/'.$inst->id);
         $response->assertStatus(200);
         $this->assertDatabaseMissing('instituciones', ['id' => $inst->id, 'deleted_at' => null]);
+    }
+
+    public function test_store_restores_trashed_institucion()
+    {
+        $inst = Institucion::create(['nombre' => self::INSTITUTION_NAME, 'siglas' => self::INSTITUTION_SIGLAS]);
+        $this->deleteJson(self::ENDPOINT_INSTITUTIONS.'/'.$inst->id)->assertStatus(200);
+
+        $response = $this->postJson(self::ENDPOINT_INSTITUTIONS, [
+            'nombre' => self::INSTITUTION_NAME,
+            'siglas' => self::INSTITUTION_SIGLAS,
+            'activo' => true,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonFragment(['nombre' => 'Ministerio de Salud Publica', 'siglas' => 'MSP']);
+
+        $this->assertDatabaseHas('instituciones', ['id' => $inst->id, 'deleted_at' => null]);
     }
 }

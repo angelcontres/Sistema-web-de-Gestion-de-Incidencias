@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InstitucionesRequest extends FormRequest
 {
@@ -29,16 +30,29 @@ class InstitucionesRequest extends FormRequest
 
         if ($isUpdate) {
             return [
-                'nombre' => 'sometimes|required|string|max:255|unique:instituciones,nombre,'.$institucionId,
-                'siglas' => 'sometimes|required|string|max:50|unique:instituciones,siglas,'.$institucionId,
+                'nombre' => ['sometimes', 'required', 'string', 'max:255', $this->uniqueRule('nombre', $institucionId)],
+                'siglas' => ['sometimes', 'required', 'string', 'max:50', $this->uniqueRule('siglas', $institucionId)],
                 'activo' => 'sometimes|boolean',
             ];
         }
 
         return [
-            'nombre' => 'required|string|max:255|unique:instituciones,nombre',
-            'siglas' => 'required|string|max:50|unique:instituciones,siglas',
+            'nombre' => ['required', 'string', 'max:255', $this->uniqueRule('nombre')],
+            'siglas' => ['required', 'string', 'max:50', $this->uniqueRule('siglas')],
             'activo' => 'boolean',
         ];
+    }
+
+    /**
+     * Genera la regla de unicidad ignorando registros en papelera (Soft Deletes).
+     */
+    private function uniqueRule(string $column, $ignoreId = null)
+    {
+        $rule = Rule::unique('instituciones', $column)->whereNull('deleted_at');
+        if ($ignoreId) {
+            $rule->ignore($ignoreId);
+        }
+
+        return $rule;
     }
 }

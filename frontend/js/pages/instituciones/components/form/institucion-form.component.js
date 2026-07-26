@@ -14,8 +14,6 @@ export class InstitucionFormComponent extends BaseComponent {
       document.body.appendChild(this.modalElement);
     }
 
-    this.bsModal = new bootstrap.Modal(this.modalElement);
-
     this.form = this.modalElement.querySelector('#institucionForm');
     this.nombreInput = this.modalElement.querySelector('#institucionNombre');
     this.siglasInput = this.modalElement.querySelector('#siglas');
@@ -59,7 +57,8 @@ export class InstitucionFormComponent extends BaseComponent {
       if (this.activoInput) this.activoInput.checked = true;
     }
 
-    this.bsModal.show();
+    const modal = bootstrap.Modal.getOrCreateInstance(this.modalElement);
+    modal.show();
   }
 
   async cargarDatosEdicion(id) {
@@ -91,7 +90,12 @@ export class InstitucionFormComponent extends BaseComponent {
       const payload = this.construirPayloadInstitucion();
       await this.ejecutarGuardadoInstitucion(payload);
 
-      this.bsModal.hide();
+      if (this.modalElement) {
+        const modal = bootstrap.Modal.getOrCreateInstance(this.modalElement);
+
+        if (modal) modal.hide();
+      }
+
       this.dispatchEvent(
         new CustomEvent('institucion-guardada', { bubbles: true, composed: true })
       );
@@ -141,6 +145,12 @@ export class InstitucionFormComponent extends BaseComponent {
       this.formAlertContainer.classList.remove('d-none');
     }
     if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.disabled = false;
+  }
+
+  disconnectedCallback() {
+    if (this.modalElement?.parentNode === document.body) {
+      this.modalElement.remove();
+    }
   }
 }
 
