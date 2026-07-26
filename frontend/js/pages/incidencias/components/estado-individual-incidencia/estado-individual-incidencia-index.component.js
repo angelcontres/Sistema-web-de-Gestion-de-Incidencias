@@ -3,6 +3,7 @@ import { IncidenciaService } from '../../services/incidencia.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
 import { getBadgeClass } from '../../../../shared/utils/badge-states.js';
+import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
 
 export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   constructor() {
@@ -15,6 +16,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     this.isLoadingHistory = false;
     this.hasMore = true;
     this.historyData = [];
+    this.institucionesList = [];
     this.currentUser = AuthService.getCurrentUser();
   }
 
@@ -34,9 +36,15 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     this.scrollToBottom();
 
     // Hide comment form if user is Supervisor (Supervisor can only view, not comment)
-    if (this.currentUser?.roles?.some((r) => r.nombre === 'Supervisor')) {
+    if (
+      this.currentUser &&
+      this.currentUser.roles &&
+      this.currentUser.roles.some((r) => r.nombre === 'Supervisor')
+    ) {
       const formContainer = this.querySelector('.card-footer');
-      if (formContainer) formContainer.style.display = 'none';
+      if (formContainer) {
+        formContainer.style.display = 'none';
+      }
     }
   }
 
@@ -74,6 +82,83 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
         }
       });
     }
+
+    const btnEditApoyo = this.querySelector('#btn-edit-apoyo');
+    const btnSaveApoyo = this.querySelector('#btn-save-apoyo');
+    if (btnEditApoyo) {
+      btnEditApoyo.addEventListener('click', () => this.abrirModalApoyo());
+    }
+    if (btnSaveApoyo) {
+      btnSaveApoyo.addEventListener('click', () => this.guardarApoyo());
+    }
+  }
+
+  async abrirModalApoyo() {
+    try {
+      if (this.institucionesList.length === 0) {
+        this.institucionesList = await CatalogoService.getInstituciones();
+      }
+      const container = this.querySelector('#container-modal-apoyo');
+      if (container) {
+        container.innerHTML = this.institucionesList.map(i => `
+          <label class="list-group-item d-flex gap-3 align-items-center cursor-pointer p-3" style="cursor: pointer;" onmouseover="this.classList.add('bg-light')" onmouseout="this.classList.remove('bg-light')">
+            <input class="form-check-input flex-shrink-0 chk-apoyo" type="checkbox" value="${i.id}" style="font-size: 1.3em;">
+            <span class="pt-1 form-checked-content">
+              <strong>${i.nombre}</strong>
+              <span class="d-block text-muted small">${i.siglas}</span>
+            </span>
+          </label>
+        `).join('');
+
+        if (this.currentIncidencia && this.currentIncidencia.instituciones_apoyo) {
+          const supportIds = this.currentIncidencia.instituciones_apoyo.map(i => i.id.toString());
+          Array.from(container.querySelectorAll('.chk-apoyo')).forEach(chk => {
+            chk.checked = supportIds.includes(chk.value);
+          });
+        }
+      }
+      
+      const modalEl = this.querySelector('#modalApoyo');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+    } catch (e) {
+      console.error(e);
+      ToastService.error('Error al cargar instituciones.');
+    }
+  }
+
+  async guardarApoyo() {
+    const container = this.querySelector('#container-modal-apoyo');
+    if (!container || !this.currentIncidencia) return;
+
+    const selectedIds = Array.from(container.querySelectorAll('.chk-apoyo:checked')).map(chk => parseInt(chk.value));
+    const btn = this.querySelector('#btn-save-apoyo');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+    try {
+      await IncidenciaService.update(this.incidenciaId, {
+        instituciones_apoyo: selectedIds,
+        version: this.currentIncidencia.version || 1
+      });
+      ToastService.success('Instituciones de apoyo actualizadas.');
+      
+      const modalEl = this.querySelector('#modalApoyo');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+      }
+      
+      await this.cargarDetalles();
+    } catch (error) {
+      console.error('Error actualizando apoyo:', error);
+      ToastService.error('Error al guardar instituciones de apoyo.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Guardar Cambios';
+    }
   }
 
   async cargarDetalles() {
@@ -87,13 +172,6 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   }
 
   renderDetalles(inc) {
-    this._renderHeaderInfo(inc);
-    this.renderTimeline(inc);
-    this._renderReportantes(inc);
-    this._renderAdjuntos(inc);
-  }
-
-  _renderHeaderInfo(inc) {
     this.querySelector('#lbl-descripcion-header').textContent =
       inc.incidencia_descripcion || 'Sin descripción';
 
@@ -125,12 +203,41 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
 
     this.querySelector('#lbl-fecha-registro').innerHTML =
       `Registrado ${timeAgo} (<span class="fw-bold text-dark">${dateFormatted}</span>)`;
-    this.querySelector('#lbl-direccion').textContent = inc.direccion?.detalle ?? 'Sin dirección';
+    this.querySelector('#lbl-direccion').textContent = inc.direccion
+      ? inc.direccion.detalle
+      : 'Sin dirección';
     this.querySelector('#lbl-afectados').textContent = inc.cantidad_afectados_incidencia || 0;
 
     const inst = this.querySelector('#lbl-institucion');
-    inst.textContent = inc.institucion?.nombre ?? 'No asignada';
+    inst.textContent = inc.institucion ? inc.institucion.nombre : 'No asignada';
     if (!inc.institucion) inst.classList.add('text-muted');
+
+    // Render Institutions of Support
+    const listApoyo = this.querySelector('#list-instituciones-apoyo');
+    if (listApoyo) {
+      if (inc.instituciones_apoyo && inc.instituciones_apoyo.length > 0) {
+        listApoyo.innerHTML = inc.instituciones_apoyo.map(i => 
+          `<span class="badge bg-secondary-soft text-secondary border border-secondary-subtle fw-medium">${i.nombre}</span>`
+        ).join('');
+      } else {
+        listApoyo.innerHTML = '<span class="text-muted small fst-italic">Ninguna asignada</span>';
+      }
+    }
+
+    const canManageIncidencia =
+      this.currentUser &&
+      (this.currentUser.roles.some((r) => r.nombre === 'Admin' || r.nombre === 'Supervisor') ||
+        AuthService.hasPermission('UPDATE', 'incidencias') ||
+        AuthService.hasPermission('UPDATE', 'despacho_incidencias'));
+        
+    const btnEditApoyo = this.querySelector('#btn-edit-apoyo');
+    if (btnEditApoyo) {
+      if (canManageIncidencia) {
+        btnEditApoyo.classList.remove('d-none');
+      } else {
+        btnEditApoyo.classList.add('d-none');
+      }
+    }
 
     if (inc.prioridad) {
       this.querySelector('#lbl-prioridad').innerHTML = `
@@ -147,86 +254,108 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
           ${inc.estado.nombre}
         </span>`;
     }
-  }
 
-  _renderReportantes(inc) {
+    this.renderTimeline(inc);
+
+    // Render reportantes vinculados
     const reportantesContainer = this.querySelector('#container-reportantes');
     const reportantesList = this.querySelector('#list-reportantes');
 
-    if (!reportantesContainer || !reportantesList) return;
+    if (reportantesContainer && reportantesList) {
+      const reportantes = inc.reportantes || [];
+      if (reportantes.length > 0) {
+        reportantesContainer.classList.remove('d-none');
 
-    const reportantes = inc.reportantes || [];
-    if (reportantes.length === 0) {
-      reportantesContainer.classList.add('d-none');
-      return;
+        let html;
+        if (reportantes.length <= 3) {
+          html =
+            `<ul class="list-unstyled mb-0">` +
+            reportantes
+              .map((r) => {
+                const displayName = r.name || r.username || 'Usuario Anónimo';
+                const creadorText =
+                  r.id === inc.cliente_id
+                    ? ' <span class="text-muted small fst-italic">(creador)</span>'
+                    : '';
+                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${displayName}${creadorText}</li>`;
+              })
+              .join('') +
+            `</ul>`;
+        } else {
+          const visible = reportantes.slice(0, 3);
+          const others = reportantes.slice(3);
+          const othersNames = others
+            .map((r) => {
+              const displayName = r.name || r.username || 'Usuario Anónimo';
+              return r.id === inc.cliente_id ? `${displayName} (creador)` : displayName;
+            })
+            .join(', ');
+
+          html =
+            `<ul class="list-unstyled mb-0">` +
+            visible
+              .map((r) => {
+                const displayName = r.name || r.username || 'Usuario Anónimo';
+                const creadorText =
+                  r.id === inc.cliente_id
+                    ? ' <span class="text-muted small fst-italic">(creador)</span>'
+                    : '';
+                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${displayName}${creadorText}</li>`;
+              })
+              .join('') +
+            `</ul>` +
+            `<div class="small text-muted mt-2" title="${othersNames}">+ ${others.length} reportante(s) adicional(es)</div>`;
+        }
+        reportantesList.innerHTML = html;
+
+        setTimeout(() => {
+          const tooltipTriggerList = [].slice.call(
+            this.querySelectorAll('[data-bs-toggle="tooltip"]')
+          );
+          tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+          });
+        }, 100);
+      } else {
+        reportantesContainer.classList.add('d-none');
+      }
     }
 
-    reportantesContainer.classList.remove('d-none');
-
-    const renderReportanteItem = (r) => {
-      const creadorText =
-        r.id === inc.cliente_id
-          ? ' <span class="text-muted small fst-italic">(creador)</span>'
-          : '';
-      return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
-    };
-
-    if (reportantes.length <= 3) {
-      reportantesList.innerHTML = `<ul class="list-unstyled mb-0">${reportantes.map(renderReportanteItem).join('')}</ul>`;
-    } else {
-      const visible = reportantes.slice(0, 3);
-      const others = reportantes.slice(3);
-      const othersNames = others
-        .map((r) => (r.id === inc.cliente_id ? `${r.name} (creador)` : r.name))
-        .join(', ');
-
-      reportantesList.innerHTML = 
-        `<ul class="list-unstyled mb-0">${visible.map(renderReportanteItem).join('')}</ul>` +
-        `<div class="small text-muted mt-2" title="${othersNames}">+ ${others.length} reportante(s) adicional(es)</div>`;
-    }
-
-    setTimeout(() => {
-      const tooltipTriggerList = Array.prototype.slice.call(
-        this.querySelectorAll('[data-bs-toggle="tooltip"]')
-      );
-      tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-      });
-    }, 100);
-  }
-
-  _renderAdjuntos(inc) {
+    // Render adjuntos
     const containerAdjuntos = this.querySelector('#container-adjuntos');
     const msgNoAdjuntos = this.querySelector('#no-adjuntos-msg');
 
-    if (!containerAdjuntos || !msgNoAdjuntos) return;
+    if (containerAdjuntos && msgNoAdjuntos) {
+      if (inc.recursos && inc.recursos.length > 0) {
+        msgNoAdjuntos.classList.add('d-none');
 
-    Array.from(containerAdjuntos.children).forEach((child) => {
-      if (child.id !== 'no-adjuntos-msg') child.remove();
-    });
+        let adjuntosHtml = '';
+        inc.recursos.forEach((recurso) => {
+          const fileName = recurso.url.substring(recurso.url.lastIndexOf('/') + 1) || 'adjunto';
+          const isImage = fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+          const icon = isImage ? 'bi-image' : 'bi-file-earmark-text';
 
-    if (inc.recursos?.length > 0) {
-      msgNoAdjuntos.classList.add('d-none');
+          adjuntosHtml += `
+            <a href="${recurso.url}" target="_blank" class="text-decoration-none text-dark">
+              <div class="border rounded p-3 text-center bg-light" style="width: 120px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
+                <i class="bi ${icon} text-muted mb-2" style="font-size: 2rem;"></i>
+                <div class="small text-truncate" title="${fileName}">${fileName}</div>
+              </div>
+            </a>
+          `;
+        });
 
-      let adjuntosHtml = '';
-      inc.recursos.forEach((recurso) => {
-        const fileName = recurso.url.substring(recurso.url.lastIndexOf('/') + 1) || 'adjunto';
-        const isImage = fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-        const icon = isImage ? 'bi-image' : 'bi-file-earmark-text';
+        Array.from(containerAdjuntos.children).forEach((child) => {
+          if (child.id !== 'no-adjuntos-msg') child.remove();
+        });
 
-        adjuntosHtml += `
-          <a href="${recurso.url}" target="_blank" class="text-decoration-none text-dark">
-            <div class="border rounded p-3 text-center bg-light" style="width: 120px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
-              <i class="bi ${icon} text-muted mb-2" style="font-size: 2rem;"></i>
-              <div class="small text-truncate" title="${fileName}">${fileName}</div>
-            </div>
-          </a>
-        `;
-      });
-
-      containerAdjuntos.insertAdjacentHTML('beforeend', adjuntosHtml);
-    } else {
-      msgNoAdjuntos.classList.remove('d-none');
+        containerAdjuntos.insertAdjacentHTML('beforeend', adjuntosHtml);
+      } else {
+        msgNoAdjuntos.classList.remove('d-none');
+        Array.from(containerAdjuntos.children).forEach((child) => {
+          if (child.id !== 'no-adjuntos-msg') child.remove();
+        });
+      }
     }
   }
 
@@ -265,11 +394,10 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
         textClass = 'text-dark';
       }
 
-      const isPastColor = isPast ? 'var(--primary-color, #7c3aed)' : '#e9ecef';
       const isLast = index === steps.length - 1;
       const lineHtml = isLast
         ? ''
-        : `<div class="position-absolute" style="left: 11px; top: 24px; bottom: -8px; width: 2px; background-color: ${isPastColor}; z-index: 0;"></div>`;
+        : `<div class="position-absolute" style="left: 11px; top: 24px; bottom: -8px; width: 2px; background-color: ${isPast ? 'var(--primary-color, #7c3aed)' : '#e9ecef'}; z-index: 0;"></div>`;
 
       html += `
         <div class="position-relative mb-3 d-flex align-items-center" style="min-height: 32px;">
@@ -335,94 +463,83 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   }
 
   crearBurbujaChat(item) {
-    const isMine = this.currentUser?.id === item.usuario_id;
+    const isMine = this.currentUser && item.usuario_id === this.currentUser.id;
     const div = document.createElement('div');
 
     const alignClass = isMine ? 'align-self-end' : 'align-self-start';
-    
-    const autorNombre = item.usuario?.name ?? 'Sistema';
-    const fecha = new Date(item.created_at).toLocaleString();
-
-    let { comentario, isStateChange } = this.parseComentario(item.comentario);
-    const editadoHtml = this.obtenerEditadoHtml(item);
-    const estadoBadge = this.crearEstadoBadge(item, isStateChange);
-
-    div.className = `d-flex flex-column ${alignClass} mb-2`;
-    div.style.maxWidth = '75%';
-
-    div.innerHTML = this.obtenerPlantillaBurbuja(isMine, autorNombre, comentario, estadoBadge, fecha, editadoHtml);
-    return div;
-  }
-
-  obtenerEditadoHtml(item) {
-    if (item.updated_at && item.created_at !== item.updated_at) {
-      return '<span class="ms-2 fst-italic" style="font-size: 0.7em;">(Editado)</span>';
-    }
-    return '';
-  }
-
-  obtenerPlantillaBurbuja(isMine, autorNombre, comentario, estadoBadge, fecha, editadoHtml) {
-    const headerClass = isMine ? 'text-end text-primary' : 'text-secondary';
     const bgClass = isMine ? 'text-dark border shadow-sm' : 'bg-white text-dark border shadow-sm';
-    const borderRadius = `border-bottom-${isMine ? 'right' : 'left'}-radius: 0;`;
-    const bgStyle = isMine ? 'background-color: #e9ecef; border-color: #dee2e6 !important;' : '';
+    const timeClass = 'text-muted';
 
-    return `
-      <div class="small fw-bold mb-1 ${headerClass}">
-        ${autorNombre}
-      </div>
-      <div class="${bgClass} rounded-4 p-3" style="${borderRadius} ${bgStyle}">
-        <div class="mb-0" style="word-wrap: break-word;">${comentario}</div>
-        ${estadoBadge}
-        <div class="mt-2 text-end small text-muted" style="font-size: 0.75rem;">
-          ${fecha} ${editadoHtml}
-        </div>
-      </div>
-    `;
-  }
-
-  parseComentario(texto = 'Cambio de estado') {
-    let comentario = texto;
-    let isStateChange =
-      comentario === 'Cambio de estado' ||
-      comentario === 'Resolución confirmada por el solicitante/operador.';
+    const autorNombre = item.usuario ? (item.usuario.name || item.usuario.username || 'Usuario Anónimo') : 'Sistema';
+    let comentario = item.comentario || 'Cambio de estado';
+    const fecha = new Date(item.created_at).toLocaleString();
 
     if (comentario.startsWith('[VINCULADO] ')) {
       comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(12);
     } else if (comentario.startsWith('Reporte ciudadano coincidente adjuntado: ')) {
       comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(41);
-    } else if (comentario.startsWith('[RESOLUCIÓN] ')) {
+    }
+
+    // UI logic for "(Editado)" - Assuming created_at and updated_at differ
+    let editadoHtml = '';
+    if (item.updated_at && item.created_at !== item.updated_at) {
+      editadoHtml = '<span class="ms-2 fst-italic" style="font-size: 0.7em;">(Editado)</span>';
+    }
+
+    let isStateChange = (comentario === 'Cambio de estado' || comentario === 'Resolución confirmada por el solicitante/operador.');
+    
+    if (comentario.startsWith('[RESOLUCIÓN] ')) {
       isStateChange = true;
       comentario = comentario.substring(13);
     }
 
-    return { comentario, isStateChange };
-  }
-
-  crearEstadoBadge(item, isStateChange) {
-    if (!item.estado || !isStateChange) return '';
-
-    let evidenciaHtml = '';
-    if (item.estado.nombre === 'Resuelto' && this.currentIncidencia?.recursos) {
-      const imagenes = this.currentIncidencia.recursos.filter((r) =>
-        r.url.match(/\.(jpeg|jpg|gif|png|webp)$/i)
-      );
-      if (imagenes.length > 0) {
-        const lastImage = imagenes[imagenes.length - 1];
-        const fileName = lastImage.url.substring(lastImage.url.lastIndexOf('/') + 1) || 'evidencia';
-        evidenciaHtml = `
-          <div class="mt-2">
-            <a href="${lastImage.url}" target="_blank" class="text-decoration-none text-dark d-inline-block">
-              <div class="border rounded p-2 text-center bg-light" style="width: 100px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
-                <i class="bi bi-image text-muted mb-1" style="font-size: 1.5rem;"></i>
-                <div class="small text-truncate" style="font-size: 0.7rem;" title="${fileName}">Evidencia</div>
-              </div>
-            </a>
-          </div>
-        `;
+    // Badge for state change if applicable
+    let estadoBadge = '';
+    if (item.estado && isStateChange) {
+      let evidenciaHtml = '';
+      if (
+        item.estado.nombre === 'Resuelto' &&
+        this.currentIncidencia &&
+        this.currentIncidencia.recursos
+      ) {
+        const imagenes = this.currentIncidencia.recursos.filter((r) =>
+          r.url.match(/\.(jpeg|jpg|gif|png|webp)$/i)
+        );
+        if (imagenes.length > 0) {
+          const lastImage = imagenes[imagenes.length - 1];
+          const fileName =
+            lastImage.url.substring(lastImage.url.lastIndexOf('/') + 1) || 'evidencia';
+          evidenciaHtml = `
+            <div class="mt-2">
+              <a href="${lastImage.url}" target="_blank" class="text-decoration-none text-dark d-inline-block">
+                <div class="border rounded p-2 text-center bg-light" style="width: 100px; transition: 0.2s;" onmouseover="this.classList.replace('bg-light', 'bg-white'); this.classList.add('shadow-sm')" onmouseout="this.classList.replace('bg-white', 'bg-light'); this.classList.remove('shadow-sm')">
+                  <i class="bi bi-image text-muted mb-1" style="font-size: 1.5rem;"></i>
+                  <div class="small text-truncate" style="font-size: 0.7rem;" title="${fileName}">Evidencia</div>
+                </div>
+              </a>
+            </div>
+          `;
+        }
       }
+      estadoBadge = `<div class="mt-1"><span class="text-dark small fw-bold">${item.estado.nombre}</span>${evidenciaHtml}</div>`;
     }
-    return `<div class="mt-1"><span class="text-dark small fw-bold">${item.estado.nombre}</span>${evidenciaHtml}</div>`;
+
+    div.className = `d-flex flex-column ${alignClass} mb-2`;
+    div.style.maxWidth = '75%';
+
+    div.innerHTML = `
+      <div class="small fw-bold mb-1 ${isMine ? 'text-end text-primary' : 'text-secondary'}">
+        ${autorNombre}
+      </div>
+      <div class="${bgClass} rounded-4 p-3" style="border-bottom-${isMine ? 'right' : 'left'}-radius: 0; ${isMine ? 'background-color: #e9ecef; border-color: #dee2e6 !important;' : ''}">
+        <div class="mb-0" style="word-wrap: break-word;">${comentario}</div>
+        ${estadoBadge}
+        <div class="mt-2 text-end small ${timeClass}" style="font-size: 0.75rem;">
+          ${fecha} ${editadoHtml}
+        </div>
+      </div>
+    `;
+    return div;
   }
 
   async enviarComentario() {

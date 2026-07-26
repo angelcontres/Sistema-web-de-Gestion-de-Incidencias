@@ -24,6 +24,7 @@ class EstadoIncidenciaSeeder extends Seeder
             EstadoIncidencia::firstOrCreate($estado);
         }
 
-        EstadoIncidencia::where('id', '>', 5)->delete();
+        $nombresValidos = collect($estados)->pluck('nombre')->toArray();
+        EstadoIncidencia::whereNotIn('nombre', $nombresValidos)->delete();
     }
 }

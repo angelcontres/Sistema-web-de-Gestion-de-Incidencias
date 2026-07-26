@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -39,5 +40,11 @@ class Institucion extends Model
     public function eliminador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function incidenciasApoyo(): BelongsToMany
+    {
+        return $this->belongsToMany(Incidencia::class, 'incidencia_institucion_apoyo', 'institucion_id', 'incidencia_id')
+            ->withTimestamps();
     }
 }

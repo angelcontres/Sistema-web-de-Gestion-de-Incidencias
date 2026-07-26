@@ -93,6 +93,9 @@ export class NotificationTrayComponent extends BaseComponent {
     const notifData = notification.data || notification;
     // 1. Aumentamos el contador en tiempo real
     this.incrementBadge();
+    
+    // Disparar evento global para que otras pantallas (Dashboard, Kanban) se refresquen automáticamente
+    window.dispatchEvent(new CustomEvent('global-notification-received', { detail: notifData }));
 
     // 2. UNIFICADO: Utilizamos el mismo ID del contenedor que en renderList
     const listContainer = this.querySelector('#dynamicNotificationsContainer');

@@ -223,6 +223,20 @@ class IncidenciaTest extends TestCase
             'updated_by' => $this->admin->id,
         ]);
 
+        $incidenciaOtro = Incidencia::create([
+            'incidencia_descripcion' => 'Accidente',
+            'direccion_id' => $this->direccion->id,
+            'tipo_incidencia_id' => $this->categoriaPadre->id,
+            'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
+            'prioridad_id' => $this->alta->id,
+            'institucion_id' => $this->bomberos->id,
+            'estado_id' => $this->estadoRevision->id,
+            'version' => 1,
+            'cliente_id' => $this->admin->id,
+            'created_by' => $this->admin->id,
+            'updated_by' => $this->admin->id,
+        ]);
+
         // Fetch or create an Institution user for Policia
         $userPolicia = User::factory()->create(['institucion_id' => $this->policia->id]);
         $institucionRole = Role::firstOrCreate(
@@ -235,18 +249,29 @@ class IncidenciaTest extends TestCase
         $permisoVer = Permiso::firstOrCreate(['nombre' => 'Ver Incidencia'], ['accion' => 'READ', 'recurso' => 'incidencias', 'opcion_menu_id' => $opcion->id]);
         $institucionRole->permisos()->sync([$permisoVer->id]);
 
-        // Fetch index with userPolicia -> should see only Policia incident
+        // Add policia as support institution to bomberos incident
+        $incidenciaBomberos->institucionesApoyo()->sync([$this->policia->id]);
+
+        // Fetch index with userPolicia -> should see Policia incident and Bomberos incident (support), but not Otro
         $response = $this->actingAs($userPolicia)->getJson('/api/v1/incidents');
         $response->assertStatus(200)
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.id', $incidenciaPolicia->id);
+            ->assertJsonCount(2, 'data');
+
+        $ids = collect($response->json('data'))->pluck('id')->toArray();
+        $this->assertContains($incidenciaPolicia->id, $ids);
+        $this->assertContains($incidenciaBomberos->id, $ids);
+        $this->assertNotContains($incidenciaOtro->id, $ids);
 
         // Access Policia incident -> OK
         $responseShowOk = $this->actingAs($userPolicia)->getJson("/api/v1/incidents/{$incidenciaPolicia->id}");
         $responseShowOk->assertStatus(200);
 
-        // Access Bomberos incident -> 403 Forbidden
-        $responseShowForbidden = $this->actingAs($userPolicia)->getJson("/api/v1/incidents/{$incidenciaBomberos->id}");
+        // Access Bomberos incident (as support) -> OK
+        $responseShowSupportOk = $this->actingAs($userPolicia)->getJson("/api/v1/incidents/{$incidenciaBomberos->id}");
+        $responseShowSupportOk->assertStatus(200);
+
+        // Access Otro incident -> 403 Forbidden
+        $responseShowForbidden = $this->actingAs($userPolicia)->getJson("/api/v1/incidents/{$incidenciaOtro->id}");
         $responseShowForbidden->assertStatus(403);
     }
 
@@ -344,7 +369,7 @@ class IncidenciaTest extends TestCase
             'sub_tipo_incidencia_id' => $this->subcategoriaAlta->id,
             'prioridad_id' => $this->alta->id,
             'cantidad_afectados_incidencia' => 1,
-            'estado_id' => 2, // En Revisión
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'En Revisión'])->id, // En Revisión
             'version' => 1,
             'created_by' => $this->admin->id,
             'updated_by' => $this->admin->id,

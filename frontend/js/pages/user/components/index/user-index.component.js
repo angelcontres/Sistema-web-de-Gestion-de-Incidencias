@@ -29,7 +29,7 @@ export class UserIndexComponent extends BaseComponent {
             format: (id) => `#${id}`,
           },
           { header: 'Usuario', key: 'username', class: 'fw-semibold text-dark' },
-          { header: 'Nombre', key: 'name' },
+          { header: 'Nombre', render: (user) => user.name || `<span class="text-muted fst-italic">Sin nombre</span>` },
           { header: 'Email', key: 'email', class: 'text-muted' },
           {
             header: 'Roles',
@@ -92,7 +92,7 @@ export class UserIndexComponent extends BaseComponent {
         if (action === 'editar') {
           window.location.hash = `#/usuarios/form?id=${item.id}`;
         } else if (action === 'eliminar') {
-          this.eliminarUsuario(item.id, item.name);
+          this.eliminarUsuario(item.id, item.name || item.username);
         }
       });
 

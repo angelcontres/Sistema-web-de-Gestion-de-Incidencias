@@ -142,7 +142,7 @@ class IncidenciaService
 
         return [
             'message' => 'Se ha agrupado a una nueva incidencia.',
-            'data' => $similar->load(['direccion.territorio.pais', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes']),
+            'data' => $similar->load(['direccion.territorio.pais', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes']),
         ];
     }
 
@@ -198,9 +198,16 @@ class IncidenciaService
             $this->processBase64Resources($incidencia, $data['recursos']);
         }
 
+        if (isset($data['instituciones_apoyo']) && is_array($data['instituciones_apoyo'])) {
+            $apoyos = array_filter($data['instituciones_apoyo'], function ($id) use ($institucionId) {
+                return $id != $institucionId;
+            });
+            $incidencia->institucionesApoyo()->sync($apoyos);
+        }
+
         return [
             'message' => 'Incidencia creada con éxito',
-            'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
+            'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
         ];
     }
 
@@ -239,9 +246,16 @@ class IncidenciaService
                 $this->processBase64Resources($incidencia, $data['recursos']);
             }
 
+            if (isset($data['instituciones_apoyo']) && is_array($data['instituciones_apoyo'])) {
+                $apoyos = array_filter($data['instituciones_apoyo'], function ($id) use ($institucionId) {
+                    return $id != $institucionId;
+                });
+                $incidencia->institucionesApoyo()->sync($apoyos);
+            }
+
             return [
                 'message' => 'Incidencia actualizada con éxito',
-                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
+                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
             ];
         });
     }

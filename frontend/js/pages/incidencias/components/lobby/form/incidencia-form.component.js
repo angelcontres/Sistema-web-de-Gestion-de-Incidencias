@@ -22,40 +22,6 @@ export class IncidenciaFormComponent extends BaseComponent {
   async onInit() {
     console.log('Formulario de incidencias inicializado.');
 
-    this.inicializarReferenciasDOM();
-
-    // Parse URL params
-    const hashParts = window.location.hash.split('?');
-    const queryString = hashParts.length > 1 ? hashParts[1] : '';
-    const urlParams = new URLSearchParams(queryString);
-    const incidenciaId = urlParams.get('id');
-
-    if (!this.verificarPermisosAcceso(incidenciaId)) {
-      return;
-    }
-
-    const user = AuthService.getCurrentUser();
-    const isAdmin = AuthService.isAdmin();
-
-    this.configurarVisibilidadCampos(isAdmin);
-
-    this.initMap();
-
-    this.registrarEventListenersGenerales();
-    this.configurarEventosAdjuntos();
-
-    await this.cargarCatalogosIniciales();
-
-    this.configurarLimiteArchivos(user, isAdmin);
-
-    if (incidenciaId) {
-      await this.cargarDatosEdicion(incidenciaId);
-    } else {
-      this.prepararCreacion();
-    }
-  }
-
-  inicializarReferenciasDOM() {
     // Element references
     this.form = this.querySelector('#incidenciaForm');
     this.incidenciaIdInput = this.querySelector('#incidenciaId');
@@ -66,6 +32,11 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.prioridadDisplay = this.querySelector('#prioridadDisplay');
     this.descripcionInput = this.querySelector('#descripcion');
     this.institucionSelect = this.querySelector('#institucionSelect');
+    this.institucionesApoyoSelect = this.querySelector('#institucionesApoyoSelect');
+    this.btnEditApoyoForm = this.querySelector('#btn-edit-apoyo-form');
+    this.btnSaveApoyoForm = this.querySelector('#btn-save-apoyo-form');
+    this.containerModalApoyoForm = this.querySelector('#container-modal-apoyo-form');
+    this.listInstitucionesApoyoForm = this.querySelector('#list-instituciones-apoyo-form');
     this.estadoSelect = this.querySelector('#estadoSelect');
     this.dirDetalleInput = this.querySelector('#dirDetalle');
     this.dirPaisSelect = this.querySelector('#dirPais');
@@ -93,28 +64,36 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.dropzoneContainer = this.querySelector('#dropzoneContainer');
     this.fileInput = this.querySelector('#fileInput');
     this.thumbnailsContainer = this.querySelector('#thumbnailsContainer');
-  }
 
-  verificarPermisosAcceso(incidenciaId) {
+    // Parse URL params
+    const hashParts = window.location.hash.split('?');
+    const queryString = hashParts.length > 1 ? hashParts[1] : '';
+    const urlParams = new URLSearchParams(queryString);
+    const incidenciaId = urlParams.get('id');
+
+    // Verify permissions
     if (incidenciaId && !AuthService.hasPermission('UPDATE', 'incidencias')) {
       ToastService.error('No tiene permiso para editar incidencias.');
       window.location.hash = '#/incidencias';
-      return false;
+      return;
     }
     if (!incidenciaId && !AuthService.hasPermission('CREATE', 'incidencias')) {
       ToastService.error('No tiene permiso para registrar incidencias.');
       window.location.hash = '#/incidencias';
-      return false;
+      return;
     }
-    return true;
-  }
 
-  configurarVisibilidadCampos(isAdmin) {
+    // Role & Permission based field visibility and behavior
+    const user = AuthService.getCurrentUser();
+    const isAdmin = AuthService.isAdmin();
+
+    // Check if the user has permissions to modify the incident status/assignment
     const canManageIncidencia =
       isAdmin ||
       AuthService.hasPermission('UPDATE', 'incidencias') ||
       AuthService.hasPermission('UPDATE', 'despacho_incidencias');
 
+    // Hide State selector (colEstado) if user cannot manage/update incidents
     const colEstado = this.querySelector('#colEstado');
     if (colEstado) {
       if (canManageIncidencia) {
@@ -124,19 +103,51 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
     }
 
+    // Institution select must be visible, but disabled for users without update permissions (e.g. Citizens)
     if (this.divInstitucion) {
       this.divInstitucion.classList.remove('d-none');
     }
     if (this.institucionSelect) {
       this.institucionSelect.disabled = !canManageIncidencia;
     }
-  }
 
-  registrarEventListenersGenerales() {
+    // Initialize map in read-only mode
+    this.initMap();
+
+    // Event listeners
     this.form.addEventListener('submit', (e) => this.guardarIncidencia(e));
     this.tipoSelect.addEventListener('change', () => this.onCategoryChange());
     this.subTipoSelect.addEventListener('change', () => this.onSubCategoryChange());
     this.cantidadAfectadosInput.addEventListener('input', () => this.calcularPrioridadDinamica());
+
+    if (this.btnEditApoyoForm) {
+      this.btnEditApoyoForm.addEventListener('click', () => {
+        if (!this.containerModalApoyoForm) return;
+        const modalEl = this.querySelector('#modalApoyoForm');
+        if (modalEl) {
+          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+          modal.show();
+        }
+      });
+    }
+
+    if (this.btnSaveApoyoForm) {
+      this.btnSaveApoyoForm.addEventListener('click', () => {
+        if (!this.containerModalApoyoForm || !this.institucionesApoyoSelect) return;
+        const selectedIds = Array.from(this.containerModalApoyoForm.querySelectorAll('.chk-apoyo:checked')).map(chk => chk.value);
+        Array.from(this.institucionesApoyoSelect.options).forEach(opt => {
+          opt.selected = selectedIds.includes(opt.value);
+        });
+        
+        this.actualizarBadgesApoyoForm();
+        
+        const modalEl = this.querySelector('#modalApoyoForm');
+        if (modalEl) {
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+        }
+      });
+    }
 
     this.dirPaisSelect.addEventListener('change', (e) => {
       this.actualizarEtiquetasNiveles(e.target.value);
@@ -149,21 +160,24 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.cargarDropdownNivel3(this.dirPaisSelect.value, e.target.value);
     });
 
+    // Removed modal event listeners
+
     if (this.btnObtenerUbicacion) {
       this.btnObtenerUbicacion.addEventListener('click', () => this.obtenerUbicacionActual());
     }
     if (this.btnSeleccionarMapa) {
       this.btnSeleccionarMapa.addEventListener('click', () => this.habilitarMapaInteractivo());
     }
-
+    
+    // Si el usuario modifica la dirección autocompletada, desvinculamos el ID 
+    // para forzar la creación de una NUEVA dirección con sus detalles personalizados.
     if (this.dirDetalleInput) {
       this.dirDetalleInput.addEventListener('input', () => {
         this.selectedDireccionId = null;
       });
     }
-  }
 
-  configurarEventosAdjuntos() {
+    // Resources/Upload events
     if (this.dropzoneContainer && this.fileInput) {
       this.dropzoneContainer.addEventListener('click', (e) => {
         if (e.target.closest('#btnTestImagen')) return;
@@ -180,9 +194,14 @@ export class IncidenciaFormComponent extends BaseComponent {
         });
       }
     }
-  }
 
-  configurarLimiteArchivos(user, isAdmin) {
+    // Load initial dropdown data
+    await this.cargarCatalogosIniciales();
+    
+    // Refresh badges initially
+    this.actualizarBadgesApoyoForm();
+
+    // Display maximum files limit
     const cantMaximaArchivosEl = this.querySelector('#cantMaximaArchivos');
     const maxFiles = user?.max_files || 5;
     if (cantMaximaArchivosEl) {
@@ -193,7 +212,7 @@ export class IncidenciaFormComponent extends BaseComponent {
         cantMaximaArchivosEl.style.pointerEvents = 'auto';
 
         cantMaximaArchivosEl.addEventListener('change', (e) => {
-          const val = Number.parseInt(e.target.value) || 5;
+          const val = parseInt(e.target.value) || 5;
           if (val < 1) {
             ToastService.warning('El límite debe ser al menos 1.');
             e.target.value = 1;
@@ -210,6 +229,12 @@ export class IncidenciaFormComponent extends BaseComponent {
         cantMaximaArchivosEl.classList.remove('text-primary');
         cantMaximaArchivosEl.classList.add('text-dark');
       }
+    }
+
+    if (incidenciaId) {
+      await this.cargarDatosEdicion(incidenciaId);
+    } else {
+      this.prepararCreacion();
     }
   }
 
@@ -344,12 +369,12 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   actualizarMarcador(lat, lng, triggerGeocode = false) {
-    const latVal = Number.parseFloat(lat).toFixed(6);
-    const lngVal = Number.parseFloat(lng).toFixed(6);
+    const latVal = parseFloat(lat).toFixed(6);
+    const lngVal = parseFloat(lng).toFixed(6);
 
     if (this.dirLatInput) this.dirLatInput.value = latVal;
     if (this.dirLngInput) this.dirLngInput.value = lngVal;
-    this.coords = { lat: Number.parseFloat(latVal), lng: Number.parseFloat(lngVal) };
+    this.coords = { lat: parseFloat(latVal), lng: parseFloat(lngVal) };
 
     if (this.map) {
       if (this.marker) {
@@ -415,7 +440,39 @@ export class IncidenciaFormComponent extends BaseComponent {
       }
 
       // Check if location is already registered in DB (Optimizado por proximidad)
-      const matchedDbDir = await this.findMatchedDbDir(lat, lng);
+      let matchedDbDir = null;
+      try {
+        const dbDirs = (await CatalogoService.getDirecciones()) || [];
+        let minDistance = Infinity;
+
+        for (const d of dbDirs) {
+          if (!d.latitud || !d.longitud) continue;
+
+          const dist = this.calcularDistancia(
+            parseFloat(lat),
+            parseFloat(lng),
+            parseFloat(d.latitud),
+            parseFloat(d.longitud)
+          );
+
+          // Obtener la ubicación (y parroquia) más cercana.
+          // Ajustamos un radio máximo de 50 metros (0.05 km) para evitar asignar direcciones muy lejanas.
+          if (dist < minDistance && dist <= 0.05) {
+            minDistance = dist;
+            matchedDbDir = d;
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching existing addresses for matching:', err);
+      }
+
+      const user = AuthService.getCurrentUser();
+      const isCitizen =
+        user &&
+        user.roles &&
+        user.roles.every(
+          (r) => r.nombre !== 'Admin' && r.nombre !== 'Supervisor' && r.nombre !== 'Institucion'
+        );
 
       if (matchedDbDir) {
         this.selectedDireccionId = matchedDbDir.id;
@@ -437,91 +494,87 @@ export class IncidenciaFormComponent extends BaseComponent {
     }
   }
 
-  async findMatchedDbDir(lat, lng) {
-    let matchedDbDir = null;
-    try {
-      const dbDirs = (await CatalogoService.getDirecciones()) || [];
-      let minDistance = Infinity;
-
-      for (const d of dbDirs) {
-        if (!d.latitud || !d.longitud) continue;
-        const dist = this.calcularDistancia(
-          Number.parseFloat(lat),
-          Number.parseFloat(lng),
-          Number.parseFloat(d.latitud),
-          Number.parseFloat(d.longitud)
-        );
-        if (dist < minDistance && dist <= 0.05) {
-          minDistance = dist;
-          matchedDbDir = d;
-        }
-      }
-    } catch (err) {
-      console.warn('Error fetching existing addresses for matching:', err);
-    }
-    return matchedDbDir;
-  }
-
   async autofillTerritoriosCascading(paisId, address, territorioDetectado) {
     if (territorioDetectado) {
-      await this.handleTerritorioDetectado(paisId, address, territorioDetectado);
+      const td = territorioDetectado;
+      await this.cargarDropdownNivel1(paisId);
+      if (td.provincia_id && this.dirNivel1Select) {
+        this.dirNivel1Select.value = td.provincia_id;
+
+        await this.cargarDropdownNivel2(paisId, td.provincia_id);
+        if (td.canton_id && this.dirNivel2Select) {
+          this.dirNivel2Select.value = td.canton_id;
+
+          await this.cargarDropdownNivel3(paisId, td.canton_id);
+          if (td.parroquia_id && this.dirNivel3Select) {
+            this.dirNivel3Select.value = td.parroquia_id;
+          } else if (!td.parroquia_id && this.dirNivel3Select) {
+            const possibleNivel3Names = [
+              address.parish,
+              address.suburb,
+              address.neighbourhood,
+              address.quarter,
+            ].filter(Boolean);
+            const n3Name = possibleNivel3Names[0] || '';
+            if (n3Name) {
+              const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
+              if (opt3) this.dirNivel3Select.value = opt3.value;
+            }
+          }
+        }
+      }
       return;
     }
-    await this.handleTerritorioNoDetectado(paisId, address);
-  }
 
-  async handleTerritorioDetectado(paisId, address, td) {
+    // 1. Siempre cargar Nivel 1 para el país seleccionado
     await this.cargarDropdownNivel1(paisId);
-    if (!td.provincia_id || !this.dirNivel1Select) return;
 
-    this.dirNivel1Select.value = td.provincia_id;
-    await this.cargarDropdownNivel2(paisId, td.provincia_id);
+    const possibleNivel1Names = [address.state, address.region, address.province].filter(Boolean);
+    const n1Name = possibleNivel1Names[0] || '';
 
-    if (!td.canton_id || !this.dirNivel2Select) return;
-    this.dirNivel2Select.value = td.canton_id;
+    if (n1Name) {
+      const opt1 = this.findOptionMatchingText(this.dirNivel1Select, n1Name);
+      if (opt1) {
+        this.dirNivel1Select.value = opt1.value;
 
-    await this.cargarDropdownNivel3(paisId, td.canton_id);
+        // 2. Siempre cargar Nivel 2 si se encontró y seleccionó Nivel 1
+        await this.cargarDropdownNivel2(paisId, opt1.value);
 
-    if (td.parroquia_id && this.dirNivel3Select) {
-      this.dirNivel3Select.value = td.parroquia_id;
-    } else if (!td.parroquia_id && this.dirNivel3Select) {
-      this.autofillNivel3FromAddress(address);
+        const possibleNivel2Names = [
+          address.county,
+          address.city,
+          address.town,
+          address.municipality,
+        ].filter(Boolean);
+        const n2Name = possibleNivel2Names[0] || '';
+        if (n2Name) {
+          const opt2 = this.findOptionMatchingText(this.dirNivel2Select, n2Name);
+          if (opt2) {
+            this.dirNivel2Select.value = opt2.value;
+
+            // 3. Siempre cargar Nivel 3 si se encontró y seleccionó Nivel 2
+            await this.cargarDropdownNivel3(paisId, opt2.value);
+
+            const possibleNivel3Names = [
+              address.parish,
+              address.suburb,
+              address.neighbourhood,
+              address.quarter,
+            ].filter(Boolean);
+            const n3Name = possibleNivel3Names[0] || '';
+
+            if (n3Name) {
+              const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
+              if (opt3) {
+                this.dirNivel3Select.value = opt3.value;
+              }
+            }
+          }
+        }
+      }
     }
   }
 
-  autofillNivel3FromAddress(address) {
-    const n3Name =
-      [address.parish, address.suburb, address.neighbourhood, address.quarter].find(Boolean) || '';
-    if (n3Name) {
-      const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
-      if (opt3) this.dirNivel3Select.value = opt3.value;
-    }
-  }
-
-  async handleTerritorioNoDetectado(paisId, address) {
-    await this.cargarDropdownNivel1(paisId);
-
-    const n1Name = [address.state, address.region, address.province].find(Boolean) || '';
-    if (!n1Name) return;
-
-    const opt1 = this.findOptionMatchingText(this.dirNivel1Select, n1Name);
-    if (!opt1) return;
-
-    this.dirNivel1Select.value = opt1.value;
-    await this.cargarDropdownNivel2(paisId, opt1.value);
-
-    const n2Name =
-      [address.county, address.city, address.town, address.municipality].find(Boolean) || '';
-    if (!n2Name) return;
-
-    const opt2 = this.findOptionMatchingText(this.dirNivel2Select, n2Name);
-    if (!opt2) return;
-
-    this.dirNivel2Select.value = opt2.value;
-    await this.cargarDropdownNivel3(paisId, opt2.value);
-
-    this.autofillNivel3FromAddress(address);
-  }
 
   actualizarIndicadorMinimalista() {
     const detalle = this.dirDetalleInput.value;
@@ -561,6 +614,18 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   // --- CATALOGS AND DATA ---
+  actualizarBadgesApoyoForm() {
+    if (!this.listInstitucionesApoyoForm || !this.institucionesApoyoSelect) return;
+    const selectedOptions = Array.from(this.institucionesApoyoSelect.selectedOptions);
+    if (selectedOptions.length > 0) {
+      this.listInstitucionesApoyoForm.innerHTML = selectedOptions.map(opt => 
+        `<span class="badge bg-secondary-soft text-secondary border border-secondary-subtle fw-medium">${opt.text.split('(')[0].trim()}</span>`
+      ).join('');
+    } else {
+      this.listInstitucionesApoyoForm.innerHTML = '<span class="text-muted small fst-italic">Ninguna asignada</span>';
+    }
+  }
+
   async cargarCatalogosIniciales() {
     try {
       // 1. Fetch categories
@@ -591,6 +656,22 @@ export class IncidenciaFormComponent extends BaseComponent {
       this.institucionSelect.innerHTML =
         '<option value="">-- Ninguna --</option>' +
         insts.map((i) => `<option value="${i.id}">${i.nombre} (${i.siglas})</option>`).join('');
+      if (this.institucionesApoyoSelect) {
+        this.institucionesApoyoSelect.innerHTML =
+          insts.map((i) => `<option value="${i.id}">${i.nombre} (${i.siglas})</option>`).join('');
+      }
+      if (this.containerModalApoyoForm) {
+        this.containerModalApoyoForm.innerHTML =
+          insts.map((i) => `
+            <label class="list-group-item d-flex gap-3 align-items-center cursor-pointer p-3" style="cursor: pointer;" onmouseover="this.classList.add('bg-light')" onmouseout="this.classList.remove('bg-light')">
+              <input class="form-check-input flex-shrink-0 chk-apoyo" type="checkbox" value="${i.id}" style="font-size: 1.3em;">
+              <span class="pt-1 form-checked-content">
+                <strong>${i.nombre}</strong>
+                <span class="d-block text-muted small">${i.siglas}</span>
+              </span>
+            </label>
+          `).join('');
+      }
 
       // 4. Populate state dropdown
       const estados = [
@@ -631,7 +712,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     const subTipoId = this.subTipoSelect.value;
     if (subTipoId) {
       const subcat = this.categorias.find((c) => c.id == subTipoId);
-      if (subcat?.institucion_id && this.institucionSelect) {
+      if (subcat && subcat.institucion_id && this.institucionSelect) {
         this.institucionSelect.value = subcat.institucion_id;
       }
     }
@@ -640,7 +721,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
   calcularPrioridadDinamica() {
     const subTipoId = this.subTipoSelect.value;
-    const afectados = Number.parseInt(this.cantidadAfectadosInput.value) || 0;
+    const afectados = parseInt(this.cantidadAfectadosInput.value) || 0;
 
     const resetDisplay = () => {
       this.prioridadDisplay.textContent = '-';
@@ -654,7 +735,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     }
 
     const subcat = this.categorias.find((c) => c.id == subTipoId);
-    if (!subcat?.prioridad_id) {
+    if (!subcat || !subcat.prioridad_id) {
       resetDisplay();
       return;
     }
@@ -709,6 +790,8 @@ export class IncidenciaFormComponent extends BaseComponent {
 
   async cargarDropdownNivel1(paisId, selectVal = null) {
     const s1 = this.dirNivel1Select;
+    const s2 = this.dirNivel2Select;
+    const s3 = this.dirNivel3Select;
 
     s1.innerHTML = '<option value="">-- Cargando --</option>';
     s1.disabled = true;
@@ -732,7 +815,6 @@ export class IncidenciaFormComponent extends BaseComponent {
         s1.value = selectVal;
       }
     } catch (e) {
-      ToastService.error(`Error al cargar provincias: ${e.message}`);
       s1.innerHTML = '<option value="">-- Error --</option>';
     }
   }
@@ -760,7 +842,6 @@ export class IncidenciaFormComponent extends BaseComponent {
         s2.value = selectVal;
       }
     } catch (e) {
-      ToastService.error(`Error al cargar cantones: ${e.message}`);
       s2.innerHTML = '<option value="">-- Error --</option>';
     }
   }
@@ -787,7 +868,6 @@ export class IncidenciaFormComponent extends BaseComponent {
         s3.value = selectVal;
       }
     } catch (e) {
-      ToastService.error(`Error al cargar parroquias: ${e.message}`);
       s3.innerHTML = '<option value="">-- Error --</option>';
     }
   }
@@ -799,7 +879,7 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     // Auto-select operator's country if exists
     const user = AuthService.getCurrentUser();
-    if (user?.pais_id) {
+    if (user && user.pais_id) {
       this.dirPaisSelect.value = user.pais_id;
       this.dirPaisSelect.disabled = true;
       this.actualizarEtiquetasNiveles(user.pais_id);
@@ -822,118 +902,112 @@ export class IncidenciaFormComponent extends BaseComponent {
       const inc = await IncidenciaService.getById(id);
       if (!inc) return;
 
-      this.poblarCamposBasicosEdicion(inc);
+      this.incidenciaIdInput.value = inc.id;
+      this.versionInput.value = inc.version || 1;
+      this.selectedDireccionId = inc.direccion_id;
+      this.tipoSelect.value = inc.tipo_incidencia_id || '';
+
+      // Load subcategories
+      this.onCategoryChange();
+      this.subTipoSelect.value = inc.sub_tipo_incidencia_id || '';
+
+      this.cantidadAfectadosInput.value = inc.cantidad_afectados_incidencia || 0;
+      this.descripcionInput.value = inc.incidencia_descripcion || '';
+      this.institucionSelect.value = inc.institucion_id || '';
+      if (this.institucionesApoyoSelect && inc.instituciones_apoyo) {
+        const supportIds = inc.instituciones_apoyo.map((i) => i.id.toString());
+        Array.from(this.institucionesApoyoSelect.options).forEach((opt) => {
+          opt.selected = supportIds.includes(opt.value);
+        });
+        if (this.containerModalApoyoForm) {
+          Array.from(this.containerModalApoyoForm.querySelectorAll('.chk-apoyo')).forEach((chk) => {
+            chk.checked = supportIds.includes(chk.value);
+          });
+        }
+        this.actualizarBadgesApoyoForm();
+      }
+      this.estadoSelect.value = inc.estado_id || 1;
+
+      this.calcularPrioridadDinamica();
 
       // Location
       if (inc.direccion) {
-        await this.poblarUbicacionYTerritorioEdicion(inc.direccion);
+        const dir = inc.direccion;
+        this.dirDetalleInput.value = dir.detalle || '';
+        this.dirCodigoPostalInput.value = dir.codigo_postal || '';
+
+        if (dir.latitud && dir.longitud) {
+          this.actualizarMarcador(dir.latitud, dir.longitud, false);
+          this.map.setView([dir.latitud, dir.longitud], 15);
+        }
+
+        const terr = dir.territorio;
+        if (terr) {
+          this.dirPaisSelect.value = terr.pais_id;
+          this.actualizarEtiquetasNiveles(terr.pais_id);
+
+          // Rebuild cascade
+          let n1 = null,
+            n2 = null,
+            n3 = null;
+          if (terr.parent && terr.parent.parent) {
+            n1 = terr.parent.parent.id;
+            n2 = terr.parent.id;
+            n3 = terr.id;
+          } else if (terr.parent) {
+            n1 = terr.parent.id;
+            n2 = terr.id;
+          } else {
+            n1 = terr.id;
+          }
+
+          if (n1) {
+            await this.cargarDropdownNivel1(terr.pais_id, n1);
+            if (n2) {
+              await this.cargarDropdownNivel2(terr.pais_id, n1, n2);
+              if (n3) {
+                await this.cargarDropdownNivel3(terr.pais_id, n2, n3);
+              }
+            }
+          }
+        }
       }
 
       this.actualizarIndicadorMinimalista();
 
       if (inc.recursos && inc.recursos.length > 0) {
-        this.poblarRecursosEdicion(inc.recursos);
+        this.recursosFiles = inc.recursos.map((r) => ({
+          id: r.id,
+          name: r.url.substring(r.url.lastIndexOf('/') + 1),
+          base64: r.url,
+          existing: true,
+        }));
+        this.renderThumbnails();
       }
 
-      this.configurarModoInstitucionEdicion(inc);
+      // Check if user is of role Institucion
+      const user = AuthService.getCurrentUser();
+      const isInstitucion =
+        user && user.roles && user.roles.some((r) => r.nombre === 'Institucion');
+      if (isInstitucion) {
+        this.disableFormFields();
+        // If state is 'En Proceso' (3), show confirm button
+        if (inc.estado_id === 3) {
+          if (this.btnConfirmarResolucion) {
+            this.btnConfirmarResolucion.classList.remove('d-none');
+            this.btnConfirmarResolucion.disabled = false;
+            this.btnConfirmarResolucion.addEventListener('click', () =>
+              this.confirmarResolucion(inc.id)
+            );
+          }
+          if (this.btnSubmit) {
+            this.btnSubmit.classList.add('d-none');
+          }
+        }
+      }
     } catch (e) {
       console.error(e);
       ToastService.error('Error al cargar la incidencia para edición.');
-    }
-  }
-
-  poblarCamposBasicosEdicion(inc) {
-    this.incidenciaIdInput.value = inc.id;
-    this.versionInput.value = inc.version || 1;
-    this.selectedDireccionId = inc.direccion_id;
-    this.tipoSelect.value = inc.tipo_incidencia_id || '';
-
-    // Load subcategories
-    this.onCategoryChange();
-    this.subTipoSelect.value = inc.sub_tipo_incidencia_id || '';
-
-    this.cantidadAfectadosInput.value = inc.cantidad_afectados_incidencia || 0;
-    this.descripcionInput.value = inc.incidencia_descripcion || '';
-    this.institucionSelect.value = inc.institucion_id || '';
-    this.estadoSelect.value = inc.estado_id || 1;
-
-    this.calcularPrioridadDinamica();
-  }
-
-  async poblarUbicacionYTerritorioEdicion(dir) {
-    this.dirDetalleInput.value = dir.detalle || '';
-    this.dirCodigoPostalInput.value = dir.codigo_postal || '';
-
-    if (dir.latitud && dir.longitud) {
-      this.actualizarMarcador(dir.latitud, dir.longitud, false);
-      this.map.setView([dir.latitud, dir.longitud], 15);
-    }
-
-    const terr = dir.territorio;
-    if (terr) {
-      await this.reconstruirCascadaTerritorial(terr);
-    }
-  }
-
-  async reconstruirCascadaTerritorial(terr) {
-    this.dirPaisSelect.value = terr.pais_id;
-    this.actualizarEtiquetasNiveles(terr.pais_id);
-
-    // Rebuild cascade
-    let n1 = null,
-      n2 = null,
-      n3 = null;
-    if (terr.parent?.parent) {
-      n1 = terr.parent.parent.id;
-      n2 = terr.parent.id;
-      n3 = terr.id;
-    } else if (terr.parent) {
-      n1 = terr.parent.id;
-      n2 = terr.id;
-    } else {
-      n1 = terr.id;
-    }
-
-    if (n1) {
-      await this.cargarDropdownNivel1(terr.pais_id, n1);
-      if (n2) {
-        await this.cargarDropdownNivel2(terr.pais_id, n1, n2);
-        if (n3) {
-          await this.cargarDropdownNivel3(terr.pais_id, n2, n3);
-        }
-      }
-    }
-  }
-
-  poblarRecursosEdicion(recursos) {
-    this.recursosFiles = recursos.map((r) => ({
-      id: r.id,
-      name: r.url.substring(r.url.lastIndexOf('/') + 1),
-      base64: r.url,
-      existing: true,
-    }));
-    this.renderThumbnails();
-  }
-
-  configurarModoInstitucionEdicion(inc) {
-    // Check if user is of role Institucion
-    const user = AuthService.getCurrentUser();
-    const isInstitucion = user?.roles?.some((r) => r.nombre === 'Institucion');
-    if (isInstitucion) {
-      this.disableFormFields();
-      // If state is 'En Proceso' (3), show confirm button
-      if (inc.estado_id === 3) {
-        if (this.btnConfirmarResolucion) {
-          this.btnConfirmarResolucion.classList.remove('d-none');
-          this.btnConfirmarResolucion.disabled = false;
-          this.btnConfirmarResolucion.addEventListener('click', () =>
-            this.confirmarResolucion(inc.id)
-          );
-        }
-        if (this.btnSubmit) {
-          this.btnSubmit.classList.add('d-none');
-        }
-      }
     }
   }
 
@@ -951,8 +1025,8 @@ export class IncidenciaFormComponent extends BaseComponent {
 
     // Select instruction text using a broader selector or class
     const dragText =
-      this.querySelector(String.raw`.text-muted.small.mt-1\.5`) ||
-      this.querySelector(String.raw`span.text-muted.small.mt-1\.5`);
+      this.querySelector('.text-muted.small.mt-1\\.5') ||
+      this.querySelector('span.text-muted.small.mt-1\\.5');
     if (dragText) dragText.classList.add('d-none');
   }
 
@@ -998,134 +1072,117 @@ export class IncidenciaFormComponent extends BaseComponent {
   async guardarIncidencia(e) {
     e.preventDefault();
 
-    if (!this.validarPrecondicionesGuardado()) {
+    if (!this.form.checkValidity()) {
+      this.form.classList.add('was-validated');
+      ToastService.error('Por favor complete los campos obligatorios del formulario.');
       return;
     }
 
     const id = this.incidenciaIdInput.value;
 
-    this.limpiarErrores();
-    this.btnSubmit.disabled = true;
-    const spinner = this.querySelector('#loadingSpinner');
-    if (spinner) spinner.classList.remove('d-none');
-
-    try {
-      const direccionId = await this.procesarGuardadoDireccion(id);
-      const incPayload = this.construirPayloadIncidencia(direccionId);
-      await this.ejecutarGuardadoIncidencia(id, incPayload);
-    } catch (err) {
-      this.manejarErrorGuardado(err, err.message || 'Error al procesar la incidencia.');
-    }
-  }
-
-  validarPrecondicionesGuardado() {
-    if (!this.form.checkValidity()) {
-      this.form.classList.add('was-validated');
-      ToastService.error('Por favor complete los campos obligatorios del formulario.');
-      return false;
-    }
-
+    // Validate that we have coordinates and detailed address
     if (!this.coords) {
       ToastService.error('Debe marcar la ubicación en el mapa.');
-      return false;
+      return;
     }
 
-    if (!this.selectedDireccionId) {
+    let direccionId = this.selectedDireccionId;
+
+    if (!direccionId) {
       const finalTerritorioId =
         this.dirNivel3Select.value || this.dirNivel2Select.value || this.dirNivel1Select.value;
       if (!finalTerritorioId) {
         ToastService.error(
           'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
         );
-        return false;
+        return;
       }
+
+      this.limpiarErrores();
+      this.btnSubmit.disabled = true;
+      this.querySelector('#loadingSpinner').classList.remove('d-none');
+
+      try {
+        // 1. Guardar la dirección primero
+        const dirPayload = {
+          territorio_id: parseInt(finalTerritorioId),
+          detalle: this.dirDetalleInput.value,
+          referencia: '',
+          codigo_postal: this.currentPostalCode || null,
+          latitud: this.coords.lat,
+          longitud: this.coords.lng,
+          precision_gps: this.dirPrecisionGpsInput?.value
+            ? parseFloat(this.dirPrecisionGpsInput.value)
+            : null,
+          activo: true,
+        };
+
+        const incData = id ? await IncidenciaService.getById(id) : null;
+        if (incData && incData.direccion_id) {
+          direccionId = incData.direccion_id;
+          await UbicacionesService.updateDireccion(direccionId, dirPayload);
+        } else {
+          const dirRes = await UbicacionesService.createDireccion(dirPayload);
+          direccionId = (dirRes.data || dirRes).id;
+        }
+
+        // Limpiar la caché de direcciones para que las próximas incidencias en esta SPA session puedan recuperarla
+        CatalogoService.clearDireccionesCache();
+      } catch (err) {
+        console.error(err);
+        ToastService.error('Error al guardar la dirección.');
+        this.btnSubmit.disabled = false;
+        this.querySelector('#loadingSpinner').classList.add('d-none');
+        return;
+      }
+    } else {
+      this.limpiarErrores();
+      this.btnSubmit.disabled = true;
+      this.querySelector('#loadingSpinner').classList.remove('d-none');
     }
-
-    return true;
-  }
-
-  async procesarGuardadoDireccion(id) {
-    if (this.selectedDireccionId) {
-      return this.selectedDireccionId;
-    }
-
-    const finalTerritorioId =
-      this.dirNivel3Select.value || this.dirNivel2Select.value || this.dirNivel1Select.value;
 
     try {
-      const dirPayload = {
-        territorio_id: Number.parseInt(finalTerritorioId),
-        detalle: this.dirDetalleInput.value,
-        referencia: '',
-        codigo_postal: this.currentPostalCode || null,
-        latitud: this.coords.lat,
-        longitud: this.coords.lng,
-        precision_gps: this.dirPrecisionGpsInput?.value
-          ? Number.parseFloat(this.dirPrecisionGpsInput.value)
+      // 2. Guardar incidencia
+      const incPayload = {
+        incidencia_descripcion: this.descripcionInput.value,
+        direccion_id: direccionId,
+        tipo_incidencia_id: parseInt(this.tipoSelect.value),
+        sub_tipo_incidencia_id: parseInt(this.subTipoSelect.value),
+        cantidad_afectados_incidencia: parseInt(this.cantidadAfectadosInput.value) || 0,
+        institucion_id: this.institucionSelect.value
+          ? parseInt(this.institucionSelect.value)
           : null,
-        activo: true,
+        instituciones_apoyo: this.institucionesApoyoSelect
+          ? Array.from(this.institucionesApoyoSelect.selectedOptions).map(opt => parseInt(opt.value))
+          : [],
+        estado_id: parseInt(this.estadoSelect.value) || 1,
+        version: parseInt(this.versionInput.value) || 1,
+        recursos: this.recursosFiles.filter((f) => !f.id).map((f) => f.base64),
       };
 
-      let direccionId;
-      const incData = id ? await IncidenciaService.getById(id) : null;
-      if (incData?.direccion_id) {
-        direccionId = incData.direccion_id;
-        await UbicacionesService.updateDireccion(direccionId, dirPayload);
+      let redirectId = id;
+      if (id) {
+        await IncidenciaService.update(id, incPayload);
+        ToastService.success('Incidencia actualizada con éxito.');
       } else {
-        const dirRes = await UbicacionesService.createDireccion(dirPayload);
-        direccionId = (dirRes.data || dirRes).id;
+        const result = await IncidenciaService.create(incPayload);
+        redirectId = result?.data?.id || result?.id || null;
+        ToastService.success('Incidencia registrada con éxito.');
       }
 
-      // Limpiar la caché de direcciones
-      CatalogoService.clearDireccionesCache();
-      return direccionId;
+      setTimeout(() => {
+        if (redirectId) {
+          window.location.hash = `#/tramites/estado-individual?id=${redirectId}`;
+        } else {
+          window.location.hash = '#/incidencias';
+        }
+      }, 1500);
     } catch (err) {
-      ToastService.error(`Error al guardar la dirección: ${err.message}`);
+      console.error(err);
+      ToastService.error(err.message || 'Error al procesar la incidencia.');
+      this.btnSubmit.disabled = false;
+      this.querySelector('#loadingSpinner').classList.add('d-none');
     }
-  }
-
-  construirPayloadIncidencia(direccionId) {
-    return {
-      incidencia_descripcion: this.descripcionInput.value,
-      direccion_id: direccionId,
-      tipo_incidencia_id: Number.parseInt(this.tipoSelect.value),
-      sub_tipo_incidencia_id: Number.parseInt(this.subTipoSelect.value),
-      cantidad_afectados_incidencia: Number.parseInt(this.cantidadAfectadosInput.value) || 0,
-      institucion_id: this.institucionSelect.value
-        ? Number.parseInt(this.institucionSelect.value)
-        : null,
-      estado_id: Number.parseInt(this.estadoSelect.value) || 1,
-      version: Number.parseInt(this.versionInput.value) || 1,
-      recursos: this.recursosFiles.filter((f) => !f.id).map((f) => f.base64),
-    };
-  }
-
-  async ejecutarGuardadoIncidencia(id, incPayload) {
-    let redirectId = id;
-    if (id) {
-      await IncidenciaService.update(id, incPayload);
-      ToastService.success('Incidencia actualizada con éxito.');
-    } else {
-      const result = await IncidenciaService.create(incPayload);
-      redirectId = result?.data?.id || result?.id || null;
-      ToastService.success('Incidencia registrada con éxito.');
-    }
-
-    setTimeout(() => {
-      if (redirectId) {
-        window.location.hash = `#/tramites/estado-individual?id=${redirectId}`;
-      } else {
-        window.location.hash = '#/incidencias';
-      }
-    }, 1500);
-  }
-
-  manejarErrorGuardado(err, mensaje) {
-    console.error(err);
-    ToastService.error(mensaje);
-    if (this.btnSubmit) this.btnSubmit.disabled = false;
-    const spinner = this.querySelector('#loadingSpinner');
-    if (spinner) spinner.classList.add('d-none');
   }
 
   // --- RESOURCES & FILE UPLOADS MOCK (CIMIENTOS) ---
@@ -1261,9 +1318,11 @@ export class IncidenciaFormComponent extends BaseComponent {
               height *= MAX_WIDTH / width;
               width = MAX_WIDTH;
             }
-          } else if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
           }
 
           canvas.width = width;
@@ -1274,9 +1333,9 @@ export class IncidenciaFormComponent extends BaseComponent {
           const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
           resolve(webpDataUrl);
         };
-        img.onerror = () => reject(new Error('Error al cargar la imagen.'));
+        img.onerror = (err) => reject(err);
       };
-      reader.onerror = () => reject(new Error('Error al leer el archivo.'));
+      reader.onerror = (err) => reject(err);
     });
   }
 
@@ -1302,7 +1361,7 @@ export class IncidenciaFormComponent extends BaseComponent {
       `;
 
       col.querySelector('button').addEventListener('click', (e) => {
-        const idx = Number.parseInt(e.currentTarget.dataset.index);
+        const idx = parseInt(e.currentTarget.getAttribute('data-index'));
         this.recursosFiles.splice(idx, 1);
         this.renderThumbnails();
       });
