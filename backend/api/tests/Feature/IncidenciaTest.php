@@ -256,7 +256,7 @@ class IncidenciaTest extends TestCase
         $response = $this->actingAs($userPolicia)->getJson('/api/v1/incidents');
         $response->assertStatus(200)
             ->assertJsonCount(2, 'data');
-            
+
         $ids = collect($response->json('data'))->pluck('id')->toArray();
         $this->assertContains($incidenciaPolicia->id, $ids);
         $this->assertContains($incidenciaBomberos->id, $ids);
