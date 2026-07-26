@@ -125,13 +125,11 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
 
     this.querySelector('#lbl-fecha-registro').innerHTML =
       `Registrado ${timeAgo} (<span class="fw-bold text-dark">${dateFormatted}</span>)`;
-    this.querySelector('#lbl-direccion').textContent = inc.direccion
-      ? inc.direccion.detalle
-      : 'Sin dirección';
+    this.querySelector('#lbl-direccion').textContent = inc.direccion?.detalle ?? 'Sin dirección';
     this.querySelector('#lbl-afectados').textContent = inc.cantidad_afectados_incidencia || 0;
 
     const inst = this.querySelector('#lbl-institucion');
-    inst.textContent = inc.institucion ? inc.institucion.nombre : 'No asignada';
+    inst.textContent = inc.institucion?.nombre ?? 'No asignada';
     if (!inc.institucion) inst.classList.add('text-muted');
 
     if (inc.prioridad) {
@@ -207,7 +205,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       if (child.id !== 'no-adjuntos-msg') child.remove();
     });
 
-    if (inc.recursos && inc.recursos.length > 0) {
+    if (inc.recursos?.length > 0) {
       msgNoAdjuntos.classList.add('d-none');
 
       let adjuntosHtml = '';
@@ -337,41 +335,50 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   }
 
   crearBurbujaChat(item) {
-    const isMine = this.currentUser && item.usuario_id === this.currentUser.id;
+    const isMine = this.currentUser?.id === item.usuario_id;
     const div = document.createElement('div');
 
     const alignClass = isMine ? 'align-self-end' : 'align-self-start';
-    const bgClass = isMine ? 'text-dark border shadow-sm' : 'bg-white text-dark border shadow-sm';
-    const timeClass = 'text-muted';
-
-    const autorNombre = item.usuario ? item.usuario.name : 'Sistema';
+    
+    const autorNombre = item.usuario?.name ?? 'Sistema';
     const fecha = new Date(item.created_at).toLocaleString();
 
     let { comentario, isStateChange } = this.parseComentario(item.comentario);
-
-    let editadoHtml = '';
-    if (item.updated_at && item.created_at !== item.updated_at) {
-      editadoHtml = '<span class="ms-2 fst-italic" style="font-size: 0.7em;">(Editado)</span>';
-    }
-
+    const editadoHtml = this.obtenerEditadoHtml(item);
     const estadoBadge = this.crearEstadoBadge(item, isStateChange);
 
     div.className = `d-flex flex-column ${alignClass} mb-2`;
     div.style.maxWidth = '75%';
 
-    div.innerHTML = `
-      <div class="small fw-bold mb-1 ${isMine ? 'text-end text-primary' : 'text-secondary'}">
+    div.innerHTML = this.obtenerPlantillaBurbuja(isMine, autorNombre, comentario, estadoBadge, fecha, editadoHtml);
+    return div;
+  }
+
+  obtenerEditadoHtml(item) {
+    if (item.updated_at && item.created_at !== item.updated_at) {
+      return '<span class="ms-2 fst-italic" style="font-size: 0.7em;">(Editado)</span>';
+    }
+    return '';
+  }
+
+  obtenerPlantillaBurbuja(isMine, autorNombre, comentario, estadoBadge, fecha, editadoHtml) {
+    const headerClass = isMine ? 'text-end text-primary' : 'text-secondary';
+    const bgClass = isMine ? 'text-dark border shadow-sm' : 'bg-white text-dark border shadow-sm';
+    const borderRadius = `border-bottom-${isMine ? 'right' : 'left'}-radius: 0;`;
+    const bgStyle = isMine ? 'background-color: #e9ecef; border-color: #dee2e6 !important;' : '';
+
+    return `
+      <div class="small fw-bold mb-1 ${headerClass}">
         ${autorNombre}
       </div>
-      <div class="${bgClass} rounded-4 p-3" style="border-bottom-${isMine ? 'right' : 'left'}-radius: 0; ${isMine ? 'background-color: #e9ecef; border-color: #dee2e6 !important;' : ''}">
+      <div class="${bgClass} rounded-4 p-3" style="${borderRadius} ${bgStyle}">
         <div class="mb-0" style="word-wrap: break-word;">${comentario}</div>
         ${estadoBadge}
-        <div class="mt-2 text-end small ${timeClass}" style="font-size: 0.75rem;">
+        <div class="mt-2 text-end small text-muted" style="font-size: 0.75rem;">
           ${fecha} ${editadoHtml}
         </div>
       </div>
     `;
-    return div;
   }
 
   parseComentario(texto = 'Cambio de estado') {
