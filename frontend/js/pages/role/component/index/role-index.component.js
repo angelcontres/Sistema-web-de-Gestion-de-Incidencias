@@ -18,18 +18,26 @@ export class RoleIndexComponent extends BaseComponent {
 
     // Hide create button if user lacks permission
     const btnNuevoRol = this.querySelector('#btnNuevoRol');
-    const formComponent = this.querySelector('#roleForm');
+    const formComponent =
+      this.querySelector('#app-role-form') ||
+      this.querySelector('app-role-form') ||
+      this.querySelector('#roleForm');
 
     if (btnNuevoRol) {
       if (!AuthService.hasPermission('CREATE', 'roles')) {
         btnNuevoRol.classList.add('d-none');
-      } else if (formComponent) {
+      } else {
         btnNuevoRol.addEventListener('click', () => this.abrirModalCrear());
       }
     }
 
     if (formComponent) {
-      formComponent.addEventListener('submit', (e) => this.guardarRol(e));
+      formComponent.addEventListener('rol-guardado', (e) => {
+        if (e.detail?.mensaje) {
+          if (ToastService?.success) ToastService.success(e.detail.mensaje);
+        }
+        this.cargarRoles();
+      });
     }
 
     // 4. Escuchar el submit del formulario de asignación de permisos
@@ -149,6 +157,7 @@ export class RoleIndexComponent extends BaseComponent {
     } catch (error) {
       console.error('Error cargando roles:', error);
       loadingSpinner.classList.add('d-none');
+      if (ToastService?.error) ToastService.error(`Error al cargar roles: ${error.message}`);
       this.mostrarAlertaError(`Error al cargar roles: ${error.message}`);
     }
   }
@@ -190,47 +199,6 @@ export class RoleIndexComponent extends BaseComponent {
   async abrirModalEditar(rol, todosLosRoles) {
     const formComponent = this.querySelector('#app-role-form');
     if (formComponent) formComponent.abrirModalEditar(rol, todosLosRoles);
-  }
-
-  /**
-   * Guarda el rol (POST para crear, PUT para editar)
-   */
-  async guardarRol(e) {
-    e.preventDefault();
-    const formComponent = this.querySelector('#roleForm');
-
-    if (!formComponent.checkValidity()) {
-      formComponent.classList.add('was-validated');
-      return;
-    }
-
-    const roleId = this.querySelector('#roleId').value;
-    const nombre = this.querySelector('#nombre').value.trim();
-    const descripcion = this.querySelector('#descripcion').value.trim();
-    const padreSelectVal = this.querySelector('#padre_id').value;
-    const padre_id = padreSelectVal ? Number.parseInt(padreSelectVal) : null;
-
-    const payload = { nombre, descripcion, padre_id };
-
-    try {
-      if (roleId) {
-        await RoleService.update(roleId, payload);
-      } else {
-        await RoleService.create(payload);
-      }
-
-      const modalEl = this.querySelector('#roleModal');
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      this.mostrarAlertaExito(
-        roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.'
-      );
-      await this.cargarRoles();
-    } catch (error) {
-      console.error('Error al guardar rol:', error);
-      this.mostrarErrorModal(error.message || 'Error al procesar el formulario.');
-    }
   }
 
   /**
@@ -307,7 +275,7 @@ export class RoleIndexComponent extends BaseComponent {
 
   async _fetchRolesAndPermissions(rolId) {
     const [todosPermisosResponse, rolDetalle] = await Promise.all([
-      PermissionService.getAllList(),
+      PermissionService.getAll(null, 'all=true'),
       RoleService.getById(rolId),
     ]);
 
@@ -432,47 +400,17 @@ export class RoleIndexComponent extends BaseComponent {
     try {
       await RoleService.assignPermissions(roleId, { permisos: permisosIds });
 
-      this.mostrarAlertaExito('Permisos asignados correctamente.');
+      if (ToastService?.success) ToastService.success('Permisos asignados correctamente.');
 
       // Opcionalmente, subir el scroll arriba
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Error asignando permisos:', error);
+      if (ToastService?.error) ToastService.error(`Error al asignar permisos: ${error.message}`);
       alert(`Error al asignar permisos: ${error.message}`);
     } finally {
       btnAssignSubmit.innerHTML = btnText;
       btnAssignSubmit.disabled = false;
-    }
-  }
-
-  /**
-   * Métodos helpers de Alertas
-   */
-  mostrarAlertaExito(message) {
-    const successAlert = this.querySelector('#successAlert');
-    const successMessage = this.querySelector('#successMessage');
-    if (successAlert && successMessage) {
-      successMessage.textContent = message;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 4000);
-    }
-  }
-
-  mostrarAlertaError(message) {
-    const errorAlert = this.querySelector('#errorAlert');
-    const errorMessage = this.querySelector('#errorMessage');
-    if (errorAlert && errorMessage) {
-      errorMessage.textContent = message;
-      errorAlert.classList.remove('d-none');
-    }
-  }
-
-  mostrarErrorModal(message) {
-    const modalErrorAlert = this.querySelector('#modalErrorAlert');
-    const modalErrorMessage = this.querySelector('#modalErrorMessage');
-    if (modalErrorAlert && modalErrorMessage) {
-      modalErrorMessage.textContent = message;
-      modalErrorAlert.classList.remove('d-none');
     }
   }
 
