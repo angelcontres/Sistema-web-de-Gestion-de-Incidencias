@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CategoriaIncidencia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CategoriaIncidenciaController extends Controller
 {
@@ -52,13 +53,13 @@ class CategoriaIncidenciaController extends Controller
             'activo' => $request->input('activo', true),
         ]);
 
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_all_0');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_all_1');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_null_0');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_null_1');
+        Cache::forget('catalogo_categorias_incidencia_all_0');
+        Cache::forget('catalogo_categorias_incidencia_all_1');
+        Cache::forget('catalogo_categorias_incidencia_null_0');
+        Cache::forget('catalogo_categorias_incidencia_null_1');
         if ($request->parent_id) {
-            \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_'.$request->parent_id.'_0');
-            \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_'.$request->parent_id.'_1');
+            Cache::forget('catalogo_categorias_incidencia_'.$request->parent_id.'_0');
+            Cache::forget('catalogo_categorias_incidencia_'.$request->parent_id.'_1');
         }
 
         return response()->json([
@@ -108,13 +109,13 @@ class CategoriaIncidenciaController extends Controller
             'activo' => $request->has('activo') ? $request->activo : $categoria->activo,
         ]);
 
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_all_0');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_all_1');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_null_0');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_null_1');
+        Cache::forget('catalogo_categorias_incidencia_all_0');
+        Cache::forget('catalogo_categorias_incidencia_all_1');
+        Cache::forget('catalogo_categorias_incidencia_null_0');
+        Cache::forget('catalogo_categorias_incidencia_null_1');
         if ($categoria->parent_id) {
-            \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_0');
-            \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_1');
+            Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_0');
+            Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_1');
         }
 
         return response()->json([
@@ -138,13 +139,13 @@ class CategoriaIncidenciaController extends Controller
 
         $categoria->delete();
 
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_all_0');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_all_1');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_null_0');
-        \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_null_1');
+        Cache::forget('catalogo_categorias_incidencia_all_0');
+        Cache::forget('catalogo_categorias_incidencia_all_1');
+        Cache::forget('catalogo_categorias_incidencia_null_0');
+        Cache::forget('catalogo_categorias_incidencia_null_1');
         if ($categoria->parent_id) {
-            \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_0');
-            \Illuminate\Support\Facades\Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_1');
+            Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_0');
+            Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_1');
         }
 
         return response()->json([
