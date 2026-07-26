@@ -24,10 +24,23 @@ export class NotificationCardComponent extends BaseComponent {
     const item = this.querySelector('.card-item');
     if (!item || !this.notificationData) return;
 
-    // Evaluamos de forma segura si la alerta ya fue leída
     const isRead = Boolean(this.notificationData.is_read || this.notificationData.read_at);
     const { id, title, message, type, created_at, url } = this.notificationData;
 
+    this.renderTextContent(title, message, created_at);
+
+    const theme = this.getTheme(type);
+    this.applyTheme(item, theme);
+
+    this.updateReadState(item, theme, isRead);
+
+    item.onclick = (e) => {
+      e.preventDefault();
+      this.handleCardClick(id, url);
+    };
+  }
+
+  renderTextContent(title, message, created_at) {
     const esc = (v) =>
       String(v ?? '').replace(
         /[&<>"']/g,
@@ -36,17 +49,17 @@ export class NotificationCardComponent extends BaseComponent {
 
     this.querySelector('.card-title').innerHTML = esc(title || 'Alerta de Central');
     this.querySelector('.card-message').innerHTML = esc(message || 'Sin detalles.');
-    
-    // Formateo de fecha y hora
+
     const timeEl = this.querySelector('.card-time');
     if (created_at && timeEl) {
       const date = new Date(created_at);
-      timeEl.textContent = !isNaN(date) 
-        ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+      timeEl.textContent = !Number.isNaN(date.getTime())
+        ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         : created_at;
     }
+  }
 
-    // Mapeo exacto de colores Bootstrap según gravedad de la incidencia
+  getTheme(type) {
     const typeClasses = {
       danger: { border: 'border-danger', bg: 'bg-danger' },
       warning: { border: 'border-warning', bg: 'bg-warning' },
@@ -54,10 +67,10 @@ export class NotificationCardComponent extends BaseComponent {
       success: { border: 'border-success', bg: 'bg-success' },
       secondary: { border: 'border-secondary', bg: 'bg-secondary' },
     };
+    return typeClasses[type] || { border: 'border-primary', bg: 'bg-primary' };
+  }
 
-    const theme = typeClasses[type] || { border: 'border-primary', bg: 'bg-primary' };
-
-    // Limpiamos bordes anteriores por si se está re-renderizando y aplicamos el nuevo
+  applyTheme(item, theme) {
     item.classList.remove(
       'border-danger',
       'border-warning',
@@ -67,46 +80,41 @@ export class NotificationCardComponent extends BaseComponent {
       'border-primary'
     );
     item.classList.add(theme.border);
+  }
 
-    // --- GESTIÓN VISUAL DEL PUNTO INDICADOR (ESTILO FACEBOOK/INSTAGRAM) ---
+  updateReadState(item, theme, isRead) {
     const unreadDot = this.querySelector('.unread-dot');
     const titleEl = this.querySelector('.card-title');
 
     if (unreadDot) {
-      // Limpiamos cualquier color de fondo anterior y le ponemos el color de la emergencia
-      unreadDot.classList.remove('bg-primary', 'bg-danger', 'bg-warning', 'bg-info', 'bg-success', 'bg-secondary');
+      unreadDot.classList.remove(
+        'bg-primary',
+        'bg-danger',
+        'bg-warning',
+        'bg-info',
+        'bg-success',
+        'bg-secondary'
+      );
       unreadDot.classList.add(theme.bg);
     }
 
     if (isRead) {
-      // ESTADO LEÍDO: Ocultamos el punto, opacamos la tarjeta y quitamos negrita
       if (unreadDot) unreadDot.classList.add('d-none');
-      
       item.classList.replace('bg-white', 'bg-light');
       item.style.opacity = '0.65';
-      
       if (titleEl) {
         titleEl.classList.remove('fw-bold');
         titleEl.classList.replace('text-dark', 'text-muted');
       }
     } else {
-      // ESTADO NO LEÍDO: Mostramos el punto encendido, fondo blanco brillante y título en negrita
       if (unreadDot) unreadDot.classList.remove('d-none');
-      
       item.classList.replace('bg-light', 'bg-white');
       item.style.opacity = '1';
-      
       if (titleEl) {
         titleEl.classList.add('fw-bold');
         titleEl.classList.replace('text-muted', 'text-dark');
       }
     }
-
-    // Evento Click: Marca como leído en backend y redirige
-    item.onclick = (e) => {
-      e.preventDefault();
-      this.handleCardClick(id, url);
-    };
   }
 
   async handleCardClick(id, url) {
@@ -126,11 +134,11 @@ export class NotificationCardComponent extends BaseComponent {
       // 4. Redirección por Hash en tu SPA
       if (url) {
         let targetUrl = url;
-        
+
         // Si la URL ya viene completa con el hash, la respetamos
         if (targetUrl.startsWith('#')) {
           window.location.href = targetUrl;
-        } 
+        }
         // Si es una ruta relativa o viene de la API
         else {
           // Limpiamos cualquier barra inicial duplicada

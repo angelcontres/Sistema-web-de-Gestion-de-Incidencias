@@ -1,11 +1,10 @@
 import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { UserFormComponent } from './user-form.component.js';
+import './user-form.component.js';
 import { UserService } from '../../services/user.service.js';
 import { RoleService } from '../../../role/services/role.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { InstitucionService } from '../../../instituciones/services/institucion.service.js';
 import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
-import { ToastService } from '../../../../shared/services/toast.service.js';
 
 describe('UserFormComponent', () => {
   let component;
@@ -42,17 +41,19 @@ describe('UserFormComponent', () => {
         <button id="btnSubmit" type="submit"></button>
       </form>
     `;
-    window.fetch = jest.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve(templateHtml) }));
+    window.fetch = jest.fn(() =>
+      Promise.resolve({ ok: true, text: () => Promise.resolve(templateHtml) })
+    );
 
     document.body.innerHTML = `
       <app-user-form></app-user-form>
     `;
-    
+
     component = document.querySelector('app-user-form');
 
     jest.spyOn(AuthService, 'hasPermission').mockReturnValue(true);
     jest.spyOn(AuthService, 'getPaisId').mockReturnValue(1);
-    
+
     jest.spyOn(UserService, 'getById').mockResolvedValue({
       id: 5,
       username: 'test',
@@ -60,25 +61,23 @@ describe('UserFormComponent', () => {
       activo: true,
       roles: [{ id: 1, nombre: 'Admin' }],
       institucion_id: 1,
-      territorios: [{ id: 1 }]
+      territorios: [{ id: 1 }],
     });
     jest.spyOn(UserService, 'create').mockResolvedValue({});
     jest.spyOn(UserService, 'update').mockResolvedValue({});
-    
+
     jest.spyOn(RoleService, 'getAll').mockResolvedValue([
       { id: 1, nombre: 'Admin' },
       { id: 2, nombre: 'Institucion' },
-      { id: 3, nombre: 'Supervisor' }
-    ]);
-    
-    jest.spyOn(InstitucionService, 'getAll').mockResolvedValue([
-      { id: 1, nombre: 'Inst 1' }
+      { id: 3, nombre: 'Supervisor' },
     ]);
 
-    jest.spyOn(CatalogoService, 'getTerritorios').mockResolvedValue([
-      { id: 1, nombre: 'Territorio 1' }
-    ]);
-    
+    jest.spyOn(InstitucionService, 'getAll').mockResolvedValue([{ id: 1, nombre: 'Inst 1' }]);
+
+    jest
+      .spyOn(CatalogoService, 'getTerritorios')
+      .mockResolvedValue([{ id: 1, nombre: 'Territorio 1' }]);
+
     // Set default hash
     window.location.hash = '#/usuarios/form';
   });
@@ -92,8 +91,8 @@ describe('UserFormComponent', () => {
   it('debería inicializar en modo creación si no hay ID en hash', async () => {
     window.location.hash = '#/usuarios/form';
     await component.onInit();
-    
-    expect(component.querySelector('#userModalLabel').textContent).toBe('Crear Nuevo Usuario');
+
+    expect(component.querySelector('#userModalLabel').textContent).toBe('Invitar Usuario');
     expect(InstitucionService.getAll).toHaveBeenCalled();
     expect(CatalogoService.getTerritorios).toHaveBeenCalled();
     expect(RoleService.getAll).toHaveBeenCalled();
@@ -101,60 +100,108 @@ describe('UserFormComponent', () => {
 
   it('debería cargar datos en modo edición al llamar cargarDatosEdicion', async () => {
     await component.onInit();
-    await new Promise(resolve => setTimeout(resolve, 50)); // Wait for internal init()
-    
+    await new Promise((resolve) => setTimeout(resolve, 50)); // Wait for internal init()
+
     await component.cargarDatosEdicion('5');
-    
+
     expect(UserService.getById).toHaveBeenCalledWith('5');
     expect(component.querySelector('#username').value).toBe('test');
   });
 
   it('checkInstitucionRole debería mostrar select de institucion si el rol Institucion está asignado', async () => {
     await component.onInit();
-    
+
     // Mock Assigned Role
-    component.rolesAsignadosList.innerHTML = '<div class="role-draggable-item" data-role-name="Institucion"></div>';
-    
+    component.rolesAsignadosList.innerHTML =
+      '<div class="role-draggable-item" data-role-name="Institucion"></div>';
+
     component.checkInstitucionRole();
-    
+
     expect(component.institucionContainer.classList.contains('d-none')).toBe(false);
   });
 
   it('checkInstitucionRole debería mostrar select de territorios si el rol Supervisor está asignado', async () => {
     await component.onInit();
-    
-    component.rolesAsignadosList.innerHTML = '<div class="role-draggable-item" data-role-name="Supervisor"></div>';
-    
+
+    component.rolesAsignadosList.innerHTML =
+      '<div class="role-draggable-item" data-role-name="Supervisor"></div>';
+
     component.checkInstitucionRole();
-    
+
     expect(component.territorioContainer.classList.contains('d-none')).toBe(false);
   });
 
   it('guardarUsuario debería llamar create en modo nuevo', async () => {
     window.location.hash = '#/usuarios/form';
     await component.onInit();
-    
+
     const form = component.querySelector('#userForm');
     form.checkValidity = jest.fn().mockReturnValue(true);
-    
+
     component.querySelector('#username').value = 'newuser';
     component.querySelector('#password').value = '123';
-    
+
     await component.guardarUsuario({ preventDefault: jest.fn() });
-    
+
     expect(UserService.create).toHaveBeenCalled();
   });
 
   it('guardarUsuario debería llamar update en modo edición', async () => {
     jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue('5');
     await component.onInit();
-    
+
     component.userIdInput.value = '5';
     const form = component.querySelector('#userForm');
     form.checkValidity = jest.fn().mockReturnValue(true);
-    
+
     await component.guardarUsuario({ preventDefault: jest.fn() });
-    
+
     expect(UserService.update).toHaveBeenCalled();
   });
+
+  it('debería manejar eventos de drag and drop entre listas de roles', async () => {
+    await component.onInit();
+    const dispList = component.rolesDisponiblesList;
+    const asigList = component.rolesAsignadosList;
+
+    dispList.innerHTML = '<div class="role-draggable-item" data-role-id="10">Role 10</div>';
+
+    dispList.dispatchEvent(new Event('dragover'));
+    expect(dispList.classList.contains('bg-opacity-75')).toBe(true);
+    dispList.dispatchEvent(new Event('dragleave'));
+    expect(dispList.classList.contains('bg-opacity-75')).toBe(false);
+
+    const dropEvent = new Event('drop');
+    dropEvent.dataTransfer = {
+      getData: jest.fn().mockReturnValue('10'),
+    };
+    asigList.dispatchEvent(dropEvent);
+    expect(asigList.querySelector('[data-role-id="10"]')).not.toBeNull();
+  });
+
+  it('debería configurar la interfaz correctamente para edición y creación', async () => {
+    await component.onInit();
+    component.configurarModoEdicion();
+    expect(component.formTitle.textContent).toBe('Editar Usuario');
+    expect(component.btnText.textContent).toBe('Actualizar Usuario');
+    expect(component.passwordInput.required).toBe(false);
+
+    component.configurarModoCreacion();
+    expect(component.formTitle.textContent).toBe('Invitar Usuario');
+    expect(component.btnText.textContent).toBe('Enviar Invitación');
+    expect(component.passwordInput.required).toBe(false);
+  });
+
+  it('debería manejar errores en cargarDatosEdicion al fallar el servicio', async () => {
+    await component.onInit();
+    jest.spyOn(UserService, 'getById').mockRejectedValue(new Error('Error de red'));
+    component.mostrarError = jest.fn();
+    component.btnSubmit = document.createElement('button');
+
+    await component.cargarDatosEdicion('999');
+
+    expect(component.mostrarError).toHaveBeenCalledWith('No se pudieron cargar los datos del usuario.');
+    expect(component.btnSubmit.disabled).toBe(true);
+  });
 });
+

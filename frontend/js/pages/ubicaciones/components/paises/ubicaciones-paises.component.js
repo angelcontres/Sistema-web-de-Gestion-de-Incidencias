@@ -142,8 +142,7 @@ export class UbicacionesPaisesComponent extends BaseComponent {
   async guardarPais(e) {
     e.preventDefault();
     const form = document.querySelector('#paisForm');
-    const errorAlert = document.querySelector('#paisModalErrorAlert');
-    const errorMessage = document.querySelector('#paisModalErrorMessage');
+
 
     if (!form.checkValidity()) {
       form.classList.add('was-validated');

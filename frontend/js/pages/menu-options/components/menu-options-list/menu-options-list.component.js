@@ -27,7 +27,7 @@ export class MenuOptionsListComponent extends BaseComponent {
           header: 'Icono',
           render: (opcion) => {
             if (!opcion.icono) return '<span class="text-muted small">-</span>';
-            const cleanIcono = opcion.icono.trim().replace(/[^a-zA-Z0-9\s\-]/g, '');
+            const cleanIcono = opcion.icono.trim().replace(/[^a-zA-Z0-9\s-]/g, '');
             if (!cleanIcono) return '<span class="text-muted small">-</span>';
             const isBi = cleanIcono.startsWith('bi-') || cleanIcono.startsWith('bi ');
             const iconClass = isBi ? `bi ${cleanIcono}` : `bi bi-${cleanIcono}`;
@@ -47,7 +47,7 @@ export class MenuOptionsListComponent extends BaseComponent {
         {
           header: 'Padre',
           render: (opcion) =>
-            opcion.padre && opcion.padre.nombre
+            opcion.padre?.nombre
               ? `
               <span class="badge bg-secondary-soft text-dark px-2.5 py-1 rounded small fw-medium">
                 <i class="bi bi-folder-fill me-1 small"></i>${opcion.padre.nombre}

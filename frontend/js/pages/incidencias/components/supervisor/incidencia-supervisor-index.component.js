@@ -50,7 +50,7 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
     this.mostrarSpinners(true);
     try {
       const response = await IncidenciaService.getAll();
-      this.incidencias = Array.isArray(response) ? response : (response.data || []);
+      this.incidencias = Array.isArray(response) ? response : response.data || [];
       this.renderAlertas();
       this.initOrUpdateMap();
     } catch (error) {
@@ -131,12 +131,12 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
     this.markers = [];
 
     const conCoordenadas = this.incidencias.filter(
-      (i) => i.direccion && i.direccion.latitud && i.direccion.longitud
+      (i) => i.direccion?.latitud && i.direccion.longitud
     );
 
     conCoordenadas.forEach((inc) => {
-      const lat = parseFloat(inc.direccion.latitud);
-      const lng = parseFloat(inc.direccion.longitud);
+      const lat = Number.parseFloat(inc.direccion.latitud);
+      const lng = Number.parseFloat(inc.direccion.longitud);
 
       let markerColor = 'blue';
       if (inc.estado_id === 1) markerColor = 'red';

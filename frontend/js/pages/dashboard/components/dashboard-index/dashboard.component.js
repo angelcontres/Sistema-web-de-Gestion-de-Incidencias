@@ -100,7 +100,7 @@ export class DashboardComponent extends BaseComponent {
           menuList = Array.isArray(parsed) ? parsed : parsed.data || null;
         }
       } catch (e) {
-        /* empty */
+        console.log(`Error obteniendo los menus de localStorage: ${e}`);
       }
 
       if (!menuList || !Array.isArray(menuList) || menuList.length === 0) {
@@ -228,6 +228,8 @@ export class DashboardComponent extends BaseComponent {
       if (window.echarts) return resolve();
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js';
+      script.integrity = 'sha256-QvgynZibb2U53SsVu98NggJXYqwRL7tg3FeyfXvPOUY=';
+      script.crossOrigin = 'anonymous';
       script.onload = resolve;
       document.head.appendChild(script);
     });
@@ -325,7 +327,7 @@ export class DashboardComponent extends BaseComponent {
 
     // Enfoque en la incidencia más reciente
     const mostRecent = markersData[0];
-    if (mostRecent && mostRecent.lat && mostRecent.lng) {
+    if (mostRecent?.lat && mostRecent.lng) {
       this.map.setView([mostRecent.lat, mostRecent.lng], 15);
     }
   }

@@ -36,12 +36,8 @@
       <div
         class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-end"
       >
-        <ul
-          class="nav nav-tabs card-header-tabs border-bottom flex-grow-1"
-          id="incidenciaTabs"
-          role="tablist"
-        >
-          <li class="nav-item" role="presentation">
+        <ul class="nav nav-tabs card-header-tabs border-bottom flex-grow-1" id="incidenciaTabs">
+          <li class="nav-item">
             <button
               class="nav-link active fw-semibold text-dark px-4 py-2.5 border-0 rounded-top-3"
               id="datos-tab"
@@ -55,7 +51,7 @@
               <i class="bi bi-card-text me-2"></i>Datos y Geolocalización
             </button>
           </li>
-          <li class="nav-item" role="presentation">
+          <li class="nav-item">
             <button
               class="nav-link fw-semibold text-secondary px-4 py-2.5 border-0 rounded-top-3"
               id="recursos-tab"
@@ -93,7 +89,6 @@
             id="datos-pane"
             role="tabpanel"
             aria-labelledby="datos-tab"
-            tabindex="0"
           >
             <div class="row g-4">
               <!-- Columna Izquierda: Datos -->
@@ -165,7 +160,7 @@
                   <!-- Asignación de Institución y Estado (Solo para operadores/administradores) -->
                   <div class="col-12" id="divInstitucion">
                     <label for="institucionSelect" class="premium-label"
-                      >Institución Principal Asignada</label
+                      >Institución Asignada</label
                     >
                     <select
                       id="institucionSelect"
@@ -173,19 +168,6 @@
                     >
                       <option value="">-- Ninguna --</option>
                     </select>
-                  </div>
-
-                  <!-- Asignación de Instituciones de Apoyo -->
-                  <div class="col-12" id="divInstitucionesApoyo">
-                    <label class="premium-label">Instituciones de Apoyo <span class="text-muted fw-normal">(Opcional)</span></label>
-                    <div class="d-flex flex-wrap gap-2 mb-2" id="list-instituciones-apoyo-form">
-                      <span class="text-muted small fst-italic">Ninguna asignada</span>
-                    </div>
-                    <button type="button" id="btn-edit-apoyo-form" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
-                      <i class="bi bi-building-add"></i> Seleccionar Apoyo
-                    </button>
-                    <!-- Select oculto para compatibilidad con JS -->
-                    <select id="institucionesApoyoSelect" class="d-none" multiple></select>
                   </div>
                 </div>
               </div>
@@ -204,12 +186,11 @@
                     class="ui-btn ui-btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2"
                   >
                     <i id="btnObtenerUbicacionIcon" class="bi bi-geo-fill fs-5"></i>
-                    <span
+                    <output
                       id="btnObtenerUbicacionSpinner"
                       class="spinner-border spinner-border-sm d-none"
-                      role="status"
                       aria-hidden="true"
-                    ></span>
+                    ></output>
                     <span id="btnObtenerUbicacionText">Obtener mi ubicación</span>
                   </button>
                   <button
@@ -273,9 +254,7 @@
                       </div>
 
                       <div class="col-6" style="display: none !important">
-                        <label for="dirCodigoPostal" class="premium-label"
-                          >Código Postal</label
-                        >
+                        <label for="dirCodigoPostal" class="premium-label">Código Postal</label>
                         <input
                           type="text"
                           id="dirCodigoPostal"
@@ -285,9 +264,7 @@
                       </div>
 
                       <div class="col-6" style="display: none !important">
-                        <label for="dirPais" class="premium-label">
-                          >País</label
-                        >
+                        <label for="dirPais" class="premium-label"> >País</label>
                         <select id="dirPais" class="form-select rounded-2 border-secondary-subtle">
                           <option value="">-- Seleccione --</option>
                         </select>
@@ -296,10 +273,7 @@
 
                       <!-- Cascading Dropdowns para Territorio -->
                       <div class="col-12 d-none" id="colDirNivel1" style="display: none !important">
-                        <label
-                          id="lblDirNivel1"
-                          for="dirNivel1"
-                          class="premium-label"
+                        <label id="lblDirNivel1" for="dirNivel1" class="premium-label"
                           >Provincia</label
                         >
                         <select
@@ -312,10 +286,7 @@
                       </div>
 
                       <div class="col-12 d-none" id="colDirNivel2" style="display: none !important">
-                        <label
-                          id="lblDirNivel2"
-                          for="dirNivel2"
-                          class="premium-label"
+                        <label id="lblDirNivel2" for="dirNivel2" class="premium-label"
                           >Cantón</label
                         >
                         <select
@@ -328,10 +299,7 @@
                       </div>
 
                       <div class="col-12 d-none" id="colDirNivel3">
-                        <label
-                          id="lblDirNivel3"
-                          for="dirNivel3"
-                          class="premium-label"
+                        <label id="lblDirNivel3" for="dirNivel3" class="premium-label"
                           >Parroquia <span class="text-danger">*</span></label
                         >
                         <select
@@ -344,9 +312,7 @@
                       </div>
 
                       <div class="col-6" style="display: none !important">
-                        <label for="dirLat" class="premium-label"
-                          >Latitud</label
-                        >
+                        <label for="dirLat" class="premium-label">Latitud</label>
                         <input
                           type="text"
                           id="dirLat"
@@ -356,9 +322,7 @@
                       </div>
 
                       <div class="col-6" style="display: none !important">
-                        <label for="dirLng" class="premium-label"
-                          >Longitud</label
-                        >
+                        <label for="dirLng" class="premium-label">Longitud</label>
                         <input
                           type="text"
                           id="dirLng"
@@ -380,12 +344,13 @@
             id="recursos-pane"
             role="tabpanel"
             aria-labelledby="recursos-tab"
-            tabindex="0"
           >
             <h5 class="fw-bold text-dark mb-3">
               <i class="bi bi-images me-2 text-primary"></i>Adjuntar Fotos / Capturas
             </h5>
-            <p class="text-muted small">Subir imágenes descriptivas que evidencien el suceso.</p>
+            <label for="fileInput" class="text-muted small"
+              >Subir imágenes descriptivas que evidencien el suceso.</label
+            >
 
             <!-- Zona de Carga Drag and Drop -->
             <div class="d-flex justify-content-end align-items-center">
@@ -475,39 +440,11 @@
             id="btnSubmit"
             class="btn btn-primary fw-semibold px-5 py-2 rounded-2 w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2"
           >
-            <span
-              id="loadingSpinner"
-              class="spinner-border spinner-border-sm d-none"
-              role="status"
-              aria-hidden="true"
-            ></span>
+            <output class="spinner-border spinner-border-sm d-none"></output>
             <span id="btnText">Guardar Incidencia</span>
           </button>
         </div>
       </form>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Instituciones de Apoyo -->
-<div class="modal fade" id="modalApoyoForm" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header border-bottom-0 pb-0">
-        <h5 class="modal-title fw-bold">Instituciones de Apoyo</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-4">
-        <p class="text-muted small mb-3">Seleccione las instituciones que apoyarán en la resolución de esta incidencia.</p>
-        
-        <div id="container-modal-apoyo-form" class="list-group list-group-flush border rounded-3 overflow-auto" style="max-height: 300px;">
-          <div class="text-center p-3 text-muted">Cargando...</div>
-        </div>
-      </div>
-      <div class="modal-footer border-top-0 pt-0">
-        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn-save-apoyo-form">Aceptar</button>
-      </div>
     </div>
   </div>
 </div>

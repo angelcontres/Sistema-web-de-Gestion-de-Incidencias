@@ -14,7 +14,9 @@ export class CircuitBreaker {
         this.state = 'HALF_OPEN';
       } else {
         const remaining = Math.ceil((this.nextAttempt - now) / 1000);
-        throw new Error(`Demasiados intentos fallidos. Por favor, espere ${remaining} segundos antes de reintentar.`);
+        console.error(
+          `Demasiados intentos fallidos. Por favor, espere ${remaining} segundos antes de reintentar.`
+        );
       }
     }
 

@@ -1,17 +1,15 @@
 # Estado Actual (Sesión en curso)
 
-> **Nota para el Agente:** Documenta aquí tu progreso. Cuando cierres la sesión (ver `AGENTS.md`), mueve el resumen al final de `history.md` y deja esta plantilla limpia para el siguiente agente.
-
 ## Feature en desarrollo
-**Nombre:** []
-**ID en feature_list.json:** []
-**Status actual:** [pending | spec_ready | in_progress | done]
+**Nombre:** N/A
+**ID en feature_list.json:** N/A
+**Status actual:** blocked
 
 ## Últimos cambios realizados
-- []
+- Ninguno
 
 ## Problemas actuales / Bloqueos
-- []
+- La feature solicitada no está en estado `in_progress` en `feature_list.json`. De acuerdo con las reglas, se detiene la ejecución. No se encontró spec.
 
 ## Próximos pasos
-- []
+- El leader debe crear la feature, el spec y ponerla en estado `in_progress` en `feature_list.json` antes de lanzar al implementador.

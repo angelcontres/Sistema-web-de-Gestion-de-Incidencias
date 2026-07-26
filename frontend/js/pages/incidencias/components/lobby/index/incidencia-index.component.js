@@ -32,11 +32,8 @@ export class IncidenciaIndexComponent extends BaseComponent {
             header: 'Clasificación',
             render: (inc) => {
               const tipo = inc.tipo ? inc.tipo.nombre : '-';
-              const subTipo = inc.sub_tipo
-                ? inc.sub_tipo.nombre
-                : inc.subTipo
-                  ? inc.subTipo.nombre
-                  : '-';
+              const sub_tipo = inc.sub_tipo ? inc.sub_tipo.nombre : '-';
+              const subTipo = inc.sub_tipo ? inc.sub_tipo.nombre : sub_tipo;
               return `<div class="fw-semibold text-dark">${tipo}</div><div class="text-muted small">${subTipo}</div>`;
             },
           },
@@ -49,10 +46,9 @@ export class IncidenciaIndexComponent extends BaseComponent {
             header: 'Ubicación / Dirección',
             render: (inc) => {
               const detalle = inc.direccion ? inc.direccion.detalle : 'Sin dirección.';
-              const pais =
-                inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
-                  ? inc.direccion.territorio.pais.nombre
-                  : '';
+              const pais = inc.direccion?.territorio?.pais
+                ? inc.direccion.territorio.pais.nombre
+                : '';
               return `<div>${detalle}</div><div class="text-muted small">${pais}</div>`;
             },
           },

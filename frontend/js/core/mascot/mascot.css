@@ -111,6 +111,7 @@
 .logo-container {
   animation: glowSequence 12s infinite, floatWithWink 12s infinite;
   border: 1px solid transparent;
+  cursor: pointer;
 }
 @keyframes glowSequence {
   0%, 35% { 
@@ -152,9 +153,6 @@
 }
 
 /* Easter Egg: Radar Mode */
-.logo-container {
-  cursor: pointer;
-}
 .spin-3d {
   animation: barrelRoll 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }

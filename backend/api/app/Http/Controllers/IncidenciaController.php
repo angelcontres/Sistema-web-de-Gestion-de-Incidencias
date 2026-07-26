@@ -77,7 +77,6 @@ class IncidenciaController extends Controller
             'direccion.territorio.pais',
             'estado',
             'institucion',
-            'institucionesApoyo',
             'tipo',
             'subTipo',
             'prioridad',
@@ -102,12 +101,7 @@ class IncidenciaController extends Controller
                 $query->whereRaw('1 = 0');
             }
         } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
-            $query->where(function ($q) use ($user) {
-                $q->where('institucion_id', $user->institucion_id)
-                    ->orWhereHas('institucionesApoyo', function ($subQ) use ($user) {
-                        $subQ->where('instituciones.id', $user->institucion_id);
-                    });
-            });
+            $query->where('institucion_id', $user->institucion_id);
         } else {
             $query->where(function ($q) use ($user) {
                 $q->where('cliente_id', $user->id)
@@ -151,7 +145,6 @@ class IncidenciaController extends Controller
             'cliente',
             'estado',
             'institucion',
-            'institucionesApoyo',
             'tipo',
             'subTipo',
             'prioridad',
@@ -281,7 +274,7 @@ class IncidenciaController extends Controller
         return $roles->contains('Admin')
             || $incidencia->cliente_id === $user->id
             || ($roles->contains('Supervisor') && $this->checkSupervisorAccess($user, $incidencia))
-            || ($roles->contains('Institucion') && ($incidencia->institucion_id == $user->institucion_id || $incidencia->institucionesApoyo->contains('id', $user->institucion_id)))
+            || ($roles->contains('Institucion') && $incidencia->institucion_id == $user->institucion_id)
             || $incidencia->reportantes()->where('usuario_incidencia.user_id', $user->id)->exists();
     }
 
@@ -347,27 +340,6 @@ class IncidenciaController extends Controller
                     ]));
                 } catch (\Exception $e) {
                     Log::error('Error enviando notificación de asignación: '.$e->getMessage());
-                }
-            }
-        }
-
-        // 3. ¿ES UNA INCIDENCIA NUEVA? -> Notificamos a Supervisores y Administradores
-        if ($oldEstadoId === null) {
-            $supervisoresYAdmins = User::whereHas('roles', function ($q) {
-                $q->whereIn('nombre', ['Admin', 'Supervisor']);
-            })->get();
-
-            foreach ($supervisoresYAdmins as $admin) {
-                try {
-                    $admin->notify(new IssueStatusChangedNotification([
-                        'title' => "Nueva Incidencia Creada (#{$incidencia->id})",
-                        'message' => 'Un usuario ha reportado una nueva incidencia en: '.($incidencia->direccion->detalle ?? 'Ubicación registrada'),
-                        'url' => "/tramites/estado-individual?id={$incidencia->id}",
-                        'type' => 'warning',
-                        'incidencia_id' => $incidencia->id,
-                    ]));
-                } catch (\Exception $e) {
-                    Log::error('Error enviando notificación de nueva incidencia: '.$e->getMessage());
                 }
             }
         }

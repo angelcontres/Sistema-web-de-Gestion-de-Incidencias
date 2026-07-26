@@ -22,28 +22,28 @@ describe('PermissionService', () => {
     window.fetch = originalFetch;
   });
 
-  it('getAll - debería hacer request a /permisos', async () => {
+  it('getAll - debería hacer request a /permissions', async () => {
     await PermissionService.getAll(1);
-    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permisos?page=1'), expect.any(Object));
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions?page=1'), expect.any(Object));
   });
 
-  it('getById - debería hacer request a /permisos/id', async () => {
+  it('getById - debería hacer request a /permissions/id', async () => {
     await PermissionService.getById(5);
-    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permisos/5'), expect.any(Object));
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions/5'), expect.any(Object));
   });
 
   it('create - debería enviar POST', async () => {
     await PermissionService.create({ name: 'test' });
-    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permisos'), expect.objectContaining({ method: 'POST' }));
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions'), expect.objectContaining({ method: 'POST' }));
   });
 
   it('update - debería enviar PUT', async () => {
     await PermissionService.update(10, { name: 'test' });
-    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permisos/10'), expect.objectContaining({ method: 'PUT' }));
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions/10'), expect.objectContaining({ method: 'PUT' }));
   });
 
   it('delete - debería enviar DELETE', async () => {
     await PermissionService.delete(7);
-    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permisos/7'), expect.objectContaining({ method: 'DELETE' }));
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions/7'), expect.objectContaining({ method: 'DELETE' }));
   });
 });

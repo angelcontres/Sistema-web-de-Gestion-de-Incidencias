@@ -51,7 +51,7 @@ describe('UbicacionesService', () => {
 
   describe('Territorios', () => {
     it('getTerritorios - debería hacer request con query params', async () => {
-      await UbicacionesService.getTerritorios({ pais_id: 1, parent_id: 2 });
+      await UbicacionesService.getTerritorios(1, 15, null, { pais_id: 1, parent_id: 2 });
       expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('pais_id=1&parent_id=2'), expect.any(Object));
     });
 
@@ -78,7 +78,7 @@ describe('UbicacionesService', () => {
 
   describe('Direcciones', () => {
     it('getDirecciones - debería hacer request con query params', async () => {
-      await UbicacionesService.getDirecciones({ territorio_id: 1 });
+      await UbicacionesService.getDirecciones(1, 15, null, { territorio_id: 1 });
       expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('territorio_id=1'), expect.any(Object));
     });
 

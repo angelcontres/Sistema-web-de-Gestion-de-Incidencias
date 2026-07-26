@@ -19,17 +19,20 @@ export class DireccionFormComponent extends BaseComponent {
     const modalEl = this.querySelector('#direccionModal');
     if (!modalEl) return;
 
+    document.body.appendChild(modalEl);
+    this.direccionModalObj = new bootstrap.Modal(modalEl);
+    modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
+
+    this.setupEventListeners(modalEl);
+  }
+
+  setupEventListeners(modalEl) {
     const direccionForm = modalEl.querySelector('#direccionForm');
     const dirPaisSelect = modalEl.querySelector('#dirPaisSelect');
     const dirNivel1Select = modalEl.querySelector('#dirNivel1Select');
     const dirNivel2Select = modalEl.querySelector('#dirNivel2Select');
     const dirNivel3Select = modalEl.querySelector('#dirNivel3Select');
 
-    document.body.appendChild(modalEl);
-    this.direccionModalObj = new bootstrap.Modal(modalEl);
-    modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
-
-    // Setup Event Listeners
     if (direccionForm) {
       direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
     }
@@ -220,7 +223,7 @@ export class DireccionFormComponent extends BaseComponent {
 
       // Pre-fill country if operator
       const user = AuthService.getCurrentUser();
-      if (user && user.pais_id) {
+      if (user?.pais_id) {
         document.querySelector('#dirPaisSelect').value = user.pais_id;
         document.querySelector('#dirPaisSelect').disabled = true;
         this.actualizarEtiquetasNiveles(user.pais_id);
@@ -267,12 +270,12 @@ export class DireccionFormComponent extends BaseComponent {
   establecerMarcadorModal(lat, lng, isManualClick = false) {
     if (!this.modalMap) return;
 
-    const latVal = parseFloat(lat).toFixed(6);
-    const lngVal = parseFloat(lng).toFixed(6);
+    const latVal = Number.parseFloat(lat).toFixed(6);
+    const lngVal = Number.parseFloat(lng).toFixed(6);
 
     document.querySelector('#direccionLatitud').value = latVal;
     document.querySelector('#direccionLongitud').value = lngVal;
-    this.tempCoords = { lat: parseFloat(latVal), lng: parseFloat(lngVal) };
+    this.tempCoords = { lat: Number.parseFloat(latVal), lng: Number.parseFloat(lngVal) };
 
     if (this.modalMarker) {
       this.modalMarker.setLatLng([lat, lng]);
@@ -285,7 +288,7 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     if (isManualClick) {
-      this.autofillUbicacionDesdeCoords(parseFloat(latVal), parseFloat(lngVal));
+      this.autofillUbicacionDesdeCoords(Number.parseFloat(latVal), Number.parseFloat(lngVal));
     }
   }
 
@@ -327,14 +330,20 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     try {
-      const list = await UbicacionesService.getTerritorios({ pais_id: paisId, parent_id: null });
+      const res = await UbicacionesService.getTerritorios(1, 1000, null, {
+        all: true,
+        pais_id: paisId,
+        parent_id: null,
+      });
+      const list = this.extractList(res);
       if (list.length > 0) {
         s1.innerHTML =
           `<option value="">-- Selecciona ${config.nivel1} --</option>` +
           list
-            .map(
-              (t) => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`
-            )
+            .map((t) => {
+              const prefix = t.tipo ? '[' + t.tipo + '] ' : '';
+              return `<option value="${t.id}">${prefix}${t.nombre}</option>`;
+            })
             .join('');
         s1.disabled = false;
         this.mostrarCampo('#colDirNivel1');
@@ -345,17 +354,16 @@ export class DireccionFormComponent extends BaseComponent {
         this.ocultarCampo('#colDirNivel3');
       }
 
-      // Handle editing pre-selection
       if (selectedTerritorio) {
         let n1Id = null;
         let n2Id = null;
         let n3Id = null;
 
-        if (selectedTerritorio.parent && selectedTerritorio.parent.parent) {
+        if (selectedTerritorio?.parent?.parent) {
           n1Id = selectedTerritorio.parent.parent.id;
           n2Id = selectedTerritorio.parent.id;
           n3Id = selectedTerritorio.id;
-        } else if (selectedTerritorio.parent) {
+        } else if (selectedTerritorio?.parent) {
           n1Id = selectedTerritorio.parent.id;
           n2Id = selectedTerritorio.id;
         } else {
@@ -368,6 +376,7 @@ export class DireccionFormComponent extends BaseComponent {
         }
       }
     } catch (e) {
+      ToastService.error(e.message, 'Error al cargar');
       s1.innerHTML = '<option value="">-- Error al cargar --</option>';
     }
   }
@@ -393,17 +402,21 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     try {
-      const list = await UbicacionesService.getTerritorios({
+      const res = await UbicacionesService.getTerritorios(1, 1000, null, {
+        all: true,
         pais_id: paisId,
         parent_id: parentId,
       });
+
+      const list = this.extractList(res);
       if (list.length > 0) {
         s2.innerHTML =
           `<option value="">-- Selecciona ${config.nivel2} --</option>` +
           list
-            .map(
-              (t) => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`
-            )
+            .map((t) => {
+              const prefix = t.tipo ? '[' + t.tipo + '] ' : '';
+              return `<option value="${t.id}">${prefix}${t.nombre}</option>`;
+            })
             .join('');
         s2.disabled = false;
         this.mostrarCampo('#colDirNivel2');
@@ -420,6 +433,7 @@ export class DireccionFormComponent extends BaseComponent {
         }
       }
     } catch (e) {
+      ToastService.error(e.message, 'Error al cargar');
       s2.innerHTML = '<option value="">-- Error al cargar --</option>';
     }
   }
@@ -440,17 +454,21 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     try {
-      const list = await UbicacionesService.getTerritorios({
+      const res = await UbicacionesService.getTerritorios(1, 1000, null, {
+        all: true,
         pais_id: paisId,
         parent_id: parentId,
       });
+
+      const list = this.extractList(res);
       if (list.length > 0) {
         s3.innerHTML =
           `<option value="">-- Selecciona ${config.nivel3} --</option>` +
           list
-            .map(
-              (t) => `<option value="${t.id}">${t.tipo ? `[${t.tipo}] ` : ''}${t.nombre}</option>`
-            )
+            .map((t) => {
+              const prefix = t.tipo ? '[' + t.tipo + '] ' : '';
+              return `<option value="${t.id}">${prefix}${t.nombre}</option>`;
+            })
             .join('');
         s3.disabled = false;
         this.mostrarCampo('#colDirNivel3');
@@ -463,6 +481,7 @@ export class DireccionFormComponent extends BaseComponent {
         s3.value = selectVal;
       }
     } catch (e) {
+      ToastService.error(e.message, 'Error al cargar');
       s3.innerHTML = '<option value="">-- Error al cargar --</option>';
     }
   }
@@ -507,105 +526,11 @@ export class DireccionFormComponent extends BaseComponent {
     }
 
     try {
-      // Si se eligió registrar la cadena de territorios automáticamente al guardar la dirección
-      if (resolveRadioRegister && resolveRadioRegister.checked && this.pendingGeography) {
-        let currentCountryId = this.pendingGeography.pais.id || null;
-
-        // 1. Registrar País si es nuevo
-        if (!this.pendingGeography.pais.exists) {
-          if (btnSubmit)
-            btnSubmit.innerHTML =
-              '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando País...';
-          const res = await UbicacionesService.createPais({
-            nombre: this.pendingGeography.pais.nombre,
-            codigo_iso: this.pendingGeography.pais.codigo_iso,
-            activo: true,
-          });
-          const newObj = res.data || res;
-          currentCountryId = newObj.id;
-
-          // Despachar evento para notificar al explorador de países
-          this.dispatchEvent(
-            new CustomEvent('paises-updated', {
-              detail: { paises: this.paisesList },
-              bubbles: true,
-              composed: true,
-            })
-          );
-        }
-
-        let parentId = null;
-
-        // 2. Registrar Provincia si es nueva
-        if (this.pendingGeography.nivel1.nombre) {
-          if (!this.pendingGeography.nivel1.exists) {
-            if (btnSubmit)
-              btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel1.tipo}...`;
-            const res = await UbicacionesService.createTerritorio({
-              pais_id: currentCountryId,
-              parent_id: null,
-              nombre: this.pendingGeography.nivel1.nombre,
-              tipo: this.pendingGeography.nivel1.tipo,
-              activo: true,
-            });
-            const newObj = res.data || res;
-            parentId = newObj.id;
-          } else {
-            parentId = this.pendingGeography.nivel1.id;
-          }
-        }
-
-        // 3. Registrar Cantón si es nuevo
-        if (this.pendingGeography.nivel2.nombre) {
-          if (!this.pendingGeography.nivel2.exists) {
-            if (btnSubmit)
-              btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel2.tipo}...`;
-            const res = await UbicacionesService.createTerritorio({
-              pais_id: currentCountryId,
-              parent_id: parentId,
-              nombre: this.pendingGeography.nivel2.nombre,
-              tipo: this.pendingGeography.nivel2.tipo,
-              activo: true,
-            });
-            const newObj = res.data || res;
-            parentId = newObj.id;
-          } else {
-            parentId = this.pendingGeography.nivel2.id;
-          }
-        }
-
-        // 4. Registrar Parroquia si es nueva
-        if (this.pendingGeography.nivel3.nombre) {
-          if (!this.pendingGeography.nivel3.exists) {
-            if (btnSubmit)
-              btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${this.pendingGeography.nivel3.tipo}...`;
-            const res = await UbicacionesService.createTerritorio({
-              pais_id: currentCountryId,
-              parent_id: parentId,
-              nombre: this.pendingGeography.nivel3.nombre,
-              tipo: this.pendingGeography.nivel3.tipo,
-              activo: true,
-            });
-            const newObj = res.data || res;
-            parentId = newObj.id;
-          } else {
-            parentId = this.pendingGeography.nivel3.id;
-          }
-        }
-
-        finalTerritorioId = parentId;
-
-        // Despachar evento para notificar al explorador de territorios
-        this.dispatchEvent(
-          new CustomEvent('territorios-updated', {
-            bubbles: true,
-            composed: true,
-          })
-        );
+      if (resolveRadioRegister?.checked && this.pendingGeography) {
+        finalTerritorioId = await this.registrarCadenaTerritoriosPendiente(btnSubmit);
       }
 
       if (!finalTerritorioId) {
-        // Si no hay territorio ID y se eligió seleccionar otra existente, mostrar error
         errorAlert.classList.remove('d-none');
         errorMessage.textContent = 'Debe seleccionar la ubicación correspondiente de la lista.';
         if (btnSubmit) {
@@ -616,12 +541,12 @@ export class DireccionFormComponent extends BaseComponent {
       }
 
       const payload = {
-        territorio_id: parseInt(finalTerritorioId),
+        territorio_id: Number.parseInt(finalTerritorioId),
         detalle: document.querySelector('#direccionDetalle').value,
         referencia: document.querySelector('#direccionReferencia').value || null,
         codigo_postal: document.querySelector('#direccionCodigoPostal').value || null,
-        latitud: latVal ? parseFloat(latVal) : null,
-        longitud: lngVal ? parseFloat(lngVal) : null,
+        latitud: latVal ? Number.parseFloat(latVal) : null,
+        longitud: lngVal ? Number.parseFloat(lngVal) : null,
         activo: document.querySelector('#direccionActivo').checked,
       };
 
@@ -633,7 +558,6 @@ export class DireccionFormComponent extends BaseComponent {
 
       this.direccionModalObj.hide();
 
-      // Dispatch custom event to notify parent component to reload the list
       this.dispatchEvent(
         new CustomEvent('direccion-saved', {
           bubbles: true,
@@ -653,363 +577,172 @@ export class DireccionFormComponent extends BaseComponent {
     }
   }
 
-  async autofillUbicacionDesdeCoords(lat, lng) {
+  limpiarYActualizarUIAutofill(address, data) {
+    this.pendingTerritory = null;
+    this.ocultarCampo('#missingTerritoryAlert');
+    this.ocultarCampo('#missingTerritoryMessage');
+    this.ocultarCampo('#btnRegistrarTerritorioFaltante');
+
+    const gpsInfo = document.querySelector('#gpsLocationInfo');
+    const gpsText = document.querySelector('#gpsLocationText');
+    if (gpsInfo && gpsText) {
+      const addressParts = [
+        address.road || address.pedestrian,
+        address.suburb || address.neighbourhood || address.parish || address.quarter,
+        address.city || address.town || address.village,
+        address.state,
+        address.country,
+      ].filter(Boolean);
+
+      gpsText.textContent = addressParts.join(', ') || data.display_name || 'Ubicación desconocida';
+      gpsInfo.classList.remove('d-none');
+    }
+
+    const inputDetalle = document.querySelector('#direccionDetalle');
+    const detalleText = [
+      address.road || address.pedestrian || address.suburb || address.neighbourhood || '',
+      address.house_number || '',
+    ].filter(Boolean).join(' ') || data.display_name || '';
+
+    if (inputDetalle && detalleText) {
+      inputDetalle.value = detalleText;
+    }
+
+    const inputCP = document.querySelector('#direccionCodigoPostal');
+    if (inputCP) {
+      inputCP.value = address.postcode || '';
+    }
+  }
+
+  async aplicarTerritorioDetectado(td, matchedPais, config, address) {
+    const selectN1 = document.querySelector('#dirNivel1Select');
+    const selectN2 = document.querySelector('#dirNivel2Select');
+    const selectN3 = document.querySelector('#dirNivel3Select');
+
+    await this.cargarDireccionDropdownNivel1(matchedPais.id);
+    if (!td.provincia_id || !selectN1) return;
+
+    selectN1.value = td.provincia_id;
+    this.pendingGeography.nivel1 = { exists: true, id: td.provincia_id, tipo: config.nivel1 };
+    this.mostrarCampo('#colDirNivel1');
+
+    await this.cargarDireccionDropdownNivel2(td.provincia_id);
+    if (!td.canton_id || !selectN2) return;
+
+    selectN2.value = td.canton_id;
+    this.pendingGeography.nivel2 = { exists: true, id: td.canton_id, tipo: config.nivel2 };
+    this.mostrarCampo('#colDirNivel2');
+
+    await this.cargarDireccionDropdownNivel3(td.canton_id);
+    if (!selectN3) return;
+
+    if (td.parroquia_id) {
+      selectN3.value = td.parroquia_id;
+      this.pendingGeography.nivel3 = { exists: true, id: td.parroquia_id, tipo: config.nivel3 };
+      this.mostrarCampo('#colDirNivel3');
+      return;
+    }
+
+    const n3Name = [address.parish, address.suburb, address.neighbourhood, address.quarter].find(Boolean) || '';
+    const foundN3 = this.findMatchingOptionByText(selectN3, n3Name);
+    if (foundN3) {
+      selectN3.value = foundN3.value;
+      this.pendingGeography.nivel3 = { exists: true, id: foundN3.value, tipo: config.nivel3 };
+      this.mostrarCampo('#colDirNivel3');
+    }
+  }
+
+  verificarNivelesFaltantes() {
+    return (
+      !this.pendingGeography.pais.exists ||
+      Boolean(this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) ||
+      Boolean(this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) ||
+      Boolean(this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists)
+    );
+  }
+
+  mostrarEstadoAutorelleno(visible, texto = '') {
     const statusContainer = document.querySelector('#autofillStatus');
     const statusText = document.querySelector('#autofillStatusText');
-
-    if (statusContainer && statusText) {
-      statusContainer.classList.remove('d-none');
-      statusText.textContent = 'Autorellenando ubicación...';
+    if (statusContainer) {
+      if (visible) {
+        statusContainer.classList.remove('d-none');
+        if (statusText && texto) statusText.textContent = texto;
+      } else {
+        statusContainer.classList.add('d-none');
+      }
     }
+  }
+
+  mostrarErrorAutorelleno(mensaje) {
+    const errorAlert = document.querySelector('#direccionModalErrorAlert');
+    const errorMessage = document.querySelector('#direccionModalErrorMessage');
+    if (errorAlert && errorMessage) {
+      errorAlert.classList.remove('d-none');
+      errorMessage.textContent = mensaje;
+    }
+  }
+
+  inicializarPendingGeography(address, matchedPais) {
+    const countryCode = (address.country_code || '').toUpperCase();
+    const countryName = this.capitalizeWords(address.country || countryCode);
+    const iso = matchedPais ? (matchedPais.codigo_iso || '').toUpperCase() : countryCode;
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
+    this.pendingGeography = {
+      pais: {
+        nombre: countryName,
+        codigo_iso: countryCode,
+        exists: Boolean(matchedPais),
+        id: matchedPais ? matchedPais.id : null,
+        tipo: 'País',
+      },
+      nivel1: { nombre: '', exists: false, id: null, tipo: config.nivel1 },
+      nivel2: { nombre: '', exists: false, id: null, tipo: config.nivel2 },
+      nivel3: { nombre: '', exists: false, id: null, tipo: config.nivel3 },
+    };
+
+    return config;
+  }
+
+  async procesarDeteccionGeografica(data, address, matchedPais, config) {
+    if (!matchedPais) return;
+
+    const selectPais = document.querySelector('#dirPaisSelect');
+    if (selectPais) selectPais.value = matchedPais.id;
+    this.actualizarEtiquetasNiveles(matchedPais.id);
+
+    if (data.territorio_detectado) {
+      this.mostrarEstadoAutorelleno(true, 'Cargando jerarquía geográfica...');
+      await this.aplicarTerritorioDetectado(data.territorio_detectado, matchedPais, config, address);
+    } else {
+      const statusText = document.querySelector('#autofillStatusText');
+      await this.procesarJerarquiaGeograficaAutofill(address, matchedPais, config, statusText);
+    }
+  }
+
+  async autofillUbicacionDesdeCoords(lat, lng) {
+    this.mostrarEstadoAutorelleno(true, 'Autorellenando ubicación...');
 
     try {
       const data = await UbicacionesService.reverseGeocode(lat, lng);
       const address = data.address || {};
-      let missingTerritoryData = null;
+      this.limpiarYActualizarUIAutofill(address, data);
 
-      // Mostrar la ubicación completa detectada por GPS
-      const gpsInfo = document.querySelector('#gpsLocationInfo');
-      const gpsText = document.querySelector('#gpsLocationText');
-      if (gpsInfo && gpsText) {
-        const addressParts = [
-          address.road || address.pedestrian,
-          address.suburb || address.neighbourhood || address.parish || address.quarter,
-          address.city || address.town || address.village,
-          address.state,
-          address.country,
-        ].filter(Boolean);
-
-        gpsText.textContent =
-          addressParts.join(', ') || data.display_name || 'Ubicación desconocida';
-        gpsInfo.classList.remove('d-none');
-      }
-
-      // Reset de alerta de territorio faltante
-      const missingAlert = document.querySelector('#missingTerritoryAlert');
-      const missingMsg = document.querySelector('#missingTerritoryMessage');
-      const btnRegisterMissing = document.querySelector('#btnRegistrarTerritorioFaltante');
-
-      if (missingAlert) missingAlert.classList.add('d-none');
-      if (btnRegisterMissing) btnRegisterMissing.classList.add('d-none');
-      this.pendingTerritory = null;
-
-      // 1. Detalle de dirección (Calle + número)
-      const street =
-        address.road || address.pedestrian || address.suburb || address.neighbourhood || '';
-      const houseNumber = address.house_number || '';
-      const detalleText =
-        [street, houseNumber].filter(Boolean).join(' ') || data.display_name || '';
-
-      const inputDetalle = document.querySelector('#direccionDetalle');
-      if (inputDetalle && detalleText) {
-        inputDetalle.value = detalleText;
-      }
-
-      // 2. Código Postal
-      const inputCP = document.querySelector('#direccionCodigoPostal');
-      if (inputCP) {
-        inputCP.value = address.postcode || '';
-      }
-
-      // 3. País y Niveles Geográficos (Búsqueda e integración)
       const countryCode = (address.country_code || '').toUpperCase();
-      const countryName = this.capitalizeWords(address.country || countryCode);
+      const matchedPais = countryCode
+        ? this.paisesList.find((p) => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode)
+        : null;
 
-      let matchedPais = null;
-      if (countryCode && this.paisesList.length > 0) {
-        matchedPais = this.paisesList.find(
-          (p) => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode
-        );
-      }
+      const config = this.inicializarPendingGeography(address, matchedPais);
+      await this.procesarDeteccionGeografica(data, address, matchedPais, config);
 
-      this.pendingGeography = {
-        pais: {
-          nombre: countryName,
-          codigo_iso: countryCode,
-          exists: !!matchedPais,
-          id: matchedPais ? matchedPais.id : null,
-          tipo: 'País',
-        },
-        nivel1: { nombre: '', exists: false, id: null, tipo: 'Provincia' },
-        nivel2: { nombre: '', exists: false, id: null, tipo: 'Cantón' },
-        nivel3: { nombre: '', exists: false, id: null, tipo: 'Parroquia' },
-      };
-
-      const selectPais = document.querySelector('#dirPaisSelect');
-      const selectN1 = document.querySelector('#dirNivel1Select');
-      const selectN2 = document.querySelector('#dirNivel2Select');
-      const selectN3 = document.querySelector('#dirNivel3Select');
-
-      // Determinar etiquetas de niveles basadas en el país (si existe) o usar default
-      const iso = matchedPais ? (matchedPais.codigo_iso || '').toUpperCase() : countryCode;
-      const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
-
-      this.pendingGeography.nivel1.tipo = config.nivel1;
-      this.pendingGeography.nivel2.tipo = config.nivel2;
-      this.pendingGeography.nivel3.tipo = config.nivel3;
-
-      // A. Procesar País
-      if (matchedPais) {
-        if (selectPais) selectPais.value = matchedPais.id;
-        this.actualizarEtiquetasNiveles(matchedPais.id);
-
-        // A. Procesar Territorio Detectado por Código Postal (Prioridad Alta)
-        if (data.territorio_detectado) {
-          const td = data.territorio_detectado;
-          if (statusText) statusText.textContent = `Cargando jerarquía geográfica...`;
-          
-          await this.cargarDireccionDropdownNivel1(matchedPais.id);
-          if (td.provincia_id && selectN1) {
-            selectN1.value = td.provincia_id;
-            this.pendingGeography.nivel1 = { exists: true, id: td.provincia_id, tipo: config.nivel1 };
-            this.mostrarCampo('#colDirNivel1');
-            
-            await this.cargarDireccionDropdownNivel2(td.provincia_id);
-            if (td.canton_id && selectN2) {
-              selectN2.value = td.canton_id;
-              this.pendingGeography.nivel2 = { exists: true, id: td.canton_id, tipo: config.nivel2 };
-              this.mostrarCampo('#colDirNivel2');
-              
-              await this.cargarDireccionDropdownNivel3(td.canton_id);
-              if (td.parroquia_id && selectN3) {
-                selectN3.value = td.parroquia_id;
-                this.pendingGeography.nivel3 = { exists: true, id: td.parroquia_id, tipo: config.nivel3 };
-                this.mostrarCampo('#colDirNivel3');
-              } else if (!td.parroquia_id && selectN3) {
-                // Fallback: Si el cantón fue detectado pero la parroquia no, usamos búsqueda por texto solo para la parroquia
-                const possibleNivel3Names = [
-                  address.parish,
-                  address.suburb,
-                  address.neighbourhood,
-                  address.quarter,
-                ].filter(Boolean);
-                const n3Name = possibleNivel3Names[0] || '';
-                if (n3Name) {
-                  const cleanN3Name = this.normalizeText(n3Name);
-                  const optionsN3 = Array.from(selectN3.options);
-                  const foundN3 = optionsN3.find((opt) => {
-                    const optText = this.normalizeText(opt.text);
-                    return optText.includes(cleanN3Name) || cleanN3Name.includes(optText);
-                  });
-                  if (foundN3) {
-                    selectN3.value = foundN3.value;
-                    this.pendingGeography.nivel3 = { exists: true, id: foundN3.value, tipo: config.nivel3 };
-                    this.mostrarCampo('#colDirNivel3');
-                  }
-                }
-              }
-            }
-          }
-          if (statusContainer) statusContainer.classList.add('d-none');
-          return; // Salir, ya se completó el autollenado de todos los niveles posibles
-        }
-
-        // B. Procesar Nivel 1 (Búsqueda por texto - Fallback)
-        const possibleNivel1Names = [
-          address.state,
-          address.region,
-          address.province,
-          address.state_district,
-        ].filter(Boolean);
-        const n1Name = this.capitalizeWords(possibleNivel1Names[0] || '');
-        this.pendingGeography.nivel1.nombre = n1Name;
-
-        if (n1Name) {
-          if (statusText) statusText.textContent = `Buscando ${config.nivel1}...`;
-          await this.cargarDireccionDropdownNivel1(matchedPais.id);
-
-          const cleanN1Name = this.normalizeText(n1Name);
-          const optionsN1 = Array.from(selectN1.options);
-          const foundN1 = optionsN1.find((opt) => {
-            const optText = this.normalizeText(opt.text);
-            return optText.includes(cleanN1Name) || cleanN1Name.includes(optText);
-          });
-
-          if (foundN1) {
-            this.pendingGeography.nivel1.exists = true;
-            this.pendingGeography.nivel1.id = foundN1.value;
-            if (selectN1) selectN1.value = foundN1.value;
-            this.mostrarCampo('#colDirNivel1');
-
-            // B. Procesar Nivel 2
-            const possibleNivel2Names = [
-              address.county,
-              address.city,
-              address.town,
-              address.municipality,
-              address.city_district,
-            ].filter(Boolean);
-            const n2Name = this.capitalizeWords(possibleNivel2Names[0] || '');
-            this.pendingGeography.nivel2.nombre = n2Name;
-
-            if (n2Name) {
-              if (statusText) statusText.textContent = `Buscando ${config.nivel2}...`;
-              await this.cargarDireccionDropdownNivel2(matchedPais.id, foundN1.value);
-
-              const cleanN2Name = this.normalizeText(n2Name);
-              const optionsN2 = Array.from(selectN2.options);
-              const foundN2 = optionsN2.find((opt) => {
-                const optText = this.normalizeText(opt.text);
-                return optText.includes(cleanN2Name) || cleanN2Name.includes(optText);
-              });
-
-              if (foundN2) {
-                this.pendingGeography.nivel2.exists = true;
-                this.pendingGeography.nivel2.id = foundN2.value;
-                if (selectN2) selectN2.value = foundN2.value;
-                this.mostrarCampo('#colDirNivel2');
-
-                // C. Procesar Nivel 3
-                const possibleNivel3Names = [
-                  address.parish,
-                  address.suburb,
-                  address.neighbourhood,
-                  address.quarter,
-                  address.village,
-                  address.town,
-                  address.city_district,
-                  address.hamlet,
-                ].filter(Boolean);
-                const n3Name = this.capitalizeWords(possibleNivel3Names[0] || '');
-                this.pendingGeography.nivel3.nombre = n3Name;
-
-                if (n3Name) {
-                  if (statusText) statusText.textContent = `Buscando ${config.nivel3}...`;
-                  await this.cargarDireccionDropdownNivel3(matchedPais.id, foundN2.value);
-
-                  const cleanN3Name = this.normalizeText(n3Name);
-                  const optionsN3 = Array.from(selectN3.options);
-                  const foundN3 = optionsN3.find((opt) => {
-                    const optText = this.normalizeText(opt.text);
-                    return optText.includes(cleanN3Name) || cleanN3Name.includes(optText);
-                  });
-
-                  if (foundN3) {
-                    this.pendingGeography.nivel3.exists = true;
-                    this.pendingGeography.nivel3.id = foundN3.value;
-                    if (selectN3) selectN3.value = foundN3.value;
-                    this.mostrarCampo('#colDirNivel3');
-                  } else {
-                    // Buscar cabecera cantonal como fallback
-                    const cantonName = n2Name;
-                    const cleanCantonName = this.normalizeText(cantonName);
-                    const cabeceraOpt = optionsN3.find((opt) => {
-                      const optText = this.normalizeText(opt.text);
-                      return optText.includes(cleanCantonName) || cleanCantonName.includes(optText);
-                    });
-                    if (cabeceraOpt) {
-                      this.pendingGeography.nivel3.fallbackNombre = cabeceraOpt.text.replace(
-                        /^\[.*?\]\s*/,
-                        ''
-                      );
-                      this.pendingGeography.nivel3.fallbackId = cabeceraOpt.value;
-                    }
-                    this.mostrarCampo('#colDirNivel3');
-                  }
-                }
-              } else {
-                this.mostrarCampo('#colDirNivel2');
-              }
-            }
-          } else {
-            this.mostrarCampo('#colDirNivel1');
-          }
-        }
-      }
-
-      const hasMissing =
-        !this.pendingGeography.pais.exists ||
-        (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) ||
-        (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) ||
-        (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists);
-
-      // Mostrar resolvedor si hay algún territorio faltante detectado
-      const resolverCard = document.querySelector('#missingTerritoryResolver');
-      if (hasMissing && resolverCard) {
-        const fallbackContainer = document.querySelector('#resolveOptFallbackContainer');
-        const registerRadio = document.querySelector('#resolveOptRegister');
-        const fallbackRadio = document.querySelector('#resolveOptFallback');
-        const existingRadio = document.querySelector('#resolveOptExisting');
-
-        const isAdmin = AuthService.isAdmin();
-
-        // 1. Configurar opción de Cabecera/Fallback (Solo si el único faltante es Nivel 3 y tiene fallback)
-        const onlyN3Missing =
-          this.pendingGeography.pais.exists &&
-          this.pendingGeography.nivel1.exists &&
-          this.pendingGeography.nivel2.exists &&
-          !this.pendingGeography.nivel3.exists;
-
-        if (onlyN3Missing && this.pendingGeography.nivel3.fallbackId && fallbackContainer) {
-          fallbackContainer.classList.remove('d-none');
-          const fallbackSpan = document.querySelector('#fallbackParishNameSpan');
-          if (fallbackSpan) fallbackSpan.textContent = this.pendingGeography.nivel3.fallbackNombre;
-          fallbackRadio.checked = true;
-        } else {
-          if (fallbackContainer) fallbackContainer.classList.add('d-none');
-          if (existingRadio) {
-            existingRadio.checked = true;
-          }
-        }
-
-        // 2. Construir lista de lo que se va a registrar
-        const toCreateList = [];
-        if (!this.pendingGeography.pais.exists)
-          toCreateList.push(`País "${this.pendingGeography.pais.nombre}"`);
-        if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists)
-          toCreateList.push(
-            `${this.pendingGeography.nivel1.tipo} "${this.pendingGeography.nivel1.nombre}"`
-          );
-        if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists)
-          toCreateList.push(
-            `${this.pendingGeography.nivel2.tipo} "${this.pendingGeography.nivel2.nombre}"`
-          );
-        if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists)
-          toCreateList.push(
-            `${this.pendingGeography.nivel3.tipo} "${this.pendingGeography.nivel3.nombre}"`
-          );
-
-        const labelRegister = document.querySelector('label[for="resolveOptRegister"]');
-        const labelExisting = document.querySelector('label[for="resolveOptExisting"]');
-
-        if (labelExisting) {
-          labelExisting.innerHTML = `<strong>Seleccionar existente:</strong> Elegir manualmente de la lista de ubicaciones`;
-        }
-
-        if (isAdmin) {
-          registerRadio.disabled = false;
-          if (labelRegister) {
-            labelRegister.innerHTML = `<strong>Crear y usar nuevos registros:</strong> Registrar automáticamente al guardar: ${toCreateList.join(', ')}`;
-          }
-        } else {
-          registerRadio.disabled = true;
-          if (labelRegister) {
-            labelRegister.innerHTML = `<strong>Crear y usar nuevos registros:</strong> <span class="text-muted">(Requiere rol de Administrador para registrar)</span>`;
-          }
-          if (onlyN3Missing && this.pendingGeography.nivel3.fallbackId && fallbackRadio) {
-            fallbackRadio.checked = true;
-          } else if (existingRadio) {
-            existingRadio.checked = true;
-          }
-        }
-
-        resolverCard.classList.remove('d-none');
-        this.actualizarFeedbackResolver();
-      } else if (resolverCard) {
-        resolverCard.classList.add('d-none');
-      }
+      this.configurarResolverTerritoriosFaltantes(this.verificarNivelesFaltantes());
     } catch (error) {
       console.warn('Error al autorellenar la ubicación:', error);
-      const errorAlert = document.querySelector('#direccionModalErrorAlert');
-      const errorMessage = document.querySelector('#direccionModalErrorMessage');
-      if (errorAlert && errorMessage) {
-        errorAlert.classList.remove('d-none');
-        errorMessage.textContent = `Error de Autorelleno: ${error.message} (Ver consola para más detalles)`;
-      }
+      this.mostrarErrorAutorelleno(`Error de Autorelleno: ${error.message} (Ver consola para más detalles)`);
     } finally {
-      if (statusContainer) {
-        statusContainer.classList.add('d-none');
-      }
+      this.mostrarEstadoAutorelleno(false);
     }
   }
 
@@ -1036,108 +769,95 @@ export class DireccionFormComponent extends BaseComponent {
 
     if (!cardDiv || !titleSpan) return;
 
-    // Limpiar cualquier opción de "Nuevo/a" previa en todos los selects
-    [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
+    const selects = { selectPais, selectN1, selectN2, selectN3 };
+    const elementos = { cardDiv, icon, titleSpan, descSpan };
+
+    this.limpiarOpcionesTemporalesSelects(selects);
+
+    if (activeOption === 'existing') {
+      this.configurarModoResolucionManual(selects, elementos);
+    } else if (activeOption === 'fallback') {
+      this.configurarModoResolucionFallback(selectN3, elementos);
+    } else {
+      this.configurarModoResolucionAutomatica(selects, elementos);
+    }
+  }
+
+  limpiarOpcionesTemporalesSelects(selects) {
+    Object.values(selects).forEach((sel) => {
       if (sel) {
         const existingNewOpt = sel.querySelector('option[value="__new__"]');
         if (existingNewOpt) existingNewOpt.remove();
       }
     });
+  }
 
-    if (activeOption === 'existing') {
-      // Habilitar los selectores para entrada manual
-      if (selectPais) selectPais.disabled = false;
-      if (selectN1) selectN1.disabled = false;
-      if (selectN2) selectN2.disabled = false;
-      if (selectN3) selectN3.disabled = false;
+  aplicarEstiloResolverCard(elementos, config) {
+    const { cardDiv, icon, titleSpan, descSpan } = elementos;
+    
+    cardDiv.className = `card border-${config.color} border-opacity-25 bg-${config.color} bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in`;
+    
+    if (icon) {
+      icon.className = `bi ${config.iconClass} text-${config.color} fs-5`;
+    }
+    
+    titleSpan.textContent = config.title;
+    titleSpan.className = `fw-bold text-${config.titleColor || config.color} d-block`;
+    
+    if (descSpan) {
+      descSpan.innerHTML = config.descHtml;
+    }
+  }
 
-      cardDiv.className =
-        'card border-success border-opacity-25 bg-success bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
-      if (icon) icon.className = 'bi bi-check-circle-fill text-success fs-5';
-      titleSpan.textContent = 'Resolución Manual';
-      titleSpan.className = 'fw-bold text-success d-block';
-      if (descSpan) {
-        descSpan.innerHTML =
-          'Por favor, selecciona las ubicaciones correspondientes de las listas desplegables.';
-      }
-    } else if (activeOption === 'fallback') {
-      // Estado: Resuelto por Cabecera (Solo Nivel 3)
-      cardDiv.className =
-        'card border-info border-opacity-25 bg-info bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
-      if (icon) icon.className = 'bi bi-info-circle-fill text-info fs-5';
-      titleSpan.textContent = 'Ubicación Sugerida';
-      titleSpan.className = 'fw-bold text-info d-block';
-      if (descSpan) {
-        descSpan.innerHTML = `La parroquia clickeada no está registrada. Se usará la cabecera cantonal <strong>"${this.pendingGeography.nivel3.fallbackNombre}"</strong>.`;
-      }
-      if (selectN3) {
-        selectN3.value = this.pendingGeography.nivel3.fallbackId || '';
-        selectN3.disabled = true;
-      }
-    } else {
-      // Estado: Registro Automático de todos los niveles faltantes
-      cardDiv.className =
-        'card border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
-      if (icon) icon.className = 'bi bi-exclamation-triangle-fill text-warning fs-5';
-      titleSpan.textContent = 'Registro Automático Activado';
-      titleSpan.className = 'fw-bold text-dark d-block';
+  configurarModoResolucionManual(selects, elementos) {
+    Object.values(selects).forEach(sel => {
+      if (sel) sel.disabled = false;
+    });
 
-      const missingNames = [];
-      if (!this.pendingGeography.pais.exists)
-        missingNames.push(`País "${this.pendingGeography.pais.nombre}"`);
-      if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists)
-        missingNames.push(
-          `${this.pendingGeography.nivel1.tipo} "${this.pendingGeography.nivel1.nombre}"`
-        );
-      if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists)
-        missingNames.push(
-          `${this.pendingGeography.nivel2.tipo} "${this.pendingGeography.nivel2.nombre}"`
-        );
-      if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists)
-        missingNames.push(
-          `${this.pendingGeography.nivel3.tipo} "${this.pendingGeography.nivel3.nombre}"`
-        );
+    this.aplicarEstiloResolverCard(elementos, {
+      color: 'success',
+      iconClass: 'bi-check-circle-fill',
+      title: 'Resolución Manual',
+      descHtml: 'Por favor, selecciona las ubicaciones correspondientes de las listas desplegables.'
+    });
+  }
 
-      if (descSpan) {
-        descSpan.innerHTML = `Se registrarán automáticamente al guardar: <strong>${missingNames.join(', ')}</strong>.`;
-      }
+  configurarModoResolucionFallback(selectN3, elementos) {
+    this.aplicarEstiloResolverCard(elementos, {
+      color: 'info',
+      iconClass: 'bi-info-circle-fill',
+      title: 'Ubicación Sugerida',
+      descHtml: `La parroquia clickeada no está registrada. Se usará la cabecera cantonal <strong>"${this.pendingGeography.nivel3.fallbackNombre}"</strong>.`
+    });
 
-      // Inyectar opciones temporales en los dropdowns correspondientes y bloquearlos
-      if (!this.pendingGeography.pais.exists && selectPais) {
-        const newOpt = document.createElement('option');
-        newOpt.value = '__new__';
-        newOpt.text = `[Nuevo País: ${this.pendingGeography.pais.nombre}]`;
-        newOpt.selected = true;
-        selectPais.appendChild(newOpt);
-        selectPais.disabled = true;
-      }
-      if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists && selectN1) {
-        const newOpt = document.createElement('option');
-        newOpt.value = '__new__';
-        newOpt.text = `[Nueva ${this.pendingGeography.nivel1.tipo}: ${this.pendingGeography.nivel1.nombre}]`;
-        newOpt.selected = true;
-        selectN1.appendChild(newOpt);
-        selectN1.disabled = true;
-        this.mostrarCampo('#colDirNivel1');
-      }
-      if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists && selectN2) {
-        const newOpt = document.createElement('option');
-        newOpt.value = '__new__';
-        newOpt.text = `[Nuevo ${this.pendingGeography.nivel2.tipo}: ${this.pendingGeography.nivel2.nombre}]`;
-        newOpt.selected = true;
-        selectN2.appendChild(newOpt);
-        selectN2.disabled = true;
-        this.mostrarCampo('#colDirNivel2');
-      }
-      if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists && selectN3) {
-        const newOpt = document.createElement('option');
-        newOpt.value = '__new__';
-        newOpt.text = `[Nueva ${this.pendingGeography.nivel3.tipo}: ${this.pendingGeography.nivel3.nombre}]`;
-        newOpt.selected = true;
-        selectN3.appendChild(newOpt);
-        selectN3.disabled = true;
-        this.mostrarCampo('#colDirNivel3');
-      }
+    if (selectN3) {
+      selectN3.value = this.pendingGeography.nivel3.fallbackId || '';
+      selectN3.disabled = true;
+    }
+  }
+
+  configurarModoResolucionAutomatica(selects, elementos) {
+    this.aplicarEstiloResolverCard(elementos, {
+      color: 'warning',
+      iconClass: 'bi-exclamation-triangle-fill',
+      title: 'Registro Automático Activado',
+      titleColor: 'dark',
+      descHtml: `Se registrarán automáticamente al guardar: <strong>${this.obtenerListaNombresFaltantes().join(', ')}</strong>.`
+    });
+
+    const { selectPais, selectN1, selectN2, selectN3 } = selects;
+
+    if (!this.pendingGeography.pais.exists) {
+      this.inyectarOpcionTemporal(selectPais, `[Nuevo País: ${this.pendingGeography.pais.nombre}]`);
+    }
+    if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) {
+      this.inyectarOpcionTemporal(selectN1, `[Nueva ${this.pendingGeography.nivel1.tipo}: ${this.pendingGeography.nivel1.nombre}]`, '#colDirNivel1');
+    }
+    if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) {
+      this.inyectarOpcionTemporal(selectN2, `[Nuevo ${this.pendingGeography.nivel2.tipo}: ${this.pendingGeography.nivel2.nombre}]`, '#colDirNivel2');
+    }
+    if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists) {
+      this.inyectarOpcionTemporal(selectN3, `[Nueva ${this.pendingGeography.nivel3.tipo}: ${this.pendingGeography.nivel3.nombre}]`, '#colDirNivel3');
     }
   }
 
@@ -1153,7 +873,7 @@ export class DireccionFormComponent extends BaseComponent {
 
   mostrarCampo(selector) {
     const el = document.querySelector(selector);
-    if (el && el.classList.contains('d-none')) {
+    if (el?.classList.contains('d-none')) {
       el.classList.remove('d-none');
       // Force reflow
       el.offsetHeight;
@@ -1197,7 +917,7 @@ export class DireccionFormComponent extends BaseComponent {
       };
 
       const res = await UbicacionesService.createTerritorio(payload);
-      const newTerritory = res.data || res;
+      const newTerritory = this.extractData(res);
 
       ToastService.success(
         `${this.pendingTerritory.tipo} "${this.pendingTerritory.nombre}" registrada con éxito.`
@@ -1272,23 +992,325 @@ export class DireccionFormComponent extends BaseComponent {
     const s2 = document.querySelector('#dirNivel2Select');
     const s3 = document.querySelector('#dirNivel3Select');
 
-    if (s1 && s1.disabled) {
+    if (s1?.disabled) {
       s1.innerHTML = `<option value="">-- Seleccione País primero --</option>`;
     } else if (s1) {
       s1.options[0].text = `-- Selecciona ${config.nivel1} --`;
     }
 
-    if (s2 && s2.disabled) {
+    if (s2?.disabled) {
       s2.innerHTML = `<option value="">-- Seleccione ${config.nivel1} primero --</option>`;
     } else if (s2) {
       s2.options[0].text = `-- Selecciona ${config.nivel2} --`;
     }
 
-    if (s3 && s3.disabled) {
+    if (s3?.disabled) {
       s3.innerHTML = `<option value="">-- Seleccione ${config.nivel2} primero --</option>`;
     } else if (s3) {
       s3.options[0].text = `-- Selecciona ${config.nivel3} --`;
     }
+  }
+
+  // --- HELPERS PARA MODULARIZACIÓN Y ELIMINACIÓN DE DUPLICIDADES ---
+  extractList(res) {
+    const fetchedData = res?.data || [];
+    return Array.isArray(res) ? res : fetchedData;
+  }
+
+  extractData(res) {
+    return res?.data || res || null;
+  }
+
+  obtenerListaNombresFaltantes() {
+    if (!this.pendingGeography) return [];
+    const list = [];
+    if (!this.pendingGeography.pais.exists)
+      list.push(`País "${this.pendingGeography.pais.nombre}"`);
+    if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists)
+      list.push(
+        `${this.pendingGeography.nivel1.tipo} "${this.pendingGeography.nivel1.nombre}"`
+      );
+    if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists)
+      list.push(
+        `${this.pendingGeography.nivel2.tipo} "${this.pendingGeography.nivel2.nombre}"`
+      );
+    if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists)
+      list.push(
+        `${this.pendingGeography.nivel3.tipo} "${this.pendingGeography.nivel3.nombre}"`
+      );
+    return list;
+  }
+
+  findMatchingOptionByText(selectEl, targetText) {
+    if (!selectEl || !targetText) return null;
+    const cleanTarget = this.normalizeText(targetText);
+    if (!cleanTarget) return null;
+    return Array.from(selectEl.options).find((opt) => {
+      const optText = this.normalizeText(opt.text);
+      return optText.includes(cleanTarget) || cleanTarget.includes(optText);
+    });
+  }
+
+  inyectarOpcionTemporal(selectEl, labelText, campoSelector = null) {
+    if (!selectEl) return;
+    const newOpt = document.createElement('option');
+    newOpt.value = '__new__';
+    newOpt.text = labelText;
+    newOpt.selected = true;
+    selectEl.appendChild(newOpt);
+    selectEl.disabled = true;
+    if (campoSelector) {
+      this.mostrarCampo(campoSelector);
+    }
+  }
+
+  async registrarCadenaTerritoriosPendiente(btnSubmit) {
+    let currentCountryId = this.pendingGeography.pais.id || null;
+
+    if (!this.pendingGeography.pais.exists) {
+      if (btnSubmit)
+        btnSubmit.innerHTML =
+          '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando País...';
+      const res = await UbicacionesService.createPais({
+        nombre: this.pendingGeography.pais.nombre,
+        codigo_iso: this.pendingGeography.pais.codigo_iso,
+        activo: true,
+      });
+      const newObj = this.extractData(res);
+      currentCountryId = newObj.id;
+
+      this.dispatchEvent(
+        new CustomEvent('paises-updated', {
+          detail: { paises: this.paisesList },
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
+
+    let parentId = null;
+    parentId = await this.registrarNivelGeograficoPendiente(
+      this.pendingGeography.nivel1,
+      currentCountryId,
+      null,
+      btnSubmit
+    );
+    parentId = await this.registrarNivelGeograficoPendiente(
+      this.pendingGeography.nivel2,
+      currentCountryId,
+      parentId,
+      btnSubmit
+    );
+    parentId = await this.registrarNivelGeograficoPendiente(
+      this.pendingGeography.nivel3,
+      currentCountryId,
+      parentId,
+      btnSubmit
+    );
+
+    this.dispatchEvent(
+      new CustomEvent('territorios-updated', {
+        bubbles: true,
+        composed: true,
+      })
+    );
+
+    return parentId;
+  }
+
+  async registrarNivelGeograficoPendiente(nivel, paisId, parentId, btnSubmit) {
+    if (!nivel.nombre) return parentId;
+    if (nivel.exists) return nivel.id;
+
+    if (btnSubmit) {
+      btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando ${nivel.tipo}...`;
+    }
+    const res = await UbicacionesService.createTerritorio({
+      pais_id: paisId,
+      parent_id: parentId,
+      nombre: nivel.nombre,
+      tipo: nivel.tipo,
+      activo: true,
+    });
+    const newObj = this.extractData(res);
+    return newObj.id;
+  }
+
+  async procesarNivelGeograficoAutofill({
+    key,
+    candidatos,
+    selectEl,
+    colSelector,
+    label,
+    statusText,
+    loadFn,
+    fallbackText = null,
+  }) {
+    const nombre = this.capitalizeWords(candidatos.find(Boolean) || '');
+    this.pendingGeography[key].nombre = nombre;
+
+    if (!nombre) {
+      this.mostrarCampo(colSelector);
+      return false;
+    }
+
+    if (statusText) {
+      statusText.textContent = `Buscando ${label}...`;
+    }
+
+    await loadFn();
+    const foundOpt = this.findMatchingOptionByText(selectEl, nombre);
+
+    if (foundOpt) {
+      this.pendingGeography[key].exists = true;
+      this.pendingGeography[key].id = foundOpt.value;
+      if (selectEl) selectEl.value = foundOpt.value;
+      this.mostrarCampo(colSelector);
+      return foundOpt.value;
+    }
+
+    if (fallbackText) {
+      const cabeceraOpt = this.findMatchingOptionByText(selectEl, fallbackText);
+      if (cabeceraOpt) {
+        this.pendingGeography[key].fallbackNombre = cabeceraOpt.text.replace(
+          /^\[.*?\]\s*/,
+          ''
+        );
+        this.pendingGeography[key].fallbackId = cabeceraOpt.value;
+      }
+    }
+
+    this.mostrarCampo(colSelector);
+    return false;
+  }
+
+  async procesarJerarquiaGeograficaAutofill(address, matchedPais, config, statusText) {
+    if (!matchedPais) return;
+    const selectPais = document.querySelector('#dirPaisSelect');
+    const selectN1 = document.querySelector('#dirNivel1Select');
+    const selectN2 = document.querySelector('#dirNivel2Select');
+    const selectN3 = document.querySelector('#dirNivel3Select');
+
+    if (selectPais) selectPais.value = matchedPais.id;
+    this.actualizarEtiquetasNiveles(matchedPais.id);
+
+    const n1Id = await this.procesarNivelGeograficoAutofill({
+      key: 'nivel1',
+      candidatos: [address.state, address.region, address.province, address.state_district],
+      selectEl: selectN1,
+      colSelector: '#colDirNivel1',
+      label: config.nivel1,
+      statusText,
+      loadFn: () => this.cargarDireccionDropdownNivel1(matchedPais.id),
+    });
+    if (!n1Id) return;
+
+    const n2Id = await this.procesarNivelGeograficoAutofill({
+      key: 'nivel2',
+      candidatos: [address.county, address.city, address.town, address.municipality, address.city_district],
+      selectEl: selectN2,
+      colSelector: '#colDirNivel2',
+      label: config.nivel2,
+      statusText,
+      loadFn: () => this.cargarDireccionDropdownNivel2(matchedPais.id, n1Id),
+    });
+    if (!n2Id) return;
+
+    await this.procesarNivelGeograficoAutofill({
+      key: 'nivel3',
+      candidatos: [
+        address.parish,
+        address.suburb,
+        address.neighbourhood,
+        address.quarter,
+        address.village,
+        address.town,
+        address.city_district,
+        address.hamlet,
+      ],
+      selectEl: selectN3,
+      colSelector: '#colDirNivel3',
+      label: config.nivel3,
+      statusText,
+      loadFn: () => this.cargarDireccionDropdownNivel3(matchedPais.id, n2Id),
+      fallbackText: this.pendingGeography.nivel2.nombre,
+    });
+  }
+
+  esSoloNivel3FaltanteConFallback() {
+    return (
+      this.pendingGeography.pais.exists &&
+      this.pendingGeography.nivel1.exists &&
+      this.pendingGeography.nivel2.exists &&
+      !this.pendingGeography.nivel3.exists &&
+      Boolean(this.pendingGeography.nivel3.fallbackId)
+    );
+  }
+
+  configurarOpcionFallbackResolver(canUseFallback) {
+    const fallbackContainer = document.querySelector('#resolveOptFallbackContainer');
+    const fallbackRadio = document.querySelector('#resolveOptFallback');
+    const existingRadio = document.querySelector('#resolveOptExisting');
+
+    if (canUseFallback && fallbackContainer) {
+      fallbackContainer.classList.remove('d-none');
+      const fallbackSpan = document.querySelector('#fallbackParishNameSpan');
+      if (fallbackSpan) fallbackSpan.textContent = this.pendingGeography.nivel3.fallbackNombre;
+      if (fallbackRadio) fallbackRadio.checked = true;
+      return;
+    }
+
+    if (fallbackContainer) fallbackContainer.classList.add('d-none');
+    if (existingRadio) existingRadio.checked = true;
+  }
+
+  configurarOpcionRegistroResolver(isAdmin, canUseFallback) {
+    const registerRadio = document.querySelector('#resolveOptRegister');
+    const fallbackRadio = document.querySelector('#resolveOptFallback');
+    const existingRadio = document.querySelector('#resolveOptExisting');
+    const labelRegister = document.querySelector('label[for="resolveOptRegister"]');
+    const labelExisting = document.querySelector('label[for="resolveOptExisting"]');
+
+    if (labelExisting) {
+      labelExisting.innerHTML = `<strong>Seleccionar existente:</strong> Elegir manualmente de la lista de ubicaciones`;
+    }
+
+    if (isAdmin) {
+      if (registerRadio) registerRadio.disabled = false;
+      if (labelRegister) {
+        const toCreateList = this.obtenerListaNombresFaltantes();
+        labelRegister.innerHTML = `<strong>Crear y usar nuevos registros:</strong> Registrar automáticamente al guardar: ${toCreateList.join(', ')}`;
+      }
+      return;
+    }
+
+    if (registerRadio) registerRadio.disabled = true;
+    if (labelRegister) {
+      labelRegister.innerHTML = `<strong>Crear y usar nuevos registros:</strong> <span class="text-muted">(Requiere rol de Administrador para registrar)</span>`;
+    }
+
+    if (canUseFallback && fallbackRadio) {
+      fallbackRadio.checked = true;
+    } else if (existingRadio) {
+      existingRadio.checked = true;
+    }
+  }
+
+  configurarResolverTerritoriosFaltantes(hasMissing) {
+    const resolverCard = document.querySelector('#missingTerritoryResolver');
+    if (!resolverCard) return;
+
+    if (!hasMissing) {
+      resolverCard.classList.add('d-none');
+      return;
+    }
+
+    const canUseFallback = this.esSoloNivel3FaltanteConFallback();
+    this.configurarOpcionFallbackResolver(canUseFallback);
+    this.configurarOpcionRegistroResolver(AuthService.isAdmin(), canUseFallback);
+
+    resolverCard.classList.remove('d-none');
+    this.actualizarFeedbackResolver();
   }
 }
 

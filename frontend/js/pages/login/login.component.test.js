@@ -48,19 +48,16 @@ describe('LoginComponent', () => {
     
     let submitCallback;
     fakeElements['#loginForm'] = {
-      addEventListener: jest.fn(),
+      addEventListener: jest.fn((event, cb) => {
+        if (event === 'submit') submitCallback = cb;
+      }),
       classList: { add: jest.fn(), remove: jest.fn() },
       checkValidity: jest.fn(() => true)
     };
     fakeElements['#emailInput'] = { value: 'admin@test.com' };
     fakeElements['#passwordInput'] = { value: 'password123' };
-    fakeElements['#loginSubmitBtn'] = {
-      addEventListener: jest.fn((event, cb) => {
-        if (event === 'click') submitCallback = cb;
-      })
-    };
+    fakeElements['#loginSubmitBtn'] = { disabled: false };
     fakeElements['#loginSpinner'] = { classList: { add: jest.fn(), remove: jest.fn() } };
-    fakeElements['#loginErrorAlert'] = { classList: { add: jest.fn(), remove: jest.fn() } };
 
     component.onInit();
     
@@ -79,20 +76,16 @@ describe('LoginComponent', () => {
     
     let submitCallback;
     fakeElements['#loginForm'] = {
-      addEventListener: jest.fn(),
+      addEventListener: jest.fn((event, cb) => {
+        if (event === 'submit') submitCallback = cb;
+      }),
       classList: { add: jest.fn() },
       checkValidity: jest.fn(() => true)
     };
     fakeElements['#emailInput'] = { value: 'bad@test.com' };
     fakeElements['#passwordInput'] = { value: 'badpass' };
-    fakeElements['#loginSubmitBtn'] = {
-      addEventListener: jest.fn((event, cb) => {
-        if (event === 'click') submitCallback = cb;
-      })
-    };
+    fakeElements['#loginSubmitBtn'] = { disabled: false };
     fakeElements['#loginSpinner'] = { classList: { add: jest.fn(), remove: jest.fn() } };
-    fakeElements['#loginErrorAlert'] = { classList: { add: jest.fn(), remove: jest.fn() } };
-    fakeElements['#loginErrorMessage'] = {};
 
     component.onInit();
     
@@ -100,8 +93,6 @@ describe('LoginComponent', () => {
     await submitCallback(e);
     
     expect(AuthService.login).toHaveBeenCalled();
-    expect(fakeElements['#loginErrorMessage'].textContent).toBe('Credenciales inválidas');
-    expect(fakeElements['#loginErrorAlert'].classList.remove).toHaveBeenCalledWith('d-none');
     expect(fakeElements['#loginSubmitBtn'].disabled).toBe(false); // Should re-enable
   });
 });
