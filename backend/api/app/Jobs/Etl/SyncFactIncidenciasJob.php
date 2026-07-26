@@ -17,6 +17,10 @@ class SyncFactIncidenciasJob implements ShouldQueue
 
     public function handle(): void
     {
+        $enRevisionId = \App\Models\EstadoIncidencia::where('nombre', 'En Revisión')->value('id') ?? 2;
+        $enProcesoId = \App\Models\EstadoIncidencia::where('nombre', 'En Proceso')->value('id') ?? 3;
+        $resueltoId = \App\Models\EstadoIncidencia::where('nombre', 'Resuelto')->value('id') ?? 4;
+
         // 1. Obtener todas las incidencias operacionales
         $incidencias = DB::table('reporte_incidencias')
             ->join('direcciones', 'reporte_incidencias.direccion_id', '=', 'direcciones.id')
@@ -30,7 +34,7 @@ class SyncFactIncidenciasJob implements ShouldQueue
                 'reporte_incidencias.prioridad_id',
                 'reporte_incidencias.institucion_id',
                 'reporte_incidencias.cliente_id as usuario_reporta_id',
-                DB::raw('(SELECT usuario_id FROM historial_incidencias WHERE historial_incidencias.incidencia_id = reporte_incidencias.id AND historial_incidencias.estado_id IN (2, 3) ORDER BY estado_id DESC, created_at ASC LIMIT 1) as usuario_asignado_id')
+                DB::raw("(SELECT usuario_id FROM historial_incidencias WHERE historial_incidencias.incidencia_id = reporte_incidencias.id AND historial_incidencias.estado_id IN ($enRevisionId, $enProcesoId) ORDER BY estado_id DESC, created_at ASC LIMIT 1) as usuario_asignado_id")
             )
             ->get();
 
@@ -57,13 +61,13 @@ class SyncFactIncidenciasJob implements ShouldQueue
                 $historialDeIncidencia = $historial[$inc->id];
 
                 // Primer cambio a En Proceso
-                $enProcesoLog = $historialDeIncidencia->firstWhere('estado_id', 3);
+                $enProcesoLog = $historialDeIncidencia->firstWhere('estado_id', $enProcesoId);
                 if ($enProcesoLog) {
                     $tiempoRespuesta = (int) $createdTime->diffInMinutes(TimezoneService::toLocal($enProcesoLog->created_at));
                 }
 
                 // Primer cambio a Resuelto
-                $resueltoLog = $historialDeIncidencia->firstWhere('estado_id', 4);
+                $resueltoLog = $historialDeIncidencia->firstWhere('estado_id', $resueltoId);
                 if ($resueltoLog) {
                     $tiempoResolucion = (int) $createdTime->diffInMinutes(TimezoneService::toLocal($resueltoLog->created_at));
                 }

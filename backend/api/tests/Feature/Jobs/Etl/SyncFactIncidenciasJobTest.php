@@ -32,7 +32,7 @@ class SyncFactIncidenciasJobTest extends TestCase
         DB::table('estados_incidencia')->insertOrIgnore([
             ['id' => 1, 'nombre' => 'Pendiente'],
             ['id' => 3, 'nombre' => 'En Proceso'],
-            ['id' => 4, 'nombre' => 'Completado'],
+            ['id' => 4, 'nombre' => 'Resuelto'],
         ]);
 
         DB::table('categorias_incidencia')->insertOrIgnore([

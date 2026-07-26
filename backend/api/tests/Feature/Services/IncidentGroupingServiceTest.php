@@ -30,7 +30,7 @@ class IncidentGroupingServiceTest extends TestCase
             ['id' => 1, 'nombre' => 'Pendiente'],
             ['id' => 2, 'nombre' => 'En Revisión'],
             ['id' => 3, 'nombre' => 'En Proceso'],
-            ['id' => 4, 'nombre' => 'Completado'],
+            ['id' => 4, 'nombre' => 'Resuelto'],
         ]);
 
         DB::table('categorias_incidencia')->insertOrIgnore([
