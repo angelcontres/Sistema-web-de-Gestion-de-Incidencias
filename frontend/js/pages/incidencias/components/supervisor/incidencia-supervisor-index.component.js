@@ -31,6 +31,19 @@ export class IncidenciaSupervisorIndexComponent extends BaseComponent {
     if (btnDespachar) {
       btnDespachar.addEventListener('click', () => this.despacharIncidencia());
     }
+
+    // Escuchar notificaciones globales para refrescar el kanban en tiempo real
+    this._onGlobalNotif = () => {
+      console.log('Refrescando Kanban en vivo por notificación...');
+      this.cargarDatos();
+    };
+    window.addEventListener('global-notification-received', this._onGlobalNotif);
+  }
+
+  disconnectedCallback() {
+    if (this._onGlobalNotif) {
+      window.removeEventListener('global-notification-received', this._onGlobalNotif);
+    }
   }
 
   async cargarDatos() {

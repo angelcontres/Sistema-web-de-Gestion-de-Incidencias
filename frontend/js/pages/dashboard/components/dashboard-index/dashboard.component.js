@@ -36,6 +36,14 @@ export class DashboardComponent extends BaseComponent {
 
     // 4. Renderizar menú dinámico
     this.loadMenuData();
+
+    // 5. Escuchar notificaciones globales (WebSocket) para refrescar en vivo
+    this._onGlobalNotif = (e) => {
+      console.log('Refrescando dashboard en vivo por notificación:', e.detail);
+      this.loadDashboardData();
+      this.initDashboards();
+    };
+    window.addEventListener('global-notification-received', this._onGlobalNotif);
   }
 
   disconnectedCallback() {
@@ -44,6 +52,9 @@ export class DashboardComponent extends BaseComponent {
       this.map.remove();
       this.map = null;
     }
+    if (this._onGlobalNotif) {
+      window.removeEventListener('global-notification-received', this._onGlobalNotif);
+    }
   }
 
   initGreeting() {
@@ -51,7 +62,7 @@ export class DashboardComponent extends BaseComponent {
     if (user) {
       const greetingEl = this.querySelector('#dashboardGreeting');
       if (greetingEl) {
-        greetingEl.textContent = `Bienvenido, ${user.name}`;
+        greetingEl.textContent = `Bienvenido, ${user.name || user.username || 'Usuario'}`;
       }
     }
   }

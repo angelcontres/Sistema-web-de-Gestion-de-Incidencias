@@ -3,6 +3,7 @@ import { IncidenciaService } from '../../services/incidencia.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
 import { getBadgeClass } from '../../../../shared/utils/badge-states.js';
+import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
 
 export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   constructor() {
@@ -15,6 +16,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     this.isLoadingHistory = false;
     this.hasMore = true;
     this.historyData = [];
+    this.institucionesList = [];
     this.currentUser = AuthService.getCurrentUser();
   }
 
@@ -80,6 +82,83 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
         }
       });
     }
+
+    const btnEditApoyo = this.querySelector('#btn-edit-apoyo');
+    const btnSaveApoyo = this.querySelector('#btn-save-apoyo');
+    if (btnEditApoyo) {
+      btnEditApoyo.addEventListener('click', () => this.abrirModalApoyo());
+    }
+    if (btnSaveApoyo) {
+      btnSaveApoyo.addEventListener('click', () => this.guardarApoyo());
+    }
+  }
+
+  async abrirModalApoyo() {
+    try {
+      if (this.institucionesList.length === 0) {
+        this.institucionesList = await CatalogoService.getInstituciones();
+      }
+      const container = this.querySelector('#container-modal-apoyo');
+      if (container) {
+        container.innerHTML = this.institucionesList.map(i => `
+          <label class="list-group-item d-flex gap-3 align-items-center cursor-pointer p-3" style="cursor: pointer;" onmouseover="this.classList.add('bg-light')" onmouseout="this.classList.remove('bg-light')">
+            <input class="form-check-input flex-shrink-0 chk-apoyo" type="checkbox" value="${i.id}" style="font-size: 1.3em;">
+            <span class="pt-1 form-checked-content">
+              <strong>${i.nombre}</strong>
+              <span class="d-block text-muted small">${i.siglas}</span>
+            </span>
+          </label>
+        `).join('');
+
+        if (this.currentIncidencia && this.currentIncidencia.instituciones_apoyo) {
+          const supportIds = this.currentIncidencia.instituciones_apoyo.map(i => i.id.toString());
+          Array.from(container.querySelectorAll('.chk-apoyo')).forEach(chk => {
+            chk.checked = supportIds.includes(chk.value);
+          });
+        }
+      }
+      
+      const modalEl = this.querySelector('#modalApoyo');
+      if (modalEl) {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }
+    } catch (e) {
+      console.error(e);
+      ToastService.error('Error al cargar instituciones.');
+    }
+  }
+
+  async guardarApoyo() {
+    const container = this.querySelector('#container-modal-apoyo');
+    if (!container || !this.currentIncidencia) return;
+
+    const selectedIds = Array.from(container.querySelectorAll('.chk-apoyo:checked')).map(chk => parseInt(chk.value));
+    const btn = this.querySelector('#btn-save-apoyo');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+    try {
+      await IncidenciaService.update(this.incidenciaId, {
+        instituciones_apoyo: selectedIds,
+        version: this.currentIncidencia.version || 1
+      });
+      ToastService.success('Instituciones de apoyo actualizadas.');
+      
+      const modalEl = this.querySelector('#modalApoyo');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+      }
+      
+      await this.cargarDetalles();
+    } catch (error) {
+      console.error('Error actualizando apoyo:', error);
+      ToastService.error('Error al guardar instituciones de apoyo.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Guardar Cambios';
+    }
   }
 
   async cargarDetalles() {
@@ -133,6 +212,33 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     inst.textContent = inc.institucion ? inc.institucion.nombre : 'No asignada';
     if (!inc.institucion) inst.classList.add('text-muted');
 
+    // Render Institutions of Support
+    const listApoyo = this.querySelector('#list-instituciones-apoyo');
+    if (listApoyo) {
+      if (inc.instituciones_apoyo && inc.instituciones_apoyo.length > 0) {
+        listApoyo.innerHTML = inc.instituciones_apoyo.map(i => 
+          `<span class="badge bg-secondary-soft text-secondary border border-secondary-subtle fw-medium">${i.nombre}</span>`
+        ).join('');
+      } else {
+        listApoyo.innerHTML = '<span class="text-muted small fst-italic">Ninguna asignada</span>';
+      }
+    }
+
+    const canManageIncidencia =
+      this.currentUser &&
+      (this.currentUser.roles.some((r) => r.nombre === 'Admin' || r.nombre === 'Supervisor') ||
+        AuthService.hasPermission('UPDATE', 'incidencias') ||
+        AuthService.hasPermission('UPDATE', 'despacho_incidencias'));
+        
+    const btnEditApoyo = this.querySelector('#btn-edit-apoyo');
+    if (btnEditApoyo) {
+      if (canManageIncidencia) {
+        btnEditApoyo.classList.remove('d-none');
+      } else {
+        btnEditApoyo.classList.add('d-none');
+      }
+    }
+
     if (inc.prioridad) {
       this.querySelector('#lbl-prioridad').innerHTML = `
         <span class="badge rounded-pill px-2 py-1 small" style="background-color: ${inc.prioridad.color_hex}20; color: ${inc.prioridad.color_hex}; border: 1px solid ${inc.prioridad.color_hex}40;">
@@ -166,11 +272,12 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
             `<ul class="list-unstyled mb-0">` +
             reportantes
               .map((r) => {
+                const displayName = r.name || r.username || 'Usuario Anónimo';
                 const creadorText =
                   r.id === inc.cliente_id
                     ? ' <span class="text-muted small fst-italic">(creador)</span>'
                     : '';
-                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${displayName}${creadorText}</li>`;
               })
               .join('') +
             `</ul>`;
@@ -178,18 +285,22 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
           const visible = reportantes.slice(0, 3);
           const others = reportantes.slice(3);
           const othersNames = others
-            .map((r) => (r.id === inc.cliente_id ? `${r.name} (creador)` : r.name))
+            .map((r) => {
+              const displayName = r.name || r.username || 'Usuario Anónimo';
+              return r.id === inc.cliente_id ? `${displayName} (creador)` : displayName;
+            })
             .join(', ');
 
           html =
             `<ul class="list-unstyled mb-0">` +
             visible
               .map((r) => {
+                const displayName = r.name || r.username || 'Usuario Anónimo';
                 const creadorText =
                   r.id === inc.cliente_id
                     ? ' <span class="text-muted small fst-italic">(creador)</span>'
                     : '';
-                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${r.name}${creadorText}</li>`;
+                return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${displayName}${creadorText}</li>`;
               })
               .join('') +
             `</ul>` +
@@ -359,7 +470,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     const bgClass = isMine ? 'text-dark border shadow-sm' : 'bg-white text-dark border shadow-sm';
     const timeClass = 'text-muted';
 
-    const autorNombre = item.usuario ? item.usuario.name : 'Sistema';
+    const autorNombre = item.usuario ? (item.usuario.name || item.usuario.username || 'Usuario Anónimo') : 'Sistema';
     let comentario = item.comentario || 'Cambio de estado';
     const fecha = new Date(item.created_at).toLocaleString();
 

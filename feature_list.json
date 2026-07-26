@@ -231,6 +231,26 @@
         "public/js/views/admin/users.js",
         "public/js/views/auth/activate.js"
       ]
+    },
+    {
+      "id": 12,
+      "name": "refactor_incidencia_institucion_nm",
+      "title": "Refactor de Relación Incidencia-Institución a N:M",
+      "description": "Migrar la relación de Incidencias a Instituciones de 1:N a N:M mediante una tabla pivote para soportar instituciones de apoyo secundarias.",
+      "acceptance": [
+        "Existe la tabla pivote incidencia_institucion y las relaciones en los modelos Incidencia e Institucion.",
+        "El controlador index filtra correctamente por la tabla pivote para los usuarios con rol Institucion.",
+        "El controlador checkAccess valida la seguridad en base a la colección de instituciones.",
+        "La creación y actualización de incidencias soporta recibir y guardar instituciones adicionales usando sync o attach.",
+        "El frontend permite asignar instituciones de apoyo al editar una incidencia y en el hilo de comentarios."
+      ],
+      "sdd": true,
+      "priority": "high",
+      "status": "done",
+      "references": [
+        "docs/01_analisis/casos_uso_descripcion.md",
+        "backend/api/app/Http/Controllers/IncidenciaController.php"
+      ]
     }
   ]
 }
