@@ -23,29 +23,46 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
   }
 
   async onInit() {
-    // Initialize Modal and move it to document.body to avoid backdrop issues
-    let territorioForm = null;
+    this.inicializarModalTerritorios();
+    await this.cargarPaises();
+    this.suscribirEventosGlobales();
+    this.configurarBotonesAccionPorRol();
+    this.registrarEventListeners();
+  }
+
+  inicializarModalTerritorios() {
     try {
       const modalEl = this.querySelector('#territorioModal');
       if (modalEl) {
-        territorioForm = modalEl.querySelector('#territorioForm');
         document.body.appendChild(modalEl);
         this.territorioModalObj = new bootstrap.Modal(modalEl);
       }
     } catch (e) {
       console.warn('Error inicializando el modal de territorios.', e);
     }
+  }
 
-    // Load initial countries
-    await this.cargarPaises();
-
-    // Listen to global changes in countries
+  suscribirEventosGlobales() {
     document.addEventListener('paises-updated', (e) => {
       this.paisesList = e.detail.paises || [];
       this.llenarPaisSelect();
     });
+  }
 
-    // Setup Event Listeners
+  configurarBotonesAccionPorRol() {
+    const isAdmin = AuthService.isAdmin();
+    const btnAddNivel1 = this.querySelector('#btnAddNivel1');
+    const btnAddNivel2 = this.querySelector('#btnAddNivel2');
+    const btnAddNivel3 = this.querySelector('#btnAddNivel3');
+
+    if (!isAdmin) {
+      if (btnAddNivel1) btnAddNivel1.remove();
+      if (btnAddNivel2) btnAddNivel2.remove();
+      if (btnAddNivel3) btnAddNivel3.remove();
+    }
+  }
+
+  registrarEventListeners() {
     const explorerPaisSelect = this.querySelector('#explorerPaisSelect');
     if (explorerPaisSelect) {
       explorerPaisSelect.addEventListener('change', (e) => {
@@ -57,22 +74,17 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       });
     }
 
-    // Add buttons
-    const btnAddNivel1 = this.querySelector('#btnAddNivel1');
-    const btnAddNivel2 = this.querySelector('#btnAddNivel2');
-    const btnAddNivel3 = this.querySelector('#btnAddNivel3');
     const isAdmin = AuthService.isAdmin();
-
-    if (!isAdmin) {
-      if (btnAddNivel1) btnAddNivel1.remove();
-      if (btnAddNivel2) btnAddNivel2.remove();
-      if (btnAddNivel3) btnAddNivel3.remove();
-    } else {
+    if (isAdmin) {
+      const btnAddNivel1 = this.querySelector('#btnAddNivel1');
+      const btnAddNivel2 = this.querySelector('#btnAddNivel2');
+      const btnAddNivel3 = this.querySelector('#btnAddNivel3');
       if (btnAddNivel1) btnAddNivel1.addEventListener('click', () => this.abrirModalTerritorio(1));
       if (btnAddNivel2) btnAddNivel2.addEventListener('click', () => this.abrirModalTerritorio(2));
       if (btnAddNivel3) btnAddNivel3.addEventListener('click', () => this.abrirModalTerritorio(3));
     }
 
+    const territorioForm = document.querySelector('#territorioForm');
     if (territorioForm) {
       territorioForm.addEventListener('submit', (e) => this.guardarTerritorio(e));
     }
@@ -88,7 +100,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
   async cargarPaises() {
     try {
       const response = await UbicacionesService.getPaises();
-      this.paisesList = Array.isArray(response) ? response : (response.data || []);
+      this.paisesList = Array.isArray(response) ? response : response.data || [];
       this.llenarPaisSelect();
     } catch (error) {
       console.error('Error al precargar países en territorios:', error);
@@ -150,10 +162,10 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       const response = await UbicacionesService.getTerritorios(1, 1000, null, {
         pais_id: this.selectedPaisId,
         parent_id: null,
-        all: true
+        all: true,
       });
 
-      this.territoriosNivel1 = Array.isArray(response) ? response : (response.data || []);
+      this.territoriosNivel1 = Array.isArray(response) ? response : response.data || [];
       this.renderColumna1();
       if (btnAdd1 && isAdmin) btnAdd1.classList.remove('d-none');
     } catch (error) {
@@ -180,7 +192,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       item.className =
         'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
       item.style.cursor = 'pointer';
-      item.setAttribute('data-id', t.id);
+      item.dataset.id = t.id;
 
       const labelText = t.tipo
         ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>`
@@ -246,10 +258,10 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       const response = await UbicacionesService.getTerritorios(1, 1000, null, {
         pais_id: this.selectedPaisId,
         parent_id: this.selectedNivel1Id,
-        all: true
+        all: true,
       });
 
-      this.territoriosNivel2 = Array.isArray(response) ? response : (response.data || []);
+      this.territoriosNivel2 = Array.isArray(response) ? response : response.data || [];
       this.renderColumna2();
       if (btnAdd2 && isAdmin) btnAdd2.classList.remove('d-none');
     } catch (error) {
@@ -276,7 +288,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       item.className =
         'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
       item.style.cursor = 'pointer';
-      item.setAttribute('data-id', t.id);
+      item.dataset.id = t.id;
 
       const labelText = t.tipo
         ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>`
@@ -332,10 +344,10 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       const response = await UbicacionesService.getTerritorios(1, 1000, null, {
         pais_id: this.selectedPaisId,
         parent_id: this.selectedNivel2Id,
-        all: true
+        all: true,
       });
 
-      this.territoriosNivel3 = Array.isArray(response) ? response : (response.data || []);
+      this.territoriosNivel3 = Array.isArray(response) ? response : response.data || [];
       this.renderColumna3();
       if (btnAdd3 && isAdmin) btnAdd3.classList.remove('d-none');
     } catch (error) {
@@ -362,7 +374,7 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
       item.className =
         'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3';
       item.style.cursor = 'default';
-      item.setAttribute('data-id', t.id);
+      item.dataset.id = t.id;
 
       const labelText = t.tipo
         ? `<span class="badge bg-secondary-soft text-secondary rounded-pill me-1 small">${t.tipo}</span>`
@@ -493,8 +505,8 @@ export class UbicacionesTerritoriosComponent extends BaseComponent {
     const parentId = document.querySelector('#territorioParentId').value;
 
     const payload = {
-      pais_id: parseInt(document.querySelector('#territorioPaisId').value),
-      parent_id: parentId ? parseInt(parentId) : null,
+      pais_id: Number.parseInt(document.querySelector('#territorioPaisId').value),
+      parent_id: parentId ? Number.parseInt(parentId) : null,
       nombre: document.querySelector('#territorioNombre').value,
       tipo: document.querySelector('#territorioTipo').value,
       activo: document.querySelector('#territorioActivo').checked,

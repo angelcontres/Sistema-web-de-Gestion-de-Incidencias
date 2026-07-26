@@ -42,7 +42,7 @@ export class UbicacionesIndexComponent extends BaseComponent {
 
     // If Direcciones is the active tab on load, initialize the map
     const direccionesPane = this.querySelector('#direcciones-pane');
-    if (direccionesPane && direccionesPane.classList.contains('active')) {
+    if (direccionesPane?.classList.contains('active')) {
       setTimeout(() => {
         const dirComponent = this.querySelector('#direccionesComponent');
         if (dirComponent && typeof dirComponent.initMainMap === 'function') {

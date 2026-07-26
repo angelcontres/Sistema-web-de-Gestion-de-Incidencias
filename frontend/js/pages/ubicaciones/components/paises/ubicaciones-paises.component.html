@@ -1,20 +1,32 @@
 <div class="card custom-card border-0 shadow-sm overflow-hidden">
   <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
     <h5 class="card-title fw-bold mb-0 text-dark">Catálogo de Países</h5>
-    <button id="btnNuevoPais" class="btn btn-sm btn-primary fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2">
+    <button
+      id="btnNuevoPais"
+      class="btn btn-sm btn-primary fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2"
+    >
       <i class="bi bi-plus-lg"></i> Nuevo País
     </button>
   </div>
-  
-  <div class="card-body p-0">
 
+  <div class="card-body p-0">
     <!-- Reemplazado por el componente reutilizable de tablas del sistema -->
-    <app-data-table id="tbl-datos-paises" title="Lista de Países" empty-text="No hay países registrados."></app-data-table>
+    <app-data-table
+      id="tbl-datos-paises"
+      title="Lista de Países"
+      empty-text="No hay países registrados."
+    ></app-data-table>
   </div>
 </div>
 
 <!-- MODAL PAÍS -->
-<div class="modal fade" id="paisModal" tabindex="-1" aria-labelledby="paisModalLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="paisModal"
+  tabindex="-1"
+  aria-labelledby="paisModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
@@ -30,21 +42,49 @@
           <input type="hidden" id="paisId" />
           <div class="mb-3">
             <label for="paisNombre" class="form-label fw-semibold text-dark">Nombre del País</label>
-            <input type="text" class="form-control" id="paisNombre" required placeholder="Ej: Perú, México" />
+            <input
+              type="text"
+              class="form-control"
+              id="paisNombre"
+              required
+              placeholder="Ej: Perú, México"
+            />
             <div class="invalid-feedback">El nombre es obligatorio.</div>
           </div>
           <div class="mb-3">
-            <label for="paisCodigo" class="form-label fw-semibold text-dark">Código ISO (2 o 3 letras)</label>
-            <input type="text" class="form-control" id="paisCodigo" required placeholder="Ej: PE, MX" maxlength="5" />
+            <label for="paisCodigo" class="form-label fw-semibold text-dark"
+              >Código ISO (2 o 3 letras)</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="paisCodigo"
+              required
+              placeholder="Ej: PE, MX"
+              maxlength="5"
+            />
             <div class="invalid-feedback">El código ISO es obligatorio.</div>
           </div>
           <div class="form-check form-switch mb-4">
-            <input class="form-check-input" type="checkbox" role="switch" id="paisActivo" checked />
-            <label class="form-check-label fw-semibold text-dark" for="paisActivo">País Activo</label>
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              aria-checked="true"
+              id="paisActivo"
+              checked
+            />
+            <label class="form-check-label fw-semibold text-dark" for="paisActivo"
+              >País Activo</label
+            >
           </div>
           <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnPaisSubmit">Guardar</button>
+            <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary fw-semibold px-4" id="btnPaisSubmit">
+              Guardar
+            </button>
           </div>
         </form>
       </div>

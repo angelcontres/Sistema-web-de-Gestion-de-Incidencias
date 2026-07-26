@@ -19,17 +19,20 @@ export class DireccionFormComponent extends BaseComponent {
     const modalEl = this.querySelector('#direccionModal');
     if (!modalEl) return;
 
+    document.body.appendChild(modalEl);
+    this.direccionModalObj = new bootstrap.Modal(modalEl);
+    modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
+
+    this.setupEventListeners(modalEl);
+  }
+
+  setupEventListeners(modalEl) {
     const direccionForm = modalEl.querySelector('#direccionForm');
     const dirPaisSelect = modalEl.querySelector('#dirPaisSelect');
     const dirNivel1Select = modalEl.querySelector('#dirNivel1Select');
     const dirNivel2Select = modalEl.querySelector('#dirNivel2Select');
     const dirNivel3Select = modalEl.querySelector('#dirNivel3Select');
 
-    document.body.appendChild(modalEl);
-    this.direccionModalObj = new bootstrap.Modal(modalEl);
-    modalEl.addEventListener('shown.bs.modal', () => this.initModalMap());
-
-    // Setup Event Listeners
     if (direccionForm) {
       direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
     }
@@ -658,14 +661,68 @@ export class DireccionFormComponent extends BaseComponent {
     );
   }
 
-  async autofillUbicacionDesdeCoords(lat, lng) {
+  mostrarEstadoAutorelleno(visible, texto = '') {
     const statusContainer = document.querySelector('#autofillStatus');
     const statusText = document.querySelector('#autofillStatusText');
-
-    if (statusContainer && statusText) {
-      statusContainer.classList.remove('d-none');
-      statusText.textContent = 'Autorellenando ubicación...';
+    if (statusContainer) {
+      if (visible) {
+        statusContainer.classList.remove('d-none');
+        if (statusText && texto) statusText.textContent = texto;
+      } else {
+        statusContainer.classList.add('d-none');
+      }
     }
+  }
+
+  mostrarErrorAutorelleno(mensaje) {
+    const errorAlert = document.querySelector('#direccionModalErrorAlert');
+    const errorMessage = document.querySelector('#direccionModalErrorMessage');
+    if (errorAlert && errorMessage) {
+      errorAlert.classList.remove('d-none');
+      errorMessage.textContent = mensaje;
+    }
+  }
+
+  inicializarPendingGeography(address, matchedPais) {
+    const countryCode = (address.country_code || '').toUpperCase();
+    const countryName = this.capitalizeWords(address.country || countryCode);
+    const iso = matchedPais ? (matchedPais.codigo_iso || '').toUpperCase() : countryCode;
+    const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
+
+    this.pendingGeography = {
+      pais: {
+        nombre: countryName,
+        codigo_iso: countryCode,
+        exists: Boolean(matchedPais),
+        id: matchedPais ? matchedPais.id : null,
+        tipo: 'País',
+      },
+      nivel1: { nombre: '', exists: false, id: null, tipo: config.nivel1 },
+      nivel2: { nombre: '', exists: false, id: null, tipo: config.nivel2 },
+      nivel3: { nombre: '', exists: false, id: null, tipo: config.nivel3 },
+    };
+
+    return config;
+  }
+
+  async procesarDeteccionGeografica(data, address, matchedPais, config) {
+    if (!matchedPais) return;
+
+    const selectPais = document.querySelector('#dirPaisSelect');
+    if (selectPais) selectPais.value = matchedPais.id;
+    this.actualizarEtiquetasNiveles(matchedPais.id);
+
+    if (data.territorio_detectado) {
+      this.mostrarEstadoAutorelleno(true, 'Cargando jerarquía geográfica...');
+      await this.aplicarTerritorioDetectado(data.territorio_detectado, matchedPais, config, address);
+    } else {
+      const statusText = document.querySelector('#autofillStatusText');
+      await this.procesarJerarquiaGeograficaAutofill(address, matchedPais, config, statusText);
+    }
+  }
+
+  async autofillUbicacionDesdeCoords(lat, lng) {
+    this.mostrarEstadoAutorelleno(true, 'Autorellenando ubicación...');
 
     try {
       const data = await UbicacionesService.reverseGeocode(lat, lng);
@@ -673,60 +730,19 @@ export class DireccionFormComponent extends BaseComponent {
       this.limpiarYActualizarUIAutofill(address, data);
 
       const countryCode = (address.country_code || '').toUpperCase();
-      const countryName = this.capitalizeWords(address.country || countryCode);
-
       const matchedPais = countryCode
         ? this.paisesList.find((p) => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode)
         : null;
 
-      this.pendingGeography = {
-        pais: {
-          nombre: countryName,
-          codigo_iso: countryCode,
-          exists: Boolean(matchedPais),
-          id: matchedPais ? matchedPais.id : null,
-          tipo: 'País',
-        },
-        nivel1: { nombre: '', exists: false, id: null, tipo: 'Provincia' },
-        nivel2: { nombre: '', exists: false, id: null, tipo: 'Cantón' },
-        nivel3: { nombre: '', exists: false, id: null, tipo: 'Parroquia' },
-      };
-
-      const selectPais = document.querySelector('#dirPaisSelect');
-      const iso = matchedPais ? (matchedPais.codigo_iso || '').toUpperCase() : countryCode;
-      const config = COUNTRY_LEVELS[iso] || COUNTRY_LEVELS.DEFAULT;
-
-      this.pendingGeography.nivel1.tipo = config.nivel1;
-      this.pendingGeography.nivel2.tipo = config.nivel2;
-      this.pendingGeography.nivel3.tipo = config.nivel3;
-
-      if (matchedPais) {
-        if (selectPais) selectPais.value = matchedPais.id;
-        this.actualizarEtiquetasNiveles(matchedPais.id);
-
-        if (data.territorio_detectado) {
-          if (statusText) statusText.textContent = `Cargando jerarquía geográfica...`;
-          await this.aplicarTerritorioDetectado(data.territorio_detectado, matchedPais, config, address);
-          if (statusContainer) statusContainer.classList.add('d-none');
-          return;
-        }
-
-        await this.procesarJerarquiaGeograficaAutofill(address, matchedPais, config, statusText);
-      }
+      const config = this.inicializarPendingGeography(address, matchedPais);
+      await this.procesarDeteccionGeografica(data, address, matchedPais, config);
 
       this.configurarResolverTerritoriosFaltantes(this.verificarNivelesFaltantes());
     } catch (error) {
       console.warn('Error al autorellenar la ubicación:', error);
-      const errorAlert = document.querySelector('#direccionModalErrorAlert');
-      const errorMessage = document.querySelector('#direccionModalErrorMessage');
-      if (errorAlert && errorMessage) {
-        errorAlert.classList.remove('d-none');
-        errorMessage.textContent = `Error de Autorelleno: ${error.message} (Ver consola para más detalles)`;
-      }
+      this.mostrarErrorAutorelleno(`Error de Autorelleno: ${error.message} (Ver consola para más detalles)`);
     } finally {
-      if (statusContainer) {
-        statusContainer.classList.add('d-none');
-      }
+      this.mostrarEstadoAutorelleno(false);
     }
   }
 
@@ -753,65 +769,95 @@ export class DireccionFormComponent extends BaseComponent {
 
     if (!cardDiv || !titleSpan) return;
 
-    [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
+    const selects = { selectPais, selectN1, selectN2, selectN3 };
+    const elementos = { cardDiv, icon, titleSpan, descSpan };
+
+    this.limpiarOpcionesTemporalesSelects(selects);
+
+    if (activeOption === 'existing') {
+      this.configurarModoResolucionManual(selects, elementos);
+    } else if (activeOption === 'fallback') {
+      this.configurarModoResolucionFallback(selectN3, elementos);
+    } else {
+      this.configurarModoResolucionAutomatica(selects, elementos);
+    }
+  }
+
+  limpiarOpcionesTemporalesSelects(selects) {
+    Object.values(selects).forEach((sel) => {
       if (sel) {
         const existingNewOpt = sel.querySelector('option[value="__new__"]');
         if (existingNewOpt) existingNewOpt.remove();
       }
     });
+  }
 
-    if (activeOption === 'existing') {
-      if (selectPais) selectPais.disabled = false;
-      if (selectN1) selectN1.disabled = false;
-      if (selectN2) selectN2.disabled = false;
-      if (selectN3) selectN3.disabled = false;
+  aplicarEstiloResolverCard(elementos, config) {
+    const { cardDiv, icon, titleSpan, descSpan } = elementos;
+    
+    cardDiv.className = `card border-${config.color} border-opacity-25 bg-${config.color} bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in`;
+    
+    if (icon) {
+      icon.className = `bi ${config.iconClass} text-${config.color} fs-5`;
+    }
+    
+    titleSpan.textContent = config.title;
+    titleSpan.className = `fw-bold text-${config.titleColor || config.color} d-block`;
+    
+    if (descSpan) {
+      descSpan.innerHTML = config.descHtml;
+    }
+  }
 
-      cardDiv.className =
-        'card border-success border-opacity-25 bg-success bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
-      if (icon) icon.className = 'bi bi-check-circle-fill text-success fs-5';
-      titleSpan.textContent = 'Resolución Manual';
-      titleSpan.className = 'fw-bold text-success d-block';
-      if (descSpan) {
-        descSpan.innerHTML =
-          'Por favor, selecciona las ubicaciones correspondientes de las listas desplegables.';
-      }
-    } else if (activeOption === 'fallback') {
-      cardDiv.className =
-        'card border-info border-opacity-25 bg-info bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
-      if (icon) icon.className = 'bi bi-info-circle-fill text-info fs-5';
-      titleSpan.textContent = 'Ubicación Sugerida';
-      titleSpan.className = 'fw-bold text-info d-block';
-      if (descSpan) {
-        descSpan.innerHTML = `La parroquia clickeada no está registrada. Se usará la cabecera cantonal <strong>"${this.pendingGeography.nivel3.fallbackNombre}"</strong>.`;
-      }
-      if (selectN3) {
-        selectN3.value = this.pendingGeography.nivel3.fallbackId || '';
-        selectN3.disabled = true;
-      }
-    } else {
-      cardDiv.className =
-        'card border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3 shadow-none animate-fade-in';
-      if (icon) icon.className = 'bi bi-exclamation-triangle-fill text-warning fs-5';
-      titleSpan.textContent = 'Registro Automático Activado';
-      titleSpan.className = 'fw-bold text-dark d-block';
+  configurarModoResolucionManual(selects, elementos) {
+    Object.values(selects).forEach(sel => {
+      if (sel) sel.disabled = false;
+    });
 
-      const missingNames = this.obtenerListaNombresFaltantes();
-      if (descSpan) {
-        descSpan.innerHTML = `Se registrarán automáticamente al guardar: <strong>${missingNames.join(', ')}</strong>.`;
-      }
+    this.aplicarEstiloResolverCard(elementos, {
+      color: 'success',
+      iconClass: 'bi-check-circle-fill',
+      title: 'Resolución Manual',
+      descHtml: 'Por favor, selecciona las ubicaciones correspondientes de las listas desplegables.'
+    });
+  }
 
-      if (!this.pendingGeography.pais.exists) {
-        this.inyectarOpcionTemporal(selectPais, `[Nuevo País: ${this.pendingGeography.pais.nombre}]`);
-      }
-      if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) {
-        this.inyectarOpcionTemporal(selectN1, `[Nueva ${this.pendingGeography.nivel1.tipo}: ${this.pendingGeography.nivel1.nombre}]`, '#colDirNivel1');
-      }
-      if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) {
-        this.inyectarOpcionTemporal(selectN2, `[Nuevo ${this.pendingGeography.nivel2.tipo}: ${this.pendingGeography.nivel2.nombre}]`, '#colDirNivel2');
-      }
-      if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists) {
-        this.inyectarOpcionTemporal(selectN3, `[Nueva ${this.pendingGeography.nivel3.tipo}: ${this.pendingGeography.nivel3.nombre}]`, '#colDirNivel3');
-      }
+  configurarModoResolucionFallback(selectN3, elementos) {
+    this.aplicarEstiloResolverCard(elementos, {
+      color: 'info',
+      iconClass: 'bi-info-circle-fill',
+      title: 'Ubicación Sugerida',
+      descHtml: `La parroquia clickeada no está registrada. Se usará la cabecera cantonal <strong>"${this.pendingGeography.nivel3.fallbackNombre}"</strong>.`
+    });
+
+    if (selectN3) {
+      selectN3.value = this.pendingGeography.nivel3.fallbackId || '';
+      selectN3.disabled = true;
+    }
+  }
+
+  configurarModoResolucionAutomatica(selects, elementos) {
+    this.aplicarEstiloResolverCard(elementos, {
+      color: 'warning',
+      iconClass: 'bi-exclamation-triangle-fill',
+      title: 'Registro Automático Activado',
+      titleColor: 'dark',
+      descHtml: `Se registrarán automáticamente al guardar: <strong>${this.obtenerListaNombresFaltantes().join(', ')}</strong>.`
+    });
+
+    const { selectPais, selectN1, selectN2, selectN3 } = selects;
+
+    if (!this.pendingGeography.pais.exists) {
+      this.inyectarOpcionTemporal(selectPais, `[Nuevo País: ${this.pendingGeography.pais.nombre}]`);
+    }
+    if (this.pendingGeography.nivel1.nombre && !this.pendingGeography.nivel1.exists) {
+      this.inyectarOpcionTemporal(selectN1, `[Nueva ${this.pendingGeography.nivel1.tipo}: ${this.pendingGeography.nivel1.nombre}]`, '#colDirNivel1');
+    }
+    if (this.pendingGeography.nivel2.nombre && !this.pendingGeography.nivel2.exists) {
+      this.inyectarOpcionTemporal(selectN2, `[Nuevo ${this.pendingGeography.nivel2.tipo}: ${this.pendingGeography.nivel2.nombre}]`, '#colDirNivel2');
+    }
+    if (this.pendingGeography.nivel3.nombre && !this.pendingGeography.nivel3.exists) {
+      this.inyectarOpcionTemporal(selectN3, `[Nueva ${this.pendingGeography.nivel3.tipo}: ${this.pendingGeography.nivel3.nombre}]`, '#colDirNivel3');
     }
   }
 
