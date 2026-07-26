@@ -34,7 +34,7 @@ function handleUnauthorized(response, endpoint) {
     if (window.location.hash !== '#/login') {
       window.location.hash = '#/login';
     }
-    throw new Error('Sesión expirada o no autorizada.');
+    console.error('Sesión expirada o no autorizada.');
   }
 }
 
@@ -42,7 +42,7 @@ async function parseJsonResponse(response) {
   try {
     return await response.json();
   } catch (e) {
-    console.log('Error al obtener respuesta de json parseado', e);
+    console.error('Error al obtener respuesta de json parseado', e);
   }
 }
 
@@ -50,7 +50,7 @@ function handleForbidden(response, data) {
   if (response.status === 403) {
     const msg = data.message || 'No tienes permisos para realizar esta acción.';
     window.dispatchEvent(new CustomEvent('api-forbidden', { detail: { message: msg } }));
-    throw new Error(msg);
+    console.error(msg);
   }
 }
 
@@ -77,7 +77,7 @@ function handleErrorResponse(response, data) {
       }
     }
 
-    throw new Error(errMsg);
+    console.error(errMsg);
   }
 }
 

@@ -264,6 +264,26 @@
       ],
       "sdd": true,
       "status": "spec_ready"
+    },
+    {
+      "id": 17,
+      "name": "fix_issues_incidents",
+      "title": "Arreglar problemas de sonarqube para el modulo de incidencias",
+      "description": "Completar los archivos de prueba del frontend que tengan cobertura menor al 80%.",
+      "acceptance": [
+        "Usar el archivo local frontend_issues_list.json como checklist de desarrollo para resolver TODOS LOS PROBLEMAS.",
+        "Para resolver TODOS los problemas, debes atender a las indicaciones de cada 'message' en el objeto json del problema.",
+        "Para resolver TODOS los problemas, debes localizar el text range, resolverlo, y verificar que no se genere el mismo caso después de la resolución.",
+        "Ejecutar un nuevo análisis completo de SonarQube para actualizar el estado en el servidor.",
+        "Verificar la resolución de forma optimizada consultando a la API (usando `ps=1` sin parametrizar por severities), asegurando que el total de issues abiertas devueltas sea exactamente 0.",
+        "Evitar introducir nuevos code smells, duplicaciones de código o funciones redundantes (deuda técnica).",
+        "Localizar y refactorizar funciones excesivamente complejas aplicando modularización (divide y vencerás)."
+      ],
+      "sdd": true,
+      "status": "done",
+      "references": [
+        "frontend/js/pages/incidencias/**"
+      ]
     }
   ]
 }
