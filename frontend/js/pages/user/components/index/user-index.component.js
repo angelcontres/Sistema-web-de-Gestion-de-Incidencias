@@ -3,8 +3,6 @@ import { UserService } from '../../services/user.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
-import { CatalogoService } from '../../../../shared/services/catalogo.service.js';
-import { RoleService } from '../../../role/services/role.service.js';
 
 export class UserIndexComponent extends BaseComponent {
   constructor() {
@@ -19,7 +17,6 @@ export class UserIndexComponent extends BaseComponent {
       btnNuevoRegistro.classList.add('d-none');
     }
 
-
     const tblDatos = this.querySelector('#tbl-datos-usuarios');
 
     if (tblDatos) {
@@ -32,7 +29,7 @@ export class UserIndexComponent extends BaseComponent {
             format: (id) => `#${id}`,
           },
           { header: 'Usuario', key: 'username', class: 'fw-semibold text-dark' },
-          { header: 'Nombre', key: 'name' },
+          { header: 'Nombre', render: (user) => user.name || `<span class="text-muted fst-italic">Sin nombre</span>` },
           { header: 'Email', key: 'email', class: 'text-muted' },
           {
             header: 'Roles',
@@ -55,7 +52,7 @@ export class UserIndexComponent extends BaseComponent {
               return `<span class="badge bg-${user.activo ? 'success' : 'danger'}-soft text-${user.activo ? 'success' : 'danger'} small fw-semibold">
                 ${user.activo ? 'Activo' : 'Inactivo'}
               </span>`;
-            }
+            },
           },
           {
             header: 'Creado el',
@@ -95,7 +92,7 @@ export class UserIndexComponent extends BaseComponent {
         if (action === 'editar') {
           window.location.hash = `#/usuarios/form?id=${item.id}`;
         } else if (action === 'eliminar') {
-          this.eliminarUsuario(item.id, item.name);
+          this.eliminarUsuario(item.id, item.name || item.username);
         }
       });
 

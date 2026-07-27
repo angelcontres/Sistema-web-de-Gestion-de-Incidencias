@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Institucion;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\RoleServiceInterface;
@@ -187,7 +188,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'policia_prueba',
                 'password' => Hash::make('policianacional123'),
                 'activo' => true,
-                'institucion_id' => 1, // Policía Nacional del Ecuador
+                'institucion_id' => Institucion::where('siglas', 'PNE')->value('id'),
             ]
         );
         $institucionRole = Role::where('nombre', 'Institucion')->first();
@@ -203,7 +204,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'epmmop_user',
                 'password' => Hash::make('epmmop123'),
                 'activo' => true,
-                'institucion_id' => 2,
+                'institucion_id' => Institucion::where('siglas', 'EPMMOP')->value('id'),
             ]
         );
         if ($institucionRole) {
@@ -218,7 +219,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'eeq_user',
                 'password' => Hash::make('eeq123'),
                 'activo' => true,
-                'institucion_id' => 3,
+                'institucion_id' => Institucion::where('siglas', 'EEQ')->value('id'),
             ]
         );
         if ($institucionRole) {
@@ -233,7 +234,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'epmaps_user',
                 'password' => Hash::make('epmaps123'),
                 'activo' => true,
-                'institucion_id' => 4,
+                'institucion_id' => Institucion::where('siglas', 'EPMAPS')->value('id'),
             ]
         );
         if ($institucionRole) {
@@ -248,7 +249,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'emgirs_user',
                 'password' => Hash::make('emgirs123'),
                 'activo' => true,
-                'institucion_id' => 5,
+                'institucion_id' => Institucion::where('siglas', 'EMGIRS')->value('id'),
             ]
         );
         if ($institucionRole) {
@@ -263,7 +264,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'dmamunicipal_user',
                 'password' => Hash::make('dmamunicipal123'),
                 'activo' => true,
-                'institucion_id' => 6,
+                'institucion_id' => Institucion::where('siglas', 'DMA')->value('id'),
             ]
         );
         if ($institucionRole) {
@@ -278,7 +279,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'comisiontransito_user',
                 'password' => Hash::make('comisiontransito123'),
                 'activo' => true,
-                'institucion_id' => 7,
+                'institucion_id' => Institucion::where('siglas', 'CTE')->value('id'),
             ]
         );
         if ($institucionRole) {

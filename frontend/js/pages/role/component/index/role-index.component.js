@@ -1,5 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
-import { apiRequest } from '../../../../core/api.js';
+import { RoleService } from '../../services/role.service.js';
+import { PermissionService } from '../../../permissions/services/permissions.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
@@ -17,6 +18,11 @@ export class RoleIndexComponent extends BaseComponent {
 
     // Hide create button if user lacks permission
     const btnNuevoRol = this.querySelector('#btnNuevoRol');
+    const formComponent =
+      this.querySelector('#app-role-form') ||
+      this.querySelector('app-role-form') ||
+      this.querySelector('#roleForm');
+
     if (btnNuevoRol) {
       if (!AuthService.hasPermission('CREATE', 'roles')) {
         btnNuevoRol.classList.add('d-none');
@@ -25,10 +31,13 @@ export class RoleIndexComponent extends BaseComponent {
       }
     }
 
-    // 3. Escuchar el submit del formulario del modal
-    const form = this.querySelector('#roleForm');
-    if (form) {
-      form.addEventListener('submit', (e) => this.guardarRol(e));
+    if (formComponent) {
+      formComponent.addEventListener('rol-guardado', (e) => {
+        if (e.detail?.mensaje) {
+          if (ToastService?.success) ToastService.success(e.detail.mensaje);
+        }
+        this.cargarRoles();
+      });
     }
 
     // 4. Escuchar el submit del formulario de asignación de permisos
@@ -63,8 +72,8 @@ export class RoleIndexComponent extends BaseComponent {
     if (emptyState) emptyState.classList.add('d-none');
 
     try {
-      const response = await apiRequest('/roles?all=true');
-      const roles = Array.isArray(response) ? response : (response.data || []);
+      const response = await RoleService.getAll();
+      const roles = Array.isArray(response) ? response : response.data || [];
 
       if (totalRolesBadge) {
         totalRolesBadge.textContent = `${roles.length} Registros`;
@@ -80,7 +89,9 @@ export class RoleIndexComponent extends BaseComponent {
       const canDelete = AuthService.hasPermission('DELETE', 'roles');
 
       // Render cards using template literal
-      rolesGrid.innerHTML = roles.map((rol) => `
+      rolesGrid.innerHTML = roles
+        .map(
+          (rol) => `
         <div class="col-md-4 col-sm-6">
           <div class="card h-100 border shadow-sm role-card cursor-pointer" data-id="${rol.id}" style="transition: all 0.2s ease;">
             <div class="card-body d-flex align-items-center gap-3 p-3">
@@ -106,7 +117,9 @@ export class RoleIndexComponent extends BaseComponent {
             </div>
           </div>
         </div>
-      `).join('');
+      `
+        )
+        .join('');
 
       // Bind events to rendered elements
       roles.forEach((rol) => {
@@ -115,7 +128,7 @@ export class RoleIndexComponent extends BaseComponent {
           // Hover effects
           cardEl.addEventListener('mouseover', () => cardEl.classList.add('shadow'));
           cardEl.addEventListener('mouseout', () => cardEl.classList.remove('shadow'));
-          
+
           // Open permissions on click
           cardEl.addEventListener('click', () => this.abrirPanelPermisos(rol));
 
@@ -124,7 +137,8 @@ export class RoleIndexComponent extends BaseComponent {
           if (btnEdit) {
             btnEdit.addEventListener('click', (e) => {
               e.stopPropagation();
-              this.abrirModalEditar(rol, roles);
+              const formComponent = this.querySelector('#app-role-form');
+              if (formComponent) formComponent.abrirModalEditar(rol, roles);
             });
           }
 
@@ -143,6 +157,7 @@ export class RoleIndexComponent extends BaseComponent {
     } catch (error) {
       console.error('Error cargando roles:', error);
       loadingSpinner.classList.add('d-none');
+      if (ToastService?.error) ToastService.error(`Error al cargar roles: ${error.message}`);
       this.mostrarAlertaError(`Error al cargar roles: ${error.message}`);
     }
   }
@@ -174,92 +189,16 @@ export class RoleIndexComponent extends BaseComponent {
    * Abre el modal en modo Creación
    */
   async abrirModalCrear() {
-    this.limpiarErroresModal();
-    this.querySelector('#roleForm').classList.remove('was-validated');
-
-    this.querySelector('#roleId').value = '';
-    this.querySelector('#nombre').value = '';
-    this.querySelector('#descripcion').value = '';
-    this.querySelector('#padre_id').value = '';
-
-    this.querySelector('#roleModalLabel').textContent = 'Nuevo Rol';
-    this.querySelector('#btnText').textContent = 'Guardar Rol';
-
-    try {
-      const response = await apiRequest('/roles?all=true');
-      const roles = Array.isArray(response) ? response : (response.data || []);
-      this.llenarSelectPadre(roles);
-    } catch (error) {
-      console.error('Error cargando roles para select:', error);
-    }
-
-    const modalEl = this.querySelector('#roleModal');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
+    const formComponent = this.querySelector('#app-role-form');
+    if (formComponent) formComponent.abrirModalCrear();
   }
 
   /**
    * Abre el modal en modo Edición
    */
   async abrirModalEditar(rol, todosLosRoles) {
-    this.limpiarErroresModal();
-    this.querySelector('#roleForm').classList.remove('was-validated');
-
-    this.querySelector('#roleId').value = rol.id;
-    this.querySelector('#nombre').value = rol.nombre;
-    this.querySelector('#descripcion').value = rol.descripcion || '';
-
-    this.querySelector('#roleModalLabel').textContent = 'Editar Rol';
-    this.querySelector('#btnText').textContent = 'Actualizar Rol';
-
-    this.llenarSelectPadre(todosLosRoles, rol.id, rol.padre_id);
-
-    const modalEl = this.querySelector('#roleModal');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
-  }
-
-  /**
-   * Guarda el rol (POST para crear, PUT para editar)
-   */
-  async guardarRol(e) {
-    e.preventDefault();
-    const form = this.querySelector('#roleForm');
-
-    if (!form.checkValidity()) {
-      form.classList.add('was-validated');
-      return;
-    }
-
-    const roleId = this.querySelector('#roleId').value;
-    const nombre = this.querySelector('#nombre').value.trim();
-    const descripcion = this.querySelector('#descripcion').value.trim();
-    const padreSelectVal = this.querySelector('#padre_id').value;
-    const padre_id = padreSelectVal ? parseInt(padreSelectVal) : null;
-
-    const payload = { nombre, descripcion, padre_id };
-
-    try {
-      const endpoint = roleId ? `/roles/${roleId}` : '/roles';
-      const method = roleId ? 'PUT' : 'POST';
-
-      await apiRequest(endpoint, {
-        method,
-        body: JSON.stringify(payload),
-      });
-
-      const modalEl = this.querySelector('#roleModal');
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      this.mostrarAlertaExito(
-        roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.'
-      );
-      await this.cargarRoles();
-    } catch (error) {
-      console.error('Error al guardar rol:', error);
-      this.mostrarErrorModal(error.message || 'Error al procesar el formulario.');
-    }
+    const formComponent = this.querySelector('#app-role-form');
+    if (formComponent) formComponent.abrirModalEditar(rol, todosLosRoles);
   }
 
   /**
@@ -275,7 +214,7 @@ export class RoleIndexComponent extends BaseComponent {
     );
     if (isConfirmed) {
       try {
-        await apiRequest(`/roles/${id}`, { method: 'DELETE' });
+        await RoleService.delete(id);
         ToastService.success(`Rol "${nombre}" eliminado con éxito.`);
         await this.cargarRoles();
       } catch (error) {
@@ -289,149 +228,156 @@ export class RoleIndexComponent extends BaseComponent {
    * Abre el panel Acordeón de Permisos y carga los checkboxes
    */
   async abrirPanelPermisos(rol) {
-    const accordionContainer = this.querySelector('#permissionsAccordionContainer');
-    this.querySelector('#assignRoleId').value = rol.id;
-    this.querySelector('#activeRoleName').textContent = rol.nombre;
     const accordionMenus = this.querySelector('#accordionMenus');
-
-    accordionMenus.innerHTML =
-      '<div class="text-center text-muted small py-4">Cargando permisos...</div>';
-    accordionContainer.classList.remove('d-none');
-
-    // Scroll al contenedor de permisos
-    accordionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     const canAssign = AuthService.hasPermission('UPDATE', 'roles');
-    const btnAssignSubmit = this.querySelector('#btnAssignSubmit');
-    if (btnAssignSubmit) {
-      if (canAssign) {
-        btnAssignSubmit.classList.remove('d-none');
-      } else {
-        btnAssignSubmit.classList.add('d-none');
-      }
-    }
+
+    this._setupPermissionsPanel(rol, canAssign, accordionMenus);
 
     try {
-      const [todosPermisosResponse, rolDetalle] = await Promise.all([
-        apiRequest('/permissions?all=true'),
-        apiRequest(`/roles/${rol.id}`),
-      ]);
+      const { todosPermisos, permisosAsignados } = await this._fetchRolesAndPermissions(rol.id);
 
-      const todosPermisos = Array.isArray(todosPermisosResponse) ? todosPermisosResponse : (todosPermisosResponse.data || []);
-      const permisosAsignados = rolDetalle.permisos ? rolDetalle.permisos.map((p) => p.id) : [];
-
-      accordionMenus.innerHTML = '';
-
-      if (!todosPermisos || todosPermisos.length === 0) {
+      if (!todosPermisos.length) {
         accordionMenus.innerHTML =
           '<div class="text-center text-muted small py-4">No hay permisos registrados en el sistema.</div>';
         return;
       }
 
-      // Agrupar permisos por menú
-      const permisosAgrupados = {};
-      todosPermisos.forEach((permiso) => {
-        const menuNombre = permiso.opcion_menu
-          ? permiso.opcion_menu.nombre
-          : permiso.opcionMenu
-            ? permiso.opcionMenu.nombre
-            : 'Menú General';
-        if (!permisosAgrupados[menuNombre]) {
-          permisosAgrupados[menuNombre] = [];
-        }
-        permisosAgrupados[menuNombre].push(permiso);
-      });
+      const permisosAgrupados = this._agruparPermisosPorMenu(todosPermisos);
+      accordionMenus.innerHTML = this._renderPermissionsAccordion(
+        permisosAgrupados,
+        permisosAsignados,
+        canAssign
+      );
 
-      let accordionIndex = 0;
-      let accordionHtml = '';
-
-      for (const [menuNombre, permisos] of Object.entries(permisosAgrupados)) {
-        const headingId = `headingMenu${accordionIndex}`;
-        const collapseId = `collapseMenu${accordionIndex}`;
-        const allChecked = permisos.length > 0 && permisos.every(p => permisosAsignados.includes(p.id));
-
-        accordionHtml += `
-          <div class="accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden">
-            <h2 class="accordion-header" id="${headingId}">
-              <button class="accordion-button bg-white text-dark fw-bold border-bottom ${accordionIndex === 0 ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${accordionIndex === 0 ? 'true' : 'false'}" aria-controls="${collapseId}">
-                <div class="d-flex align-items-center gap-2 w-100 me-3">
-                  <input type="checkbox" class="form-check-input mt-0 select-all-menu" data-menu-index="${accordionIndex}" ${allChecked ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
-                  <span>${menuNombre}</span>
-                </div>
-              </button>
-            </h2>
-            <div id="${collapseId}" class="accordion-collapse collapse ${accordionIndex === 0 ? 'show' : ''}" aria-labelledby="${headingId}">
-              <div class="accordion-body bg-light">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-                  ${permisos.map(permiso => `
-                    <div class="col">
-                      <div class="form-check bg-white p-3 rounded shadow-sm border h-100 d-flex align-items-center">
-                        <input class="form-check-input permission-checkbox flex-shrink-0 mt-0 me-3" type="checkbox" value="${permiso.id}" id="permiso_${permiso.id}" ${permisosAsignados.includes(permiso.id) ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
-                        <label class="form-check-label user-select-none w-100" for="permiso_${permiso.id}" style="cursor: pointer;">
-                          <div class="fw-semibold text-dark">${permiso.nombre}</div>
-                          <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">
-                            <span class="badge bg-secondary-soft text-dark px-2 py-1">${permiso.accion || '-'}</span> 
-                            ${permiso.recurso || ''}
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-        accordionIndex++;
-      }
-
-      accordionMenus.innerHTML = accordionHtml;
-
-      // Bind events for checkboxes
-      accordionIndex = 0;
-      for (const [menuNombre, permisos] of Object.entries(permisosAgrupados)) {
-        const itemEl = accordionMenus.children[accordionIndex];
-        if (itemEl) {
-          const selectAllCheckbox = itemEl.querySelector('.select-all-menu');
-          const checkboxes = itemEl.querySelectorAll('.permission-checkbox');
-
-          // Prevent accordion toggle when clicking select-all checkbox
-          selectAllCheckbox.addEventListener('click', (e) => {
-            e.stopPropagation();
-          });
-
-          // Toggle all checkboxes in this group
-          selectAllCheckbox.addEventListener('change', (e) => {
-            const isChecked = e.target.checked;
-            checkboxes.forEach(cb => {
-              if (!cb.disabled) {
-                cb.checked = isChecked;
-              }
-            });
-          });
-
-          // Update select-all state when individual checkboxes change
-          checkboxes.forEach(cb => {
-            cb.addEventListener('change', () => {
-              const allCbs = Array.from(checkboxes);
-              const checkedCbs = allCbs.filter(c => c.checked);
-              selectAllCheckbox.checked = checkedCbs.length === allCbs.length;
-              selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
-            });
-          });
-
-          // Initialize indeterminate state
-          const allCbs = Array.from(checkboxes);
-          const checkedCbs = allCbs.filter(c => c.checked);
-          selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
-        }
-        accordionIndex++;
-      }
+      this._bindAllAccordionEvents(accordionMenus);
     } catch (error) {
       console.error('Error cargando permisos para asignar:', error);
       accordionMenus.innerHTML =
         '<div class="text-center text-danger small py-4">Error al cargar la lista de permisos.</div>';
     }
+  }
+
+  _setupPermissionsPanel(rol, canAssign, accordionMenus) {
+    const accordionContainer = this.querySelector('#permissionsAccordionContainer');
+    this.querySelector('#assignRoleId').value = rol.id;
+    this.querySelector('#activeRoleName').textContent = rol.nombre;
+
+    accordionMenus.innerHTML =
+      '<div class="text-center text-muted small py-4">Cargando permisos...</div>';
+    accordionContainer.classList.remove('d-none');
+    accordionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const btnAssignSubmit = this.querySelector('#btnAssignSubmit');
+    if (btnAssignSubmit) {
+      btnAssignSubmit.classList.toggle('d-none', !canAssign);
+    }
+  }
+
+  async _fetchRolesAndPermissions(rolId) {
+    const [todosPermisosResponse, rolDetalle] = await Promise.all([
+      PermissionService.getAll(null, 'all=true'),
+      RoleService.getById(rolId),
+    ]);
+
+    const todosPermisos = Array.isArray(todosPermisosResponse)
+      ? todosPermisosResponse
+      : todosPermisosResponse.data || [];
+    const permisosAsignados = rolDetalle.permisos?.map((p) => p.id) || [];
+
+    return { todosPermisos, permisosAsignados };
+  }
+
+  _agruparPermisosPorMenu(permisos) {
+    return permisos.reduce((acc, permiso) => {
+      const menuNombre =
+        permiso.opcion_menu?.nombre || permiso.opcionMenu?.nombre || 'Menú General';
+      acc[menuNombre] = acc[menuNombre] || [];
+      acc[menuNombre].push(permiso);
+      return acc;
+    }, {});
+  }
+
+  _renderPermissionsAccordion(permisosAgrupados, permisosAsignados, canAssign) {
+    return Object.entries(permisosAgrupados)
+      .map(([menuNombre, permisos], index) => {
+        const headingId = `headingMenu${index}`;
+        const collapseId = `collapseMenu${index}`;
+        const allChecked =
+          permisos.length > 0 && permisos.every((p) => permisosAsignados.includes(p.id));
+        const isFirst = index === 0;
+
+        const permisosHtml = permisos
+          .map((permiso) => this._renderPermissionItem(permiso, permisosAsignados, canAssign))
+          .join('');
+
+        return `
+          <div class="accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden">
+            <h2 class="accordion-header" id="${headingId}">
+              <button class="accordion-button bg-white text-dark fw-bold border-bottom ${isFirst ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${isFirst ? 'true' : 'false'}" aria-controls="${collapseId}">
+                <div class="d-flex align-items-center gap-2 w-100 me-3">
+                  <input type="checkbox" class="form-check-input mt-0 select-all-menu" data-menu-index="${index}" ${allChecked ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                  <span>${menuNombre}</span>
+                </div>
+              </button>
+            </h2>
+            <div id="${collapseId}" class="accordion-collapse collapse ${isFirst ? 'show' : ''}" aria-labelledby="${headingId}">
+              <div class="accordion-body bg-light">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                  ${permisosHtml}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+  }
+
+  _renderPermissionItem(permiso, permisosAsignados, canAssign) {
+    const isChecked = permisosAsignados.includes(permiso.id);
+    return `
+      <div class="col">
+        <div class="form-check bg-white p-3 rounded shadow-sm border h-100 d-flex align-items-center">
+          <input class="form-check-input permission-checkbox flex-shrink-0 mt-0 me-3" type="checkbox" value="${permiso.id}" id="permiso_${permiso.id}" ${isChecked ? 'checked' : ''} ${!canAssign ? 'disabled' : ''} style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+          <label class="form-check-label user-select-none w-100" for="permiso_${permiso.id}" style="cursor: pointer;">
+            <div class="fw-semibold text-dark">${permiso.nombre}</div>
+            <div class="text-muted small mt-1" style="font-size: 0.8rem; line-height: 1.2;">
+              <span class="badge bg-secondary-soft text-dark px-2 py-1">${permiso.accion || '-'}</span> 
+              ${permiso.recurso || ''}
+            </div>
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
+  _bindAllAccordionEvents(accordionMenus) {
+    Array.from(accordionMenus.children).forEach((itemEl) => {
+      const selectAllCheckbox = itemEl.querySelector('.select-all-menu');
+      const checkboxes = itemEl.querySelectorAll('.permission-checkbox');
+
+      if (!selectAllCheckbox || !checkboxes.length) return;
+
+      selectAllCheckbox.addEventListener('click', (e) => e.stopPropagation());
+
+      selectAllCheckbox.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        checkboxes.forEach((cb) => {
+          if (!cb.disabled) cb.checked = isChecked;
+        });
+      });
+
+      const updateSelectAllState = () => {
+        const allCbs = Array.from(checkboxes);
+        const checkedCbs = allCbs.filter((c) => c.checked);
+        selectAllCheckbox.checked = checkedCbs.length === allCbs.length;
+        selectAllCheckbox.indeterminate =
+          checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+      };
+
+      checkboxes.forEach((cb) => cb.addEventListener('change', updateSelectAllState));
+      updateSelectAllState();
+    });
   }
 
   /**
@@ -443,7 +389,7 @@ export class RoleIndexComponent extends BaseComponent {
 
     // Recolectar IDs seleccionados
     const checkboxes = this.querySelectorAll('.permission-checkbox:checked');
-    const permisosIds = Array.from(checkboxes).map((cb) => parseInt(cb.value));
+    const permisosIds = Array.from(checkboxes).map((cb) => Number.parseInt(cb.value));
 
     const btnAssignSubmit = this.querySelector('#btnAssignSubmit');
     const btnText = btnAssignSubmit.innerHTML;
@@ -452,52 +398,19 @@ export class RoleIndexComponent extends BaseComponent {
     btnAssignSubmit.disabled = true;
 
     try {
-      await apiRequest(`/roles/${roleId}/permissions`, {
-        method: 'POST',
-        body: JSON.stringify({ permisos: permisosIds }),
-      });
+      await RoleService.assignPermissions(roleId, { permisos: permisosIds });
 
-      this.mostrarAlertaExito('Permisos asignados correctamente.');
+      if (ToastService?.success) ToastService.success('Permisos asignados correctamente.');
 
       // Opcionalmente, subir el scroll arriba
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Error asignando permisos:', error);
+      if (ToastService?.error) ToastService.error(`Error al asignar permisos: ${error.message}`);
       alert(`Error al asignar permisos: ${error.message}`);
     } finally {
       btnAssignSubmit.innerHTML = btnText;
       btnAssignSubmit.disabled = false;
-    }
-  }
-
-  /**
-   * Métodos helpers de Alertas
-   */
-  mostrarAlertaExito(message) {
-    const successAlert = this.querySelector('#successAlert');
-    const successMessage = this.querySelector('#successMessage');
-    if (successAlert && successMessage) {
-      successMessage.textContent = message;
-      successAlert.classList.remove('d-none');
-      setTimeout(() => successAlert.classList.add('d-none'), 4000);
-    }
-  }
-
-  mostrarAlertaError(message) {
-    const errorAlert = this.querySelector('#errorAlert');
-    const errorMessage = this.querySelector('#errorMessage');
-    if (errorAlert && errorMessage) {
-      errorMessage.textContent = message;
-      errorAlert.classList.remove('d-none');
-    }
-  }
-
-  mostrarErrorModal(message) {
-    const modalErrorAlert = this.querySelector('#modalErrorAlert');
-    const modalErrorMessage = this.querySelector('#modalErrorMessage');
-    if (modalErrorAlert && modalErrorMessage) {
-      modalErrorMessage.textContent = message;
-      modalErrorAlert.classList.remove('d-none');
     }
   }
 

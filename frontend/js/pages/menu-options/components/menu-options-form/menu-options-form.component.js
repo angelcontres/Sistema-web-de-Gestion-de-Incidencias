@@ -6,6 +6,43 @@ export class MenuOptionsFormComponent extends BaseComponent {
     super('js/pages/menu-options/components/menu-options-form/menu-options-form.component.html');
   }
 
+  actualizarVistaPreviaIcono(icono, iconoPreviewEl) {
+    if (!iconoPreviewEl) return;
+    const value = (icono || '').trim();
+    if (value) {
+      const cleanValue = value.replace(/[^a-zA-Z0-9\s-]/g, '');
+      iconoPreviewEl.className = '';
+      if (cleanValue.startsWith('bi-') || cleanValue.startsWith('bi ')) {
+        iconoPreviewEl.className = `bi ${cleanValue}`;
+      } else {
+        iconoPreviewEl.className = `bi bi-${cleanValue}`;
+      }
+    } else {
+      iconoPreviewEl.className = 'bi bi-tag';
+    }
+  }
+
+  poblarCamposFormulario(opcion, selectPadre, iconoPreviewEl) {
+    const inputNombre = this.querySelector('#nombre');
+    const inputRuta = this.querySelector('#ruta');
+    const inputIcono = this.querySelector('#icono');
+
+    if (inputNombre) inputNombre.value = opcion.nombre || '';
+    if (inputRuta) inputRuta.value = opcion.ruta || '';
+    if (inputIcono) inputIcono.value = opcion.icono || '';
+
+    this.actualizarVistaPreviaIcono(opcion.icono, iconoPreviewEl);
+
+    if (opcion.padre_id && selectPadre) {
+      selectPadre.value = opcion.padre_id;
+    }
+  }
+
+  configurarEncabezadoEdicion(formTitleEl) {
+    document.title = 'Editar Opción de Menú';
+    if (formTitleEl) formTitleEl.textContent = 'Editar Opción de Menú';
+  }
+
   onInit() {
     const hashParts = window.location.hash.split('?');
     const queryString = hashParts.length > 1 ? hashParts[1] : '';
@@ -24,18 +61,7 @@ export class MenuOptionsFormComponent extends BaseComponent {
     // Actualizar vista previa del icono en tiempo real
     if (inputIcono && iconoPreview) {
       inputIcono.addEventListener('input', (e) => {
-        const value = e.target.value.trim();
-        if (value) {
-          const cleanValue = value.replace(/[^a-zA-Z0-9\s\-]/g, '');
-          iconoPreview.className = '';
-          if (cleanValue.startsWith('bi-') || cleanValue.startsWith('bi ')) {
-            iconoPreview.className = `bi ${cleanValue}`;
-          } else {
-            iconoPreview.className = `bi bi-${cleanValue}`;
-          }
-        } else {
-          iconoPreview.className = 'bi bi-tag';
-        }
+        this.actualizarVistaPreviaIcono(e.target.value, iconoPreview);
       });
     }
 
@@ -54,7 +80,7 @@ export class MenuOptionsFormComponent extends BaseComponent {
       if (!selectPadre) return;
       try {
         const response = await MenuOptionService.getAll(1, 15, null, { all: true });
-        const opciones = Array.isArray(response) ? response : (response.data || []);
+        const opciones = Array.isArray(response) ? response : response.data || [];
 
         opciones.forEach((opcion) => {
           // Evitar que una opción sea su propio padre
@@ -75,38 +101,14 @@ export class MenuOptionsFormComponent extends BaseComponent {
     const cargarDatosEdicion = async () => {
       if (!optionId) return;
 
-      document.title = 'Editar Opción de Menú';
-      if (formTitle) formTitle.textContent = 'Editar Opción de Menú';
+      this.configurarEncabezadoEdicion(formTitle);
 
       try {
         const response = await MenuOptionService.getById(optionId);
         const opcion = response.data;
 
         if (opcion) {
-          const inputNombre = this.querySelector('#nombre');
-          const inputRuta = this.querySelector('#ruta');
-
-          if (inputNombre) inputNombre.value = opcion.nombre || '';
-          if (inputRuta) inputRuta.value = opcion.ruta || '';
-          if (inputIcono) inputIcono.value = opcion.icono || '';
-
-          // Actualizar vista previa del icono
-          if (opcion.icono && iconoPreview) {
-            const val = opcion.icono.trim();
-            const cleanVal = val.replace(/[^a-zA-Z0-9\s\-]/g, '');
-            if (cleanVal) {
-              if (cleanVal.startsWith('bi-') || cleanVal.startsWith('bi ')) {
-                iconoPreview.className = `bi ${cleanVal}`;
-              } else {
-                iconoPreview.className = `bi bi-${cleanVal}`;
-              }
-            }
-          }
-
-          // Seleccionar padre_id
-          if (opcion.padre_id && selectPadre) {
-            selectPadre.value = opcion.padre_id;
-          }
+          this.poblarCamposFormulario(opcion, selectPadre, iconoPreview);
         }
       } catch (error) {
         console.error(error);
@@ -141,9 +143,9 @@ export class MenuOptionsFormComponent extends BaseComponent {
 
         const payload = {
           nombre: inputNombreVal,
-          icono: inputIcono ? inputIcono.value.trim() || null : null,
+          icono: inputIcono?.value.trim() || null,
           ruta: inputRutaVal,
-          padre_id: selectPadre && selectPadre.value ? parseInt(selectPadre.value, 10) : null,
+          padre_id: selectPadre?.value ? Number.parseInt(selectPadre.value, 10) : null,
         };
 
         try {

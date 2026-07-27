@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CategoriaIncidencia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CategoriaIncidenciaController extends Controller
 {
@@ -52,6 +53,15 @@ class CategoriaIncidenciaController extends Controller
             'activo' => $request->input('activo', true),
         ]);
 
+        Cache::forget('catalogo_categorias_incidencia_all_0');
+        Cache::forget('catalogo_categorias_incidencia_all_1');
+        Cache::forget('catalogo_categorias_incidencia_null_0');
+        Cache::forget('catalogo_categorias_incidencia_null_1');
+        if ($request->parent_id) {
+            Cache::forget('catalogo_categorias_incidencia_'.$request->parent_id.'_0');
+            Cache::forget('catalogo_categorias_incidencia_'.$request->parent_id.'_1');
+        }
+
         return response()->json([
             'message' => 'Categoría de incidencia creada con éxito',
             'data' => $categoria->load('parent'),
@@ -92,7 +102,21 @@ class CategoriaIncidenciaController extends Controller
             }
         }
 
-        $categoria->update($request->only(['nombre', 'descripcion', 'parent_id', 'activo']));
+        $categoria->update([
+            'nombre' => $request->nombre ?? $categoria->nombre,
+            'descripcion' => $request->has('descripcion') ? $request->descripcion : $categoria->descripcion,
+            'parent_id' => $request->has('parent_id') ? $request->parent_id : $categoria->parent_id,
+            'activo' => $request->has('activo') ? $request->activo : $categoria->activo,
+        ]);
+
+        Cache::forget('catalogo_categorias_incidencia_all_0');
+        Cache::forget('catalogo_categorias_incidencia_all_1');
+        Cache::forget('catalogo_categorias_incidencia_null_0');
+        Cache::forget('catalogo_categorias_incidencia_null_1');
+        if ($categoria->parent_id) {
+            Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_0');
+            Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_1');
+        }
 
         return response()->json([
             'message' => 'Categoría de incidencia actualizada con éxito',
@@ -114,6 +138,15 @@ class CategoriaIncidenciaController extends Controller
         }
 
         $categoria->delete();
+
+        Cache::forget('catalogo_categorias_incidencia_all_0');
+        Cache::forget('catalogo_categorias_incidencia_all_1');
+        Cache::forget('catalogo_categorias_incidencia_null_0');
+        Cache::forget('catalogo_categorias_incidencia_null_1');
+        if ($categoria->parent_id) {
+            Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_0');
+            Cache::forget('catalogo_categorias_incidencia_'.$categoria->parent_id.'_1');
+        }
 
         return response()->json([
             'message' => 'Categoría de incidencia eliminada con éxito',

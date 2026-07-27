@@ -15,17 +15,22 @@ describe('CategoriasIndexComponent', () => {
   const originalModalConfirm = ModalService.confirm;
 
   function setupMocks() {
-    window.bootstrap = { Modal: class { show() {} hide() {} } };
-    
+    window.bootstrap = {
+      Modal: class {
+        show() {}
+        hide() {}
+      },
+    };
+
     CategoriaIncidenciaService.getAll = jest.fn(async () => []);
     CategoriaIncidenciaService.delete = jest.fn(async () => {});
-    
+
     AuthService.hasPermission = jest.fn(() => true);
-    
+
     ToastService.success = jest.fn(() => {});
     ToastService.error = jest.fn(() => {});
     ToastService.show = jest.fn(() => {});
-    
+
     ModalService.confirm = jest.fn(async () => true);
   }
 
@@ -53,7 +58,7 @@ describe('CategoriasIndexComponent', () => {
         textContent: '',
         checkValidity: () => true,
         querySelector: () => createFakeElement(),
-        querySelectorAll: () => [createFakeElement()]
+        querySelectorAll: () => [createFakeElement()],
       };
     };
 
@@ -63,7 +68,7 @@ describe('CategoriasIndexComponent', () => {
       }
       return fakeElements[selector];
     };
-    
+
     component.querySelectorAll = () => [createFakeElement()];
 
     return { component, fakeElements };
@@ -79,12 +84,14 @@ describe('CategoriasIndexComponent', () => {
 
   it('onInit() - debería inicializar el modal y cargar categorías', async () => {
     const { component } = createMockComponent();
-    
+
     let loadCalled = false;
-    component.cargarCategorias = async () => { loadCalled = true; };
+    component.cargarCategorias = async () => {
+      loadCalled = true;
+    };
 
     await component.onInit();
-    
+
     expect(component.categoriaModalObj).toBeDefined();
     expect(loadCalled).toBeTruthy();
   });
@@ -102,11 +109,11 @@ describe('CategoriasIndexComponent', () => {
   it('cargarCategorias() - debería llenar this.categoriasList con los datos', async () => {
     const mockData = [{ id: 1, nombre: 'Test Cat', parent_id: null, activo: true }];
     CategoriaIncidenciaService.getAll = jest.fn(async () => mockData);
-    
+
     const { component } = createMockComponent();
     await component.cargarCategorias();
-    
-    expect(component.categoriasList.length).toBe(1);
+
+    expect(component.categoriasList.length).toHaveLength(1);
     expect(component.categoriasList[0].nombre).toBe('Test Cat');
   });
 
@@ -137,26 +144,30 @@ describe('CategoriasIndexComponent', () => {
 
   it('eliminarCategoria() - debería llamar al servicio delete si se confirma', async () => {
     let deleteId = null;
-    CategoriaIncidenciaService.delete = jest.fn(async (id) => { deleteId = id; });
+    CategoriaIncidenciaService.delete = jest.fn(async (id) => {
+      deleteId = id;
+    });
     ModalService.confirm = jest.fn(async () => true);
-    
+
     const { component } = createMockComponent();
     component.cargarCategorias = async () => {};
 
     await component.eliminarCategoria(10, 'Prueba');
-    
+
     expect(deleteId).toBe(10);
   });
 
   it('eliminarCategoria() - NO debería llamar al servicio delete si no se confirma', async () => {
     let deleteCalled = false;
-    CategoriaIncidenciaService.delete = jest.fn(async () => { deleteCalled = true; });
+    CategoriaIncidenciaService.delete = jest.fn(async () => {
+      deleteCalled = true;
+    });
     ModalService.confirm = jest.fn(async () => false);
-    
+
     const { component } = createMockComponent();
 
     await component.eliminarCategoria(10, 'Prueba');
-    
+
     expect(deleteCalled).toBeFalsy();
   });
 });

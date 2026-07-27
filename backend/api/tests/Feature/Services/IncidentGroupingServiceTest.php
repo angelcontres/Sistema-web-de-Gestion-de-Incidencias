@@ -3,6 +3,7 @@
 namespace Tests\Feature\Services;
 
 use App\Models\Direccion;
+use App\Models\EstadoIncidencia;
 use App\Models\Incidencia;
 use App\Models\Pais;
 use App\Models\Territorio;
@@ -29,7 +30,7 @@ class IncidentGroupingServiceTest extends TestCase
             ['id' => 1, 'nombre' => 'Pendiente'],
             ['id' => 2, 'nombre' => 'En Revisión'],
             ['id' => 3, 'nombre' => 'En Proceso'],
-            ['id' => 4, 'nombre' => 'Completado'],
+            ['id' => 4, 'nombre' => 'Resuelto'],
         ]);
 
         DB::table('categorias_incidencia')->insertOrIgnore([
@@ -55,7 +56,7 @@ class IncidentGroupingServiceTest extends TestCase
         $incidencia = Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 1,
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -82,7 +83,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 1,
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -108,7 +109,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 1,
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);
@@ -136,7 +137,7 @@ class IncidentGroupingServiceTest extends TestCase
         Incidencia::create([
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 4,
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Resuelto'])->id,
             'direccion_id' => $direccion1->id,
             'descripcion' => 'Desc',
         ]);

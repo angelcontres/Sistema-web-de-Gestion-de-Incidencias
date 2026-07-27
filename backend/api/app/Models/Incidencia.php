@@ -165,4 +165,13 @@ class Incidencia extends Model
     {
         return $this->hasMany(RecursoIncidencia::class, 'incidencia_id');
     }
+
+    /**
+     * Relación: Instituciones de apoyo asignadas a la incidencia.
+     */
+    public function institucionesApoyo(): BelongsToMany
+    {
+        return $this->belongsToMany(Institucion::class, 'incidencia_institucion_apoyo', 'incidencia_id', 'institucion_id')
+            ->withTimestamps();
+    }
 }

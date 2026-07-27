@@ -1,4 +1,5 @@
 import { BaseComponent } from '../../../../core/base-component.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 import { RoleService } from '../../services/role.service.js';
 
 export class RoleFormComponent extends BaseComponent {
@@ -34,7 +35,7 @@ export class RoleFormComponent extends BaseComponent {
   }
 
   disconnectedCallback() {
-    if (this.modalEl && this.modalEl.parentNode === document.body) {
+    if (this.modalEl?.parentNode === document.body) {
       this.modalEl.remove();
     }
   }
@@ -44,7 +45,9 @@ export class RoleFormComponent extends BaseComponent {
 
     this.padreSelect.innerHTML = '<option value="" selected>Ninguno (Rol Principal)</option>';
 
-    roles.forEach((rol) => {
+    const listaRoles = Array.isArray(roles) ? roles : roles?.data || [];
+
+    listaRoles.forEach((rol) => {
       if (excluirId && rol.id == excluirId) return;
       const option = document.createElement('option');
       option.value = rol.id;
@@ -52,8 +55,10 @@ export class RoleFormComponent extends BaseComponent {
       this.padreSelect.appendChild(option);
     });
 
-    if (valorSeleccionado) {
+    if (valorSeleccionado !== null && valorSeleccionado !== undefined) {
       this.padreSelect.value = valorSeleccionado;
+    } else {
+      this.padreSelect.value = '';
     }
   }
 
@@ -71,9 +76,11 @@ export class RoleFormComponent extends BaseComponent {
 
     try {
       const response = await RoleService.getAll();
-      this.llenarSelectPadre(response || []);
+      const rolesList = Array.isArray(response) ? response : response?.data || [];
+      this.llenarSelectPadre(rolesList);
     } catch (error) {
       console.error('Error cargando roles para select:', error);
+      this.llenarSelectPadre([]);
     }
 
     if (this.modalEl) {
@@ -93,7 +100,17 @@ export class RoleFormComponent extends BaseComponent {
     if (this.formTitle) this.formTitle.textContent = 'Editar Rol';
     if (this.btnText) this.btnText.textContent = 'Actualizar Rol';
 
-    this.llenarSelectPadre(todosLosRoles, rol.id, rol.padre_id);
+    try {
+      let rolesList = todosLosRoles;
+      if (!rolesList || (!Array.isArray(rolesList) && !rolesList?.data)) {
+        const response = await RoleService.getAll();
+        rolesList = Array.isArray(response) ? response : response?.data || [];
+      }
+      this.llenarSelectPadre(rolesList, rol.id, rol.padre_id);
+    } catch (error) {
+      console.error('Error cargando roles para select en edición:', error);
+      this.llenarSelectPadre(todosLosRoles || [], rol.id, rol.padre_id);
+    }
 
     if (this.modalEl) {
       const modal = bootstrap.Modal.getOrCreateInstance(this.modalEl);
@@ -116,7 +133,7 @@ export class RoleFormComponent extends BaseComponent {
     const nombre = this.nombreInput.value.trim();
     const descripcion = this.descripcionInput.value.trim();
     const padreSelectVal = this.padreSelect.value;
-    const padre_id = padreSelectVal ? parseInt(padreSelectVal) : null;
+    const padre_id = padreSelectVal ? Number.parseInt(padreSelectVal, 10) : null;
 
     const payload = { nombre, descripcion, padre_id };
 
@@ -134,13 +151,15 @@ export class RoleFormComponent extends BaseComponent {
 
       this.dispatchEvent(
         new CustomEvent('rol-guardado', {
-          detail: { mensaje: roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.' },
+          detail: {
+            mensaje: roleId ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.',
+          },
           bubbles: true,
         })
       );
     } catch (error) {
       console.error('Error al guardar rol:', error);
-      this.mostrarError(error.message || 'Error al procesar el formulario.');
+      ToastService.error(error.message || 'Error al procesar el formulario.');
     } finally {
       this.setSubmitting(false);
     }
@@ -158,13 +177,6 @@ export class RoleFormComponent extends BaseComponent {
       this.btnSubmit.disabled = false;
       this.btnSubmit.innerHTML = `<span id="btnText">${this.btnSubmit.dataset.originalText}</span>`;
       this.btnText = this.modalEl.querySelector('#btnText');
-    }
-  }
-
-  mostrarError(mensaje) {
-    if (this.errorAlert && this.errorMessage) {
-      this.errorMessage.textContent = mensaje;
-      this.errorAlert.classList.remove('d-none');
     }
   }
 

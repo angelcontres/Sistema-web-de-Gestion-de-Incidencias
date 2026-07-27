@@ -181,7 +181,22 @@
       "status": "done"
     },
     {
-      "id": 10,
+      "id": 13,
+      "name": "fix_frontend_issues",
+      "title": "Estabilizar indice de problemas en el frontend",
+      "description": "Corregir los errores y malas practicas encontrados en el frontend",
+      "acceptance": [
+        "Usar el archivo local frontend_issues_list.json como checklist de desarrollo para resolver todas las incidencias de frontend con severidad 'MAJOR' o superior.",
+        "Ejecutar un nuevo análisis completo de SonarQube para actualizar el estado en el servidor.",
+        "Verificar la resolución de forma optimizada consultando a la API (usando `ps=1` y `severities=MAJOR,CRITICAL,BLOCKER`), asegurando que el total de issues abiertas devueltas sea exactamente 0.",
+        "Evitar introducir nuevos code smells, duplicaciones de código o funciones redundantes (deuda técnica).",
+        "Refactorizar funciones excesivamente complejas aplicando modularización (divide y vencerás)."
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 14,
       "name": "citizen_frictionless_signup",
       "title": "Registro Público de Ciudadanos sin Fricción",
       "description": "Implementar el flujo de registro público y ágil para ciudadanos (solo email/username y password) sin confirmación previa por correo/OTP para permitir el reporte inmediato de incidencias.",
@@ -206,7 +221,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 15,
       "name": "admin_institutional_onboarding_magic_link",
       "title": "Alta e Invitación de Usuarios Internos (Admin, Operador, Institución) vía Magic Link / OTP",
       "description": "Implementar la creación de cuentas con privilegios elevados. La alta es realizada por un Administrador desde un panel interno, enviando una invitación por correo con Magic Link u OTP para la activación y definición de contraseña.",
@@ -230,6 +245,44 @@
         "app/Notifications/UserInvitationNotification.php",
         "public/js/views/admin/users.js",
         "public/js/views/auth/activate.js"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "cover_frontend_test",
+      "title": "Cobertura de pruebas en el frontend",
+      "description": "Completar los archivos de prueba del frontend que tengan cobertura menor al 80%.",
+      "acceptance": [
+        "Primero hay que listar todos los archivos de la ruta frontend/js, y localizar los que tengan cobertura menor al 80%",
+        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se completarán.",
+        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se ejecutarán.",
+        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se verificarán.",
+        "Debes asegurarte de que la cobertura llegue al menos al 95% para poder pasar al siguiente archivo",
+        "Debes evitar code smells, duplicaciones de código y funciones con muchos 'return' (evitar deuda tecnica).",
+        "Si hay funciones con demasiadas lineas, descomponlas, aplica divide y vencerás",
+        "Implementa tests unitarios para funciones específicas, para evitar lineas rezagadas que puedan no cubrir el objetivo"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 17,
+      "name": "fix_issues_incidents",
+      "title": "Arreglar problemas de sonarqube para el modulo de incidencias",
+      "description": "Completar los archivos de prueba del frontend que tengan cobertura menor al 80%.",
+      "acceptance": [
+        "Usar el archivo local frontend_issues_list.json como checklist de desarrollo para resolver TODOS LOS PROBLEMAS.",
+        "Para resolver TODOS los problemas, debes atender a las indicaciones de cada 'message' en el objeto json del problema.",
+        "Para resolver TODOS los problemas, debes localizar el text range, resolverlo, y verificar que no se genere el mismo caso después de la resolución.",
+        "Ejecutar un nuevo análisis completo de SonarQube para actualizar el estado en el servidor.",
+        "Verificar la resolución de forma optimizada consultando a la API (usando `ps=1` sin parametrizar por severities), asegurando que el total de issues abiertas devueltas sea exactamente 0.",
+        "Evitar introducir nuevos code smells, duplicaciones de código o funciones redundantes (deuda técnica).",
+        "Localizar y refactorizar funciones excesivamente complejas aplicando modularización (divide y vencerás)."
+      ],
+      "sdd": true,
+      "status": "done",
+      "references": [
+        "frontend/js/pages/incidencias/**"
       ]
     }
   ]

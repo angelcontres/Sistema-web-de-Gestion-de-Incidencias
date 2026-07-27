@@ -21,7 +21,6 @@ export class KanbanIndexComponent extends BaseComponent {
       btnRefresh.addEventListener('click', () => this.cargarIncidencias());
     }
 
-    const formResolver = this.querySelector('#form-resolver');
     const textarea = this.querySelector('#resolver-comentario');
     const charCount = this.querySelector('#char-count');
 
@@ -166,7 +165,7 @@ export class KanbanIndexComponent extends BaseComponent {
 
     try {
       const btnConfirmar = this.querySelector('#btn-confirmar-resolver');
-      const originalText = btnConfirmar.innerHTML;
+
       btnConfirmar.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
       btnConfirmar.disabled = true;
@@ -320,11 +319,9 @@ export class KanbanIndexComponent extends BaseComponent {
               height *= MAX_WIDTH / width;
               width = MAX_WIDTH;
             }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
+          } else if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
           }
 
           canvas.width = width;
@@ -335,9 +332,9 @@ export class KanbanIndexComponent extends BaseComponent {
           const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
           resolve(webpDataUrl);
         };
-        img.onerror = (err) => reject(err);
+        img.onerror = () => reject(new Error('Error de imagen'));
       };
-      reader.onerror = (err) => reject(err);
+      reader.onerror = () => reject(new Error('Error de lectura'));
     });
   }
 
@@ -357,7 +354,7 @@ export class KanbanIndexComponent extends BaseComponent {
             <div class="text-truncate small fw-medium" title="${file.name}">${file.name}</div>
             <div class="d-flex justify-content-between align-items-center mt-1">
               <span class="badge bg-success-soft text-success" style="font-size: 0.7rem;">.webp</span>
-              <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-file" data-index="\${index}">
+              <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-file" data-index="${index}">
                 <i class="bi bi-trash small"></i>
               </button>
             </div>
@@ -366,7 +363,7 @@ export class KanbanIndexComponent extends BaseComponent {
       `;
 
       col.querySelector('.btn-delete-file').addEventListener('click', (e) => {
-        const idx = parseInt(e.currentTarget.getAttribute('data-index'));
+        const idx = Number.parseInt(e.currentTarget.dataset.index);
         this.recursosFiles.splice(idx, 1);
         this.renderThumbnails();
       });

@@ -1,5 +1,4 @@
 import { BaseComponent } from '../../core/base-component.js';
-import { AuthService } from '../../core/auth.service.js';
 import { apiRequest } from '../../core/api.js';
 
 export class MenuLobbyComponent extends BaseComponent {
@@ -9,7 +8,7 @@ export class MenuLobbyComponent extends BaseComponent {
 
   async onInit() {
     this.renderLobby();
-    
+
     // Re-render if hash changes while already on a lobby component
     this._onHashChange = () => {
       this.renderLobby();
@@ -23,15 +22,17 @@ export class MenuLobbyComponent extends BaseComponent {
 
   async renderLobby() {
     const currentHash = window.location.hash || '#/';
-    
+
     let menuList = null;
     try {
       const menuStr = localStorage.getItem('user_menu');
       if (menuStr) {
         const parsed = JSON.parse(menuStr);
-        menuList = Array.isArray(parsed) ? parsed : (parsed.data || null);
+        menuList = Array.isArray(parsed) ? parsed : parsed.data || null;
       }
-    } catch(e) { /* empty */ }
+    } catch (e) {
+      console.error('Error parsing user menu from localStorage:', e);
+    }
 
     if (!menuList || !Array.isArray(menuList) || menuList.length === 0) {
       try {
@@ -45,39 +46,41 @@ export class MenuLobbyComponent extends BaseComponent {
 
     const titleEl = this.querySelector('#lobby-title');
     const container = this.querySelector('#lobby-cards-container');
-    
+
     if (!menuList || !titleEl || !container) return;
 
     // Remove query params from hash for matching
     const basePath = currentHash.split('?')[0];
 
     // Find the parent menu item that matches the current route
-    const parentMenu = menuList.find(m => {
-        const safeHref = m.ruta && m.ruta.startsWith('#') ? m.ruta : '#/';
-        return safeHref === basePath;
+    const parentMenu = menuList.find((m) => {
+      const safeHref = m.ruta?.startsWith('#') ? m.ruta : '#/';
+      return safeHref === basePath;
     });
 
     if (!parentMenu) {
       titleEl.textContent = 'Menú no encontrado';
-      container.innerHTML = '<div class="col-12"><p class="text-muted">No se encontraron opciones para esta sección.</p></div>';
+      container.innerHTML =
+        '<div class="col-12"><p class="text-muted">No se encontraron opciones para esta sección.</p></div>';
       return;
     }
 
     titleEl.innerHTML = `<i class="${parentMenu.icono || ''} me-2 text-primary"></i> ${parentMenu.nombre}`;
 
     // Find children
-    const children = menuList.filter(m => m.padre_id === parentMenu.id);
+    const children = menuList.filter((m) => m.padre_id === parentMenu.id);
 
     if (children.length === 0) {
-      container.innerHTML = '<div class="col-12"><p class="text-muted">No hay submenús disponibles.</p></div>';
+      container.innerHTML =
+        '<div class="col-12"><p class="text-muted">No hay submenús disponibles.</p></div>';
       return;
     }
 
     let cardsHtml = '';
-    children.forEach(child => {
-        const safeHref = child.ruta && child.ruta.startsWith('#') ? child.ruta : '#/';
-        
-        cardsHtml += `
+    children.forEach((child) => {
+      const safeHref = child.ruta?.startsWith('#') ? child.ruta : '#/';
+
+      cardsHtml += `
         <div class="col-12 col-md-6 col-lg-4">
           <a href="${safeHref}" class="text-decoration-none">
             <div class="card h-100 border-0 shadow-sm rounded-4 menu-lobby-card transition-all" style="cursor: pointer;">
@@ -95,20 +98,20 @@ export class MenuLobbyComponent extends BaseComponent {
         </div>
         `;
     });
-    
+
     container.innerHTML = cardsHtml;
-    
+
     // Add hover effect via JS dynamically or expect CSS to do it
     const cards = container.querySelectorAll('.menu-lobby-card');
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            card.classList.add('shadow');
-            card.style.transform = 'translateY(-5px)';
-        });
-        card.addEventListener('mouseleave', () => {
-            card.classList.remove('shadow');
-            card.style.transform = 'translateY(0)';
-        });
+    cards.forEach((card) => {
+      card.addEventListener('mouseenter', () => {
+        card.classList.add('shadow');
+        card.style.transform = 'translateY(-5px)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('shadow');
+        card.style.transform = 'translateY(0)';
+      });
     });
   }
 }

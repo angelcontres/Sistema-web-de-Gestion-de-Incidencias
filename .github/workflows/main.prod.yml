@@ -45,8 +45,10 @@ jobs:
       - name: Generar clave de seguridad de Laravel
         run: docker exec sistema_laravel_prod php artisan key:generate
 
-      - name: Limpiar caché (Previene el error de correos atascados en array)
-        run: docker exec sistema_laravel_prod php artisan optimize:clear
+      - name: Limpiar caché y reiniciar colas (Previene correos atascados y carga código nuevo)
+        run: |
+          docker exec sistema_laravel_prod php artisan optimize:clear
+          docker exec sistema_laravel_prod php artisan queue:restart
 
       - name: Esperar a que la base de datos esté lista
         run: |
@@ -68,7 +70,9 @@ jobs:
         run: docker exec sistema_postgres_prod psql -U angeltux -c "CREATE DATABASE testing;" || true
 
       - name: Ejecutar pruebas automatizadas (Backend)
-        run: docker exec -e DB_DATABASE=testing sistema_laravel_prod php artisan test --coverage-clover build/logs/clover.xml --log-junit build/logs/junit.xml || true
+        run: |
+          docker exec -e DB_DATABASE=testing sistema_laravel_prod php artisan test --coverage-clover build/logs/clover.xml --log-junit build/logs/junit.xml || true
+          docker exec sistema_laravel_prod php artisan optimize:clear
 
       - name: Normalizar rutas de cobertura para SonarQube
         run: docker exec sistema_laravel_prod php normalize_clover.php || true

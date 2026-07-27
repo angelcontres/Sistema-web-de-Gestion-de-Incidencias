@@ -1,8 +1,8 @@
 import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { DireccionFormComponent } from './direccion-form.component.js';
 import { UbicacionesService } from '../../services/ubicaciones.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
+import './direccion-form.component.js';
 
 describe('DireccionFormComponent', () => {
   let component;
@@ -32,12 +32,23 @@ describe('DireccionFormComponent', () => {
         <div id="direccionModalErrorMessage"></div>
         <div id="modalMap"></div>
         
-        <input type="radio" name="territoryResolveOption" value="existing" />
+        <input type="radio" name="territoryResolveOption" value="existing" id="resolveOptExisting" />
         <input type="radio" name="territoryResolveOption" value="register" id="resolveOptRegister" />
+        <input type="radio" name="territoryResolveOption" value="fallback" id="resolveOptFallback" />
+        <label for="resolveOptRegister"></label>
+        <label for="resolveOptExisting"></label>
         <div id="missingTerritoryAlert"></div>
         <div id="missingTerritoryMessage"></div>
         <button id="btnRegistrarTerritorioFaltante"></button>
-        <div id="missingTerritoryResolver"></div>
+        <div id="missingTerritoryResolver">
+          <div class="card"></div>
+          <i class="bi-exclamation-triangle-fill"></i>
+          <span class="fw-bold"></span>
+          <span class="text-secondary"></span>
+          <div id="resolveOptFallbackContainer">
+            <span id="fallbackParishNameSpan"></span>
+          </div>
+        </div>
         
         <div id="autofillStatus"></div>
         <div id="autofillStatusText"></div>
@@ -46,31 +57,33 @@ describe('DireccionFormComponent', () => {
         <div id="gpsLocationText"></div>
       </div>
     `;
-    window.fetch = jest.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve(templateHtml) }));
+    window.fetch = jest.fn(() =>
+      Promise.resolve({ ok: true, text: () => Promise.resolve(templateHtml) })
+    );
 
     window.bootstrap = {
       Modal: jest.fn().mockImplementation(() => ({
         show: jest.fn(),
-        hide: jest.fn()
-      }))
+        hide: jest.fn(),
+      })),
     };
-    
+
     window.L = {
       map: jest.fn().mockReturnValue({
         setView: jest.fn().mockReturnThis(),
         on: jest.fn(),
         remove: jest.fn(),
         invalidateSize: jest.fn(),
-        removeLayer: jest.fn()
+        removeLayer: jest.fn(),
       }),
       tileLayer: jest.fn().mockReturnValue({
-        addTo: jest.fn()
+        addTo: jest.fn(),
       }),
       marker: jest.fn().mockReturnValue({
         addTo: jest.fn().mockReturnThis(),
         on: jest.fn(),
-        setLatLng: jest.fn()
-      })
+        setLatLng: jest.fn(),
+      }),
     };
 
     document.body.innerHTML = `
@@ -78,28 +91,39 @@ describe('DireccionFormComponent', () => {
       <app-direccion-form></app-direccion-form>
     `;
     const toast = document.querySelector('app-toast');
-    if(toast) toast.show = jest.fn();
-    
+    if (toast) toast.show = jest.fn();
+
     component = document.querySelector('app-direccion-form');
     // Mock the dispatchEvent on component to avoid errors
     component.dispatchEvent = jest.fn();
 
     jest.spyOn(AuthService, 'getCurrentUser').mockReturnValue({ pais_id: 1 });
-    
-    jest.spyOn(UbicacionesService, 'getPaises').mockResolvedValue([{ id: 1, nombre: 'Ecuador', codigo_iso: 'EC', activo: true }]);
-    jest.spyOn(UbicacionesService, 'getTerritorios').mockResolvedValue([{ id: 10, nombre: 'Pichincha', tipo: 'Provincia', activo: true }]);
+
+    jest
+      .spyOn(UbicacionesService, 'getPaises')
+      .mockResolvedValue([{ id: 1, nombre: 'Ecuador', codigo_iso: 'EC', activo: true }]);
+    jest
+      .spyOn(UbicacionesService, 'getTerritorios')
+      .mockResolvedValue([{ id: 10, nombre: 'Pichincha', tipo: 'Provincia', activo: true }]);
     jest.spyOn(UbicacionesService, 'createDireccion').mockResolvedValue({});
     jest.spyOn(UbicacionesService, 'updateDireccion').mockResolvedValue({});
     jest.spyOn(UbicacionesService, 'reverseGeocode').mockResolvedValue({
-      address: { country_code: 'ec', state: 'Pichincha', county: 'Quito', city: 'Conocoto', road: 'Av Principal', postcode: '170150' },
-      display_name: 'Av Principal, Pichincha, EC'
+      address: {
+        country_code: 'ec',
+        state: 'Pichincha',
+        county: 'Quito',
+        city: 'Conocoto',
+        road: 'Av Principal',
+        postcode: '170150',
+      },
+      display_name: 'Av Principal, Pichincha, EC',
     });
     jest.spyOn(UbicacionesService, 'createPais').mockResolvedValue({ id: 99 });
     jest.spyOn(UbicacionesService, 'createTerritorio').mockResolvedValue({ id: 100 });
-    
+
     // Polyfill for normalizeText in jest if needed (string normalize)
     // We will let the real functions run for coverage
-    
+
     jest.spyOn(ToastService, 'success').mockImplementation(() => {});
   });
 
@@ -117,7 +141,7 @@ describe('DireccionFormComponent', () => {
   it('abrir() prepara el formulario para una nueva dirección', async () => {
     await component.onInit();
     await component.abrir();
-    
+
     expect(document.querySelector('#direccionId').value).toBe('');
     expect(document.querySelector('#direccionModalLabel').textContent).toBe('Nueva Dirección');
     expect(document.querySelector('#dirPaisSelect').value).toBe('1');
@@ -131,11 +155,11 @@ describe('DireccionFormComponent', () => {
       latitud: 12.34,
       longitud: 56.78,
       activo: true,
-      territorio: { pais_id: 1, id: 10, parent: { id: 2 } }
+      territorio: { pais_id: 1, id: 10, parent: { id: 2 } },
     };
 
     await component.abrir(mockDir);
-    
+
     expect(document.querySelector('#direccionId').value).toBe('5');
     expect(document.querySelector('#direccionDetalle').value).toBe('Avenida Siempre Viva');
     expect(document.querySelector('#direccionLatitud').value).toBe('12.34');
@@ -145,10 +169,10 @@ describe('DireccionFormComponent', () => {
   it('guardarDireccion llama a createDireccion cuando no hay id', async () => {
     await component.onInit();
     await component.abrir();
-    
+
     const form = document.querySelector('#direccionForm');
     form.checkValidity = jest.fn().mockReturnValue(true);
-    
+
     document.querySelector('#dirNivel1Select').innerHTML = '<option value="10">Pichincha</option>';
     document.querySelector('#dirNivel1Select').value = '10';
     document.querySelector('#direccionDetalle').value = 'Test';
@@ -157,7 +181,7 @@ describe('DireccionFormComponent', () => {
     document.querySelector('#direccionActivo').checked = true;
 
     await component.guardarDireccion({ preventDefault: jest.fn() });
-    
+
     expect(UbicacionesService.createDireccion).toHaveBeenCalled();
     expect(component.dispatchEvent).toHaveBeenCalled();
   });
@@ -165,45 +189,45 @@ describe('DireccionFormComponent', () => {
   it('guardarDireccion llama a updateDireccion cuando hay id', async () => {
     await component.onInit();
     await component.abrir({ id: 5, territorio: { pais_id: 1 } });
-    
+
     const form = document.querySelector('#direccionForm');
     form.checkValidity = jest.fn().mockReturnValue(true);
-    
+
     document.querySelector('#direccionId').value = '5';
     document.querySelector('#dirNivel1Select').innerHTML = '<option value="10">Pichincha</option>';
     document.querySelector('#dirNivel1Select').value = '10';
 
     await component.guardarDireccion({ preventDefault: jest.fn() });
-    
+
     expect(UbicacionesService.updateDireccion).toHaveBeenCalledWith('5', expect.any(Object));
   });
 
   it('guardarDireccion falla de validación', async () => {
     await component.onInit();
     await component.abrir();
-    
+
     const form = document.querySelector('#direccionForm');
     form.checkValidity = jest.fn().mockReturnValue(false);
 
     await component.guardarDireccion({ preventDefault: jest.fn() });
-    
+
     expect(form.classList.contains('was-validated')).toBe(true);
     expect(UbicacionesService.createDireccion).not.toHaveBeenCalled();
   });
-  
+
   it('guardarDireccion falla si no hay territorio', async () => {
     await component.onInit();
     await component.abrir();
-    
+
     const form = document.querySelector('#direccionForm');
     form.checkValidity = jest.fn().mockReturnValue(true);
-    
+
     document.querySelector('#dirNivel1Select').value = '';
     document.querySelector('#dirNivel2Select').value = '';
     document.querySelector('#dirNivel3Select').value = '';
 
     await component.guardarDireccion({ preventDefault: jest.fn() });
-    
+
     const errorAlert = document.querySelector('#direccionModalErrorAlert');
     expect(errorAlert.classList.contains('d-none')).toBe(false);
   });
@@ -211,28 +235,28 @@ describe('DireccionFormComponent', () => {
   it('guardarDireccion con registro automático de territorios', async () => {
     await component.onInit();
     await component.abrir();
-    
+
     const form = document.querySelector('#direccionForm');
     form.checkValidity = jest.fn().mockReturnValue(true);
-    
+
     const registerOpt = document.querySelector('#resolveOptRegister');
     registerOpt.checked = true;
-    
+
     document.querySelector('#dirNivel1Select').innerHTML = '<option value="10">Pichincha</option>';
     document.querySelector('#dirNivel1Select').value = '10';
-    
+
     component.pendingGeography = {
       pais: { nombre: 'New Country', codigo_iso: 'NC', exists: false, id: null },
       nivel1: { nombre: 'N1', exists: false, tipo: 'Provincia' },
       nivel2: { nombre: 'N2', exists: false, tipo: 'Canton' },
-      nivel3: { nombre: 'N3', exists: false, tipo: 'Parroquia' }
+      nivel3: { nombre: 'N3', exists: false, tipo: 'Parroquia' },
     };
-    
+
     document.querySelector('#direccionLatitud').value = '1';
     document.querySelector('#direccionLongitud').value = '1';
 
     await component.guardarDireccion({ preventDefault: jest.fn() });
-    
+
     expect(UbicacionesService.createPais).toHaveBeenCalled();
     expect(UbicacionesService.createTerritorio).toHaveBeenCalledTimes(3);
     expect(UbicacionesService.createDireccion).toHaveBeenCalled();
@@ -242,39 +266,50 @@ describe('DireccionFormComponent', () => {
     await component.onInit();
     component.initModalMap();
     expect(window.L.map).toHaveBeenCalled();
-    
+
     // Simulate map click
     const mapObj = window.L.map();
-    const clickHandler = mapObj.on.mock.calls.find(c => c[0] === 'click')[1];
+    const clickHandler = mapObj.on.mock.calls.find((c) => c[0] === 'click')[1];
     clickHandler({ latlng: { lat: -0.22, lng: -78.5 } });
-    
+
     expect(document.querySelector('#direccionLatitud').value).toBe('-0.220000');
   });
 
   it('debería autofillUbicacionDesdeCoords con pais existente y niveles', async () => {
     await component.onInit();
     await component.cargarPaises();
-    
+
     // Prepare DOM elements
     document.querySelector('#dirNivel1Select').innerHTML = '<option value="10">Pichincha</option>';
     document.querySelector('#dirNivel2Select').innerHTML = '<option value="20">Quito</option>';
     document.querySelector('#dirNivel3Select').innerHTML = '<option value="30">Conocoto</option>';
-    
+
     // Simulate reverse geocode matching Pichincha, Quito, Conocoto
     jest.spyOn(UbicacionesService, 'reverseGeocode').mockResolvedValueOnce({
-      address: { country_code: 'ec', state: 'Pichincha', county: 'Quito', parish: 'Conocoto', road: 'Av Principal' },
-      display_name: 'Av Principal, Pichincha, EC'
+      address: {
+        country_code: 'ec',
+        state: 'Pichincha',
+        county: 'Quito',
+        parish: 'Conocoto',
+        road: 'Av Principal',
+      },
+      display_name: 'Av Principal, Pichincha, EC',
     });
-    
-    jest.spyOn(UbicacionesService, 'getTerritorios').mockImplementation((params) => {
-      if (!params.parent_id) return Promise.resolve([{ id: 10, nombre: 'Pichincha', tipo: 'Provincia' }]);
-      if (params.parent_id == 10) return Promise.resolve([{ id: 20, nombre: 'Quito', tipo: 'Canton' }]);
-      if (params.parent_id == 20) return Promise.resolve([{ id: 30, nombre: 'Conocoto', tipo: 'Parroquia' }]);
-      return Promise.resolve([]);
-    });
-    
+
+    jest
+      .spyOn(UbicacionesService, 'getTerritorios')
+      .mockImplementation((page, perPage, cursor, params = {}) => {
+        if (!params.parent_id)
+          return Promise.resolve([{ id: 10, nombre: 'Pichincha', tipo: 'Provincia' }]);
+        if (params.parent_id == 10)
+          return Promise.resolve([{ id: 20, nombre: 'Quito', tipo: 'Canton' }]);
+        if (params.parent_id == 20)
+          return Promise.resolve([{ id: 30, nombre: 'Conocoto', tipo: 'Parroquia' }]);
+        return Promise.resolve([]);
+      });
+
     await component.autofillUbicacionDesdeCoords(-0.22, -78.5);
-    
+
     expect(UbicacionesService.reverseGeocode).toHaveBeenCalledWith(-0.22, -78.5);
     expect(document.querySelector('#direccionDetalle').value).toMatch(/Av Principal/);
   });
@@ -282,11 +317,15 @@ describe('DireccionFormComponent', () => {
   it('debería registrarTerritorioFaltante', async () => {
     await component.onInit();
     component.pendingTerritory = {
-      pais_id: 1, parent_id: null, nombre: 'Nuevo Nivel 1', tipo: 'Provincia', nivel: 1
+      pais_id: 1,
+      parent_id: null,
+      nombre: 'Nuevo Nivel 1',
+      tipo: 'Provincia',
+      nivel: 1,
     };
-    
+
     await component.registrarTerritorioFaltante();
-    
+
     expect(UbicacionesService.createTerritorio).toHaveBeenCalled();
     expect(ToastService.success).toHaveBeenCalled();
     expect(component.pendingTerritory).toBeNull();
@@ -294,10 +333,10 @@ describe('DireccionFormComponent', () => {
 
   it('debería llamar metodos auxiliares (normalizeText, mostrarCampo, ocultarCampo)', async () => {
     await component.onInit();
-    
+
     const norm = component.normalizeText('Árbol');
     expect(norm).toBe('arbol');
-    
+
     expect(component.normalizeText(null)).toBe('');
     expect(component.capitalizeWords(null)).toBe('');
     expect(component.capitalizeWords('hello world')).toBe('Hello World');
@@ -305,9 +344,9 @@ describe('DireccionFormComponent', () => {
     document.body.innerHTML += '<div id="testDiv" class="d-none"></div>';
     component.mostrarCampo('#testDiv');
     expect(document.querySelector('#testDiv').classList.contains('d-none')).toBe(false);
-    
+
     component.ocultarCampo('#testDiv');
-    
+
     // Simulate timeout logic in ocultarCampo
     jest.useFakeTimers();
     component.ocultarCampo('#testDiv');
@@ -320,8 +359,9 @@ describe('DireccionFormComponent', () => {
   it('actualizarEtiquetasNiveles funciona con un país dado', async () => {
     await component.onInit();
     component.paisesList = [{ id: 1, codigo_iso: 'EC' }];
-    document.body.innerHTML += '<label id="lblDirNivel1"></label><select id="dirNivel1Select"><option></option></select>';
-    
+    document.body.innerHTML +=
+      '<label id="lblDirNivel1"></label><select id="dirNivel1Select"><option></option></select>';
+
     component.actualizarEtiquetasNiveles(1);
     expect(document.querySelector('#lblDirNivel1').textContent).toBe('Provincia');
   });
@@ -340,24 +380,24 @@ describe('DireccionFormComponent', () => {
     `;
     // Replace instead of append to avoid conflicts
     document.body.innerHTML = resolveHtml;
-    
+
     component.pendingGeography = {
       pais: { exists: false, nombre: 'Pais1' },
       nivel1: { exists: false, nombre: 'N1', tipo: 'Prov' },
       nivel2: { exists: false, nombre: 'N2', tipo: 'Can' },
-      nivel3: { exists: false, nombre: 'N3', tipo: 'Par' }
+      nivel3: { exists: false, nombre: 'N3', tipo: 'Par' },
     };
-    
+
     component.actualizarFeedbackResolver();
     const title = document.querySelector('#missingTerritoryResolver .fw-bold');
     expect(title.textContent).toBe('Registro Automático Activado');
-    
+
     const rRegister = document.querySelector('#resolveOptRegister');
     const rExisting = document.querySelector('#resolveOptExisting');
-    
+
     rExisting.checked = true;
     rRegister.checked = false;
-    
+
     component.actualizarFeedbackResolver();
     expect(title.textContent).toBe('Resolución Manual');
   });
@@ -365,16 +405,18 @@ describe('DireccionFormComponent', () => {
   it('guardarDireccion maneja errores del servicio', async () => {
     await component.onInit();
     await component.abrir();
-    
+
     const form = document.querySelector('#direccionForm');
     form.checkValidity = jest.fn().mockReturnValue(true);
     document.querySelector('#dirNivel1Select').innerHTML = '<option value="10">Pichincha</option>';
     document.querySelector('#dirNivel1Select').value = '10';
-    
-    jest.spyOn(UbicacionesService, 'createDireccion').mockRejectedValueOnce(new Error('Test error'));
-    
+
+    jest
+      .spyOn(UbicacionesService, 'createDireccion')
+      .mockRejectedValueOnce(new Error('Test error'));
+
     await component.guardarDireccion({ preventDefault: jest.fn() });
-    
+
     const errorAlert = document.querySelector('#direccionModalErrorAlert');
     expect(errorAlert.classList.contains('d-none')).toBe(false);
     expect(document.querySelector('#direccionModalErrorMessage').textContent).toBe('Test error');
@@ -383,39 +425,51 @@ describe('DireccionFormComponent', () => {
   it('debería cargarDireccionDropdownNivel1 y subsecuentes', async () => {
     await component.onInit();
     await component.cargarPaises();
-    
+
     await component.cargarDireccionDropdownNivel1('1');
-    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith({ pais_id: '1', parent_id: null });
-    
+    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith(1, 1000, null, {
+      all: true,
+      pais_id: '1',
+      parent_id: null,
+    });
+
     await component.cargarDireccionDropdownNivel2('1', '10');
-    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith({ pais_id: '1', parent_id: '10' });
-    
+    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith(1, 1000, null, {
+      all: true,
+      pais_id: '1',
+      parent_id: '10',
+    });
+
     await component.cargarDireccionDropdownNivel3('1', '20');
-    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith({ pais_id: '1', parent_id: '20' });
+    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith(1, 1000, null, {
+      all: true,
+      pais_id: '1',
+      parent_id: '20',
+    });
   });
 
   it('debería manejar eventos de change en selects', async () => {
     await component.onInit();
-    
+
     const paisSelect = document.querySelector('#dirPaisSelect');
     // Value '1' is already an option thanks to the updated template
     paisSelect.value = '1';
-    
+
     component.actualizarEtiquetasNiveles = jest.fn();
     paisSelect.dispatchEvent(new Event('change'));
-    
+
     expect(component.actualizarEtiquetasNiveles).toHaveBeenCalledWith('1');
-    
+
     const n1Select = document.querySelector('#dirNivel1Select');
     n1Select.innerHTML = '<option value="10">Opcion</option>';
     n1Select.value = '10';
     n1Select.dispatchEvent(new Event('change'));
-    
+
     const n2Select = document.querySelector('#dirNivel2Select');
     n2Select.innerHTML = '<option value="20">Opcion 2</option>';
     n2Select.value = '20';
     n2Select.dispatchEvent(new Event('change'));
-    
+
     const n3Select = document.querySelector('#dirNivel3Select');
     n3Select.innerHTML = '<option value="30">Opcion 3</option>';
     n3Select.value = '30';
@@ -426,30 +480,30 @@ describe('DireccionFormComponent', () => {
     await component.onInit();
     component.pendingGeography = {};
     component.actualizarFeedbackResolver = jest.fn();
-    
+
     const radio = document.querySelector('input[name="territoryResolveOption"][value="existing"]');
     radio.dispatchEvent(new Event('change'));
-    
+
     expect(component.actualizarFeedbackResolver).toHaveBeenCalled();
     expect(document.querySelector('#dirPaisSelect').disabled).toBe(false);
   });
-  
+
   it('debería llamar disconnectedCallback y limpiar', async () => {
     await component.onInit();
     component.initModalMap();
     component.disconnectedCallback();
-    
+
     expect(component.modalMap).toBeNull();
     expect(document.querySelector('#direccionModal')).toBeNull();
   });
 
   it('manejarCambioNivel', async () => {
     await component.onInit();
-    
+
     // Mock event
     const selectPais = document.querySelector('#dirPaisSelect');
     selectPais.value = '1';
-    
+
     const selectN1 = document.querySelector('#dirNivel1Select');
     if (selectN1 && selectN1.options.length === 0) {
       selectN1.appendChild(document.createElement('option'));
@@ -462,38 +516,157 @@ describe('DireccionFormComponent', () => {
     if (selectN3 && selectN3.options.length === 0) {
       selectN3.appendChild(document.createElement('option'));
     }
-    
-    jest.spyOn(UbicacionesService, 'getTerritorios').mockResolvedValue([{ id: 2, nombre: 'Test', tipo: 'Provincia' }]);
-    
+
+    jest
+      .spyOn(UbicacionesService, 'getTerritorios')
+      .mockResolvedValue([{ id: 2, nombre: 'Test', tipo: 'Provincia' }]);
+
     selectPais.dispatchEvent(new Event('change'));
-    
+
     // allow microtasks to flush
     await Promise.resolve();
-    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith(expect.objectContaining({ pais_id: '1', parent_id: null }));
+    expect(UbicacionesService.getTerritorios).toHaveBeenCalledWith(
+      1,
+      1000,
+      null,
+      expect.objectContaining({ all: true, pais_id: '1', parent_id: null })
+    );
   });
 
   it('registrarTerritorioFaltante', async () => {
     await component.onInit();
-    
+
     const btn = document.createElement('button');
     btn.id = 'btnRegistrarTerritorioFaltante';
     document.body.appendChild(btn);
-    
-    component.pendingTerritory = { pais_id: 1, parent_id: 1, nombre: 'NuevoTerritorio', tipo: 'Provincia' };
-    
+
+    component.pendingTerritory = {
+      pais_id: 1,
+      parent_id: 1,
+      nombre: 'NuevoTerritorio',
+      tipo: 'Provincia',
+    };
+
     jest.spyOn(UbicacionesService, 'createTerritorio').mockResolvedValue({
-      data: { id: 99, nombre: 'NuevoTerritorio', tipo: 'Provincia' }
+      data: { id: 99, nombre: 'NuevoTerritorio', tipo: 'Provincia' },
     });
-    
+
     const mockSelect = document.createElement('select');
     mockSelect.id = 'dirNivel1Select';
     document.body.appendChild(mockSelect);
-    
+
     await component.registrarTerritorioFaltante();
-    
+
     expect(UbicacionesService.createTerritorio).toHaveBeenCalledWith({
-      pais_id: 1, parent_id: 1, nombre: 'NuevoTerritorio', tipo: 'Provincia', activo: true
+      pais_id: 1,
+      parent_id: 1,
+      nombre: 'NuevoTerritorio',
+      tipo: 'Provincia',
+      activo: true,
     });
     expect(mockSelect.disabled).toBe(false);
+  });
+
+  it('configurarResolverTerritoriosFaltantes maneja fallback y registro como admin', async () => {
+    await component.onInit();
+
+    const resolverCard = document.querySelector('#missingTerritoryResolver');
+    const fallbackSpan = document.querySelector('#fallbackParishNameSpan');
+    const registerRadio = document.querySelector('#resolveOptRegister');
+    const fallbackRadio = document.querySelector('#resolveOptFallback');
+    const existingRadio = document.querySelector('#resolveOptExisting');
+
+    jest.spyOn(AuthService, 'isAdmin').mockReturnValue(true);
+
+    component.pendingGeography = {
+      pais: { exists: true, nombre: 'Ecuador' },
+      nivel1: { exists: true, nombre: 'Pichincha' },
+      nivel2: { exists: true, nombre: 'Quito' },
+      nivel3: { exists: false, nombre: 'Nueva Parroquia', fallbackNombre: 'Cabecera Canton', fallbackId: 100 },
+    };
+
+    component.configurarResolverTerritoriosFaltantes(true);
+    expect(resolverCard.classList.contains('d-none')).toBe(false);
+    expect(fallbackSpan.textContent).toBe('Cabecera Canton');
+    expect(fallbackRadio.checked).toBe(true);
+
+    jest.spyOn(AuthService, 'isAdmin').mockReturnValue(false);
+    component.pendingGeography.nivel3.fallbackId = null;
+    component.configurarResolverTerritoriosFaltantes(true);
+    expect(existingRadio.checked).toBe(true);
+    expect(registerRadio.disabled).toBe(true);
+  });
+
+  it('procesarNivelGeograficoAutofill maneja coincidencias y fallback', async () => {
+    await component.onInit();
+    component.pendingGeography = {
+      nivel1: { exists: false, nombre: '' },
+    };
+    const selectEl = document.createElement('select');
+    selectEl.innerHTML = '<option value="10">Pichincha</option><option value="20">[Cabecera] Quito</option>';
+    document.body.appendChild(selectEl);
+
+    const statusText = document.createElement('div');
+
+    const res1 = await component.procesarNivelGeograficoAutofill({
+      candidatos: ['Pichincha'],
+      key: 'nivel1',
+      label: 'Provincia',
+      selectEl,
+      statusText,
+      colSelector: '#colDirNivel1',
+      loadFn: jest.fn().mockResolvedValue(),
+      fallbackText: '[Cabecera] Quito',
+    });
+    expect(res1).toBe('10');
+    expect(component.pendingGeography.nivel1.exists).toBe(true);
+
+    component.pendingGeography.nivel1 = { exists: false, nombre: '' };
+    const res2 = await component.procesarNivelGeograficoAutofill({
+      candidatos: ['Desconocido'],
+      key: 'nivel1',
+      label: 'Provincia',
+      selectEl,
+      statusText,
+      colSelector: '#colDirNivel1',
+      loadFn: jest.fn().mockResolvedValue(),
+      fallbackText: '[Cabecera] Quito',
+    });
+    expect(res2).toBe(false);
+    expect(component.pendingGeography.nivel1.fallbackNombre).toBe('Quito');
+    expect(component.pendingGeography.nivel1.fallbackId).toBe('20');
+  });
+
+  it('aplicarTerritorioDetectado asigna los niveles y muestra campos', async () => {
+    await component.onInit();
+    const selectN1 = document.createElement('select');
+    selectN1.id = 'dirNivel1Select';
+    selectN1.innerHTML = '<option value="10">Prov</option>';
+    document.body.appendChild(selectN1);
+
+    const selectN2 = document.createElement('select');
+    selectN2.id = 'dirNivel2Select';
+    selectN2.innerHTML = '<option value="20">Can</option>';
+    document.body.appendChild(selectN2);
+
+    const selectN3 = document.createElement('select');
+    selectN3.id = 'dirNivel3Select';
+    selectN3.innerHTML = '<option value="30">Par</option>';
+    document.body.appendChild(selectN3);
+
+    component.cargarDireccionDropdownNivel1 = jest.fn().mockResolvedValue();
+    component.cargarDireccionDropdownNivel2 = jest.fn().mockResolvedValue();
+    component.cargarDireccionDropdownNivel3 = jest.fn().mockResolvedValue();
+
+    component.pendingGeography = {};
+    const config = { nivel1: 'Provincia', nivel2: 'Canton', nivel3: 'Parroquia' };
+    const td = { provincia_id: '10', canton_id: '20', parroquia_id: '30' };
+
+    await component.aplicarTerritorioDetectado(td, { id: 1 }, config, {});
+
+    expect(selectN1.value).toBe('10');
+    expect(selectN2.value).toBe('20');
+    expect(selectN3.value).toBe('30');
+    expect(component.pendingGeography.nivel3.id).toBe('30');
   });
 });

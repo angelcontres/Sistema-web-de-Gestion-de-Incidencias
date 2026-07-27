@@ -26,7 +26,7 @@ export class NotificationTrayComponent extends BaseComponent {
     };
     window.addEventListener('auth-change', this._onAuthChange);
 
-    // 4. Si otra acción del sistema pide recargar las alertas (ej. desde el botón "Marcar todo como leído")
+    // 4. Si otra acción del sistema pide recargar las alertas (ej. desde el botón "Marcar todas como leídas")
     this._onNotificationsChange = () => {
       this.loadNotifications();
     };
@@ -38,7 +38,7 @@ export class NotificationTrayComponent extends BaseComponent {
     };
     window.addEventListener('notification-read', this._onNotificationRead);
 
-    // 6. Botón de Marcar todo como leído
+    // 6. Botón de Marcar todas como leídas
     const btnReadAll = this.querySelector('#btnReadAll');
     if (btnReadAll) {
       btnReadAll.addEventListener('click', (e) => {
@@ -93,6 +93,9 @@ export class NotificationTrayComponent extends BaseComponent {
     const notifData = notification.data || notification;
     // 1. Aumentamos el contador en tiempo real
     this.incrementBadge();
+    
+    // Disparar evento global para que otras pantallas (Dashboard, Kanban) se refresquen automáticamente
+    window.dispatchEvent(new CustomEvent('global-notification-received', { detail: notifData }));
 
     // 2. UNIFICADO: Utilizamos el mismo ID del contenedor que en renderList
     const listContainer = this.querySelector('#dynamicNotificationsContainer');
@@ -163,7 +166,7 @@ export class NotificationTrayComponent extends BaseComponent {
     const badge = this.querySelector('#notificationBadge');
     if (!badge || badge.classList.contains('d-none')) return 0;
     const text = badge.textContent.trim();
-    return text.includes('+') ? 99 : parseInt(text, 10) || 0;
+    return text.includes('+') ? 99 : Number.parseInt(text, 10) || 0;
   }
 
   incrementBadge() {

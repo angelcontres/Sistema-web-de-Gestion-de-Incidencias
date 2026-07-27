@@ -1,5 +1,7 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { apiRequest } from '../../../../core/api.js';
+import { PermissionService } from '../../services/permissions.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 export class PermissionFormComponent extends BaseComponent {
   constructor() {
@@ -38,7 +40,7 @@ export class PermissionFormComponent extends BaseComponent {
 
   disconnectedCallback() {
     // Limpiar el modal del body cuando se destruye el componente para evitar fugas de memoria y duplicados
-    if (this.modalEl && this.modalEl.parentNode === document.body) {
+    if (this.modalEl?.parentNode === document.body) {
       this.modalEl.remove();
     }
   }
@@ -65,7 +67,7 @@ export class PermissionFormComponent extends BaseComponent {
       }
     } catch (error) {
       console.error('Error cargando opciones de menú:', error);
-      this.mostrarError('Error al cargar opciones de menú.');
+      ToastService.error('Error al cargar opciones de menú.');
     }
   }
 
@@ -127,17 +129,17 @@ export class PermissionFormComponent extends BaseComponent {
       nombre: this.nombreInput.value.trim(),
       recurso: this.recursoInput.value.trim(),
       accion: this.accionInput.value,
-      opcion_menu_id: this.opcionMenuSelect.value ? parseInt(this.opcionMenuSelect.value) : null,
+      opcion_menu_id: this.opcionMenuSelect.value
+        ? Number.parseInt(this.opcionMenuSelect.value)
+        : null,
     };
 
     try {
-      const endpoint = permisoId ? `/v1/permissions/${permisoId}` : '/v1/permissions';
-      const method = permisoId ? 'PUT' : 'POST';
-
-      await apiRequest(endpoint, {
-        method,
-        body: JSON.stringify(payload),
-      });
+      if (permisoId) {
+        await PermissionService.update(permisoId, payload);
+      } else {
+        await PermissionService.create(payload);
+      }
 
       if (this.modalEl) {
         const modal = bootstrap.Modal.getInstance(this.modalEl);
@@ -149,15 +151,15 @@ export class PermissionFormComponent extends BaseComponent {
         new CustomEvent('permiso-guardado', {
           detail: {
             mensaje: permisoId
-              ? 'Permiso actualizado correctamente.'
-              : 'Permiso creado correctamente.',
+              ? ToastService.success('Permiso actualizado correctamente.')
+              : ToastService.success('Permiso creado correctamente.'),
           },
           bubbles: true,
         })
       );
     } catch (error) {
       console.error('Error al guardar permiso:', error);
-      this.mostrarError(error.message || 'Error al procesar el formulario.');
+      ToastService.error(error.message || 'Error al procesar el formulario.');
     } finally {
       this.setSubmitting(false);
     }
@@ -175,13 +177,6 @@ export class PermissionFormComponent extends BaseComponent {
       this.btnSubmit.disabled = false;
       this.btnSubmit.innerHTML = `<span id="btnText">${this.btnSubmit.dataset.originalText}</span>`;
       this.btnText = this.modalEl.querySelector('#btnText');
-    }
-  }
-
-  mostrarError(mensaje) {
-    if (this.errorAlert && this.errorMessage) {
-      this.errorMessage.textContent = mensaje;
-      this.errorAlert.classList.remove('d-none');
     }
   }
 

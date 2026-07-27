@@ -9,7 +9,7 @@ export const AuthService = {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    if (response && response.access_token) {
+    if (response?.access_token) {
       localStorage.setItem('access_token', response.access_token);
       await this.refreshUser();
     }
@@ -23,7 +23,7 @@ export const AuthService = {
         method: 'POST',
         body: JSON.stringify({ login: loginIdentifier, password }),
       });
-      if (response && response.access_token) {
+      if (response?.access_token) {
         localStorage.setItem('access_token', response.access_token);
         // Fetch user profile and permissions from /me
         await this.refreshUser();
@@ -49,7 +49,7 @@ export const AuthService = {
   async refreshUser() {
     try {
       const response = await apiRequest('/me');
-      if (response && response.user) {
+      if (response?.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
         window.dispatchEvent(new CustomEvent('auth-change'));
       }
@@ -73,7 +73,7 @@ export const AuthService = {
   async refreshToken() {
     try {
       const response = await apiRequest('v1/refresh', { method: 'POST' });
-      if (response && response.access_token) {
+      if (response?.access_token) {
         localStorage.setItem('access_token', response.access_token);
       }
       return response.access_token;
@@ -93,6 +93,7 @@ export const AuthService = {
       const userStr = localStorage.getItem('user');
       return userStr ? JSON.parse(userStr) : null;
     } catch (e) {
+      console.error('Error parsing user profile:', e);
       return null;
     }
   },
@@ -106,14 +107,7 @@ export const AuthService = {
 
     if (resource) {
       const key = `${action.toUpperCase()}_${resource.toUpperCase()}`;
-
-      // 2. Verificación dinámica
-      if (user.permisos.includes(key)) {
-        return true;
-      }
-
-      // console.warn(`[AuthService] hasPermission failed: User lacks permission ${key}.`, user.permisos);
-      return false;
+      return user.permisos.includes(key);
     }
 
     // console.warn('[AuthService] hasPermission failed: No resource provided.');

@@ -5,6 +5,7 @@ namespace Tests\Feature\Jobs\Etl;
 use App\Jobs\Etl\SyncDimensionsJob;
 use App\Jobs\Etl\SyncFactIncidenciasJob;
 use App\Models\Direccion;
+use App\Models\EstadoIncidencia;
 use App\Models\Pais;
 use App\Models\Prioridad;
 use App\Models\Territorio;
@@ -31,7 +32,7 @@ class SyncFactIncidenciasJobTest extends TestCase
         DB::table('estados_incidencia')->insertOrIgnore([
             ['id' => 1, 'nombre' => 'Pendiente'],
             ['id' => 3, 'nombre' => 'En Proceso'],
-            ['id' => 4, 'nombre' => 'Completado'],
+            ['id' => 4, 'nombre' => 'Resuelto'],
         ]);
 
         DB::table('categorias_incidencia')->insertOrIgnore([
@@ -47,7 +48,7 @@ class SyncFactIncidenciasJobTest extends TestCase
             'direccion_id' => $direccion->id,
             'tipo_incidencia_id' => 1,
             'sub_tipo_incidencia_id' => 2,
-            'estado_id' => 4,
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Resuelto'])->id,
             'prioridad_id' => 1,
             'cliente_id' => User::factory()->create()->id,
             'incidencia_descripcion' => 'Desc',
@@ -58,7 +59,7 @@ class SyncFactIncidenciasJobTest extends TestCase
         // Mock history for time calculation
         DB::table('historial_incidencias')->insert([
             'incidencia_id' => $incidenciaId,
-            'estado_id' => 3, // En Proceso
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'En Proceso'])->id, // En Proceso
             'created_at' => $createdAt->copy()->addMinutes(15),
             'updated_at' => $createdAt->copy()->addMinutes(15),
             'usuario_id' => User::factory()->create()->id,
@@ -66,7 +67,7 @@ class SyncFactIncidenciasJobTest extends TestCase
 
         DB::table('historial_incidencias')->insert([
             'incidencia_id' => $incidenciaId,
-            'estado_id' => 4, // Resuelto
+            'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Resuelto'])->id, // Resuelto
             'created_at' => $createdAt->copy()->addMinutes(45),
             'updated_at' => $createdAt->copy()->addMinutes(45),
             'usuario_id' => User::factory()->create()->id,
