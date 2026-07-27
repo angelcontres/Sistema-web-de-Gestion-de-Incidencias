@@ -24,6 +24,7 @@ services:
       dockerfile: Dockerfile
     container_name: sistema_laravel_prod
     restart: always
+    command: sh -c "chmod -R 777 storage bootstrap/cache && php-fpm"
     volumes:
       - ./backend/api:/var/www/html
     networks:
