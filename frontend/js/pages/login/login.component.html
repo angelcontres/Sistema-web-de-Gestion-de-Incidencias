@@ -69,9 +69,48 @@
   <!-- Right Side: Animated Logo Sequence (Hidden on mobile/tablet) -->
   <div class="col-12 col-lg-7 d-none d-lg-flex flex-column align-items-center justify-content-center position-relative overflow-hidden" style="background-color: var(--primary-color, #0E3659);">
     
+    <!-- City Skyline Background -->
+    <div class="position-absolute bottom-0 w-100 pe-none" style="height: 35vh; opacity: 0.7; z-index: 0;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 400" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+        <!-- Distant buildings (lighter) -->
+        <path fill="var(--secondary-color)" opacity="0.15" d="M100,400 l0,-100 l40,0 l0,100 M160,400 l0,-150 l60,0 l0,150 M250,400 l0,-80 l50,0 l0,80 M330,400 l0,-200 l70,0 l0,200 M430,400 l0,-120 l50,0 l0,120 M510,400 l0,-160 l80,0 l0,160 M620,400 l0,-90 l40,0 l0,90 M700,400 l0,-220 l60,0 l0,220 M800,400 l0,-130 l50,0 l0,130 M880,400 l0,-180 l70,0 l0,180 M980,400 l0,-100 l45,0 l0,100 M1050,400 l0,-250 l60,0 l0,250 M1140,400 l0,-140 l50,0 l0,140 M1220,400 l0,-190 l60,0 l0,190 M1300,400 l0,-110 l50,0 l0,110 M1380,400 l0,-170 l60,0 l0,170" />
+        <!-- Mid buildings -->
+        <path fill="var(--secondary-color)" opacity="0.3" d="M0,400 l0,-120 l50,0 l0,120 M70,400 l0,-180 l55,0 l0,180 M150,400 l0,-90 l40,0 l0,90 M210,400 l0,-230 l65,0 l0,230 M300,400 l0,-140 l50,0 l0,140 M380,400 l0,-210 l70,0 l0,210 M480,400 l0,-110 l45,0 l0,110 M550,400 l0,-170 l60,0 l0,170 M640,400 l0,-250 l50,0 l0,250 M720,400 l0,-150 l55,0 l0,150 M810,400 l0,-200 l60,0 l0,200 M900,400 l0,-120 l40,0 l0,120 M970,400 l0,-240 l70,0 l0,240 M1070,400 l0,-160 l50,0 l0,160 M1150,400 l0,-220 l65,0 l0,220 M1240,400 l0,-130 l45,0 l0,130 M1320,400 l0,-180 l55,0 l0,180 M1400,400 l0,-100 l40,0 l0,100" />
+        <!-- Foreground buildings -->
+        <path fill="var(--primary-color)" filter="brightness(0.8)" d="M20,400 l0,-150 l60,0 l0,150 M110,400 l0,-220 l70,0 l0,220 M210,400 l0,-130 l50,0 l0,130 M280,400 l0,-270 l80,0 l0,270 M390,400 l0,-160 l60,0 l0,160 M480,400 l0,-200 l70,0 l0,200 M580,400 l0,-140 l50,0 l0,140 M660,400 l0,-290 l80,0 l0,290 M770,400 l0,-180 l60,0 l0,180 M860,400 l0,-240 l70,0 l0,240 M960,400 l0,-150 l55,0 l0,150 M1040,400 l0,-280 l75,0 l0,280 M1140,400 l0,-170 l60,0 l0,170 M1230,400 l0,-250 l65,0 l0,250 M1320,400 l0,-140 l50,0 l0,140" />
+        <!-- City grid/lights -->
+        <g fill="var(--highlight-color)" opacity="0.6">
+          <rect x="40" y="280" width="6" height="6"/><rect x="40" y="310" width="6" height="6"/>
+          <rect x="130" y="210" width="6" height="6"/><rect x="150" y="250" width="6" height="6"/>
+          <rect x="300" y="180" width="6" height="6"/><rect x="330" y="220" width="6" height="6"/>
+          <rect x="680" y="150" width="6" height="6"/><rect x="710" y="200" width="6" height="6"/>
+          <rect x="1060" y="160" width="6" height="6"/><rect x="1090" y="220" width="6" height="6"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Radar Effect -->
+    <div class="position-absolute pe-none" style="width: 500px; height: 500px; border-radius: 50%; border: 1px solid rgba(78, 125, 127, 0.4); box-shadow: inset 0 0 40px rgba(78, 125, 127, 0.15); z-index: 0; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+      <!-- Concentric circles -->
+      <div class="position-absolute top-50 start-50 translate-middle" style="width: 340px; height: 340px; border-radius: 50%; border: 1px dashed rgba(78, 125, 127, 0.3);"></div>
+      <div class="position-absolute top-50 start-50 translate-middle" style="width: 170px; height: 170px; border-radius: 50%; border: 1px solid var(--highlight-color); opacity: 0.4;"></div>
+      
+      <!-- Axis lines -->
+      <div class="position-absolute top-50 start-0 w-100" style="height: 1px; background: rgba(78, 125, 127, 0.3);"></div>
+      <div class="position-absolute top-0 start-50 h-100" style="width: 1px; background: rgba(78, 125, 127, 0.3);"></div>
+      
+      <!-- Sweeper -->
+      <div class="radar-sweep"></div>
+      
+      <!-- Blips -->
+      <div class="radar-blip" style="top: 25%; left: 35%; animation-delay: 0.5s;"></div>
+      <div class="radar-blip" style="top: 65%; left: 75%; animation-delay: 2.1s;"></div>
+      <div class="radar-blip" style="top: 80%; left: 45%; animation-delay: 1.2s;"></div>
+    </div>
+
     <!-- Smooth ambient lights matching the palette -->
-    <div class="position-absolute rounded-circle" style="width: 50vw; height: 50vw; background: var(--secondary-color, #4E7D7F); opacity: 0.15; filter: blur(120px); top: -20%; right: -10%;"></div>
-    <div class="position-absolute rounded-circle" style="width: 40vw; height: 40vw; background: var(--highlight-color, #D98A2F); opacity: 0.1; filter: blur(120px); bottom: -10%; left: -10%;"></div>
+    <div class="position-absolute rounded-circle" style="width: 50vw; height: 50vw; background: var(--secondary-color, #4E7D7F); opacity: 0.15; filter: blur(120px); top: -20%; right: -10%; z-index: 0;"></div>
+    <div class="position-absolute rounded-circle" style="width: 40vw; height: 40vw; background: var(--highlight-color, #D98A2F); opacity: 0.1; filter: blur(120px); bottom: -10%; left: -10%; z-index: 0;"></div>
 
     <!-- Main Content -->
     <div class="z-1 position-relative d-flex flex-column align-items-center">
