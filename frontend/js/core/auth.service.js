@@ -149,6 +149,23 @@ export const AuthService = {
 
     const hashWithoutQuery = hash.split('?')[0];
 
+    // Si la ruta está en la lista de menú permitida para el usuario en localStorage, se le da acceso directo.
+    // Esto resuelve el acceso a contenedores/lobbies como #/administracion y #/mantenimiento.
+    try {
+      const menuStr = localStorage.getItem('user_menu');
+      if (menuStr) {
+        const parsed = JSON.parse(menuStr);
+        const menuList = Array.isArray(parsed) ? parsed : parsed.data || [];
+        const inMenu = menuList.some((m) => {
+          const safeMRoute = m.ruta?.split('?')[0];
+          return safeMRoute === hashWithoutQuery;
+        });
+        if (inMenu) return true;
+      }
+    } catch (e) {
+      console.error('Error parsing user menu in canAccessRoute:', e);
+    }
+
     const routePermissions = {
       '#/opciones-menu': { action: 'READ', resource: 'opciones' },
       '#/roles': { action: 'READ', resource: 'roles' },
