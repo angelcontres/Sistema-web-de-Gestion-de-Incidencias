@@ -12,6 +12,16 @@ export const AuthService = {
     if (response?.access_token) {
       localStorage.setItem('access_token', response.access_token);
       await this.refreshUser();
+    } else {
+      const errorMsg = response?.message || 'Error al registrar usuario.';
+      const error = new Error(errorMsg);
+      error.data = response;
+      if (response?.errors) {
+        error.status = 422;
+      } else {
+        error.status = response?.status || 400;
+      }
+      throw error;
     }
     return response;
   },
@@ -27,6 +37,11 @@ export const AuthService = {
         localStorage.setItem('access_token', response.access_token);
         // Fetch user profile and permissions from /me
         await this.refreshUser();
+      } else {
+        const errorMsg = response?.message || 'Credenciales inválidas o error de autenticación.';
+        const error = new Error(errorMsg);
+        error.data = response;
+        throw error;
       }
       return response;
     });
@@ -133,6 +148,23 @@ export const AuthService = {
     if (!hash || hash === '#/' || hash === '#/login' || hash === '#/public') return true;
 
     const hashWithoutQuery = hash.split('?')[0];
+
+    // Si la ruta está en la lista de menú permitida para el usuario en localStorage, se le da acceso directo.
+    // Esto resuelve el acceso a contenedores/lobbies como #/administracion y #/mantenimiento.
+    try {
+      const menuStr = localStorage.getItem('user_menu');
+      if (menuStr) {
+        const parsed = JSON.parse(menuStr);
+        const menuList = Array.isArray(parsed) ? parsed : parsed.data || [];
+        const inMenu = menuList.some((m) => {
+          const safeMRoute = m.ruta?.split('?')[0];
+          return safeMRoute === hashWithoutQuery;
+        });
+        if (inMenu) return true;
+      }
+    } catch (e) {
+      console.error('Error parsing user menu in canAccessRoute:', e);
+    }
 
     const routePermissions = {
       '#/opciones-menu': { action: 'READ', resource: 'opciones' },

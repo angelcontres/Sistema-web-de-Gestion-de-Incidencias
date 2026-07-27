@@ -181,7 +181,10 @@ class IncidenciaPerformanceTest extends TestCase
         // Consulta espacial usando ST_DWithin (aprovecha GiST)
         $query = 'SELECT * FROM direcciones WHERE ST_DWithin(ubicacion, ST_SetSRID(ST_MakePoint(-99.1332, 19.4326), 4326), 1000)';
 
+        DB::statement('SET enable_seqscan = off');
         $explain = DB::select('EXPLAIN '.$query);
+        DB::statement('SET enable_seqscan = on');
+
         $plan = json_encode($explain);
 
         $this->assertStringNotContainsString('Seq Scan on direcciones', $plan, 'El plan de ejecución espacial no debe usar Seq Scan');

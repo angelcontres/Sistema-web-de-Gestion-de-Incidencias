@@ -27,8 +27,25 @@ export class SideBarComponent extends BaseComponent {
       const willHide = !this.classList.contains('collapsed');
       this.dataset.userHidden = willHide ? 'true' : 'false';
       this.classList.toggle('collapsed');
+      
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (backdrop) {
+        if (willHide) {
+          backdrop.classList.add('d-none');
+        } else {
+          backdrop.classList.remove('d-none');
+        }
+      }
     };
     window.addEventListener('toggle-sidebar', this._onToggleSidebar);
+
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (backdrop && !backdrop.dataset.hasListener) {
+      backdrop.dataset.hasListener = 'true';
+      backdrop.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('toggle-sidebar'));
+      });
+    }
   }
 
   disconnectedCallback() {
@@ -170,7 +187,7 @@ export class SideBarComponent extends BaseComponent {
           <div class="nav-item">
               <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" style="cursor: pointer;" title="${menu.nombre}">
                 <i class="${menu.icono || 'bi bi-circle'} text-secondary"></i>
-                <span>${menu.nombre}</span>
+                <span class="text-truncate">${menu.nombre}</span>
                 <span class="ms-auto p-1" style="z-index: 2; position: relative;">
                   <i class="bi bi-chevron-down small text-muted"></i>
                 </span>
@@ -182,7 +199,7 @@ export class SideBarComponent extends BaseComponent {
                     (child) => `
                   <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="${child.ruta}" title="${child.nombre}">
                     <i class="${child.icono || 'bi bi-dot'} text-secondary"></i>
-                    <span>${child.nombre}</span>
+                    <span class="text-truncate">${child.nombre}</span>
                   </a>
                 `
                   )
@@ -195,7 +212,7 @@ export class SideBarComponent extends BaseComponent {
         html += `
           <a class="sidebar-link nav-link d-flex align-items-center gap-2 rounded-3 px-3 py-2 text-dark" href="${menu.ruta}" title="${menu.nombre}">
             <i class="${menu.icono || 'bi bi-circle'} text-secondary"></i>
-            <span>${menu.nombre}</span>
+            <span class="text-truncate">${menu.nombre}</span>
           </a>
         `;
       }
@@ -203,13 +220,17 @@ export class SideBarComponent extends BaseComponent {
 
     container.innerHTML = html;
 
-    // Expand sidebar if collapsed when clicking any link
+    // Handle clicks on sidebar links
     const sidebarLinks = container.querySelectorAll('.sidebar-link');
     sidebarLinks.forEach((link) => {
       link.addEventListener('click', () => {
         if (this.classList.contains('collapsed')) {
+          // Si estaba colapsado (modo mini-rail en desktop), expandirlo
           this.dataset.userHidden = 'false';
           this.classList.remove('collapsed');
+        } else if (window.innerWidth < 992 && !link.dataset.bsToggle) {
+          // Si estamos en móvil (ancho < 992) y tocamos un enlace final, autolimpiamos el sidebar
+          window.dispatchEvent(new CustomEvent('toggle-sidebar'));
         }
       });
     });

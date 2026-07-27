@@ -125,12 +125,12 @@ export class DashboardComponent extends BaseComponent {
           (menu) => `
         <div class="col-6 col-md-4 col-lg-3">
           <a href="${menu.ruta || '#/'}" class="premium-card text-decoration-none d-block h-100 py-3 px-4">
-            <div class="d-flex align-items-center gap-3">
-              <div class="bg-primary-soft rounded-circle p-3 text-primary d-inline-flex justify-content-center align-items-center shadow-sm" style="width: 48px; height: 48px;">
+            <div class="d-flex align-items-center gap-3 overflow-hidden">
+              <div class="flex-shrink-0 bg-primary-soft rounded-circle p-3 text-primary d-inline-flex justify-content-center align-items-center shadow-sm" style="width: 48px; height: 48px;">
                 <i class="${menu.icono || 'bi bi-grid'} fs-4"></i>
               </div>
-              <div class="text-start">
-                <span class="fw-bolder text-dark d-block" style="letter-spacing: -0.01em; line-height: 1.2;">${menu.nombre}</span>
+              <div class="text-start flex-grow-1 overflow-hidden">
+                <span class="fw-bolder text-dark d-block text-truncate" style="letter-spacing: -0.01em; line-height: 1.2;" title="${menu.nombre}">${menu.nombre}</span>
               </div>
             </div>
           </a>
