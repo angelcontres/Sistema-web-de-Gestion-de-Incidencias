@@ -21,7 +21,9 @@ use App\Http\Middleware\CheckResourcePermission;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
-Route::post('/v1/login', [AuthController::class, 'login']);
+Route::post('/v1/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/v1/auth/register-citizen', [AuthController::class, 'register'])->middleware('throttle:3,1');
+Route::post('/v1/auth/activate', [AuthController::class, 'activate']);
 
 // Rutas de catálogos (protegidas por autenticación, accesibles para todos los usuarios logueados)
 Route::middleware(['auth:sanctum'])->group(function () {

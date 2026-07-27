@@ -1,10 +1,6 @@
 import { BaseComponent } from '../../../../core/base-component.js';
 import { IncidenciaService } from '../../services/incidencia.service.js';
-import {
-  getBadgeClass,
-  getSoftClass,
-  getTextColorClass,
-} from '../../../../shared/utils/badge-states.js';
+import { getSoftClass } from '../../../../shared/utils/badge-states.js';
 
 export class HistorialIndexComponent extends BaseComponent {
   constructor() {
@@ -18,20 +14,11 @@ export class HistorialIndexComponent extends BaseComponent {
       tblDatos.configure({
         columns: [
           {
-            header: 'ID',
-            key: 'id',
-            class: 'ps-4 text-secondary fw-semibold',
-            format: (id) => `#${id}`,
-          },
-          {
             header: 'Clasificación',
             render: (inc) => {
               const tipo = inc.tipo ? inc.tipo.nombre : '-';
-              const subTipo = inc.subTipo
-                ? inc.subTipo.nombre
-                : inc.sub_tipo
-                  ? inc.sub_tipo.nombre
-                  : '-';
+              const sub_tipo = inc.sub_tipo ? inc.sub_tipo.nombre : '-';
+              const subTipo = inc.subTipo ? inc.subTipo.nombre : sub_tipo;
               return `<div class="fw-semibold text-dark">${tipo}</div><div class="text-muted small">${subTipo}</div>`;
             },
           },
@@ -43,11 +30,11 @@ export class HistorialIndexComponent extends BaseComponent {
           {
             header: 'Ubicación',
             render: (inc) => {
-              const detalle = inc.direccion ? inc.direccion.detalle : 'Sin dirección.';
-              const pais =
-                inc.direccion && inc.direccion.territorio && inc.direccion.territorio.pais
-                  ? inc.direccion.territorio.pais.nombre
-                  : '';
+              // Si inc.direccion no existe, el ?? asigna el valor por defecto de forma segura
+              const detalle = inc.direccion?.detalle ?? 'Sin dirección.';
+
+              // Navega de forma segura por toda la estructura anidada; si algo falla, devuelve ""
+              const pais = inc.direccion?.territorio?.pais?.nombre ?? '';
               return `<div>${detalle}</div><div class="text-muted small">${pais}</div>`;
             },
           },

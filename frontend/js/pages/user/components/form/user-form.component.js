@@ -54,32 +54,57 @@ export class UserFormComponent extends BaseComponent {
     this.setupDragAndDrop(this.rolesAsignadosList);
 
     // Initialize data
-    const init = async () => {
-      await this.cargarInstituciones();
-      await this.cargarTerritorios();
+    this.inicializarFormulario(userId);
+  }
 
-      if (userId) {
-        document.title = 'Editar Usuario';
-        if (this.formTitle) this.formTitle.textContent = 'Editar Usuario';
-        if (this.btnText) this.btnText.textContent = 'Actualizar Usuario';
-        if (this.txtPasswordHelp) this.txtPasswordHelp.classList.remove('d-none');
-        if (this.passwordInput) this.passwordInput.required = false;
+  async inicializarFormulario(userId) {
+    await Promise.all([this.cargarInstituciones(), this.cargarTerritorios()]);
+    this.configurarInterfazModo(userId);
+    await this.cargarDatosModo(userId);
+  }
 
-        // Load user data
-        await this.cargarDatosEdicion(userId);
-      } else {
-        document.title = 'Crear Nuevo Usuario';
-        if (this.formTitle) this.formTitle.textContent = 'Crear Nuevo Usuario';
-        if (this.btnText) this.btnText.textContent = 'Guardar Usuario';
-        if (this.txtPasswordHelp) this.txtPasswordHelp.classList.add('d-none');
-        if (this.passwordInput) this.passwordInput.required = true;
+  configurarInterfazModo(userId) {
+    if (userId) {
+      this.configurarModoEdicion();
+    } else {
+      this.configurarModoCreacion();
+    }
+  }
 
-        // Load empty roles Drag & Drop
-        await this.cargarRolesCheckboxes();
-      }
-    };
+  configurarModoEdicion() {
+    document.title = 'Editar Usuario';
+    if (this.formTitle) this.formTitle.textContent = 'Editar Usuario';
+    if (this.btnText) this.btnText.textContent = 'Actualizar Usuario';
+    if (this.txtPasswordHelp) this.txtPasswordHelp.classList.remove('d-none');
+    if (this.passwordInput) {
+      this.passwordInput.required = false;
+      const mb3 = this.passwordInput.closest('.mb-3');
+      if (mb3) mb3.classList.remove('d-none');
+    }
+    const inviteAlert = this.querySelector('#inviteInfoAlert');
+    if (inviteAlert) inviteAlert.classList.add('d-none');
+  }
 
-    init();
+  configurarModoCreacion() {
+    document.title = 'Invitar Usuario';
+    if (this.formTitle) this.formTitle.textContent = 'Invitar Usuario';
+    if (this.btnText) this.btnText.textContent = 'Enviar Invitación';
+    if (this.txtPasswordHelp) this.txtPasswordHelp.classList.add('d-none');
+    if (this.passwordInput) {
+      this.passwordInput.required = false;
+      const mb3 = this.passwordInput.closest('.mb-3');
+      if (mb3) mb3.classList.add('d-none'); // Hide password on create
+    }
+    const inviteAlert = this.querySelector('#inviteInfoAlert');
+    if (inviteAlert) inviteAlert.classList.remove('d-none');
+  }
+
+  async cargarDatosModo(userId) {
+    if (userId) {
+      await this.cargarDatosEdicion(userId);
+    } else {
+      await this.cargarRolesCheckboxes();
+    }
   }
 
   setupDragAndDrop(listEl) {
@@ -144,7 +169,7 @@ export class UserFormComponent extends BaseComponent {
 
     try {
       const response = await RoleService.getAll(1, 15, null, { all: true });
-      const listRoles = Array.isArray(response) ? response : (response.data || []);
+      const listRoles = Array.isArray(response) ? response : response.data || [];
 
       this.rolesDisponiblesList.innerHTML = '';
       this.rolesAsignadosList.innerHTML = '';
@@ -163,8 +188,8 @@ export class UserFormComponent extends BaseComponent {
         item.style.cursor = 'grab';
         item.style.userSelect = 'none';
         item.setAttribute('draggable', 'true');
-        item.setAttribute('data-role-id', role.id);
-        item.setAttribute('data-role-name', role.nombre);
+        item.dataset.roleId = role.id;
+        item.dataset.roleName = role.nombre;
 
         item.innerHTML = `
           <i class="bi bi-grip-vertical text-muted"></i>
@@ -199,7 +224,7 @@ export class UserFormComponent extends BaseComponent {
   async cargarInstituciones() {
     try {
       const response = await InstitucionService.getAll(1, 15, null, { all: true });
-      const list = Array.isArray(response) ? response : (response.data || []);
+      const list = Array.isArray(response) ? response : response.data || [];
 
       list.forEach((inst) => {
         const option = document.createElement('option');
@@ -243,7 +268,7 @@ export class UserFormComponent extends BaseComponent {
 
     const assignedItems = this.rolesAsignadosList.querySelectorAll('.role-draggable-item');
     assignedItems.forEach((item) => {
-      const roleName = item.getAttribute('data-role-name');
+      const roleName = item.dataset.roleName;
       if (roleName) {
         const nameLower = roleName.toLowerCase();
         if (nameLower === 'institucion') {
@@ -283,33 +308,47 @@ export class UserFormComponent extends BaseComponent {
     this.limpiarErrores();
     try {
       const user = await UserService.getById(userId);
-      if (user) {
-        if (this.userIdInput) this.userIdInput.value = user.id;
-        if (this.usernameInput) this.usernameInput.value = user.username || '';
-        if (this.nameInput) this.nameInput.value = user.name || '';
-        if (this.emailInput) this.emailInput.value = user.email || '';
-        if (this.activoInput) this.activoInput.checked = !!user.activo;
-
-        if (this.institucionSelect && user.institucion_id) {
-          this.institucionSelect.value = user.institucion_id;
-        }
-
-        const userRoleIds = (user.roles || []).map((r) => r.id);
-        await this.cargarRolesCheckboxes(userRoleIds);
-
-        // Pre-select territorios
-        if (this.territoriosSelect && user.territorios) {
-          const userTerritorioIds = user.territorios.map((t) => String(t.id));
-          Array.from(this.territoriosSelect.options).forEach((opt) => {
-            opt.selected = userTerritorioIds.includes(opt.value);
-          });
-        }
-      }
+      if (!user) return;
+      this.poblarCamposBasicosUsuario(user);
+      this.poblarInstitucionUsuario(user);
+      await this.procesarRolesUsuario(user);
+      this.poblarTerritoriosUsuario(user);
     } catch (error) {
-      console.error('Error al cargar datos del usuario para edición:', error);
-      this.mostrarError('No se pudieron cargar los datos del usuario.');
-      if (this.btnSubmit) this.btnSubmit.disabled = true;
+      this.manejarErrorCargaEdicion(error);
     }
+  }
+
+  poblarCamposBasicosUsuario(user) {
+    if (this.userIdInput) this.userIdInput.value = user.id;
+    if (this.usernameInput) this.usernameInput.value = user.username || '';
+    if (this.nameInput) this.nameInput.value = user.name || '';
+    if (this.emailInput) this.emailInput.value = user.email || '';
+    if (this.activoInput) this.activoInput.checked = !!user.activo;
+  }
+
+  poblarInstitucionUsuario(user) {
+    if (this.institucionSelect && user.institucion_id) {
+      this.institucionSelect.value = user.institucion_id;
+    }
+  }
+
+  async procesarRolesUsuario(user) {
+    const userRoleIds = (user.roles || []).map((r) => r.id);
+    await this.cargarRolesCheckboxes(userRoleIds);
+  }
+
+  poblarTerritoriosUsuario(user) {
+    if (!this.territoriosSelect || !user.territorios) return;
+    const userTerritorioIds = new Set(user.territorios.map((t) => String(t.id)));
+    Array.from(this.territoriosSelect.options).forEach((opt) => {
+      opt.selected = userTerritorioIds.has(opt.value);
+    });
+  }
+
+  manejarErrorCargaEdicion(error) {
+    console.error('Error al cargar datos del usuario para edición:', error);
+    this.mostrarError('No se pudieron cargar los datos del usuario.');
+    if (this.btnSubmit) this.btnSubmit.disabled = true;
   }
 
   async guardarUsuario(e) {
@@ -320,67 +359,67 @@ export class UserFormComponent extends BaseComponent {
       return;
     }
 
-    // Show loading indicators
-    if (this.btnSubmit) this.btnSubmit.disabled = true;
-    if (this.loadingSpinner) this.loadingSpinner.classList.remove('d-none');
-    this.limpiarErrores();
+    this.toggleLoading(true);
 
-    const userId = this.userIdInput.value;
-    const username = this.usernameInput.value.trim();
-    const name = this.nameInput.value.trim();
-    const email = this.emailInput.value.trim();
-    const password = this.passwordInput.value;
-    const activo = this.activoInput.checked;
+    const payload = this.construirPayload();
 
+    try {
+      if (this.userIdInput.value) {
+        await UserService.update(this.userIdInput.value, payload);
+      } else {
+        await UserService.create(payload);
+      }
+      window.location.hash = '#/usuarios';
+    } catch (error) {
+      console.error('Error al guardar usuario:', error);
+      this.mostrarError(error.message || 'Error al procesar el formulario.');
+      this.toggleLoading(false);
+    }
+  }
+
+  construirPayload() {
     const institucion_id =
       this.institucionSelect && !this.institucionContainer.classList.contains('d-none')
         ? this.institucionSelect.value
         : null;
 
     const assignedItems = this.rolesAsignadosList.querySelectorAll('[data-role-id]');
-    const roles = Array.from(assignedItems).map((item) =>
-      parseInt(item.getAttribute('data-role-id'))
-    );
+    const roles = Array.from(assignedItems).map((item) => Number.parseInt(item.dataset.roleId, 10));
 
-    // Get selected territories if supervisor container is visible
     let territorios = [];
     if (this.territoriosSelect && !this.territorioContainer.classList.contains('d-none')) {
       territorios = Array.from(this.territoriosSelect.selectedOptions).map((opt) =>
-        parseInt(opt.value)
+        Number.parseInt(opt.value, 10)
       );
     }
 
     const payload = {
-      username,
-      name,
-      email,
-      activo,
+      username: this.usernameInput.value.trim(),
+      name: this.nameInput.value.trim(),
+      email: this.emailInput.value.trim(),
+      activo: this.activoInput.checked,
       roles,
       territorios,
-      institucion_id: institucion_id ? parseInt(institucion_id) : null,
+      institucion_id: institucion_id ? Number.parseInt(institucion_id, 10) : null,
     };
 
-    if (password) {
-      payload.password = password;
+    if (this.passwordInput.value) {
+      payload.password = this.passwordInput.value;
     }
 
-    try {
-      if (userId) {
-        await UserService.update(userId, payload);
+    return payload;
+  }
+
+  toggleLoading(isLoading) {
+    if (this.btnSubmit) this.btnSubmit.disabled = isLoading;
+    if (this.loadingSpinner) {
+      if (isLoading) {
+        this.loadingSpinner.classList.remove('d-none');
       } else {
-        await UserService.create(payload);
+        this.loadingSpinner.classList.add('d-none');
       }
-
-      // Redirect back to users listing
-      window.location.hash = '#/usuarios';
-    } catch (error) {
-      console.error('Error al guardar usuario:', error);
-      this.mostrarError(error.message || 'Error al procesar el formulario.');
-
-      // Reset loading indicators
-      if (this.btnSubmit) this.btnSubmit.disabled = false;
-      if (this.loadingSpinner) this.loadingSpinner.classList.add('d-none');
     }
+    if (isLoading) this.limpiarErrores();
   }
 
   mostrarError(message) {

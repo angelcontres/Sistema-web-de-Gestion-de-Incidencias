@@ -9,9 +9,14 @@
         >
           <i class="bi bi-arrow-left fs-5"></i>
         </a>
-        <h4 class="mb-0 text-dark fw-bold" id="userModalLabel">Crear Nuevo Usuario</h4>
+        <h4 class="mb-0 text-dark fw-bold" id="userModalLabel">Invitar Usuario</h4>
       </div>
       <div class="card-body p-4">
+        <!-- Alerta Informativa (Invitación) -->
+        <div id="inviteInfoAlert" class="alert alert-info py-2 px-3 small mb-3">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          Al guardar, se enviará un correo de confirmación al usuario para que active su cuenta.
+        </div>
         <!-- Alerta de Error interna -->
         <div id="modalErrorAlert" class="alert alert-danger d-none py-2 px-3 small mb-3">
           <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -91,7 +96,9 @@
 
           <!-- Asignación de Roles (Drag and Drop) -->
           <div class="mb-3">
-            <label class="form-label fw-semibold text-secondary small d-block"
+            <label
+              for="rolesDisponiblesList"
+              class="form-label fw-semibold text-secondary small d-block"
               >Asignación de Roles</label
             >
             <div class="row g-2">
@@ -139,7 +146,12 @@
             <label for="territorios_select" class="form-label fw-semibold text-secondary small"
               >Cobertura Territorial (Provincias) *</label
             >
-            <select class="form-select bg-light" id="territorios_select" multiple style="height: 120px;">
+            <select
+              class="form-select bg-light"
+              id="territorios_select"
+              multiple
+              style="height: 120px"
+            >
               <!-- Se cargará dinámicamente -->
             </select>
             <div class="invalid-feedback">Debe seleccionar al menos una provincia.</div>
@@ -167,12 +179,11 @@
               class="btn btn-primary px-4 d-flex align-items-center gap-2"
               id="btnSubmit"
             >
-              <span
+              <output
                 class="spinner-border spinner-border-sm d-none"
                 id="loadingSpinner"
-                role="status"
                 aria-hidden="true"
-              ></span>
+              ></output>
               <span id="btnText">Guardar Usuario</span>
             </button>
           </div>

@@ -25,22 +25,19 @@ class IncidenciaService
     public function calculatePriority(int $subTipoId, int $afectados): ?int
     {
         $subtipo = CategoriaIncidencia::find($subTipoId);
-        if (! $subtipo || ! $subtipo->prioridad_id) {
+        $basePriorityId = $subtipo?->prioridad_id;
+
+        if (! $basePriorityId) {
             return null;
         }
 
-        $basePriorityId = $subtipo->prioridad_id;
-
         if ($afectados >= 10) {
-            if ($basePriorityId == 2) {
-                return 1;
-            } // Alta -> Crítica
-            if ($basePriorityId == 3) {
-                return 2;
-            } // Media -> Alta
-            if ($basePriorityId == 4) {
-                return 3;
-            } // Baja -> Media
+            return match ((int) $basePriorityId) {
+                2 => 1, // Alta -> Crítica
+                3 => 2, // Media -> Alta
+                4 => 3, // Baja -> Media
+                default => $basePriorityId,
+            };
         }
 
         return $basePriorityId;
@@ -102,90 +99,116 @@ class IncidenciaService
         return DB::transaction(function () use ($data, $user) {
             $direccionId = $data['direccion_id'] ?? null;
 
-            // Lógica de agrupamiento
             if ($direccionId) {
-                $direccion = Direccion::find($direccionId);
-                if ($direccion) {
-                    $similar = $this->groupingService->findSimilarIncident(
-                        (int) $data['tipo_incidencia_id'],
-                        (int) $data['sub_tipo_incidencia_id'],
-                        (float) $direccion->latitud,
-                        (float) $direccion->longitud
-                    );
-
-                    if ($similar) {
-                        $similar->cantidad_afectados_incidencia += 1;
-                        $similar->prioridad_id = $this->calculatePriority($similar->sub_tipo_incidencia_id, $similar->cantidad_afectados_incidencia);
-                        $similar->save();
-
-                        if ($user) {
-                            $exists = DB::table('usuario_incidencia')
-                                ->where('user_id', $user->id)
-                                ->where('reporte_incidencia_id', $similar->id)
-                                ->exists();
-
-                            if (! $exists) {
-                                $similar->reportantes()->attach($user->id, ['created_by' => $user->id, 'tipo_relacion' => 'reportante']);
-                            }
-
-                            HistorialIncidencia::create([
-                                'incidencia_id' => $similar->id,
-                                'estado_id' => $similar->estado_id,
-                                'usuario_id' => $user->id,
-                                'comentario' => '[VINCULADO] '.$data['incidencia_descripcion'],
-                            ]);
-                        }
-
-                        $isReferenced = Incidencia::where('direccion_id', $direccion->id)->exists();
-                        if (! $isReferenced) {
-                            $direccion->delete();
-                        }
-
-                        return [
-                            'message' => 'Incidencia agrupada con éxito con reporte similar existente.',
-                            'data' => $similar->load(['direccion.territorio.pais', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes']),
-                        ];
-                    }
+                $result = $this->tryGroupWithSimilarIncident($direccionId, $data, $user);
+                if ($result) {
+                    return $result;
                 }
             }
 
-            // Si no hay similar, se crea nueva
-            $afectados = max((int) ($data['cantidad_afectados_incidencia'] ?? 1), 1);
-            $prioridadId = $this->calculatePriority($data['sub_tipo_incidencia_id'], $afectados);
-
-            $institucionId = $data['institucion_id'] ?? null;
-            if (isset($data['sub_tipo_incidencia_id'])) {
-                $subTipo = CategoriaIncidencia::find($data['sub_tipo_incidencia_id']);
-                $institucionId = $subTipo ? $subTipo->institucion_id : $institucionId;
-            }
-
-            $incidencia = Incidencia::create([
-                'incidencia_descripcion' => $data['incidencia_descripcion'],
-                'direccion_id' => $direccionId,
-                'cliente_id' => $user ? $user->id : null,
-                'estado_id' => $data['estado_id'] ?? 1,
-                'institucion_id' => $institucionId,
-                'tipo_incidencia_id' => $data['tipo_incidencia_id'],
-                'sub_tipo_incidencia_id' => $data['sub_tipo_incidencia_id'],
-                'prioridad_id' => $prioridadId,
-                'cantidad_afectados_incidencia' => $afectados,
-                'version' => 1,
-                'created_by' => $user ? $user->id : null,
-            ]);
-
-            if ($user) {
-                $incidencia->reportantes()->attach($user->id, ['created_by' => $user->id, 'tipo_relacion' => 'reportante']);
-            }
-
-            if (! empty($data['recursos'])) {
-                $this->processBase64Resources($incidencia, $data['recursos']);
-            }
-
-            return [
-                'message' => 'Incidencia creada con éxito',
-                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
-            ];
+            return $this->createNewIncident($direccionId, $data, $user);
         });
+    }
+
+    private function tryGroupWithSimilarIncident(int $direccionId, array $data, $user): ?array
+    {
+        $direccion = Direccion::find($direccionId);
+        if (! $direccion) {
+            return null;
+        }
+
+        $similar = $this->groupingService->findSimilarIncident(
+            (int) $data['tipo_incidencia_id'],
+            (int) $data['sub_tipo_incidencia_id'],
+            (float) $direccion->latitud,
+            (float) $direccion->longitud
+        );
+
+        if (! $similar) {
+            return null;
+        }
+
+        $similar->cantidad_afectados_incidencia += 1;
+        $similar->prioridad_id = $this->calculatePriority($similar->sub_tipo_incidencia_id, $similar->cantidad_afectados_incidencia);
+        $similar->save();
+
+        if ($user) {
+            $this->attachReporterToSimilar($similar, $user, $data['incidencia_descripcion']);
+        }
+
+        if (! Incidencia::where('direccion_id', $direccion->id)->exists()) {
+            $direccion->delete();
+        }
+
+        return [
+            'message' => 'Se ha agrupado a una nueva incidencia.',
+            'data' => $similar->load(['direccion.territorio.pais', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes']),
+        ];
+    }
+
+    private function attachReporterToSimilar(Incidencia $similar, $user, string $descripcion): void
+    {
+        $exists = DB::table('usuario_incidencia')
+            ->where('user_id', $user->id)
+            ->where('reporte_incidencia_id', $similar->id)
+            ->exists();
+
+        if (! $exists) {
+            $similar->reportantes()->attach($user->id, ['created_by' => $user->id, 'tipo_relacion' => 'reportante']);
+        }
+
+        HistorialIncidencia::create([
+            'incidencia_id' => $similar->id,
+            'estado_id' => $similar->estado_id,
+            'usuario_id' => $user->id,
+            'comentario' => '[VINCULADO] '.$descripcion,
+        ]);
+    }
+
+    private function createNewIncident(?int $direccionId, array $data, $user): array
+    {
+        $afectados = max((int) ($data['cantidad_afectados_incidencia'] ?? 1), 1);
+        $prioridadId = $this->calculatePriority($data['sub_tipo_incidencia_id'], $afectados);
+
+        $institucionId = $data['institucion_id'] ?? null;
+        if (isset($data['sub_tipo_incidencia_id'])) {
+            $subTipo = CategoriaIncidencia::find($data['sub_tipo_incidencia_id']);
+            $institucionId = $subTipo ? $subTipo->institucion_id : $institucionId;
+        }
+
+        $incidencia = Incidencia::create([
+            'incidencia_descripcion' => $data['incidencia_descripcion'],
+            'direccion_id' => $direccionId,
+            'cliente_id' => $user ? $user->id : null,
+            'estado_id' => $data['estado_id'] ?? 1,
+            'institucion_id' => $institucionId,
+            'tipo_incidencia_id' => $data['tipo_incidencia_id'],
+            'sub_tipo_incidencia_id' => $data['sub_tipo_incidencia_id'],
+            'prioridad_id' => $prioridadId,
+            'cantidad_afectados_incidencia' => $afectados,
+            'version' => 1,
+            'created_by' => $user ? $user->id : null,
+        ]);
+
+        if ($user) {
+            $incidencia->reportantes()->attach($user->id, ['created_by' => $user->id, 'tipo_relacion' => 'reportante']);
+        }
+
+        if (! empty($data['recursos'])) {
+            $this->processBase64Resources($incidencia, $data['recursos']);
+        }
+
+        if (isset($data['instituciones_apoyo']) && is_array($data['instituciones_apoyo'])) {
+            $apoyos = array_filter($data['instituciones_apoyo'], function ($id) use ($institucionId) {
+                return $id != $institucionId;
+            });
+            $incidencia->institucionesApoyo()->sync($apoyos);
+        }
+
+        return [
+            'message' => 'Incidencia creada con éxito',
+            'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
+        ];
     }
 
     /**
@@ -223,9 +246,16 @@ class IncidenciaService
                 $this->processBase64Resources($incidencia, $data['recursos']);
             }
 
+            if (isset($data['instituciones_apoyo']) && is_array($data['instituciones_apoyo'])) {
+                $apoyos = array_filter($data['instituciones_apoyo'], function ($id) use ($institucionId) {
+                    return $id != $institucionId;
+                });
+                $incidencia->institucionesApoyo()->sync($apoyos);
+            }
+
             return [
                 'message' => 'Incidencia actualizada con éxito',
-                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
+                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
             ];
         });
     }

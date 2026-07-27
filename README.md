@@ -222,6 +222,7 @@ Las migraciones del esquema analítico están aisladas en la carpeta:
 #### En Desarrollo Local (Ejecución y Reset)
 
 Para reiniciar **todo** el sistema (tablas de negocio y OLAP) de forma segura desde cero, puedes usar el comando estándar con seed. Gracias a la configuración del `DatabaseSeeder`, las tablas del Data Warehouse se reconstruyen y pueblan automáticamente sin crashear el sistema:
+
 ```bash
 php artisan migrate:fresh --seed
 ```
@@ -285,6 +286,7 @@ docker-compose up -d sonarqube
 ```
 
 El servidor estará expuesto en: **http://localhost:9009**
+
 - Las credenciales por defecto de un despliegue fresco de SonarQube son `admin` / `admin`.
 
 ### Configuración del Proyecto (sonar-project.properties)
@@ -293,6 +295,21 @@ El archivo en la raíz `sonar-project.properties` contiene la huella y configura
 
 - **Autenticación segura**: Mediante el uso de un token que puede ser inyectado por CLI (`-Dsonar.token=$SONAR_TOKEN`), evitas subir contraseñas planas al repositorio.
 - **Mapeo de cobertura**: Ya está preconfigurado para leer la salida XML (Clover) generada por PHPUnit, y el archivo `lcov.info` de las métricas Frontend, de manera que la cobertura de código se centralice en los dashboards SQA.
+
+---
+
+### Criterios de Aceptación (Quality Gates) en SonarQube
+
+Para asegurar la integridad del Sistema de Gestión de Incidencias, el pipeline de CI/CD validará el código contra el siguiente Quality Gate basado en la metodología "Clean as You Code":
+
+| Métrica                                | Condición (Código Nuevo) | Condición (Global) | Justificación                                                                       |
+| :------------------------------------- | :----------------------- | :----------------- | :---------------------------------------------------------------------------------- |
+| **Cobertura de Pruebas (Coverage)**    | `>= 80%`                 | `>= 70%`           | Garantiza que la nueva lógica de negocio esté probada sin arrastrar deuda heredada. |
+| **Líneas Duplicadas**                  | `<= 3.0%`                | `<= 5.0%`          | Fomenta la creación de componentes y servicios reutilizables.                       |
+| **Reliability Rating (Bugs)**          | `A` (0 Bugs)             | `Mejor que C`      | Evita la introducción de fallos que puedan romper la aplicación en producción.      |
+| **Security Rating (Vulnerabilidades)** | `A` (0 Vulnerabilidades) | `A`                | Protege los datos sensibles de los usuarios y las incidencias reportadas.           |
+| **Maintainability (Code Smells)**      | `A`                      | `Mejor que C`      | Mantiene el código limpio, legible y fácil de escalar a futuro.                     |
+| **Security Hotspots Reviewed**         | `100%`                   | `100%`             | Obliga a la revisión manual de configuraciones sensibles o de riesgo.               |
 
 ---
 

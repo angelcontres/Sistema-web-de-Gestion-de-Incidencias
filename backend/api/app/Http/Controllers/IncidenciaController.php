@@ -11,6 +11,7 @@ use App\Notifications\IssueAssignedNotification;
 use App\Notifications\IssueStatusChangedNotification;
 use App\Services\IncidenciaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class IncidenciaController extends Controller
@@ -22,64 +23,9 @@ class IncidenciaController extends Controller
     {
         $user = auth()->user();
 
-        // Automatic state transition: when Supervisor queries list, Pendiente (1) -> En Revisión (2)
-        if ($user && $user->roles()->where('nombre', 'Supervisor')->exists()) {
-            $transitionQuery = Incidencia::where('estado_id', 1);
-            $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
-            if (! empty($territorioIds)) {
-                $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
-                $transitionQuery->whereHas('direccion', function ($q) use ($descendientesIds) {
-                    $q->whereIn('territorio_id', $descendientesIds);
-                });
-            } elseif ($user->pais_id) {
-                $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
-                    $q->where('pais_id', $user->pais_id);
-                });
-            }
+        $this->processSupervisorTransitions($user);
 
-            $incidenciasTransition = $transitionQuery->get();
-            foreach ($incidenciasTransition as $inc) {
-                $inc->update(['estado_id' => 2]);
-
-                $this->despacharNotificaciones($inc, 1, []);
-            }
-        }
-
-        $query = Incidencia::with([
-            'direccion.territorio.pais',
-            'estado',
-            'institucion',
-            'tipo',
-            'subTipo',
-            'prioridad',
-            'cliente',
-            'operadores',
-            'reportantes',
-            'recursos',
-        ]);
-
-        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists()) {
-            if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
-                $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
-                if (! empty($territorioIds)) {
-                    $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
-                    $query->whereHas('direccion', function ($q) use ($descendientesIds) {
-                        $q->whereIn('territorio_id', $descendientesIds);
-                    });
-                } else {
-                    $query->whereRaw('1 = 0');
-                }
-            } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
-                $query->where('institucion_id', $user->institucion_id);
-            } else {
-                $query->where(function ($q) use ($user) {
-                    $q->where('cliente_id', $user->id)
-                        ->orWhereHas('reportantes', function ($q2) use ($user) {
-                            $q2->where('user_id', $user->id);
-                        });
-                });
-            }
-        }
+        $query = $this->buildIncidenciaQuery($user);
 
         if ($request->has('estado_id')) {
             $query->where('estado_id', $request->estado_id);
@@ -96,6 +42,82 @@ class IncidenciaController extends Controller
         $perPage = $request->input('per_page', 15);
 
         return response()->json($query->orderBy('id', 'desc')->cursorPaginate($perPage), 200);
+    }
+
+    private function processSupervisorTransitions(?User $user): void
+    {
+        // Automatic state transition: when Supervisor queries list, Pendiente (1) -> En Revisión (2)
+        if (! $user || ! $user->roles()->where('nombre', 'Supervisor')->exists()) {
+            return;
+        }
+
+        $transitionQuery = Incidencia::where('estado_id', 1);
+        $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+        if (! empty($territorioIds)) {
+            $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+            $transitionQuery->whereHas('direccion', function ($q) use ($descendientesIds) {
+                $q->whereIn('territorio_id', $descendientesIds);
+            });
+        } elseif ($user->pais_id) {
+            $transitionQuery->whereHas('direccion.territorio', function ($q) use ($user) {
+                $q->where('pais_id', $user->pais_id);
+            });
+        }
+
+        $incidenciasTransition = $transitionQuery->get();
+        foreach ($incidenciasTransition as $inc) {
+            $inc->update(['estado_id' => 2]);
+            $this->despacharNotificaciones($inc, 1, []);
+        }
+    }
+
+    private function buildIncidenciaQuery(?User $user)
+    {
+        $query = Incidencia::with([
+            'direccion.territorio.pais',
+            'estado',
+            'institucion',
+            'institucionesApoyo',
+            'tipo',
+            'subTipo',
+            'prioridad',
+            'cliente',
+            'operadores',
+            'reportantes',
+            'recursos',
+        ]);
+
+        if (! $user || $user->roles()->where('nombre', 'Admin')->exists()) {
+            return $query;
+        }
+
+        if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
+            $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+            if (! empty($territorioIds)) {
+                $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
+                $query->whereHas('direccion', function ($q) use ($descendientesIds) {
+                    $q->whereIn('territorio_id', $descendientesIds);
+                });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($user->roles()->where('nombre', 'Institucion')->exists()) {
+            $query->where(function ($q) use ($user) {
+                $q->where('institucion_id', $user->institucion_id)
+                    ->orWhereHas('institucionesApoyo', function ($subQ) use ($user) {
+                        $subQ->where('instituciones.id', $user->institucion_id);
+                    });
+            });
+        } else {
+            $query->where(function ($q) use ($user) {
+                $q->where('cliente_id', $user->id)
+                    ->orWhereHas('reportantes', function ($q2) use ($user) {
+                        $q2->where('user_id', $user->id);
+                    });
+            });
+        }
+
+        return $query;
     }
 
     /**
@@ -129,6 +151,7 @@ class IncidenciaController extends Controller
             'cliente',
             'estado',
             'institucion',
+            'institucionesApoyo',
             'tipo',
             'subTipo',
             'prioridad',
@@ -253,37 +276,25 @@ class IncidenciaController extends Controller
      */
     private function checkAccess($user, $incidencia): bool
     {
-        if ($user->roles()->where('nombre', 'Admin')->exists()) {
-            return true;
+        $roles = $user->roles->pluck('nombre');
+
+        return $roles->contains('Admin')
+            || $incidencia->cliente_id === $user->id
+            || ($roles->contains('Supervisor') && $this->checkSupervisorAccess($user, $incidencia))
+            || ($roles->contains('Institucion') && ($incidencia->institucion_id == $user->institucion_id || $incidencia->institucionesApoyo->contains('id', $user->institucion_id)))
+            || $incidencia->reportantes()->where('usuario_incidencia.user_id', $user->id)->exists();
+    }
+
+    private function checkSupervisorAccess($user, $incidencia): bool
+    {
+        $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
+        if (empty($territorioIds)) {
+            return false;
         }
 
-        if ($user->roles()->where('nombre', 'Supervisor')->exists()) {
-            $territorioIds = $user->territorios()->pluck('territorios.id')->toArray();
-            if (! empty($territorioIds)) {
-                $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
-                if (! $incidencia->direccion || ! in_array($incidencia->direccion->territorio_id, $descendientesIds)) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+        $descendientesIds = Territorio::obtenerDescendientesIds($territorioIds);
 
-            return true;
-        }
-
-        if ($user->roles()->where('nombre', 'Institucion')->exists()) {
-            if ($incidencia->institucion_id != $user->institucion_id) {
-                return false;
-            }
-
-            return true;
-        }
-
-        if ($incidencia->cliente_id === $user->id) {
-            return true;
-        }
-
-        return $incidencia->reportantes()->where('usuario_incidencia.user_id', $user->id)->exists();
+        return $incidencia->direccion && in_array($incidencia->direccion->territorio_id, $descendientesIds);
     }
 
     /**
@@ -303,13 +314,17 @@ class IncidenciaController extends Controller
                 ->unique('id');
 
             foreach ($destinatarios as $destinatario) {
-                $destinatario->notify(new IssueStatusChangedNotification([
-                    'title' => "Incidencia #{$incidencia->id}: Cambio de Estado",
-                    'message' => 'El reporte ha cambiado a: '.($incidencia->estado->nombre ?? 'Actualizado'),
-                    'url' => "/tramites/estado-individual?id={$incidencia->id}",
-                    'type' => 'info',
-                    'incidencia_id' => $incidencia->id,
-                ]));
+                try {
+                    $destinatario->notify(new IssueStatusChangedNotification([
+                        'title' => "Incidencia #{$incidencia->id}: Cambio de Estado",
+                        'message' => 'El reporte ha cambiado a: '.($incidencia->estado->nombre ?? 'Actualizado'),
+                        'url' => "/tramites/estado-individual?id={$incidencia->id}",
+                        'type' => 'info',
+                        'incidencia_id' => $incidencia->id,
+                    ]));
+                } catch (\Exception $e) {
+                    Log::error('Error enviando notificación de cambio de estado: '.$e->getMessage());
+                }
             }
         }
 
@@ -321,14 +336,39 @@ class IncidenciaController extends Controller
             $nuevosOperadores = User::whereIn('id', $nuevosAsignadosIds)->get();
 
             foreach ($nuevosOperadores as $operador) {
-                $operador->notify(new IssueAssignedNotification([
-                    'title' => "Nueva Incidencia Asignada (#{$incidencia->id})",
-                    'message' => 'Se te ha despachado para atender: '.($incidencia->direccion->calle ?? 'Ubicación registrada'),
-                    'url' => '/instituciones/kanban',
-                    'type' => 'danger',
-                    'incidencia_id' => $incidencia->id,
-                    'color_hex' => '#dc3545',
-                ]));
+                try {
+                    $operador->notify(new IssueAssignedNotification([
+                        'title' => "Nueva Incidencia Asignada (#{$incidencia->id})",
+                        'message' => 'Se te ha despachado para atender: '.($incidencia->direccion->calle ?? 'Ubicación registrada'),
+                        'url' => '/instituciones/kanban',
+                        'type' => 'danger',
+                        'incidencia_id' => $incidencia->id,
+                        'color_hex' => '#dc3545',
+                    ]));
+                } catch (\Exception $e) {
+                    Log::error('Error enviando notificación de asignación: '.$e->getMessage());
+                }
+            }
+        }
+
+        // 3. ¿ES UNA INCIDENCIA NUEVA? -> Notificamos a Supervisores y Administradores
+        if ($oldEstadoId === null) {
+            $supervisoresYAdmins = User::whereHas('roles', function ($q) {
+                $q->whereIn('nombre', ['Admin', 'Supervisor']);
+            })->get();
+
+            foreach ($supervisoresYAdmins as $admin) {
+                try {
+                    $admin->notify(new IssueStatusChangedNotification([
+                        'title' => "Nueva Incidencia Creada (#{$incidencia->id})",
+                        'message' => 'Un usuario ha reportado una nueva incidencia en: '.($incidencia->direccion->detalle ?? 'Ubicación registrada'),
+                        'url' => "/tramites/estado-individual?id={$incidencia->id}",
+                        'type' => 'warning',
+                        'incidencia_id' => $incidencia->id,
+                    ]));
+                } catch (\Exception $e) {
+                    Log::error('Error enviando notificación de nueva incidencia: '.$e->getMessage());
+                }
             }
         }
     }

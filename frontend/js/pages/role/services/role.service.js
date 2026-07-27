@@ -36,7 +36,7 @@ export const RoleService = {
     });
   },
   assignPermissions(id, payload) {
-    return apiRequest(`/roles/${id}/permisos`, {
+    return apiRequest(`/roles/${id}/permissions`, {
       method: 'POST',
       body: JSON.stringify(payload),
     });

@@ -4,8 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Models\UserInvitation;
+use App\Notifications\UserInvitationNotification;
 use App\Services\Contracts\RoleServiceInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -34,11 +39,13 @@ class UserController extends Controller
     {
         $datosValidados = $request->validated();
 
+        $password = $datosValidados['password'] ?? Str::random(16);
+
         $user = User::create([
             'name' => $datosValidados['name'],
             'username' => $datosValidados['username'],
             'email' => $datosValidados['email'],
-            'password' => $datosValidados['password'],
+            'password' => Hash::make($password),
             'activo' => $datosValidados['activo'] ?? true,
             'institucion_id' => $datosValidados['institucion_id'] ?? null,
         ]);
@@ -51,8 +58,23 @@ class UserController extends Controller
             $user->territorios()->sync($datosValidados['territorios']);
         }
 
+        if (empty($datosValidados['password'])) {
+            $token = Str::random(60);
+
+            UserInvitation::where('email', $user->email)->delete();
+
+            $invitation = UserInvitation::create([
+                'email' => $user->email,
+                'token' => $token,
+                'expires_at' => now()->addHours(24),
+            ]);
+
+            Notification::route('mail', $invitation->email)
+                ->notify(new UserInvitationNotification($invitation));
+        }
+
         return response()->json([
-            'message' => 'Usuario creado con éxito',
+            'message' => empty($datosValidados['password']) ? 'Usuario creado y se ha enviado la invitación exitosamente' : 'Usuario creado con éxito',
             'data' => $user->load('roles'),
         ], 201);
     }

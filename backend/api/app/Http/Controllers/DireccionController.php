@@ -42,12 +42,8 @@ class DireccionController extends Controller
      */
     public function store(DireccionesRequest $request)
     {
-        $user = auth()->user();
-        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id) {
-            $territorio = Territorio::findOrFail($request->territorio_id);
-            if ($territorio->pais_id != $user->pais_id) {
-                return response()->json(['message' => 'El territorio seleccionado debe pertenecer a su país asignado.'], 403);
-            }
+        if (! $this->checkTerritoryPermission(auth()->user(), $request->territorio_id)) {
+            return response()->json(['message' => 'El territorio seleccionado debe pertenecer a su país asignado.'], 403);
         }
 
         $direccion = Direccion::create([
@@ -98,11 +94,8 @@ class DireccionController extends Controller
             if ($direccion->territorio?->pais_id != $user->pais_id) {
                 return response()->json(['message' => 'No autorizado para modificar esta dirección.'], 403);
             }
-            if ($request->has('territorio_id')) {
-                $territorio = Territorio::findOrFail($request->territorio_id);
-                if ($territorio->pais_id != $user->pais_id) {
-                    return response()->json(['message' => 'El nuevo territorio seleccionado debe pertenecer a su país asignado.'], 403);
-                }
+            if ($request->has('territorio_id') && ! $this->checkTerritoryPermission($user, $request->territorio_id)) {
+                return response()->json(['message' => 'El nuevo territorio seleccionado debe pertenecer a su país asignado.'], 403);
             }
         }
 
@@ -165,9 +158,29 @@ class DireccionController extends Controller
 
         $lat = $request->input('lat');
         $lng = $request->input('lng');
-        $result = null;
 
-        // 1. Intentar con Nominatim (OpenStreetMap)
+        $result = $this->attemptNominatimGeocode($lat, $lng);
+
+        if (! $result) {
+            $result = $this->attemptBigDataCloudGeocode($lat, $lng);
+        }
+
+        if ($result) {
+            $postcode = $result['address']['postcode'] ?? null;
+            if ($postcode) {
+                $result['territorio_detectado'] = $this->detectTerritoryFromPostcode($postcode);
+            }
+
+            return response()->json($result, 200);
+        }
+
+        return response()->json([
+            'message' => 'No se pudo obtener información de geocodificación de ningún servicio.',
+        ], 502);
+    }
+
+    private function attemptNominatimGeocode($lat, $lng)
+    {
         try {
             $response = Http::timeout(3)
                 ->withoutVerifying()
@@ -183,124 +196,139 @@ class DireccionController extends Controller
                 ]);
 
             if ($response->successful()) {
-                $result = $response->json();
+                return $response->json();
             }
         } catch (\Exception $e) {
-            // Continuar silenciosamente al plan B (Fallback)
+            // Continuar silenciosamente al plan B
         }
 
-        // 2. Fallback: Intentar con BigDataCloud
-        if (! $result) {
-            try {
-                $response = Http::timeout(3)
-                    ->withoutVerifying()
-                    ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
-                        'latitude' => $lat,
-                        'longitude' => $lng,
-                        'localityLanguage' => 'es',
-                    ]);
+        return null;
+    }
 
-                if ($response->successful()) {
-                    $bdc = $response->json();
+    private function attemptBigDataCloudGeocode($lat, $lng)
+    {
+        try {
+            $response = Http::timeout(3)
+                ->withoutVerifying()
+                ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
+                    'latitude' => $lat,
+                    'longitude' => $lng,
+                    'localityLanguage' => 'es',
+                ]);
 
-                    $result = [
-                        'address' => [
-                            'country' => $bdc['countryName'] ?? null,
-                            'country_code' => $bdc['countryCode'] ?? null,
-                            'state' => $bdc['principalSubdivision'] ?? null,
-                            'city' => $bdc['city'] ?? null,
-                            'town' => $bdc['city'] ?? null,
-                            'parish' => $bdc['locality'] ?? null,
-                            'suburb' => $bdc['locality'] ?? null,
-                            'neighbourhood' => $bdc['locality'] ?? null,
-                            'postcode' => $bdc['postcode'] ?? null,
-                            'road' => $bdc['locality'] ?? null,
-                        ],
-                        'display_name' => implode(', ', array_filter([
-                            $bdc['locality'] ?? null,
-                            $bdc['city'] ?? null,
-                            $bdc['principalSubdivision'] ?? null,
-                            $bdc['countryName'] ?? null,
-                        ])),
-                    ];
-                }
-            } catch (\Exception $e) {
-                return response()->json([
-                    'message' => 'Error en todos los servicios de geocodificación: '.$e->getMessage(),
-                ], 502);
+            if ($response->successful()) {
+                $bdc = $response->json();
+
+                return [
+                    'address' => [
+                        'country' => $bdc['countryName'] ?? null,
+                        'country_code' => $bdc['countryCode'] ?? null,
+                        'state' => $bdc['principalSubdivision'] ?? null,
+                        'city' => $bdc['city'] ?? null,
+                        'town' => $bdc['city'] ?? null,
+                        'parish' => $bdc['locality'] ?? null,
+                        'suburb' => $bdc['locality'] ?? null,
+                        'neighbourhood' => $bdc['locality'] ?? null,
+                        'postcode' => $bdc['postcode'] ?? null,
+                        'road' => $bdc['locality'] ?? null,
+                    ],
+                    'display_name' => implode(', ', array_filter([
+                        $bdc['locality'] ?? null,
+                        $bdc['city'] ?? null,
+                        $bdc['principalSubdivision'] ?? null,
+                        $bdc['countryName'] ?? null,
+                    ])),
+                ];
             }
+        } catch (\Exception $e) {
+            // Ignorar para retornar null
         }
 
-        if ($result) {
-            // Buscar la parroquia por código postal
-            $postcode = $result['address']['postcode'] ?? null;
-            if ($postcode) {
-                // Remover ceros a la izquierda para asegurar coincidencias si el seeder las guardó como numéricos
-                $codigoLimpio = (string) (int) $postcode;
+        return null;
+    }
 
-                $territorio = Territorio::where('tipo', 'Parroquia')
-                    ->where(function ($query) use ($postcode, $codigoLimpio) {
-                        $query->where('codigo', $postcode)
-                            ->orWhere('codigo', $codigoLimpio);
-                    })->first();
-
-                if ($territorio) {
-                    $canton = $territorio->parent;
-                    $provincia = $canton ? $canton->parent : null;
-
-                    $result['territorio_detectado'] = [
-                        'parroquia_id' => $territorio->id,
-                        'canton_id' => $canton ? $canton->id : null,
-                        'provincia_id' => $provincia ? $provincia->id : null,
-                        'pais_id' => $territorio->pais_id,
-                    ];
-                } else {
-                    // Fallback 1: Buscar si alguna Dirección previa ya tiene registrado este código postal
-                    $direccionMapeada = Direccion::with('territorio')
-                        ->where('codigo_postal', $postcode)
-                        ->first();
-
-                    if ($direccionMapeada && $direccionMapeada->territorio) {
-                        $territorio = $direccionMapeada->territorio;
-                        $canton = $territorio->parent;
-                        $provincia = $canton ? $canton->parent : null;
-
-                        $result['territorio_detectado'] = [
-                            'parroquia_id' => $territorio->id,
-                            'canton_id' => $canton ? $canton->id : null,
-                            'provincia_id' => $provincia ? $provincia->id : null,
-                            'pais_id' => $territorio->pais_id,
-                        ];
-                    } else {
-                        // Fallback 2: Buscar Cantón por los primeros 4 dígitos del código postal (Ej: 170135 -> 1701)
-                        $padded = str_pad($postcode, 6, '0', STR_PAD_LEFT);
-                        $cantonCode = substr($padded, 0, 4);
-                        $cantonCodeLimpio = (string) (int) $cantonCode;
-
-                        $canton = Territorio::where('tipo', 'Canton')
-                            ->where(function ($query) use ($cantonCode, $cantonCodeLimpio) {
-                                $query->where('codigo', $cantonCode)
-                                    ->orWhere('codigo', $cantonCodeLimpio);
-                            })->first();
-
-                        if ($canton) {
-                            $provincia = $canton->parent;
-                            $result['territorio_detectado'] = [
-                                'parroquia_id' => null,
-                                'canton_id' => $canton->id,
-                                'provincia_id' => $provincia ? $provincia->id : null,
-                                'pais_id' => $canton->pais_id,
-                            ];
-                        }
-                    }
-                }
-            }
-
-            return response()->json($result, 200);
+    private function detectTerritoryFromPostcode($postcode)
+    {
+        $territorio = $this->findParroquiaByPostcode($postcode);
+        if ($territorio) {
+            return $this->formatTerritoryResult($territorio);
         }
 
-        return response()->json([
-            'message' => 'No se pudo obtener información de geocodificación de ningún servicio.',
-        ], 502);
+        $territorio = $this->findTerritorioByDireccionMapeada($postcode);
+        if ($territorio) {
+            return $this->formatTerritoryResult($territorio);
+        }
+
+        $canton = $this->findCantonByPostcode($postcode);
+
+        return $canton ? $this->formatCantonResult($canton) : null;
+    }
+
+    private function findParroquiaByPostcode($postcode): ?Territorio
+    {
+        $codigoLimpio = (string) (int) $postcode;
+
+        return Territorio::where('tipo', 'Parroquia')
+            ->where(function ($query) use ($postcode, $codigoLimpio) {
+                $query->where('codigo', $postcode)->orWhere('codigo', $codigoLimpio);
+            })->first();
+    }
+
+    private function findTerritorioByDireccionMapeada($postcode): ?Territorio
+    {
+        $direccion = Direccion::with('territorio')->where('codigo_postal', $postcode)->first();
+
+        return $direccion?->territorio;
+    }
+
+    private function findCantonByPostcode($postcode): ?Territorio
+    {
+        $padded = str_pad($postcode, 6, '0', STR_PAD_LEFT);
+        $cantonCode = substr($padded, 0, 4);
+        $cantonCodeLimpio = (string) (int) $cantonCode;
+
+        return Territorio::where('tipo', 'Canton')
+            ->where(function ($query) use ($cantonCode, $cantonCodeLimpio) {
+                $query->where('codigo', $cantonCode)->orWhere('codigo', $cantonCodeLimpio);
+            })->first();
+    }
+
+    private function formatCantonResult(Territorio $canton)
+    {
+        $provincia = $canton->parent;
+
+        return [
+            'parroquia_id' => null,
+            'canton_id' => $canton->id,
+            'provincia_id' => $provincia ? $provincia->id : null,
+            'pais_id' => $canton->pais_id,
+        ];
+    }
+
+    private function formatTerritoryResult(Territorio $territorio)
+    {
+        $canton = $territorio->parent;
+        $provincia = $canton ? $canton->parent : null;
+
+        return [
+            'parroquia_id' => $territorio->id,
+            'canton_id' => $canton ? $canton->id : null,
+            'provincia_id' => $provincia ? $provincia->id : null,
+            'pais_id' => $territorio->pais_id,
+        ];
+    }
+
+    /**
+     * Valida que el usuario tenga permiso para operar sobre el territorio indicado.
+     */
+    private function checkTerritoryPermission(?User $user, ?int $territorioId): bool
+    {
+        if (! $user || $user->roles()->where('nombre', 'Admin')->exists() || ! $user->pais_id || ! $territorioId) {
+            return true;
+        }
+
+        $territorio = Territorio::findOrFail($territorioId);
+
+        return $territorio->pais_id == $user->pais_id;
     }
 }

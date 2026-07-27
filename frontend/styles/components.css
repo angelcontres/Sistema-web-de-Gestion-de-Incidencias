@@ -396,13 +396,10 @@
 }
 
 table.table-hover tbody tr {
-  transition:
-    background-color 0.15s ease-in-out,
-    transform 0.1s ease;
+  transition: background-color 0.15s ease-in-out;
 }
 table.table-hover tbody tr:hover {
   background-color: rgba(var(--bs-primary-rgb), 0.03) !important;
-  transform: scale(1.001);
 }
 
 .btn {

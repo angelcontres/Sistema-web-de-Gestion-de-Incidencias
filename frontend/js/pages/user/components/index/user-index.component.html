@@ -8,18 +8,17 @@
         sistema.
       </p>
     </div>
-    <!-- Enlace para ir al formulario en modo creación -->
-    <a
-      id="btn-nuevo-registro"
-      href="#/usuarios/form"
-      class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2"
-    >
-      <i class="bi bi-person-plus"></i> Nuevo Registro
-    </a>
+    <div class="d-flex gap-2">
+      <a
+        id="btn-nuevo-registro"
+        href="#/usuarios/form"
+        class="btn btn-primary fw-semibold px-4 py-2 rounded-2 d-flex align-items-center gap-2"
+      >
+        <i class="bi bi-envelope"></i> Invitar Usuario
+      </a>
+    </div>
   </div>
 
-  <!-- Tabla Auto-Contenida (Maneja tarjeta, loading, vacío y errores internamente) -->
+  <!-- Tabla Auto-Contenida -->
   <app-data-table id="tbl-datos-usuarios" title="Lista de Usuarios" empty-text="No se encontraron usuarios registrados."></app-data-table>
-</div>
-
 </div>

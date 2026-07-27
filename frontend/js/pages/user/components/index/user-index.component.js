@@ -3,6 +3,7 @@ import { UserService } from '../../services/user.service.js';
 import { AuthService } from '../../../../core/auth.service.js';
 import { ModalService } from '../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../shared/services/toast.service.js';
+
 export class UserIndexComponent extends BaseComponent {
   constructor() {
     super('js/pages/user/components/index/user-index.component.html');
@@ -19,7 +20,6 @@ export class UserIndexComponent extends BaseComponent {
     const tblDatos = this.querySelector('#tbl-datos-usuarios');
 
     if (tblDatos) {
-      // 1. Configurar las columnas de forma parametrizable
       tblDatos.configure({
         columns: [
           {
@@ -29,7 +29,7 @@ export class UserIndexComponent extends BaseComponent {
             format: (id) => `#${id}`,
           },
           { header: 'Usuario', key: 'username', class: 'fw-semibold text-dark' },
-          { header: 'Nombre', key: 'name' },
+          { header: 'Nombre', render: (user) => user.name || `<span class="text-muted fst-italic">Sin nombre</span>` },
           { header: 'Email', key: 'email', class: 'text-muted' },
           {
             header: 'Roles',
@@ -45,11 +45,14 @@ export class UserIndexComponent extends BaseComponent {
           },
           {
             header: 'Estado',
-            render: (user) => `
-              <span class="badge bg-${user.activo ? 'success' : 'danger'}-soft text-${user.activo ? 'success' : 'danger'} small fw-semibold">
+            render: (user) => {
+              if (user.email_verified_at === null) {
+                return `<span class="badge bg-warning-soft text-warning small fw-semibold">Pendiente de Confirmación</span>`;
+              }
+              return `<span class="badge bg-${user.activo ? 'success' : 'danger'}-soft text-${user.activo ? 'success' : 'danger'} small fw-semibold">
                 ${user.activo ? 'Activo' : 'Inactivo'}
-              </span>
-            `,
+              </span>`;
+            },
           },
           {
             header: 'Creado el',
@@ -84,24 +87,19 @@ export class UserIndexComponent extends BaseComponent {
         ],
       });
 
-      // 2. Escuchar acciones de la tabla (editar / eliminar)
       tblDatos.addEventListener('row-action', (e) => {
         const { action, item } = e.detail;
         if (action === 'editar') {
           window.location.hash = `#/usuarios/form?id=${item.id}`;
         } else if (action === 'eliminar') {
-          this.eliminarUsuario(item.id, item.name);
+          this.eliminarUsuario(item.id, item.name || item.username);
         }
       });
 
-      // 3. Cargar la lista inicial de usuarios
       tblDatos.load(UserService.getAll);
     }
   }
 
-  /**
-   * Elimina un usuario por ID
-   */
   async eliminarUsuario(id, name) {
     const isConfirmed = await ModalService.confirm(
       'Eliminar Usuario',

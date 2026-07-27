@@ -5,22 +5,23 @@ import { apiRequest } from '../../core/api.js';
  */
 async function withCache(key, ttlMinutes, fetcher) {
   const cachedItem = localStorage.getItem(key);
-  
+
   if (cachedItem) {
     try {
       const { value, expiry } = JSON.parse(cachedItem);
-      if (new Date().getTime() < expiry) {
+      if (Date.now() < expiry) {
         return value;
       }
       localStorage.removeItem(key);
     } catch (e) {
+      console.error(`Error: ${e}`);
       localStorage.removeItem(key);
     }
   }
 
   const data = await fetcher();
   if (data) {
-    const expiry = new Date().getTime() + (ttlMinutes * 60 * 1000);
+    const expiry = Date.now() + ttlMinutes * 60 * 1000;
     localStorage.setItem(key, JSON.stringify({ value: data, expiry }));
   }
   return data;
@@ -46,8 +47,11 @@ export const CatalogoService = {
     if (parentId !== undefined) params.append('parent_id', parentId === null ? 'null' : parentId);
 
     const queryString = params.toString();
-    const endpoint = `/catalogs/territories${queryString ? `?${queryString}` : ''}`;
-    
+
+    const prefix = queryString ? '?' : '';
+
+    const endpoint = `/catalogs/territories${prefix}${queryString}`;
+
     // Cache key based on query string to keep different combos cached
     const cacheKey = `catalogo_territorios_${queryString || 'all'}`;
     return withCache(cacheKey, 1440, () => apiRequest(endpoint));
@@ -58,11 +62,15 @@ export const CatalogoService = {
    */
   async getDirecciones(territorioId = null) {
     const params = new URLSearchParams();
-    if (territorioId !== null && territorioId !== undefined) params.append('territorio_id', territorioId);
+    if (territorioId !== null && territorioId !== undefined)
+      params.append('territorio_id', territorioId);
 
     const queryString = params.toString();
-    const endpoint = `/catalogs/addresses${queryString ? `?${queryString}` : ''}`;
-    
+
+    const prefix = queryString ? '?' : '';
+
+    const endpoint = `/catalogs/addresses${prefix}${queryString}`;
+
     // Cache key based on query string
     const cacheKey = `catalogo_direcciones_${queryString || 'all'}`;
     return withCache(cacheKey, 1440, () => apiRequest(endpoint));
@@ -73,7 +81,8 @@ export const CatalogoService = {
    */
   clearDireccionesCache(territorioId = null) {
     const params = new URLSearchParams();
-    if (territorioId !== null && territorioId !== undefined) params.append('territorio_id', territorioId);
+    if (territorioId !== null && territorioId !== undefined)
+      params.append('territorio_id', territorioId);
     const queryString = params.toString();
     const cacheKey = `catalogo_direcciones_${queryString || 'all'}`;
     localStorage.removeItem(cacheKey);
@@ -88,8 +97,12 @@ export const CatalogoService = {
     if (soloHojas) params.append('solo_hojas', 'true');
 
     const queryString = params.toString();
-    const endpoint = `/catalogs/incident-categories${queryString ? `?${queryString}` : ''}`;
-    
+
+    //usamos condicional simple primero para no complicarnos
+    const prefix = queryString ? '?' : '';
+
+    const endpoint = `/catalogs/incident-categories${prefix}${queryString}`;
+
     const cacheKey = `catalogo_categorias_${queryString || 'all'}`;
     return withCache(cacheKey, 1440, () => apiRequest(endpoint));
   },

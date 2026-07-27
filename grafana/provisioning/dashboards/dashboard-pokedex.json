@@ -1,0 +1,455 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "adl5p68",
+    "namespace": "default",
+    "uid": "e372b31a-0cf1-4d90-b00f-b7ef49d89cd6",
+    "resourceVersion": "1784184139412015",
+    "generation": 9,
+    "creationTimestamp": "2026-07-16T06:11:13Z",
+    "labels": {
+      "grafana.app/deprecatedInternalID": "1477730116104192"
+    },
+    "annotations": {
+      "grafana.app/createdBy": "user:afrnkrbsna8e8a",
+      "grafana.app/folder": "bfs98s0u2nncwd",
+      "grafana.app/saved-from-ui": "Grafana v13.1.0 (b309c9bb3b)",
+      "grafana.app/updatedBy": "user:afrnkrbsna8e8a",
+      "grafana.app/updatedTimestamp": "2026-07-16T06:42:19Z",
+      "grafana.app/folderTitle": "Pokemon-BI",
+      "grafana.app/folderUrl": "/dashboards/f/bfs98s0u2nncwd/pokemon-bi"
+    }
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "editorMode": "code",
+                        "format": "table",
+                        "range": false,
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  numero_pokedex,\n  nombre_pokemon,\n  tipo_1,\n  tipo_2,\n  ataque_base,\n  defensa_base,\n  stamina_base,\n  url_imagen,\n  es_mega\nFROM dim_especie_pokemon\nWHERE nombre_pokemon = '$textbox0'\nLIMIT 1",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "",
+                "content": "{{#each data}}\n<div class=\"pokedex-frame\">\n\n  <!-- Cabecera -->\n  <div class=\"pokedex-header\">\n    <div class=\"main-lens\">\n      <div class=\"lens-inner\"></div>\n      <div class=\"lens-shine\"></div>\n    </div>\n    <div class=\"leds\">\n      <div class=\"led led-red\"></div>\n      <div class=\"led led-yellow\"></div>\n      <div class=\"led led-green\"></div>\n    </div>\n  </div>\n\n  <!-- Número Pokédex -->\n  <div class=\"pokedex-number\">Nº {{numero_pokedex}}</div>\n\n  <!-- Pantalla -->\n  <div class=\"screen-container\">\n    <div class=\"screen-inner\">\n      <div class=\"screen-content\">\n        <img class=\"pokemon-image\" src=\"{{url_imagen}}\" alt=\"{{nombre_pokemon}}\" />\n        <div class=\"pokemon-info\">\n          <div class=\"pokemon-name-row\">\n            <span class=\"pokemon-name\">{{nombre_pokemon}}</span>\n            {{#if es_mega}}<span class=\"mega-badge\">MEGA</span>{{/if}}\n          </div>\n          <div class=\"type-badges\">\n            <span class=\"type-badge type-{{tipo_1}}\">{{tipo_1}}</span>\n            {{#if tipo_2}}<span class=\"type-badge type-{{tipo_2}}\">{{tipo_2}}</span>{{/if}}\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <!-- Estadísticas -->\n  <div class=\"stats-container\">\n    <div class=\"stat-row\">\n      <span class=\"stat-label\">ATK</span>\n      <div class=\"stat-bar-bg\">\n        <div class=\"stat-bar stat-atk\" style=\"width: {{#if ataque_base}}{{ataque_base}}{{else}}0{{/if}}px; max-width: 100%;\"></div>\n      </div>\n      <span class=\"stat-value\">{{ataque_base}}</span>\n    </div>\n    <div class=\"stat-row\">\n      <span class=\"stat-label\">DEF</span>\n      <div class=\"stat-bar-bg\">\n        <div class=\"stat-bar stat-def\" style=\"width: {{#if defensa_base}}{{defensa_base}}{{else}}0{{/if}}px; max-width: 100%;\"></div>\n      </div>\n      <span class=\"stat-value\">{{defensa_base}}</span>\n    </div>\n    <div class=\"stat-row\">\n      <span class=\"stat-label\">STA</span>\n      <div class=\"stat-bar-bg\">\n        <div class=\"stat-bar stat-sta\" style=\"width: {{#if stamina_base}}{{stamina_base}}{{else}}0{{/if}}px; max-width: 100%;\"></div>\n      </div>\n      <span class=\"stat-value\">{{stamina_base}}</span>\n    </div>\n  </div>\n\n</div>\n{{/each}}",
+                "contentPartials": [],
+                "defaultContent": "The query didn't return any results.",
+                "editor": {
+                  "format": "html",
+                  "language": "html"
+                },
+                "editors": [
+                  "helpers",
+                  "styles"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": ".pokedex-frame {\n  background: #dc0a2d;\n  border-radius: 18px 18px 12px 12px;\n  padding: 16px;\n  max-width: 320px;\n  margin: 0 auto;\n  font-family: 'Courier New', monospace;\n  border: 3px solid #a00820;\n  box-shadow:\n    inset 0 3px 6px rgba(255,255,255,0.25),\n    inset 0 -4px 10px rgba(0,0,0,0.45),\n    0 10px 28px rgba(0,0,0,0.65);\n}\n\n.pokedex-header {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  margin-bottom: 10px;\n}\n\n.main-lens {\n  width: 58px;\n  height: 58px;\n  border-radius: 50%;\n  background: radial-gradient(circle at 35% 35%, #8ad4f8, #1a6fb8, #0a3a70);\n  border: 4px solid #fff;\n  box-shadow:\n    0 0 0 2px #a0c0e0,\n    0 0 14px rgba(26,111,184,0.9),\n    inset 0 0 10px rgba(0,0,0,0.4);\n  position: relative;\n  overflow: hidden;\n  flex-shrink: 0;\n}\n\n.lens-inner {\n  position: absolute;\n  top: 8px; left: 8px;\n  width: 24px; height: 24px;\n  border-radius: 50%;\n  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.55), transparent);\n}\n\n.lens-shine {\n  position: absolute;\n  top: 7px; left: 11px;\n  width: 11px; height: 6px;\n  border-radius: 50%;\n  background: rgba(255,255,255,0.75);\n  transform: rotate(-30deg);\n}\n\n.leds { display: flex; gap: 7px; }\n\n.led {\n  width: 13px; height: 13px;\n  border-radius: 50%;\n}\n\n.led-red    { background: #ff4444; box-shadow: 0 0 8px 3px #ff0000; }\n.led-yellow { background: #ffcc00; box-shadow: 0 0 8px 3px #ffaa00; }\n.led-green  { background: #44ff44; box-shadow: 0 0 8px 3px #00cc00; }\n\n.pokedex-number {\n  text-align: right;\n  color: #ffe066;\n  font-size: 13px;\n  font-weight: bold;\n  letter-spacing: 1px;\n  text-shadow: 0 0 6px rgba(255,220,0,0.8);\n  margin-bottom: 8px;\n}\n\n.screen-container {\n  background: #1a1a1a;\n  border-radius: 10px;\n  padding: 6px;\n  border: 4px solid #777;\n  box-shadow:\n    inset 0 0 14px rgba(0,0,0,0.9),\n    0 0 0 2px #444,\n    0 5px 10px rgba(0,0,0,0.5);\n  margin-bottom: 12px;\n}\n\n.screen-inner {\n  background: linear-gradient(160deg, #182818 0%, #263e26 45%, #1c3020 100%);\n  border-radius: 6px;\n  padding: 12px;\n  min-height: 130px;\n  position: relative;\n  overflow: hidden;\n}\n\n.screen-inner::before {\n  content: '';\n  position: absolute;\n  inset: 0;\n  background: repeating-linear-gradient(\n    0deg,\n    transparent,\n    transparent 2px,\n    rgba(0,0,0,0.1) 2px,\n    rgba(0,0,0,0.1) 4px\n  );\n  pointer-events: none;\n  z-index: 0;\n}\n\n.screen-content {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  position: relative;\n  z-index: 1;\n}\n\n.pokemon-image {\n  width: 96px;\n  height: 96px;\n  object-fit: contain;\n  image-rendering: pixelated;\n  filter: drop-shadow(0 0 10px rgba(100,255,100,0.55));\n  flex-shrink: 0;\n}\n\n.pokemon-info { flex: 1; }\n\n.pokemon-name-row {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  flex-wrap: wrap;\n  margin-bottom: 8px;\n}\n\n.pokemon-name {\n  color: #a8ff78;\n  font-size: 15px;\n  font-weight: bold;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  text-shadow: 0 0 10px rgba(168,255,120,0.75);\n}\n\n.mega-badge {\n  background: linear-gradient(135deg, #9b59b6, #6c3483);\n  color: #fff;\n  font-size: 9px;\n  font-weight: bold;\n  padding: 2px 5px;\n  border-radius: 3px;\n  letter-spacing: 1px;\n  box-shadow: 0 0 7px rgba(155,89,182,0.85);\n}\n\n.type-badges { display: flex; gap: 6px; flex-wrap: wrap; }\n\n.type-badge {\n  padding: 3px 8px;\n  border-radius: 4px;\n  font-size: 10px;\n  font-weight: bold;\n  color: #fff;\n  text-transform: uppercase;\n  letter-spacing: 0.5px;\n  box-shadow: 0 2px 5px rgba(0,0,0,0.45);\n}\n\n.type-Normal   { background: #8a8a6a; }\n.type-Fire     { background: #e25822; }\n.type-Water    { background: #1a6fbc; }\n.type-Grass    { background: #5d9e4f; }\n.type-Electric { background: #d4ac00; color: #111; }\n.type-Ice      { background: #4ab8c4; }\n.type-Fighting { background: #8c3224; }\n.type-Poison   { background: #8b3fa8; }\n.type-Ground   { background: #b4883c; }\n.type-Flying   { background: #6070c0; }\n.type-Psychic  { background: #c0396b; }\n.type-Bug      { background: #7a8e20; }\n.type-Rock     { background: #927c40; }\n.type-Ghost    { background: #5a4870; }\n.type-Dragon   { background: #4040c0; }\n.type-Dark     { background: #3d3244; }\n.type-Steel    { background: #787888; }\n.type-Fairy    { background: #d685ad; }\n\n.stats-container {\n  background: rgba(0,0,0,0.28);\n  border-radius: 8px;\n  padding: 10px 12px;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  border: 1px solid rgba(255,255,255,0.1);\n}\n\n.stat-row {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n\n.stat-label {\n  color: #fff;\n  font-size: 10px;\n  font-weight: bold;\n  width: 26px;\n  text-shadow: 0 1px 3px rgba(0,0,0,0.6);\n}\n\n.stat-bar-bg {\n  flex: 1;\n  height: 10px;\n  background: rgba(0,0,0,0.55);\n  border-radius: 5px;\n  overflow: hidden;\n  border: 1px solid rgba(255,255,255,0.08);\n}\n\n.stat-bar {\n  height: 100%;\n  border-radius: 5px;\n  max-width: 100%;\n}\n\n.stat-atk {\n  background: linear-gradient(90deg, #c05000, #ff8800, #ffcc44);\n  box-shadow: 0 0 7px rgba(255,136,0,0.75);\n}\n\n.stat-def {\n  background: linear-gradient(90deg, #0030a0, #1a6fdc, #66aaff);\n  box-shadow: 0 0 7px rgba(26,111,220,0.75);\n}\n\n.stat-sta {\n  background: linear-gradient(90deg, #005500, #22aa22, #66ff66);\n  box-shadow: 0 0 7px rgba(34,170,34,0.75);\n}\n\n.stat-value {\n  color: #ffe066;\n  font-size: 10px;\n  font-weight: bold;\n  width: 24px;\n  text-align: right;\n  text-shadow: 0 0 5px rgba(255,220,0,0.65);\n}",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Inventario Pokemón",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "editorMode": "code",
+                        "format": "table",
+                        "range": false,
+                        "rawQuery": true,
+                        "rawSql": "SELECT numero_pokedex, nombre_pokemon, tipo_1, tipo_2, ataque_base, defensa_base, stamina_base, url_imagen, es_mega FROM dim_especie_pokemon ORDER BY numero_pokedex",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "context.element\n  .querySelectorAll('.pokemon-card')\n  .forEach(function(card) {\n    card.addEventListener('click', function() {\n      var name = card.getAttribute('data-pokemon');\n      context.grafana.locationService.partial({ 'var-textbox0': name });\n    });\n  });",
+                "content": "<div class=\"pkgrid\">\n  {{#each data}}\n  <div class=\"pokemon-card\" data-pokemon=\"{{nombre_pokemon}}\">\n    <div class=\"card-header\">\n      <span class=\"card-id\">#{{numero_pokedex}}</span>\n      {{#if es_mega}}<span class=\"card-mega\">M</span>{{/if}}\n    </div>\n    <img class=\"card-img\" src=\"{{url_imagen}}\" alt=\"{{nombre_pokemon}}\" />\n    <div class=\"card-name\">{{nombre_pokemon}}</div>\n    <div class=\"card-types\">\n      <span class=\"card-type card-type-{{tipo_1}}\">{{tipo_1}}</span>\n      {{#if tipo_2}}<span class=\"card-type card-type-{{tipo_2}}\">{{tipo_2}}</span>{{/if}}\n    </div>\n  </div>\n  {{/each}}\n</div>",
+                "contentPartials": [],
+                "defaultContent": "The query didn't return any results.",
+                "editor": {
+                  "format": "html",
+                  "language": "html"
+                },
+                "editors": [
+                  "helpers",
+                  "styles",
+                  "code"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": ".pkgrid {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));\n  gap: 12px;\n  padding: 10px;\n  width: 100%;\n}\n\n.pokemon-card {\n  background: rgba(255, 255, 255, 0.05);\n  border: 2px solid rgba(255, 255, 255, 0.1);\n  border-radius: 8px;\n  padding: 8px;\n  text-align: center;\n  cursor: pointer;\n  transition: transform 0.2s, border-color 0.2s, background-color 0.2s;\n  box-sizing: border-box;\n  width: 100%;\n}\n\n.pokemon-card:hover {\n  transform: translateY(-4px);\n  border-color: #ffe066;\n  background: rgba(255, 255, 255, 0.08);\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);\n}\n\n.card-header {\n  display: flex;\n  justify-content: space-between;\n  font-size: 10px;\n  color: #888;\n  font-family: monospace;\n}\n\n.card-mega {\n  background: #9b59b6;\n  color: #fff;\n  padding: 0 3px;\n  border-radius: 2px;\n  font-weight: bold;\n}\n\n.card-img {\n  width: 58px;\n  height: 58px;\n  object-fit: contain;\n  margin: 6px auto;\n  display: block;\n}\n\n.card-name {\n  font-size: 11px;\n  font-weight: bold;\n  text-transform: uppercase;\n  color: #fff;\n  margin-bottom: 6px;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.card-types {\n  display: flex;\n  gap: 4px;\n  justify-content: center;\n}\n\n.card-type {\n  font-size: 8px;\n  padding: 1px 4px;\n  border-radius: 3px;\n  color: #fff;\n  font-weight: bold;\n  text-transform: uppercase;\n}\n\n.card-type-Normal   { background: #8a8a6a; }\n.card-type-Fire     { background: #e25822; }\n.card-type-Water    { background: #1a6fbc; }\n.card-type-Grass    { background: #5d9e4f; }\n.card-type-Electric { background: #d4ac00; color: #111; }\n.card-type-Ice      { background: #4ab8c4; }\n.card-type-Fighting { background: #8c3224; }\n.card-type-Poison   { background: #8b3fa8; }\n.card-type-Ground   { background: #b4883c; }\n.card-type-Flying   { background: #6070c0; }\n.card-type-Psychic  { background: #c0396b; }\n.card-type-Bug      { background: #7a8e20; }\n.card-type-Rock     { background: #927c40; }\n.card-type-Ghost    { background: #5a4870; }\n.card-type-Dragon   { background: #4040c0; }\n.card-type-Dark     { background: #3d3244; }\n.card-type-Steel    { background: #787888; }\n.card-type-Fairy    { background: #d685ad; }",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "",
+          "description": "Radar de stats base (ATK/DEF/STA) + top 5 combos de ataques ordenados por DPS",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "ffs98gjgtkk5cd"
+                      },
+                      "spec": {
+                        "app": "grafana-assistant-app",
+                        "editorMode": "code",
+                        "format": "table",
+                        "range": false,
+                        "rawQuery": true,
+                        "rawSql": "SELECT                                                                                      \n      dep.ataque_base,                                                                          \n      dep.defensa_base,                                                                         \n      dep.stamina_base,                                                                         \n      COALESCE((                                                                                \n        SELECT json_agg(t)                                                                      \n        FROM (                                                                                  \n          SELECT                                                                                \n            r.nombre_ataque AS rapido,                                                          \n            r.tipo_ataque   AS \"tipoR\",                                                         \n            r.dano_base     AS \"dmgR\",                                                          \n            (UPPER(r.tipo_ataque) = UPPER(dep.tipo_1) OR UPPER(r.tipo_ataque) = UPPER(dep.      \n  tipo_2)) AS \"stabR\",                                                                          \n            c.nombre_ataque AS cargado,                                                         \n            c.tipo_ataque   AS \"tipoC\",                                                         \n            c.dano_base     AS \"dmgC\",                                                          \n            3               AS barras,                                                          \n            (UPPER(c.tipo_ataque) = UPPER(dep.tipo_1) OR UPPER(c.tipo_ataque) = UPPER(dep.      \n  tipo_2)) AS \"stabC\",                                                                          \n            ROUND((r.dano_base + c.dano_base) / 2.5, 2) AS avg_dps                              \n          FROM dim_pokedex_ataques r                                                            \n          CROSS JOIN dim_pokedex_ataques c                                                      \n          WHERE r.id_especie = dep.id_especie                                                   \n            AND c.id_especie = dep.id_especie                                                   \n            AND r.nombre_ataque != c.nombre_ataque\n            -- Consideramos como rápido el de menor daño, y cargado el de mayor daño            \n            AND r.dano_base < c.dano_base\n          ORDER BY avg_dps DESC\n          LIMIT 5\n        ) t\n      ), '[]'::json) AS attacks\n    FROM dim_especie_pokemon dep\n    WHERE dep.nombre_pokemon ILIKE '$textbox0'\n    LIMIT 1; \n",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "marcusolsson-dynamictext-panel",
+            "version": "6.3.0",
+            "spec": {
+              "options": {
+                "afterRender": "(function(){\n  var s=context.panelData&&context.panelData.series;\n  if(!s||!s.length)return;\n  function vl(fr,nm){\n    if(!fr||!fr.fields)return[];\n    var f=fr.fields.find(function(x){return x.name===nm;});\n    if(!f||f.values==null)return[];\n    var v=f.values;\n    if(Array.isArray(v))return v;\n    var a=[],n=v.length||0;\n    for(var i=0;i<n;i++)a.push(v.get?v.get(i):v[i]);\n    return a;\n  }\n  var sf=s[0];\n  var atk=Number(vl(sf,'ataque_base')[0])||0;\n  var def=Number(vl(sf,'defensa_base')[0])||0;\n  var sta=Number(vl(sf,'stamina_base')[0])||0;\n  var attacksRaw=vl(sf,'attacks')[0];\n  var attacks=[];\n  try{attacks=typeof attacksRaw==='string'?JSON.parse(attacksRaw):(attacksRaw||[]);}catch(e){}\n  /* --- Pills --- */\n  var pills=context.element.querySelector('.sp-pills');\n  if(pills)pills.innerHTML='<span class=\"sp-pill atk-p\">ATK '+atk+'</span><span class=\"sp-pill def-p\">DEF '+def+'</span><span class=\"sp-pill sta-p\">STA '+sta+'</span>';\n  /* --- Canvas Radar --- */\n  var canvas=context.element.querySelector('#sp-canvas');\n  if(canvas&&canvas.getContext){\n    var ctx=canvas.getContext('2d');\n    var W=140,H=140,cx=70,cy=72,R=50;\n    var axes=[\n      {label:'ATK',val:atk,max:370,angle:-Math.PI/2,color:'#ff8800'},\n      {label:'DEF',val:def,max:340,angle:Math.PI/6,color:'#4488ff'},\n      {label:'STA',val:sta,max:500,angle:5*Math.PI/6,color:'#44cc44'}\n    ];\n    function pt(r,a){return{x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};}\n    ctx.clearRect(0,0,W,H);\n    for(var lv=1;lv<=4;lv++){\n      ctx.beginPath();\n      var rr=R*lv/4;\n      ctx.moveTo(pt(rr,axes[0].angle).x,pt(rr,axes[0].angle).y);\n      for(var ai=1;ai<axes.length;ai++){var p=pt(rr,axes[ai].angle);ctx.lineTo(p.x,p.y);}\n      ctx.closePath();\n      ctx.strokeStyle='rgba(255,255,255,'+(0.08+lv*0.04)+')';\n      ctx.lineWidth=0.8;\n      ctx.stroke();\n    }\n    axes.forEach(function(a){\n      var p=pt(R,a.angle);\n      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(p.x,p.y);\n      ctx.strokeStyle='rgba(255,255,255,0.22)';ctx.lineWidth=1;ctx.stroke();\n    });\n    ctx.beginPath();\n    axes.forEach(function(a,i){\n      var r=R*Math.min(a.val/a.max,1);\n      var p=pt(r,a.angle);\n      if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);\n    });\n    ctx.closePath();\n    ctx.fillStyle='rgba(255,160,0,0.28)';\n    ctx.fill();\n    ctx.strokeStyle='#ffa500';\n    ctx.lineWidth=2;\n    ctx.stroke();\n    axes.forEach(function(a){\n      var r=R*Math.min(a.val/a.max,1);\n      var p=pt(r,a.angle);\n      ctx.beginPath();ctx.arc(p.x,p.y,4,0,2*Math.PI);\n      ctx.fillStyle=a.color;ctx.fill();\n      ctx.strokeStyle='#fff';ctx.lineWidth=1.2;ctx.stroke();\n      var lp=pt(R+16,a.angle);\n      ctx.font='bold 10px Courier New';\n      ctx.fillStyle=a.color;\n      ctx.textAlign='center';\n      ctx.textBaseline='middle';\n      ctx.fillText(a.label,lp.x,lp.y-3);\n      ctx.font='9px Courier New';\n      ctx.fillStyle='#ffe066';\n      ctx.fillText(a.val,lp.x,lp.y+8);\n    });\n  }\n  /* --- Attacks --- */\n  var el=context.element.querySelector('.sp-moves');\n  if(!el)return;\n  if(!attacks||!attacks.length){el.innerHTML='<div class=\"sp-nd\">Sin datos disponibles</div>';return;}\n  var html='';\n  for(var i=0;i<attacks.length;i++){\n    var a=attacks[i];\n    var dps=a.avg_dps?parseFloat(a.avg_dps).toFixed(1):'—';\n    var bars=a.barras?'&#9646;'.repeat(Math.min(parseInt(a.barras),3)):'';\n    html+='<div class=\"atk-card\"><div class=\"atk-rk\">#'+(i+1)+'</div>';\n    html+='<div class=\"atk-mv\">';\n    html+='<div class=\"mv\"><span class=\"mv-t t-'+a.tipoR+'\">'+a.tipoR+'</span><span class=\"mv-n\">'+a.rapido+'</span><span class=\"mv-d\">&#9889;'+a.dmgR+'</span>'+(a.stabR?'<span class=\"stab\">STAB</span>':'')+'</div>';\n    html+='<div class=\"mv\"><span class=\"mv-t t-'+a.tipoC+'\">'+a.tipoC+'</span><span class=\"mv-n\">'+a.cargado+'</span><span class=\"mv-d\">'+a.dmgC+'</span>'+(bars?'<span class=\"enb\">'+bars+'</span>':'')+(a.stabC?'<span class=\"stab\">STAB</span>':'')+'</div>';\n    html+='</div><div class=\"atk-dps\">'+dps+'<br><span class=\"dps-l\">DPS</span></div></div>';\n  }\n  el.innerHTML=html;\n})();",
+                "content": "<div class=\"sp-container-col\">\n  <!-- Sección de Stats (Columna Superior) -->\n  <div class=\"sp-section\">\n    <div class=\"sp-title\">Stats Base</div>\n    <div class=\"sp-stats-content\">\n      <div class=\"sp-radar-wrap\">\n        <canvas id=\"sp-canvas\" width=\"140\" height=\"140\"></canvas>\n      </div>\n      <div class=\"sp-pills\"></div>\n    </div>\n  </div>\n\n  <hr class=\"sp-divider\" />\n\n  <!-- Sección de Ataques (Columna Inferior) -->\n  <div class=\"sp-section\">\n    <div class=\"sp-title\">Mejores Ataques</div>\n    <div class=\"sp-moves\"></div>\n  </div>\n</div>",
+                "contentPartials": [],
+                "defaultContent": "<div style=\"color:#888;font-size:12px;padding:16px;font-family:monospace;\">Pokémon no encontrado</div>",
+                "editor": {
+                  "format": "html",
+                  "language": "html"
+                },
+                "editors": [
+                  "helpers",
+                  "styles"
+                ],
+                "externalStyles": [],
+                "filterEnabled": false,
+                "helpers": "",
+                "paginationEnabled": false,
+                "renderMode": "allRows",
+                "styles": ".sp-wrap{display:flex;gap:8px;padding:6px;height:100%;box-sizing:border-box;font-family:'Courier New',monospace;overflow:hidden}\n.sp-left{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;width:168px}\n.sp-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;overflow-y:auto}\n.sp-title{color:#ffe066;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,220,0,0.3);padding-bottom:3px;width:100%;text-shadow:0 0 6px rgba(255,220,0,0.5);margin-bottom:2px}\n.sp-radar-wrap{display:flex;align-items:center;justify-content:center}\n.sp-pills{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}\n.sp-pill{font-size:9px;font-weight:bold;padding:2px 6px;border-radius:10px;letter-spacing:0.5px}\n.atk-p{background:rgba(255,136,0,0.2);color:#ff9900;border:1px solid #ff8800}\n.def-p{background:rgba(68,136,255,0.2);color:#66aaff;border:1px solid #4488ff}\n.sta-p{background:rgba(68,204,68,0.2);color:#66cc66;border:1px solid #44cc44}\n.atk-card{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:6px;padding:5px 7px;margin-bottom:3px}\n.atk-rk{color:#ffe066;font-size:11px;font-weight:bold;width:18px;flex-shrink:0}\n.atk-mv{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}\n.mv{display:flex;align-items:center;gap:3px;flex-wrap:wrap}\n.mv-t{font-size:7px;padding:1px 4px;border-radius:3px;color:#fff;font-weight:bold;text-transform:uppercase;flex-shrink:0;white-space:nowrap}\n.mv-n{font-size:10px;color:#ddd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:98px}\n.mv-d{font-size:9px;color:#ffaa00;font-weight:bold;flex-shrink:0}\n.enb{font-size:9px;color:#55ccff;letter-spacing:-1px}\n.stab{font-size:7px;background:#ffa500;color:#000;padding:1px 3px;border-radius:2px;font-weight:bold;flex-shrink:0}\n.atk-dps{font-size:12px;color:#ff5555;font-weight:bold;text-align:right;white-space:nowrap;flex-shrink:0;width:46px;line-height:1.1}\n.dps-l{font-size:8px;color:#aaa;font-weight:normal}\n.sp-nd{color:#888;font-size:11px;padding:8px}\n.t-Normal{background:#8a8a6a}.t-Fire{background:#e25822}.t-Water{background:#1a6fbc}.t-Grass{background:#5d9e4f}.t-Electric{background:#d4ac00;color:#111!important}.t-Ice{background:#4ab8c4}.t-Fighting{background:#8c3224}.t-Poison{background:#8b3fa8}.t-Ground{background:#b4883c}.t-Flying{background:#6070c0}.t-Psychic{background:#c0396b}.t-Bug{background:#7a8e20}.t-Rock{background:#927c40}.t-Ghost{background:#5a4870}.t-Dragon{background:#4040c0}.t-Dark{background:#3d3244}.t-Steel{background:#787888}.t-Fairy{background:#d685ad}",
+                "wrap": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 0,
+              "width": 7,
+              "height": 12,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 7,
+              "y": 0,
+              "width": 9,
+              "height": 12,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 16,
+              "y": 0,
+              "width": 8,
+              "height": 12,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-6h",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": true,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Pokedex",
+    "variables": [
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "textbox0",
+          "current": {
+            "text": "Charmander",
+            "value": "Charmander"
+          },
+          "query": "Charmander",
+          "label": "Pokemon",
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      }
+    ],
+    "preferences": {
+      "layout": {
+        "kind": "GridLayout",
+        "spec": {
+          "items": []
+        }
+      }
+    }
+  }
+}

@@ -2,7 +2,9 @@
   <!-- Panel de Alertas Izquierdo -->
   <div class="col-md-4 col-lg-3 d-flex flex-column h-100">
     <div class="premium-card flex-grow-1 overflow-hidden h-100 d-flex flex-column">
-      <div class="premium-card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-shrink-0">
+      <div
+        class="premium-card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-shrink-0"
+      >
         <h5 class="premium-card-title mb-0"><i class="bi bi-bell text-danger me-2"></i>Alertas</h5>
         <span class="badge bg-danger rounded-pill shadow-sm" id="badge-alertas">0</span>
       </div>
@@ -11,7 +13,7 @@
           <!-- Alertas list -->
         </div>
         <div class="text-center text-muted p-5 spinner-list d-none">
-          <div class="spinner-border text-primary mb-2" role="status"></div>
+          <output class="spinner-border text-primary mb-2"></output>
           <div>Cargando...</div>
         </div>
       </div>
@@ -28,7 +30,6 @@
         style="z-index: 1"
       ></div>
     </div>
-
   </div>
 </div>
 
@@ -55,7 +56,7 @@
           <span class="small text-muted" id="modal-incidencia-fecha"></span>
         </div>
 
-        <h6 class="fw-bold mb-1" id="modal-incidencia-tipo"></h6>
+        <h6 class="fw-bold mb-1" id="modal-incidencia-tipo">Tipo incidencia</h6>
         <p class="text-muted small mb-3" id="modal-incidencia-desc"></p>
 
         <div class="row g-2 mb-3">

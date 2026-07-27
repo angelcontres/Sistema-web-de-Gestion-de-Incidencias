@@ -117,7 +117,7 @@ describe('IncidenciaSupervisorIndexComponent', () => {
 
     const container = component.querySelector('#alertas-container');
     const items = container.querySelectorAll('a.list-group-item');
-    expect(items.length).toBe(2);
+    expect(items).toHaveLength(2);
 
     const modalSpy = jest.spyOn(component, 'abrirModalDespacho');
     items[0].click();

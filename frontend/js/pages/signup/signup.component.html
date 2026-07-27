@@ -1,0 +1,110 @@
+<link rel="stylesheet" href="js/pages/login/login.component.css">
+<link rel="stylesheet" href="js/core/mascot/mascot.css">
+
+<div class="row g-0 page-fade-in w-100" style="min-height: 100vh;">
+  <!-- Left Side: Registration Form -->
+  <div class="col-12 col-lg-5 d-flex align-items-center justify-content-center login-left-panel position-relative bg-white shadow-lg z-2">
+    <div class="w-100 px-4 px-sm-5" style="max-width: 480px;">
+      <!-- Mobile Logo -->
+      <div class="text-center mb-4 d-lg-none">
+        <div class="d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px; overflow: hidden;">
+          <img src="assets/logo.svg" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.2);">
+        </div>
+      </div>
+
+      <div class="text-center mb-5">
+        <h2 class="fw-bolder text-dark mb-2" style="letter-spacing: -0.02em; color: var(--primary-color);">Crea tu cuenta</h2>
+        <p class="text-muted">Regístrate en segundos para reportar incidencias urbanas</p>
+      </div>
+
+      <!-- Signup Form -->
+      <form id="signup-form" novalidate>
+        <div class="premium-form-group mb-4">
+          <label for="username" class="premium-label fw-bold text-dark mb-2">Correo Electrónico / Usuario</label>
+          <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text border-0 text-muted px-4" style="background: var(--color-bg-input, #f8fafc);"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control border-0 fs-6 py-3" id="username" name="username" placeholder="Tu usuario o correo" required autocomplete="username" style="background: var(--color-bg-input, #f8fafc);">
+          </div>
+        </div>
+
+        <div class="premium-form-group mb-5">
+          <label for="password" class="premium-label fw-bold text-dark mb-2">Contraseña</label>
+          <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text border-0 text-muted px-4" style="background: var(--color-bg-input, #f8fafc);"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control border-0 fs-6 py-3" id="password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password" style="background: var(--color-bg-input, #f8fafc);">
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn" class="btn w-100 py-3 fs-6 fw-bold d-flex align-items-center justify-content-center gap-2 shadow rounded-3 transition-all text-white" style="background-color: var(--primary-color); letter-spacing: 0.5px; border: none;">
+          <span>Registrarse Ahora</span>
+          <output id="signup-spinner" class="spinner-border spinner-border-sm text-white d-none">
+            <span class="visually-hidden">Cargando...</span>
+          </outp>
+          <i class="bi bi-person-plus ms-1"></i>
+        </button>
+
+        <!-- Login Link -->
+        <div class="text-center mt-4">
+          <p class="text-muted mb-0">¿Ya tienes cuenta? <a href="#/login" class="text-decoration-none fw-bold" style="color: var(--primary-color);">Inicia sesión aquí</a></p>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Right Side: Animated Logo Sequence (Hidden on mobile/tablet) -->
+  <div class="col-12 col-lg-7 d-none d-lg-flex flex-column align-items-center justify-content-center position-relative overflow-hidden" style="background-color: var(--primary-color, #0E3659);">
+    
+    <!-- Smooth ambient lights matching the palette -->
+    <div class="position-absolute rounded-circle" style="width: 50vw; height: 50vw; background: var(--secondary-color, #4E7D7F); opacity: 0.15; filter: blur(120px); top: -20%; right: -10%;"></div>
+    <div class="position-absolute rounded-circle" style="width: 40vw; height: 40vw; background: var(--highlight-color, #D98A2F); opacity: 0.1; filter: blur(120px); bottom: -10%; left: -10%;"></div>
+
+    <!-- Main Content -->
+    <div class="z-1 position-relative d-flex flex-column align-items-center">
+      
+      <!-- Sequence Container -->
+      <div class="position-relative mb-4 mt-4" id="robot-interactive-zone">
+        
+        <!-- Animated SVG Logo -->
+        <div class="logo-container bg-white bg-opacity-10 backdrop-blur rounded-circle p-4 d-flex align-items-center justify-content-center" style="width: 170px; height: 170px;">
+          <svg class="animated-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450" width="100%" height="100%">
+            <defs>
+              <style>
+                .svg-bg-orange { fill: var(--highlight-color, #D98A2F); }
+                .svg-bg-amber-dark { fill: var(--highlight-hover, #b87528); }
+                .svg-bg-base { fill: var(--primary-hover, #0a253d); }
+                .svg-bg-screen { fill: #0b111a; }
+                .svg-glass-overlay { fill: var(--highlight-color, #D98A2F); opacity: 0.15; }
+              </style>
+            </defs>
+            <g id="robot-body" transform="translate(0, 10)">
+              <!-- CÚPULA -->
+              <path d="M 100,50 C 180,25 220,25 300,50 C 340,65 350,110 350,325 L 50,325 C 50,110 60,65 100,50 Z" class="svg-glass-overlay" />
+              <!-- Cuerpo -->
+              <polygon points="150,90 250,90 310,150 310,325 90,325 90,150" class="svg-bg-orange" />
+              <!-- Pantalla -->
+              <rect x="130" y="130" width="140" height="150" rx="20" class="svg-bg-screen" />
+              <!-- Grupo de Ojos para Parallax (Mouse Tracking JS) -->
+              <g id="robot-eyes" style="transition: transform 0.1s ease-out;">
+                <!-- Ojo LED Izquierdo -->
+                <rect id="left-eye" x="160" y="165" width="20" height="40" rx="10" class="led-light" />
+                <!-- Ojo LED Derecho (Animación con scaleY) -->
+                <rect id="right-eye" x="220" y="165" width="20" height="40" rx="10" class="led-light" />
+              </g>
+              <!-- Sonrisa LED animable -->
+              <path id="smile" d="M 165,235 Q 200,265 235,235" fill="none" class="led-light-stroke" stroke-width="8" stroke-linecap="round" />
+              <!-- Base -->
+              <rect x="40" y="325" width="320" height="80" rx="20" class="svg-bg-base" />
+              <rect x="60" y="325" width="280" height="12" rx="4" class="svg-bg-amber-dark" />
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <h1 class="text-white fw-bolder mt-3" style="letter-spacing: -0.04em; font-size: 2.7rem;">GeoIncidencias</h1>
+      <p class="fs-5 mt-2 mb-0" style="color: var(--card-bg, #F4EFE3); font-weight: 300; opacity: 0.85;">Tu participación hace la diferencia.</p>
+    </div>
+
+  </div>
+</div>

@@ -6,6 +6,7 @@ use App\Observers\IncidenciaObserver;
 use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CategoriaIncidencia|null $tipo
  * @property CategoriaIncidencia|null $subTipo
  */
+#[Table('reporte_incidencias')]
 #[ObservedBy([IncidenciaObserver::class])]
 #[Fillable([
     'incidencia_descripcion',
@@ -56,8 +58,6 @@ class Incidencia extends Model
 {
     use HasFactory, SoftDeletes;
     use HasLocalTimezone;
-
-    protected $table = 'reporte_incidencias';
 
     protected function casts(): array
     {
@@ -164,5 +164,14 @@ class Incidencia extends Model
     public function recursos()
     {
         return $this->hasMany(RecursoIncidencia::class, 'incidencia_id');
+    }
+
+    /**
+     * Relación: Instituciones de apoyo asignadas a la incidencia.
+     */
+    public function institucionesApoyo(): BelongsToMany
+    {
+        return $this->belongsToMany(Institucion::class, 'incidencia_institucion_apoyo', 'incidencia_id', 'institucion_id')
+            ->withTimestamps();
     }
 }

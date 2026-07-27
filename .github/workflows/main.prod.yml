@@ -12,28 +12,16 @@ jobs:
         run: |
           docker compose -f docker-compose.staging.yml down || true
 
-      # 2. Limpieza agresiva de archivos generados como root
-      - name: Eliminar residuos bloqueados usando Docker
-        run: |
-          if [ -d "backend/api/vendor" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/vendor
-          fi
-          if [ -d "backend/api/build" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/backend/api/build
-          fi
-          if [ -d "frontend/coverage" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/coverage
-          fi
-          if [ -d "frontend/node_modules" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/frontend/node_modules
-          fi
-          if [ -d "grafana" ]; then
-            docker run --rm -v $(pwd):/workspace busybox rm -rf /workspace/grafana
-          fi
+      # 2. Restaurar permisos (No borra nada, pero previene errores de checkout)
+      - name: Restaurar permisos de la carpeta usando Docker
+        run: docker run --rm -v "$(pwd):/workspace" busybox chown -R $(id -u):$(id -g) /workspace
 
-      # 3. Clonar el nuevo código
+      # 3. Clonar el nuevo código sin borrar los archivos no trackeados (como storage)
       - name: Copiar el código a la VAIO
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: false
 
       # 4. Configurar variables de entorno de Laravel (STAGING) usando GitHub Secrets
       - name: Configurar entorno (.env) de Staging
@@ -57,6 +45,11 @@ jobs:
       - name: Generar clave de seguridad de Laravel
         run: docker exec sistema_laravel_prod php artisan key:generate
 
+      - name: Limpiar caché y reiniciar colas (Previene correos atascados y carga código nuevo)
+        run: |
+          docker exec sistema_laravel_prod php artisan optimize:clear
+          docker exec sistema_laravel_prod php artisan queue:restart
+
       - name: Esperar a que la base de datos esté lista
         run: |
           until docker exec sistema_postgres_prod pg_isready -U angeltux; do
@@ -73,12 +66,26 @@ jobs:
         run: docker exec sistema_laravel_prod php artisan migrate --path=database/migrations/olap --force
 
       # 6. Pruebas y Cobertura
+      - name: Crear base de datos de pruebas temporal
+        run: docker exec sistema_postgres_prod psql -U angeltux -c "CREATE DATABASE testing;" || true
+
       - name: Ejecutar pruebas automatizadas (Backend)
-        run: docker exec sistema_laravel_prod php artisan test --log-junit build/logs/junit.xml || true
+        run: |
+          docker exec -e DB_DATABASE=testing sistema_laravel_prod php artisan test --coverage-clover build/logs/clover.xml --log-junit build/logs/junit.xml || true
+          docker exec sistema_laravel_prod php artisan optimize:clear
+
+      - name: Normalizar rutas de cobertura para SonarQube
+        run: docker exec sistema_laravel_prod php normalize_clover.php || true
 
       - name: Ejecutar pruebas de Frontend y limpiar node_modules
         run: |
-          docker run --rm -v "$(pwd)/frontend:/app" -w /app node:18-alpine sh -c "npm install && npm run test && rm -rf node_modules" || true
+          docker run --rm -v "$(pwd)/frontend:/app" -w /app node:18-alpine sh -c "npm install && npm run test:coverage && rm -rf node_modules" || true
+
+      - name: Limpiar almacenamiento temporal de pruebas (disks)
+        run: |
+          if [ -d "backend/api/storage/framework/testing/disks" ]; then
+            docker run --rm -v "$(pwd):/workspace" busybox rm -rf /workspace/backend/api/storage/framework/testing/disks
+          fi
 
       # 7. SonarQube
       - name: Esperar a que SonarQube inicie por completo
@@ -95,11 +102,16 @@ jobs:
             -v "$(pwd):/usr/src" \
             sonarsource/sonar-scanner-cli \
             -Dsonar.projectKey=Sistema-web-gestion-incidencias \
-            -Dsonar.sources=. \
+            -Dsonar.sources=backend/api/app,frontend/js,frontend/environment \
+            -Dsonar.tests=backend/api/tests,frontend/js \
+            -Dsonar.test.inclusions=backend/api/tests/**/*,**/*.test.js \
             -Dsonar.exclusions="**/vendor/**,**/node_modules/**,**/public/build/**,**/storage/**,**/bootstrap/cache/**,**/dist/**" \
             -Dsonar.host.url="http://localhost:9009" \
+            -Dsonar.php.coverage.reportPaths=backend/api/build/logs/clover.xml \
+            -Dsonar.php.tests.reportPath=backend/api/build/logs/junit.xml \
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
             -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
-            -Dsonar.php.tests.reportPath="backend/api/build/logs/junit.xml"
+            -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
 
       # 8. Mantenimiento del servidor
       - name: Limpiar imágenes de Docker huérfanas

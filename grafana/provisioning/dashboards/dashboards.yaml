@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: 'Default Dashboards'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      # Esta ruta es dentro del contenedor de Docker,
+      # que apunta a tu carpeta local ./grafana/provisioning/dashboards
+      path: /etc/grafana/provisioning/dashboards

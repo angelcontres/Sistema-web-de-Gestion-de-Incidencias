@@ -1,0 +1,86 @@
+<div class="page-fade-in d-flex align-items-center justify-content-center" style="min-height: 80vh">
+  <div class="card border-0 shadow-lg rounded-4 w-100" style="max-width: 450px; overflow: hidden">
+    <!-- Decoración visual arriba -->
+    <div class="bg-primary text-white p-4 text-center">
+      <i class="bi bi-shield-check display-4 mb-2"></i>
+      <h3 class="fw-bold mb-0">Activar Cuenta</h3>
+    </div>
+
+    <div class="card-body p-5">
+      <div id="activate-loading" class="text-center py-4 d-none">
+        <outuput class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Procesando...</span>
+        </outuput>
+        <p class="text-muted fw-semibold">Activando tu cuenta...</p>
+      </div>
+
+      <div id="activate-success" class="text-center py-4 d-none">
+        <i class="bi bi-check-circle-fill text-success display-1 mb-3"></i>
+        <h4 class="fw-bold">¡Cuenta Activada!</h4>
+        <p class="text-muted">
+          Tu cuenta ha sido activada correctamente. Ahora puedes iniciar sesión en el sistema.
+        </p>
+        <a href="#/login" class="btn btn-primary w-100 fw-bold mt-3 py-2 rounded-3"
+          >Ir a Iniciar Sesión</a
+        >
+      </div>
+
+      <form id="form-activate-account" class="needs-validation" novalidate>
+        <p class="text-muted text-center mb-4">
+          Ingresa una nueva contraseña segura para tu cuenta.
+        </p>
+
+        <div class="mb-4">
+          <label for="password" class="form-label fw-semibold text-secondary small text-uppercase"
+            >Nueva Contraseña</label
+          >
+          <div class="input-group input-group-lg shadow-sm rounded-3">
+            <span class="input-group-text bg-white border-end-0 text-muted">
+              <i class="bi bi-lock-fill"></i>
+            </span>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              class="form-control border-start-0 ps-0"
+              placeholder="Mínimo 8 caracteres"
+              required
+              minlength="8"
+            />
+          </div>
+        </div>
+
+        <div class="mb-5">
+          <label
+            for="password_confirmation"
+            class="form-label fw-semibold text-secondary small text-uppercase"
+            >Confirmar Contraseña</label
+          >
+          <div class="input-group input-group-lg shadow-sm rounded-3">
+            <span class="input-group-text bg-white border-end-0 text-muted">
+              <i class="bi bi-shield-lock-fill"></i>
+            </span>
+            <input
+              type="password"
+              name="password_confirmation"
+              id="password_confirmation"
+              class="form-control border-start-0 ps-0"
+              placeholder="Repite la contraseña"
+              required
+              minlength="8"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          id="btn-submit-activate"
+          class="btn btn-primary btn-lg w-100 fw-bold shadow rounded-3 d-flex align-items-center justify-content-center gap-2"
+        >
+          <span>Activar Mi Cuenta</span>
+          <i class="bi bi-arrow-right-circle"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

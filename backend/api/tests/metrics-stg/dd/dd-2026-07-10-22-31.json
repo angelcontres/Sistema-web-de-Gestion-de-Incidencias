@@ -1,9 +1,0 @@
-{
-    "metric": "Densidad de Defectos (DD)",
-    "value": 1.23,
-    "kloc": 21.224,
-    "total_lines": 21224,
-    "defectos": 26,
-    "meses_analizados": 3,
-    "fecha_procesamiento": "2026-07-10 22:31:09"
-}

@@ -1,9 +1,8 @@
 <div class="dropdown">
-  <a
-    class="nav-link position-relative d-flex align-items-center justify-content-center"
-    style="cursor: pointer; padding: 0;"
+  <button
+    class="nav-link position-relative d-flex align-items-center justify-content-center btn btn-link"
+    style="cursor: pointer; padding: 0; text-decoration: none; border: none;"
     id="notificationsBell"
-    role="button"
     data-bs-toggle="dropdown"
     aria-expanded="false"
     aria-label="Notificaciones"
@@ -19,7 +18,7 @@
     >
       0
     </span>
-  </a>
+  </button>
 
   <div class="dropdown-menu dropdown-menu-end shadow-lg p-0 custom-dropdown border-0 mt-3" aria-labelledby="notificationsBell" style="width: 350px; max-height: 480px; overflow-y: auto; overflow-x: hidden;">
     
@@ -34,9 +33,9 @@
 
     <div id="dynamicNotificationsContainer" class="p-2 bg-white">
       <div class="d-flex justify-content-center py-4">
-        <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <output class="spinner-border spinner-border-sm text-primary d-inline-block" style="border-width: 0.2em; padding: 0;">
           <span class="visually-hidden">Cargando...</span>
-        </div>
+        </output>
       </div>
     </div>
 

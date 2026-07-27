@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\EstadoIncidencia;
 use App\Models\Incidencia;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -11,6 +12,12 @@ use Tests\TestCase;
 
 class IncidenciaPerformanceTest extends TestCase
 {
+    const EMAIL_TEST_EXAMPLE = 'test@example.com';
+
+    const ENDPOINT_INCIDENTS = '/api/v1/incidents';
+
+    const ENDPOINT_DASHBOARD_STATS = '/api/v1/dashboard/stats';
+
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -21,22 +28,22 @@ class IncidenciaPerformanceTest extends TestCase
 
     public function test_incidencia_index_no_n_plus_one()
     {
-        $user = User::where('email', 'test@example.com')->first();
+        $user = User::where('email', self::EMAIL_TEST_EXAMPLE)->first();
         $this->actingAs($user);
 
         // Warm up request to load any static memory caches (e.g. roles/permissions)
-        $this->getJson('/api/v1/incidents');
+        $this->getJson(self::ENDPOINT_INCIDENTS);
 
         for ($i = 0; $i < 2; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 1',
-                'estado_id' => 1,
+                'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
                 'cliente_id' => $user->id,
             ]);
         }
 
         DB::enableQueryLog();
-        $resp = $this->getJson('/api/v1/incidents');
+        $resp = $this->getJson(self::ENDPOINT_INCIDENTS);
         $resp->assertStatus(200);
         $queries2 = count(DB::getQueryLog());
         DB::flushQueryLog();
@@ -44,13 +51,13 @@ class IncidenciaPerformanceTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 2',
-                'estado_id' => 1,
+                'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
                 'cliente_id' => $user->id,
             ]);
         }
 
         DB::flushQueryLog();
-        $this->getJson('/api/v1/incidents');
+        $this->getJson(self::ENDPOINT_INCIDENTS);
         $queries12 = count(DB::getQueryLog());
         $diff = abs($queries2 - $queries12);
         $this->assertLessThanOrEqual(2, $diff, "Se detectó posible N+1. Consultas con 2: $queries2, con 12: $queries12");
@@ -59,22 +66,22 @@ class IncidenciaPerformanceTest extends TestCase
 
     public function test_dashboard_stats_no_n_plus_one()
     {
-        $user = User::where('email', 'test@example.com')->first();
+        $user = User::where('email', self::EMAIL_TEST_EXAMPLE)->first();
         $this->actingAs($user);
 
         // Warm up request to load any static memory caches
-        $this->getJson('/api/v1/dashboard/stats');
+        $this->getJson(self::ENDPOINT_DASHBOARD_STATS);
 
         for ($i = 0; $i < 2; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 1',
-                'estado_id' => 1,
+                'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
                 'cliente_id' => $user->id,
             ]);
         }
 
         DB::enableQueryLog();
-        $resp = $this->getJson('/api/v1/dashboard/stats');
+        $resp = $this->getJson(self::ENDPOINT_DASHBOARD_STATS);
         $resp->assertStatus(200);
         $queries2 = count(DB::getQueryLog());
         DB::flushQueryLog();
@@ -82,13 +89,13 @@ class IncidenciaPerformanceTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             Incidencia::create([
                 'incidencia_descripcion' => 'Test 2',
-                'estado_id' => 1,
+                'estado_id' => EstadoIncidencia::firstOrCreate(['nombre' => 'Pendiente'])->id,
                 'cliente_id' => $user->id,
             ]);
         }
 
         DB::flushQueryLog();
-        $this->getJson('/api/v1/dashboard/stats');
+        $this->getJson(self::ENDPOINT_DASHBOARD_STATS);
         $queries12 = count(DB::getQueryLog());
         DB::flushQueryLog();
 
@@ -99,10 +106,10 @@ class IncidenciaPerformanceTest extends TestCase
 
     public function test_incidencia_index_uses_cursor_paginate()
     {
-        $user = User::where('email', 'test@example.com')->first();
+        $user = User::where('email', self::EMAIL_TEST_EXAMPLE)->first();
         $this->actingAs($user);
 
-        $resp = $this->getJson('/api/v1/incidents');
+        $resp = $this->getJson(self::ENDPOINT_INCIDENTS);
         $resp->assertStatus(200);
 
         $data = $resp->json();
@@ -157,8 +164,8 @@ class IncidenciaPerformanceTest extends TestCase
         }
 
         $result = DB::select("
-            SELECT indexname 
-            FROM pg_indexes 
+            SELECT indexname
+            FROM pg_indexes
             WHERE tablename = 'direcciones' AND indexname = 'direcciones_ubicacion_gist'
         ");
 

@@ -121,7 +121,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
   async cargarDirecciones() {
     try {
       const response = await UbicacionesService.getDirecciones(1, 1000, null, { all: true });
-      this.direccionesList = Array.isArray(response) ? response : (response.data || []);
+      this.direccionesList = Array.isArray(response) ? response : response.data || [];
       this.filtrarDirecciones();
     } catch (error) {
       console.error('Error cargando direcciones:', error);
@@ -143,7 +143,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     let centro = MAP_CONFIG.DEFAULT_CENTER;
     let zoom = MAP_CONFIG.DEFAULT_ZOOM;
 
-    if (user && user.pais) {
+    if (user?.pais) {
       const config = MAP_CONFIG.COUNTRY_CENTERS[user.pais.codigo_iso];
       if (config) {
         centro = config.center;
@@ -171,7 +171,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
     const user = AuthService.getCurrentUser();
     let centro = MAP_CONFIG.DEFAULT_CENTER;
     let zoom = MAP_CONFIG.DEFAULT_ZOOM;
-    if (user && user.pais) {
+    if (user?.pais) {
       const config = MAP_CONFIG.COUNTRY_CENTERS[user.pais.codigo_iso];
       if (config) {
         centro = config.center;
@@ -260,7 +260,7 @@ export class UbicacionesDireccionesComponent extends BaseComponent {
 
       tr.innerHTML = `
         <td class="ps-3 fw-semibold text-dark">${paisNombre}</td>
-        <td class="small text-muted text-truncate" style="max-width: 150px;" title="${pathTerritorios.replace(/&raquo;/g, '>')}" >${pathTerritorios}</td>
+        <td class="small text-muted text-truncate" style="max-width: 150px;" title="${pathTerritorios.replaceAll('raquo;', '>')}" >${pathTerritorios}</td>
         <td class="fw-medium text-dark text-truncate" style="max-width: 180px;" title="${dir.detalle}">${dir.detalle}</td>
         <td><code class="text-secondary small fw-semibold">${dir.codigo_postal || 'N/A'}</code></td>
         <td><span class="badge ${badgeClass} rounded-pill px-2 py-0.5 small">${badgeText}</span></td>
