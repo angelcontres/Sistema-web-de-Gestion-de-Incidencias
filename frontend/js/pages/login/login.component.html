@@ -1,5 +1,4 @@
 <link rel="stylesheet" href="js/pages/login/login.component.css">
-<link rel="stylesheet" href="js/core/mascot/mascot.css">
 
 <div class="row g-0 page-fade-in w-100" style="min-height: 100vh;">
   <!-- Left Side: Traditional Login -->
@@ -69,66 +68,37 @@
   <!-- Right Side: Animated Logo Sequence (Hidden on mobile/tablet) -->
   <div class="col-12 col-lg-7 d-none d-lg-flex flex-column align-items-center justify-content-center position-relative overflow-hidden" style="background-color: var(--primary-color, #0E3659);">
     
+    <!-- City Skyline Background -->
+    <div class="position-absolute bottom-0 w-100 pe-none" style="height: 35vh; opacity: 0.7; z-index: 0;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 400" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+        <!-- Distant buildings (lighter) -->
+        <path fill="var(--secondary-color)" opacity="0.15" d="M100,400 l0,-100 l40,0 l0,100 M160,400 l0,-150 l60,0 l0,150 M250,400 l0,-80 l50,0 l0,80 M330,400 l0,-200 l70,0 l0,200 M430,400 l0,-120 l50,0 l0,120 M510,400 l0,-160 l80,0 l0,160 M620,400 l0,-90 l40,0 l0,90 M700,400 l0,-220 l60,0 l0,220 M800,400 l0,-130 l50,0 l0,130 M880,400 l0,-180 l70,0 l0,180 M980,400 l0,-100 l45,0 l0,100 M1050,400 l0,-250 l60,0 l0,250 M1140,400 l0,-140 l50,0 l0,140 M1220,400 l0,-190 l60,0 l0,190 M1300,400 l0,-110 l50,0 l0,110 M1380,400 l0,-170 l60,0 l0,170" />
+        <!-- Mid buildings -->
+        <path fill="var(--secondary-color)" opacity="0.3" d="M0,400 l0,-120 l50,0 l0,120 M70,400 l0,-180 l55,0 l0,180 M150,400 l0,-90 l40,0 l0,90 M210,400 l0,-230 l65,0 l0,230 M300,400 l0,-140 l50,0 l0,140 M380,400 l0,-210 l70,0 l0,210 M480,400 l0,-110 l45,0 l0,110 M550,400 l0,-170 l60,0 l0,170 M640,400 l0,-250 l50,0 l0,250 M720,400 l0,-150 l55,0 l0,150 M810,400 l0,-200 l60,0 l0,200 M900,400 l0,-120 l40,0 l0,120 M970,400 l0,-240 l70,0 l0,240 M1070,400 l0,-160 l50,0 l0,160 M1150,400 l0,-220 l65,0 l0,220 M1240,400 l0,-130 l45,0 l0,130 M1320,400 l0,-180 l55,0 l0,180 M1400,400 l0,-100 l40,0 l0,100" />
+        <!-- Foreground buildings -->
+        <path fill="var(--primary-color)" filter="brightness(0.8)" d="M20,400 l0,-150 l60,0 l0,150 M110,400 l0,-220 l70,0 l0,220 M210,400 l0,-130 l50,0 l0,130 M280,400 l0,-270 l80,0 l0,270 M390,400 l0,-160 l60,0 l0,160 M480,400 l0,-200 l70,0 l0,200 M580,400 l0,-140 l50,0 l0,140 M660,400 l0,-290 l80,0 l0,290 M770,400 l0,-180 l60,0 l0,180 M860,400 l0,-240 l70,0 l0,240 M960,400 l0,-150 l55,0 l0,150 M1040,400 l0,-280 l75,0 l0,280 M1140,400 l0,-170 l60,0 l0,170 M1230,400 l0,-250 l65,0 l0,250 M1320,400 l0,-140 l50,0 l0,140" />
+        <!-- City grid/lights -->
+        <g fill="var(--highlight-color)" opacity="0.6">
+          <rect x="40" y="280" width="6" height="6"/><rect x="40" y="310" width="6" height="6"/>
+          <rect x="130" y="210" width="6" height="6"/><rect x="150" y="250" width="6" height="6"/>
+          <rect x="300" y="180" width="6" height="6"/><rect x="330" y="220" width="6" height="6"/>
+          <rect x="680" y="150" width="6" height="6"/><rect x="710" y="200" width="6" height="6"/>
+          <rect x="1060" y="160" width="6" height="6"/><rect x="1090" y="220" width="6" height="6"/>
+        </g>
+      </svg>
+    </div>
+
     <!-- Smooth ambient lights matching the palette -->
-    <div class="position-absolute rounded-circle" style="width: 50vw; height: 50vw; background: var(--secondary-color, #4E7D7F); opacity: 0.15; filter: blur(120px); top: -20%; right: -10%;"></div>
-    <div class="position-absolute rounded-circle" style="width: 40vw; height: 40vw; background: var(--highlight-color, #D98A2F); opacity: 0.1; filter: blur(120px); bottom: -10%; left: -10%;"></div>
+    <div class="position-absolute rounded-circle" style="width: 50vw; height: 50vw; background: var(--secondary-color, #4E7D7F); opacity: 0.15; filter: blur(120px); top: -20%; right: -10%; z-index: 0;"></div>
+    <div class="position-absolute rounded-circle" style="width: 40vw; height: 40vw; background: var(--highlight-color, #D98A2F); opacity: 0.1; filter: blur(120px); bottom: -10%; left: -10%; z-index: 0;"></div>
 
     <!-- Main Content -->
     <div class="z-1 position-relative d-flex flex-column align-items-center">
       
       <!-- Sequence Container -->
-      <div class="position-relative mb-4 mt-4" id="robot-interactive-zone">
-        
-        <!-- Animated SVG Logo -->
-        <div class="logo-container bg-white bg-opacity-10 backdrop-blur rounded-circle p-4 d-flex align-items-center justify-content-center" style="width: 170px; height: 170px;">
-          <svg class="animated-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450" width="100%" height="100%">
-            <defs>
-              <style>
-                .svg-bg-orange { fill: var(--highlight-color, #D98A2F); }
-                .svg-bg-amber-dark { fill: var(--highlight-hover, #b87528); }
-                .svg-bg-base { fill: var(--primary-hover, #0a253d); }
-                .svg-bg-screen { fill: #0b111a; }
-                .svg-glass-overlay { fill: var(--highlight-color, #D98A2F); opacity: 0.15; }
-              </style>
-            </defs>
-            <g id="robot-body" transform="translate(0, 10)">
-              <!-- CÚPULA -->
-              <path d="M 100,50 C 180,25 220,25 300,50 C 340,65 350,110 350,325 L 50,325 C 50,110 60,65 100,50 Z" class="svg-glass-overlay" />
-              <!-- Cuerpo -->
-              <polygon points="150,90 250,90 310,150 310,325 90,325 90,150" class="svg-bg-orange" />
-              <!-- Pantalla -->
-              <rect x="130" y="130" width="140" height="150" rx="20" class="svg-bg-screen" />
-              <!-- Grupo de Ojos para Parallax (Mouse Tracking JS) -->
-              <g id="robot-eyes" style="transition: transform 0.1s ease-out;">
-                <!-- Ojo LED Izquierdo -->
-                <rect id="left-eye" x="160" y="165" width="20" height="40" rx="10" class="led-light" />
-                <!-- Ojo LED Derecho (Animación con scaleY) -->
-                <rect id="right-eye" x="220" y="165" width="20" height="40" rx="10" class="led-light" />
-              </g>
-              <!-- Sonrisa LED animable -->
-              <path id="smile" d="M 165,235 Q 200,265 235,235" fill="none" class="led-light-stroke" stroke-width="8" stroke-linecap="round" />
-              <!-- Base -->
-              <rect x="40" y="325" width="320" height="80" rx="20" class="svg-bg-base" />
-              <rect x="60" y="325" width="280" height="12" rx="4" class="svg-bg-amber-dark" />
-            </g>
-          </svg>
-        </div>
+      <app-mascot class="d-block w-100 h-100"></app-mascot>
 
-        <!-- Pop-out Speech Bubble (Normal) -->
-        <div class="speech-bubble speech-bubble-normal d-flex align-items-center gap-1">
-          <i class="bi bi-exclamation-triangle-fill text-danger alert-icon fs-6"></i>
-          <span>¡Bip! Alerta</span>
-        </div>
-
-        <!-- Pop-out Speech Bubble (Easter Egg Radar) -->
-        <div class="speech-bubble-easter d-flex align-items-center gap-2">
-          <i class="bi bi-radar radar-icon fs-6"></i>
-          <span>0 incidencias activas.</span>
-        </div>
-
-      </div>
-
-      <h1 class="text-white fw-bolder mt-3" style="letter-spacing: -0.04em; font-size: 2.7rem;">GeoIncidencias</h1>
+      <h1 class="text-white fw-bolder mt-3" style="letter-spacing: -0.04em; font-size: 2.7rem;">AlertCity</h1>
       <p class="fs-5 mt-2 mb-0" style="color: var(--card-bg, #F4EFE3); font-weight: 300; opacity: 0.85;">Gestión inteligente de eventos urbanos.</p>
     </div>
 

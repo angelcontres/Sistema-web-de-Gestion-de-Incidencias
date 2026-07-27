@@ -1,6 +1,6 @@
 import { BaseComponent } from '../../core/base-component.js';
 import { AuthService } from '../../core/auth.service.js';
-import { MascotAnimation } from '../../core/mascot/mascot-animation.js';
+import '../../core/mascot/mascot.component.js';
 import { ToastService } from '../../shared/services/toast.service.js';
 
 /**
@@ -21,9 +21,8 @@ export class LoginComponent extends BaseComponent {
     // 1. Setup Auth Form
     this.initAuthForm();
 
-    // 2. Setup Mascot Interactive Animations
-    const mascot = new MascotAnimation(this);
-    mascot.init();
+    // 2. Setup Privacy Mode
+    this.initPrivacyMode();
   }
 
   /**
@@ -64,6 +63,23 @@ export class LoginComponent extends BaseComponent {
         if (spinner) spinner.classList.add('d-none');
       }
     });
+  }
+
+  /**
+   * Initializes privacy mode for the mascot when typing password.
+   */
+  initPrivacyMode() {
+    const passwordInput = this.querySelector('#passwordInput');
+    const mascot = this.querySelector('app-mascot');
+
+    if (passwordInput && mascot) {
+      passwordInput.addEventListener('focus', () => {
+        mascot.setPrivacyMode(true);
+      });
+      passwordInput.addEventListener('blur', () => {
+        mascot.setPrivacyMode(false);
+      });
+    }
   }
 }
 

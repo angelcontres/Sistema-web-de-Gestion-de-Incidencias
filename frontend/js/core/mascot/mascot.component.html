@@ -1,0 +1,70 @@
+<link rel="stylesheet" href="js/core/mascot/mascot.css">
+<div class="position-relative mb-4 mt-4 d-flex justify-content-center align-items-center" id="robot-interactive-zone">
+  
+  <!-- Radar Effect -->
+  <div class="position-absolute pe-none radar-container overflow-hidden" style="width: 500px; height: 500px; border-radius: 50%; border: 1px solid rgba(78, 125, 127, 0.4); box-shadow: inset 0 0 40px rgba(78, 125, 127, 0.15); z-index: 0; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <!-- Concentric circles -->
+    <div class="position-absolute top-50 start-50 translate-middle" style="width: 340px; height: 340px; border-radius: 50%; border: 1px dashed rgba(78, 125, 127, 0.3);"></div>
+    <div class="position-absolute top-50 start-50 translate-middle" style="width: 170px; height: 170px; border-radius: 50%; border: 1px solid var(--highlight-color); opacity: 0.4;"></div>
+    
+    <!-- Axis lines -->
+    <div class="position-absolute top-50 start-0 w-100" style="height: 1px; background: rgba(78, 125, 127, 0.3);"></div>
+    <div class="position-absolute top-0 start-50 h-100" style="width: 1px; background: rgba(78, 125, 127, 0.3);"></div>
+    
+    <!-- Sweeper -->
+    <div class="radar-sweep"></div>
+    
+    <!-- Blips -->
+    <div class="radar-blip" style="top: 25%; left: 35%; animation-delay: 0.5s;"></div>
+    <div class="radar-blip" style="top: 65%; left: 75%; animation-delay: 2.1s;"></div>
+    <div class="radar-blip" style="top: 80%; left: 45%; animation-delay: 1.2s;"></div>
+  </div>
+
+  <!-- Animated SVG Logo -->
+  <div class="logo-container position-relative z-1 bg-white bg-opacity-10 backdrop-blur rounded-circle p-4 d-flex align-items-center justify-content-center" style="width: 170px; height: 170px;">
+    <svg class="animated-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450" width="100%" height="100%">
+      <defs>
+        <style>
+          .svg-bg-orange { fill: var(--highlight-color, #D98A2F); }
+          .svg-bg-amber-dark { fill: var(--highlight-hover, #b87528); }
+          .svg-bg-base { fill: var(--primary-hover, #0a253d); }
+          .svg-bg-screen { fill: #0b111a; }
+          .svg-glass-overlay { fill: var(--highlight-color, #D98A2F); opacity: 0.15; }
+        </style>
+      </defs>
+      <g id="robot-body" transform="translate(0, 10)">
+        <!-- CÚPULA -->
+        <path d="M 100,50 C 180,25 220,25 300,50 C 340,65 350,110 350,325 L 50,325 C 50,110 60,65 100,50 Z" class="svg-glass-overlay" />
+        <!-- Cuerpo -->
+        <polygon points="150,90 250,90 310,150 310,325 90,325 90,150" class="svg-bg-orange" />
+        <!-- Pantalla -->
+        <rect x="130" y="130" width="140" height="150" rx="20" class="svg-bg-screen" />
+        <!-- Grupo de Ojos para Parallax (Mouse Tracking JS) -->
+        <g id="robot-eyes" style="transition: transform 0.1s ease-out;">
+          <!-- Ojo LED Izquierdo -->
+          <rect id="left-eye" x="160" y="165" width="20" height="40" rx="10" class="led-light" />
+          <!-- Ojo LED Derecho (Animación con scaleY) -->
+          <rect id="right-eye" x="220" y="165" width="20" height="40" rx="10" class="led-light" />
+        </g>
+        <!-- Sonrisa LED animable -->
+        <path id="smile" d="M 165,235 Q 200,265 235,235" fill="none" class="led-light-stroke" stroke-width="8" stroke-linecap="round" />
+        <!-- Base -->
+        <rect x="40" y="325" width="320" height="80" rx="20" class="svg-bg-base" />
+        <rect x="60" y="325" width="280" height="12" rx="4" class="svg-bg-amber-dark" />
+      </g>
+    </svg>
+  </div>
+
+  <!-- Pop-out Speech Bubble (Normal) -->
+  <div class="speech-bubble speech-bubble-normal d-flex align-items-center gap-1">
+    <i class="bi bi-exclamation-triangle-fill text-danger alert-icon fs-6"></i>
+    <span>¡Hola! Soy Alert.</span>
+  </div>
+
+  <!-- Pop-out Speech Bubble (Easter Egg Radar) -->
+  <div class="speech-bubble-easter d-flex align-items-center gap-2">
+    <i class="bi bi-radar radar-icon fs-6"></i>
+    <span>0 incidencias activas.</span>
+  </div>
+
+</div>

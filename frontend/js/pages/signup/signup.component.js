@@ -1,6 +1,6 @@
 import { BaseComponent } from '../../core/base-component.js';
 import { AuthService } from '../../core/auth.service.js';
-import { MascotAnimation } from '../../core/mascot/mascot-animation.js';
+import '../../core/mascot/mascot.component.js';
 import { ToastService } from '../../shared/services/toast.service.js';
 
 export class SignupComponent extends BaseComponent {
@@ -16,8 +16,7 @@ export class SignupComponent extends BaseComponent {
 
     this.initSignupForm();
 
-    const mascot = new MascotAnimation(this);
-    mascot.init();
+    this.initPrivacyMode();
   }
 
   initSignupForm() {
@@ -27,6 +26,20 @@ export class SignupComponent extends BaseComponent {
 
     if (this.form) {
       this.form.addEventListener('submit', this.handleSignup.bind(this));
+    }
+  }
+
+  initPrivacyMode() {
+    const passwordInput = this.querySelector('#password');
+    const mascot = this.querySelector('app-mascot');
+
+    if (passwordInput && mascot) {
+      passwordInput.addEventListener('focus', () => {
+        mascot.setPrivacyMode(true);
+      });
+      passwordInput.addEventListener('blur', () => {
+        mascot.setPrivacyMode(false);
+      });
     }
   }
 
