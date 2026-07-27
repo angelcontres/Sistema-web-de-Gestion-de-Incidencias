@@ -3,17 +3,15 @@
 > **Nota para el Agente:** Documenta aquí tu progreso. Cuando cierres la sesión (ver `AGENTS.md`), mueve el resumen al final de `history.md` y deja esta plantilla limpia para el siguiente agente.
 
 ## Feature en desarrollo
-**Nombre:** Mejora visual login (Fondo ciudad y radar)
-**ID en feature_list.json:** N/A (UI Tweak)
-**Status actual:** done
+**Nombre:** [Nombre de la feature]
+**ID en feature_list.json:** [ID]
+**Status actual:** [pending/spec_ready/in_progress/done/blocked]
 
 ## Últimos cambios realizados
-- Añadido un fondo SVG de paisaje de ciudad en `frontend/js/pages/login/login.component.html`.
-- Añadido un efecto visual de radar detrás de la mascota del login con animaciones CSS en `frontend/js/pages/login/login.component.css`.
-- La mascota central se mantuvo intacta.
+- (Añade aquí los cambios importantes que vayas haciendo)
 
 ## Problemas actuales / Bloqueos
-- Ninguno.
+- (Añade aquí si te atascas con algo)
 
 ## Próximos pasos
-- Cerrar la sesión trasladando esto al historial.
+- (Qué tiene que hacer el siguiente agente/turno)
