@@ -12,6 +12,16 @@ export const AuthService = {
     if (response?.access_token) {
       localStorage.setItem('access_token', response.access_token);
       await this.refreshUser();
+    } else {
+      const errorMsg = response?.message || 'Error al registrar usuario.';
+      const error = new Error(errorMsg);
+      error.data = response;
+      if (response?.errors) {
+        error.status = 422;
+      } else {
+        error.status = response?.status || 400;
+      }
+      throw error;
     }
     return response;
   },
@@ -27,6 +37,11 @@ export const AuthService = {
         localStorage.setItem('access_token', response.access_token);
         // Fetch user profile and permissions from /me
         await this.refreshUser();
+      } else {
+        const errorMsg = response?.message || 'Credenciales inválidas o error de autenticación.';
+        const error = new Error(errorMsg);
+        error.data = response;
+        throw error;
       }
       return response;
     });
