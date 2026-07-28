@@ -251,19 +251,19 @@
       "id": 16,
       "name": "cover_frontend_test",
       "title": "Cobertura de pruebas en el frontend",
-      "description": "Completar los archivos de prueba del frontend que tengan cobertura menor al 80%.",
+      "description": "Completar los archivos de prueba del frontend de manera procedural, asegurandose de que en cada fase, los test pasen con la cobertura solicitada.",
       "acceptance": [
-        "Primero hay que listar todos los archivos de la ruta frontend/js, y localizar los que tengan cobertura menor al 80%",
-        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se completarán.",
-        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se ejecutarán.",
-        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se verificarán.",
-        "Debes asegurarte de que la cobertura llegue al menos al 95% para poder pasar al siguiente archivo",
+        "Primero hay que listar todos los archivos de la ruta frontend/js",
+        "FASE 1: los test deben cubrir al menos el 75% de cobertura.",
+        "FASE 2: los test deben cubrir al menos el 85% de cobertura.",
+        "FASE 3 FINAL: los test deben cubrir al menos el 95% de cobertura.",
+        "Asegurar que el codigo sea el definido en el .properties de sonarqube",
         "Debes evitar code smells, duplicaciones de código y funciones con muchos 'return' (evitar deuda tecnica).",
-        "Si hay funciones con demasiadas lineas, descomponlas, aplica divide y vencerás",
-        "Implementa tests unitarios para funciones específicas, para evitar lineas rezagadas que puedan no cubrir el objetivo"
+        "Si hay funciones con demasiadas lineas, descomponlas, aplica divide y vencerás, para una mejor implementación del test"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done",
+      "references": ["sonar-project.properties", "frontend/js/**.test.ts**"]
     },
     {
       "id": 17,
@@ -299,7 +299,7 @@
         "revisar en modulos como el de categorias, la tabla no se está renderizando con app-data-table-component"
       ],
       "sdd": true,
-      "status": "in_progress",
+      "status": "done",
       "references": [
         "frontend/js/pages/incidencias/components/estado-individual-incidencia/**",
         "frontend/js/pages/dashboard/components/dashboard-index/**",
