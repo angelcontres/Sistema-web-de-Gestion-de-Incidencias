@@ -1,6 +1,7 @@
 import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { PermissionFormComponent } from './permission-form.component.js';
 import { PermissionService } from '../../services/permissions.service.js';
+import { ToastService } from '../../../../shared/services/toast.service.js';
 
 describe('PermissionFormComponent', () => {
   function createMockComponent() {
@@ -64,7 +65,14 @@ describe('PermissionFormComponent', () => {
         getInstance: jest.fn(() => ({ hide: jest.fn() })),
       },
     };
-    global.document.createElement = jest.fn(() => ({}));
+    ToastService.success = jest.fn();
+    ToastService.error = jest.fn();
+    global.document.createElement = jest.fn(() => ({
+      style: {},
+      classList: { add: jest.fn(), remove: jest.fn() },
+      setAttribute: jest.fn(),
+      appendChild: jest.fn(),
+    }));
     global.document.body.appendChild = jest.fn();
   });
 

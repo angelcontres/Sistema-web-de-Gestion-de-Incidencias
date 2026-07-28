@@ -302,11 +302,12 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
 
     test('findMatchedDbDir() - usa Number.parseFloat para comparar coords (R4)', async () => {
       CatalogoService.getDirecciones.mockResolvedValue([
-        { id: 1, latitud: '10.1', longitud: '20.1' },
+        { id: 1, latitud: '10.1', longitud: '20.1', detalle: 'Db dir 1' },
       ]);
-      const matched = await component.findMatchedDbDir('10.10001', '20.10001');
-      expect(matched).not.toBeNull();
-      expect(matched.id).toBe(1);
+      UbicacionesService.reverseGeocode.mockResolvedValue({ address: {} });
+      component.dirDetalleInput = { value: '' };
+      await component.autofillDesdeCoordenadas('10.10001', '20.10001');
+      expect(component.selectedDireccionId).toBe(1);
     });
 
     test('autofillTerritoriosCascading() - prueba opcional chaining y eliminacion de vars inutiles (R5, R7)', async () => {
@@ -319,7 +320,7 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
       component.cargarDropdownNivel1 = jest.fn();
       component.cargarDropdownNivel2 = jest.fn();
       component.cargarDropdownNivel3 = jest.fn();
-      component.autofillNivel3FromAddress = jest.fn();
+      component.findOptionMatchingText = jest.fn(() => ({ value: 99 }));
 
       component.dirNivel1Select = { value: null };
       component.dirNivel2Select = { value: null };
@@ -327,9 +328,10 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
 
       // TD without parroquia_id tests the else if
       const td = { provincia_id: 1, canton_id: 2, parroquia_id: null };
-      await component.handleTerritorioDetectado(1, {}, td);
+      await component.autofillTerritoriosCascading(1, { parish: 'Centro' }, td);
 
-      expect(component.autofillNivel3FromAddress).toHaveBeenCalled();
+      expect(component.findOptionMatchingText).toHaveBeenCalledWith(component.dirNivel3Select, 'Centro');
+      expect(component.dirNivel3Select.value).toBe(99);
     });
 
     test('guardarIncidencia() - rechaza promesa devolviendo objeto Error (R9)', async () => {

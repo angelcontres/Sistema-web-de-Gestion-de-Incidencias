@@ -18,24 +18,29 @@
 
   <!-- Tabla Acordeón de Categorías -->
   <div class="premium-card">
-    <div class="premium-card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+    <div
+      class="premium-card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between"
+    >
       <h5 class="premium-card-title mb-0">
         <i class="bi bi-diagram-3 text-primary me-2"></i>Listado de Categorías
       </h5>
-      <span id="cat-total-badge" class="badge bg-primary-soft text-primary d-none fw-semibold"></span>
+      <span
+        id="cat-total-badge"
+        class="badge bg-primary-soft text-primary d-none fw-semibold"
+      ></span>
     </div>
 
     <!-- Loading -->
     <div id="cat-loading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;">
+      <output class="spinner-border text-primary" style="width: 2rem; height: 2rem">
         <span class="visually-hidden">Cargando...</span>
-      </div>
+      </output>
       <p class="text-muted small mt-3 mb-0">Cargando categorías...</p>
     </div>
 
     <!-- Empty State -->
     <div id="cat-empty" class="text-center py-5 d-none">
-      <i class="bi bi-inbox text-muted" style="font-size:2.5rem;"></i>
+      <i class="bi bi-inbox text-muted" style="font-size: 2.5rem"></i>
       <p class="text-muted mt-3 mb-0">No se encontraron categorías de incidencias registradas.</p>
     </div>
 
@@ -48,12 +53,12 @@
     <!-- Tabla -->
     <div id="cat-table-container" class="d-none">
       <table class="table mb-0" id="cat-table">
-        <thead class="table-light" style="font-size:0.78rem; letter-spacing:0.04em;">
+        <thead class="table-light" style="font-size: 0.78rem; letter-spacing: 0.04em">
           <tr>
-            <th class="ps-4" style="width:40%;">Nombre</th>
+            <th class="ps-4" style="width: 40%">Nombre</th>
             <th>Descripción</th>
-            <th style="width:10%;">Estado</th>
-            <th class="text-end pe-4" style="width:8%;">Acciones</th>
+            <th style="width: 10%">Estado</th>
+            <th class="text-end pe-4" style="width: 8%">Acciones</th>
           </tr>
         </thead>
         <tbody id="cat-tbody">
@@ -127,21 +132,27 @@
           <div class="row g-3 mb-3">
             <div class="col-12 col-sm-6">
               <label for="categoriaPrioridadSelect" class="form-label fw-semibold text-dark">
-                <i class="bi bi-flag-fill text-warning me-1" style="font-size:0.8rem;"></i>Prioridad por Defecto
+                <i class="bi bi-flag-fill text-warning me-1" style="font-size: 0.8rem"></i>Prioridad
+                por Defecto
               </label>
               <select id="categoriaPrioridadSelect" class="form-select">
                 <option value="">Cargando...</option>
               </select>
-              <div class="form-text text-muted small">Se aplicará automáticamente al registrar una incidencia de esta categoría.</div>
+              <div class="form-text text-muted small">
+                Se aplicará automáticamente al registrar una incidencia de esta categoría.
+              </div>
             </div>
             <div class="col-12 col-sm-6">
               <label for="categoriaInstitucionSelect" class="form-label fw-semibold text-dark">
-                <i class="bi bi-building text-secondary me-1" style="font-size:0.8rem;"></i>Institución Responsable
+                <i class="bi bi-building text-secondary me-1" style="font-size: 0.8rem"></i
+                >Institución Responsable
               </label>
               <select id="categoriaInstitucionSelect" class="form-select">
                 <option value="">Cargando...</option>
               </select>
-              <div class="form-text text-muted small">Institución que gestiona esta categoría por defecto.</div>
+              <div class="form-text text-muted small">
+                Institución que gestiona esta categoría por defecto.
+              </div>
             </div>
           </div>
 

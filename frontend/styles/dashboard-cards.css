@@ -102,3 +102,11 @@
   border-radius: 50%;
   background-color: currentColor;
 }
+
+/* Soporte de accesos rápidos del dashboard para dispositivos móviles (R5, R6) */
+@media (max-width: 575.98px) {
+  #dashboardMenuContainer .premium-card {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}

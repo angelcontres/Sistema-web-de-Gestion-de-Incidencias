@@ -133,8 +133,9 @@ export class CategoriasIndexComponent extends BaseComponent {
   // ─────────────────────────────────────────────────────────
 
   async cargarCategorias() {
-    this._setLoadingState('loading');
     try {
+      this._setLoadingState('loading');
+
       const resp = await CategoriaIncidenciaService.getAll(1, 15, null, undefined, { all: true });
       this.categoriasList = Array.isArray(resp) ? resp : resp.data || [];
 
@@ -187,14 +188,17 @@ export class CategoriasIndexComponent extends BaseComponent {
       const subs = subMap[parent.id] || [];
       const hasSubs = subs.length > 0;
       const isExpanded = this.expandedGroups.has(String(parent.id));
+      const toogleExpand = isExpanded ? 'Colapsar' : 'Expandir';
+      const toogleIconDirection = isExpanded ? 'down' : 'right';
+
       const toggleIcon = hasSubs
         ? `<button
             class="btn btn-sm p-0 border-0 bg-transparent me-2 text-primary cat-toggle-btn"
             data-toggle-group="${parent.id}"
-            title="${isExpanded ? 'Colapsar' : 'Expandir'} subcategorías"
+            title="${toogleExpand} subcategorías"
             style="line-height:1; transition: transform 0.2s;"
           >
-            <i class="bi bi-chevron-${isExpanded ? 'down' : 'right'}" style="font-size:0.8rem;"></i>
+            <i class="bi bi-chevron-${toogleIconDirection}" style="font-size:0.8rem;"></i>
           </button>`
         : `<span class="me-2" style="display:inline-block;width:1.4rem;"></span>`;
 
