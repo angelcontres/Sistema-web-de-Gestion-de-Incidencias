@@ -110,15 +110,6 @@ jobs:
             --network="host" \
             -v "$(pwd):/usr/src" \
             sonarsource/sonar-scanner-cli \
-            -Dsonar.projectKey=Sistema-web-gestion-incidencias \
-            -Dsonar.sources=backend/api/app,frontend/js,frontend/environment \
-            -Dsonar.tests=backend/api/tests,frontend/js \
-            -Dsonar.test.inclusions=backend/api/tests/**/*,**/*.test.js \
-            -Dsonar.exclusions="**/vendor/**,**/node_modules/**,**/public/build/**,**/storage/**,**/bootstrap/cache/**,**/dist/**" \
-            -Dsonar.host.url="http://localhost:9009" \
-            -Dsonar.php.coverage.reportPaths=backend/api/build/logs/clover.xml \
-            -Dsonar.php.tests.reportPath=backend/api/build/logs/junit.xml \
-            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
             -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
 
       # 8. Mantenimiento del servidor
