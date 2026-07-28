@@ -7,6 +7,7 @@ use App\Models\Direccion;
 use App\Models\HistorialIncidencia;
 use App\Models\Incidencia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -84,14 +85,15 @@ class IncidenciaService
 
             try {
                 $diskInstance = Storage::disk($disk);
-                if (!$diskInstance->exists('incidencias')) {
+                if (! $diskInstance->exists('incidencias')) {
                     $diskInstance->makeDirectory('incidencias');
                 }
-                
+
                 $success = $diskInstance->put($fileName, $imageDecoded);
-                
-                if (!$success) {
-                    \Illuminate\Support\Facades\Log::error("Failed to save image {$fileName} to disk {$disk}");
+
+                if (! $success) {
+                    Log::error("Failed to save image {$fileName} to disk {$disk}");
+
                     continue; // Skip creating DB record if file wasn't saved
                 }
 
@@ -100,7 +102,7 @@ class IncidenciaService
                     'tipo' => 'imagen',
                 ]);
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Exception saving image: " . $e->getMessage());
+                Log::error('Exception saving image: '.$e->getMessage());
             }
         }
     }
