@@ -43,6 +43,8 @@ class CategoriaIncidenciaController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string|max:1000',
             'parent_id' => 'nullable|exists:categorias_incidencia,id',
+            'prioridad_id' => 'nullable|exists:prioridades,id',
+            'institucion_id' => 'nullable|exists:instituciones,id',
             'activo' => 'boolean',
         ]);
 
@@ -50,6 +52,8 @@ class CategoriaIncidenciaController extends Controller
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'parent_id' => $request->parent_id,
+            'prioridad_id' => $request->prioridad_id,
+            'institucion_id' => $request->institucion_id,
             'activo' => $request->input('activo', true),
         ]);
 
@@ -89,6 +93,8 @@ class CategoriaIncidenciaController extends Controller
             'nombre' => 'sometimes|required|string|max:255',
             'descripcion' => 'nullable|string|max:1000',
             'parent_id' => 'nullable|exists:categorias_incidencia,id|different:id',
+            'prioridad_id' => 'nullable|exists:prioridades,id',
+            'institucion_id' => 'nullable|exists:instituciones,id',
             'activo' => 'boolean',
         ]);
 
@@ -106,6 +112,8 @@ class CategoriaIncidenciaController extends Controller
             'nombre' => $request->nombre ?? $categoria->nombre,
             'descripcion' => $request->has('descripcion') ? $request->descripcion : $categoria->descripcion,
             'parent_id' => $request->has('parent_id') ? $request->parent_id : $categoria->parent_id,
+            'prioridad_id' => $request->has('prioridad_id') ? $request->prioridad_id : $categoria->prioridad_id,
+            'institucion_id' => $request->has('institucion_id') ? $request->institucion_id : $categoria->institucion_id,
             'activo' => $request->has('activo') ? $request->activo : $categoria->activo,
         ]);
 

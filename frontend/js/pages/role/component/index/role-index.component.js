@@ -158,7 +158,6 @@ export class RoleIndexComponent extends BaseComponent {
       console.error('Error cargando roles:', error);
       loadingSpinner.classList.add('d-none');
       if (ToastService?.error) ToastService.error(`Error al cargar roles: ${error.message}`);
-      this.mostrarAlertaError(`Error al cargar roles: ${error.message}`);
     }
   }
 

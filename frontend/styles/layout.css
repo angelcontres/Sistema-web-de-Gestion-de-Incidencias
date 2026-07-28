@@ -51,7 +51,9 @@ app-sidebar {
 app-sidebar nav {
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--border-color) !important;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
 }
 
 /* Desktop Full-Height Layout (Conventional Standard) */
@@ -66,7 +68,9 @@ app-sidebar nav {
     margin: 0 !important;
     width: 260px !important;
     min-width: 260px !important;
-    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
   }
 
@@ -74,7 +78,7 @@ app-sidebar nav {
     width: 72px !important;
     min-width: 72px !important;
   }
-  
+
   app-sidebar nav {
     height: 100vh !important;
     border-radius: 0 !important;
@@ -86,7 +90,10 @@ app-sidebar nav {
     padding: 1.5rem 1rem !important;
     box-shadow: var(--shadow-md) !important;
     overflow-y: auto;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     transform: translateX(0);
   }
 
@@ -108,7 +115,7 @@ app-sidebar nav {
     padding: 0 !important;
     justify-content: center !important;
   }
-  
+
   app-sidebar.collapsed .sidebar-brand-icon {
     width: 40px !important;
     height: 40px !important;
@@ -266,7 +273,10 @@ main#app {
     border-radius: var(--radius-lg) !important;
     box-shadow: var(--shadow-lg) !important;
     border: 1px solid var(--border-color) !important;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s;
+    transition:
+      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.3s ease,
+      visibility 0.3s;
     transform: translateX(0);
     opacity: 1;
     visibility: visible;
@@ -302,19 +312,20 @@ main#app {
 
 /* Mobile maps adjustments and compact layout */
 @media (max-width: 575.98px) {
-  #dashboardMap, #map {
+  #dashboardMap,
+  #map {
     height: 280px !important;
   }
-  
+
   .stat-value {
     font-size: 1.85rem !important;
   }
-  
+
   .nav-tabs .nav-item .nav-link {
     padding: 0.75rem 0.5rem !important;
     font-size: 0.8rem !important;
   }
-  
+
   main#app {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;

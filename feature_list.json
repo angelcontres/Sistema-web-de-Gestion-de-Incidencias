@@ -281,8 +281,31 @@
       ],
       "sdd": true,
       "status": "done",
+      "references": ["frontend/js/pages/incidencias/**"]
+    },
+    {
+      "id": 18,
+      "name": "implement_responsive_css",
+      "title": "Implementar estilos CSS responsivos",
+      "description": "Se implementará la responsividad para celulares y estilización correcta de modales llanos.",
+      "acceptance": [
+        "Revisar cada vista del frontend y verificar que se pueda ver correctamente en celulares.",
+        "Se debe usar media queries para ajustar los estilos CSS para celulares.",
+        "Se debe usar responsividad bootstrap si lo amerita",
+        "Revisar responsividad en modulo de estado individual de incidencias, ya que en pantallas pequeñas hay elementos que generan una expansión innecesaria hacia abajo.",
+        "Para los botones de acceso rapido en el dashboard, solo los iconos deben ser visibles para pantallas pequeñas y mantener su responsividad en pantallas grandes debe mostrar el texto y el icono (actualmente)",
+        "Comparar clases en modulos como el de Categorías, que usa un modal pero sin border-radius, buscar las los css centralizados y aplicarselo a los elementos modales que sufran lo mismo. ",
+        "Los modales deben tener un borde ligeramente visible que armonice con la paleta de colores actual y contraste con el fondo sombreado",
+        "revisar en modulos como el de categorias, la tabla no se está renderizando con app-data-table-component"
+      ],
+      "sdd": true,
+      "status": "in_progress",
       "references": [
-        "frontend/js/pages/incidencias/**"
+        "frontend/js/pages/incidencias/components/estado-individual-incidencia/**",
+        "frontend/js/pages/dashboard/components/dashboard-index/**",
+        "frontend/js/pages/instituciones/components/kanban/**",
+        "frontend/js/pages/categorias/**",
+        "frontend/js/shared/components/app-data-table/**"
       ]
     }
   ]
