@@ -14,7 +14,12 @@ import { IncidentClassificationHelper } from './helpers/incident-classification.
 
 export class IncidenciaFormComponent extends BaseComponent {
   constructor() {
-    super('js/pages/incidencias/components/lobby/form/incidencia-form.component.html');
+    const isMobile = window.innerWidth <= 768;
+    super(isMobile 
+      ? 'js/pages/incidencias/components/lobby/form/incidencia-form-mobile.component.html'
+      : 'js/pages/incidencias/components/lobby/form/incidencia-form.component.html'
+    );
+    this.isMobileLayout = isMobile;
   }
 
   async onInit() {
@@ -72,6 +77,11 @@ export class IncidenciaFormComponent extends BaseComponent {
     this.locationManager.setMapController(this.mapController);
     this.mapController.initEvents((lat, lng) => {
       this.locationManager.autofillDesdeCoordenadas(lat, lng);
+      if (this.isMobileLayout) {
+        this.mapController.habilitarMapaInteractivo();
+        this.markStepCompleted(2);
+        this.checkMobileReadyState();
+      }
     });
     this.mapController.initMap();
 
@@ -83,6 +93,10 @@ export class IncidenciaFormComponent extends BaseComponent {
     // 4. Load initial dropdown data
     await this.cargarCatalogosIniciales();
     this.actualizarBadgesApoyoForm();
+
+    if (this.isMobileLayout) {
+      this.initMobileUI();
+    }
 
     // 5. Load edit or create mode
     if (incidenciaId) {
@@ -140,6 +154,213 @@ export class IncidenciaFormComponent extends BaseComponent {
           if (modal) modal.hide();
         }
       });
+    }
+  }
+
+  initMobileUI() {
+    // 0. Inyectar dinámicamente el feedback para saltarse problemas de caché HTML del navegador
+    ['step1', 'step2'].forEach(stepId => {
+      const fbId = `feedback-${stepId}`;
+      if (!this.querySelector(`#${fbId}`)) {
+        const titleSpan = this.querySelector(`#${stepId} .step-title`);
+        if (titleSpan) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'd-flex flex-column';
+          titleSpan.parentNode.insertBefore(wrapper, titleSpan);
+          wrapper.appendChild(titleSpan);
+          const small = document.createElement('small');
+          small.id = fbId;
+          small.className = 'text-muted fw-normal ms-4 mt-1 d-none';
+          wrapper.appendChild(small);
+        }
+      }
+    });
+
+    // 0. Accordion headers click to reopen
+    const stepHeaders = this.querySelectorAll('.step-header');
+    stepHeaders.forEach((header, index) => {
+      header.addEventListener('click', () => {
+        const stepNum = index + 1;
+        this.querySelectorAll('.card-step').forEach((el, i) => {
+          if (i + 1 === stepNum) el.classList.add('active');
+          else el.classList.remove('active');
+        });
+        this.checkMobileReadyState();
+      });
+    });
+
+    // 1. Render root categories as chips
+    const rootCategories = this.categoryManager.categorias.filter((c) => c.parent_id === null && c.activo);
+    const catContainer = this.querySelector('#mobile-categories-container');
+    if (catContainer) {
+      catContainer.innerHTML = rootCategories.map((c) => 
+        `<button type="button" class="wa-chip" data-id="${c.id}">${c.nombre}</button>`
+      ).join('');
+      
+      catContainer.querySelectorAll('.wa-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          catContainer.querySelectorAll('.wa-chip').forEach(c => c.classList.remove('active'));
+          e.target.classList.add('active');
+          
+          // Sync hidden select
+          this.categoryManager.tipoSelect.value = e.target.dataset.id;
+          this.categoryManager.onCategoryChange();
+          
+          this.renderMobileSubCategories();
+          this.checkMobileReadyState();
+        });
+      });
+    }
+
+    // 2. Location Logic (Card 2)
+    // Habilitar mapa interactivo inmediatamente para que el usuario pueda usarlo si falla el GPS
+    setTimeout(() => {
+      this.mapController.habilitarMapaInteractivo();
+      
+      // Si el usuario arrastra/toca el mapa manualmente, marcamos el paso 2 como completado
+      this.mapController.map.on('click', () => {
+        this.markStepCompleted(2);
+        this.checkMobileReadyState();
+      });
+      if (this.mapController.marker) {
+        this.mapController.marker.on('dragend', () => {
+          this.markStepCompleted(2);
+          this.checkMobileReadyState();
+        });
+      }
+    }, 500);
+
+    // El botón #btnObtenerUbicacion ya está conectado por IncidentMapPickerHelper
+    // El callback está en onInit() y llama a habilitarMapaInteractivo() y markStepCompleted(2).
+
+    // 3. Compose Bar Logic & Reference Input
+    const descInput = this.querySelector('#descripcion');
+    if (descInput) {
+      descInput.addEventListener('input', () => this.checkMobileReadyState());
+    }
+    const dirDetalle = this.querySelector('#dirDetalle');
+    if (dirDetalle) {
+      dirDetalle.addEventListener('input', () => this.checkMobileReadyState());
+    }
+
+    // 4. File Input Link
+    const fileInput = this.querySelector('#fileInput');
+    if (fileInput) {
+      fileInput.addEventListener('change', () => {
+        const previewDiv = this.querySelector('#mobilePhotoPreview');
+        if (previewDiv) {
+           if (fileInput.files.length > 0) {
+             previewDiv.classList.remove('d-none');
+           } else {
+             previewDiv.classList.add('d-none');
+           }
+        }
+        this.checkMobileReadyState();
+      });
+    }
+  }
+
+  renderMobileSubCategories() {
+    const parentId = this.categoryManager.tipoSelect.value;
+    const subCats = this.categoryManager.categorias.filter((c) => c.parent_id == parentId && c.activo);
+    
+    const subContainer = this.querySelector('#mobile-subcategories-container');
+    const subBlock = this.querySelector('#subCategoryBlock');
+    
+    if (subCats.length > 0) {
+      subBlock.classList.remove('d-none');
+      subContainer.className = 'w-100'; // Remove old flex classes
+      subContainer.innerHTML = `<div class="list-group shadow-sm rounded-3 overflow-hidden">` + 
+        subCats.map((c) => 
+        `<label class="list-group-item d-flex gap-3 align-items-center p-3 border-0 border-bottom" style="cursor:pointer; background-color: white;">
+           <input class="form-check-input flex-shrink-0 wa-subcat-radio m-0" type="radio" name="mobileSubcat" value="${c.id}" style="font-size: 1.2rem;">
+           <span class="fw-medium text-dark">${c.nombre}</span>
+         </label>`
+        ).join('') + `</div>`;
+      
+      subContainer.querySelectorAll('.wa-subcat-radio').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          this.categoryManager.subTipoSelect.value = e.target.value;
+          this.categoryManager.onSubCategoryChange();
+          
+          this.markStepCompleted(1);
+          this.checkMobileReadyState();
+        });
+      });
+    } else {
+      subBlock.classList.add('d-none');
+      // If no subcats, just complete step 1
+      this.markStepCompleted(1);
+      this.checkMobileReadyState();
+    }
+  }
+
+  markStepCompleted(step) {
+    const stepEl = this.querySelector(`#step${step}`);
+    const checkEl = this.querySelector(`#check${step}`);
+    if (stepEl && checkEl) {
+      stepEl.classList.add('completed');
+      checkEl.classList.remove('d-none');
+      
+      // Auto-open next step
+      const nextStep = step + 1;
+      const allSteps = this.querySelectorAll('.card-step');
+      allSteps.forEach((el, index) => {
+        if (index + 1 === nextStep) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+    }
+  }
+
+  checkMobileReadyState() {
+    const step1Done = this.querySelector('.wa-subcat-radio:checked') !== null;
+    const step2Done = (this.querySelector('#dirDetalle')?.value || '').trim().length > 0 || this.querySelector('#step2').classList.contains('completed');
+    const hasDesc = (this.querySelector('#descripcion').value || '').trim().length > 0;
+    const hasPhoto = this.querySelector('#fileInput')?.files?.length > 0 || (this.mediaUploader && this.mediaUploader.files && this.mediaUploader.files.length > 0);
+    
+    // Update Feedback UI for Step 1 inline inside the title!
+    const title1 = this.querySelector('#step1 .step-title');
+    if (title1) {
+      const rootName = this.querySelector('.wa-chip.active')?.textContent;
+      const subRadio = this.querySelector('.wa-subcat-radio:checked');
+      
+      let oldFb = title1.querySelector('.fb-inline');
+      if (oldFb) oldFb.remove();
+      
+      if (rootName && subRadio) {
+        const fbSpan = document.createElement('span');
+        fbSpan.className = 'fb-inline ms-2 text-primary fw-normal fs-6 d-block mt-1';
+        fbSpan.innerHTML = `Categoría: ${rootName} &raquo; ${subRadio.nextElementSibling.textContent}`;
+        title1.appendChild(fbSpan);
+      }
+    }
+
+    // Update Feedback UI for Step 2 inline inside the title!
+    const title2 = this.querySelector('#step2 .step-title');
+    if (title2) {
+      let locText = this.querySelector('#dirDetalle')?.value.trim();
+      let oldFb = title2.querySelector('.fb-inline');
+      if (oldFb) oldFb.remove();
+      
+      if (locText || (this.mapController && this.mapController.marker)) {
+        if (!locText) locText = "Fijada en el mapa";
+        const fbSpan = document.createElement('span');
+        fbSpan.className = 'fb-inline ms-2 text-primary fw-normal fs-6 d-block mt-1';
+        fbSpan.innerHTML = `Ubicación: ${locText}`;
+        title2.appendChild(fbSpan);
+      }
+    }
+
+    const btnSubmit = this.querySelector('#btnSubmit');
+    if (step1Done && step2Done && (hasDesc || hasPhoto)) {
+      btnSubmit.classList.add('ready');
+      btnSubmit.disabled = false;
+    } else {
+      btnSubmit.classList.remove('ready');
+      btnSubmit.disabled = true;
     }
   }
 
@@ -231,9 +452,13 @@ export class IncidenciaFormComponent extends BaseComponent {
   }
 
   prepararCreacion(user) {
-    document.title = 'Registrar Incidencia';
-    this.formTitle.textContent = 'Registrar Incidencia';
-    this.btnText.textContent = 'Guardar Incidencia';
+    if (this.formTitle) this.formTitle.textContent = 'Registrar Incidencia';
+    else {
+      const titleEl = this.querySelector('#formTitle');
+      if (titleEl) titleEl.textContent = 'Registrar Incidencia';
+    }
+    
+    if (this.btnText) this.btnText.textContent = 'Guardar Incidencia';
 
     if (user && user.pais_id) {
       if (this.locationManager.dirPaisSelect) {
@@ -252,8 +477,8 @@ export class IncidenciaFormComponent extends BaseComponent {
 
   async cargarDatosEdicion(id) {
     document.title = 'Editar Incidencia';
-    this.formTitle.textContent = 'Editar Incidencia';
-    this.btnText.textContent = 'Actualizar Incidencia';
+    if (this.formTitle) this.formTitle.textContent = 'Editar Incidencia';
+    if (this.btnText) this.btnText.textContent = 'Actualizar Incidencia';
 
     try {
       const inc = await IncidenciaService.getById(id);

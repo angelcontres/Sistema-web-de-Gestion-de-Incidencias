@@ -231,7 +231,9 @@ export class IncidentTerritoryCascadeHelper {
         }
 
         this.actualizarIndicadorMinimalista();
-        ToastService.info(`Ubicación seleccionada: ${matchedDbDir.detalle}`);
+        if (!this.component.isMobileLayout) {
+          ToastService.info(`Ubicación seleccionada: ${matchedDbDir.detalle}`);
+        }
       } else {
         this.selectedDireccionId = null;
         this.actualizarIndicadorMinimalista();

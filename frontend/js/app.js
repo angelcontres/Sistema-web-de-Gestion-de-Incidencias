@@ -30,7 +30,7 @@ import './pages/permissions/components/form/permission-form.component.js';
 import './pages/ubicaciones/components/index/ubicaciones-index.component.js';
 import './pages/categorias/components/index/categorias-index.component.js';
 import './pages/incidencias/components/lobby/index/incidencia-index.component.js';
-import './pages/incidencias/components/lobby/form/incidencia-form.component.js';
+import './pages/incidencias/components/lobby/form/incidencia-form.component.js?v=2.7';
 import './pages/incidencias/components/supervisor/incidencia-supervisor-index.component.js';
 import './pages/incidencias/components/estado-individual-incidencia/estado-individual-incidencia-index.component.js';
 import './pages/incidencias/components/historial/historial-index.component.js';

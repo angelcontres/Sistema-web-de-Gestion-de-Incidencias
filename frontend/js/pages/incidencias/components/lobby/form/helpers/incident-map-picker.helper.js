@@ -85,9 +85,11 @@ export class IncidentMapPickerHelper {
       this.actualizarMarcador(lat, lng, true);
     });
 
-    ToastService.info(
-      'Mapa habilitado. Haga clic o arrastre el marcador para seleccionar la ubicación.'
-    );
+    if (!this.component.isMobileLayout) {
+      ToastService.info(
+        'Mapa habilitado. Haga clic o arrastre el marcador para seleccionar la ubicación.'
+      );
+    }
 
     if (this.btnSeleccionarMapa) {
       this.btnSeleccionarMapa.classList.replace('btn-outline-primary', 'btn-primary');
@@ -157,7 +159,9 @@ export class IncidentMapPickerHelper {
           this.onLocationSelectedCallback(latitude, longitude);
         }
         toggleLoading(false);
-        ToastService.success(`Ubicación obtenida con éxito.`);
+        if (!this.component.isMobileLayout) {
+          ToastService.success(`Ubicación obtenida con éxito.`);
+        }
       },
       (error) => {
         toggleLoading(false);
