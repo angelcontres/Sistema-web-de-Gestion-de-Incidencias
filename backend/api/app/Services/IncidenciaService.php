@@ -49,7 +49,7 @@ class IncidenciaService
      */
     public function processBase64Resources(Incidencia $incidencia, array $recursos)
     {
-        $disk = env('FILESYSTEM_DISK', 'public');
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
 
         foreach ($recursos as $base64Image) {
             // Extraer la data codificada

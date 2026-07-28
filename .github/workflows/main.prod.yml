@@ -7,10 +7,10 @@ jobs:
     runs-on: [self-hosted, twintail-staging]
 
     steps:
-      # 1. Apagar los contenedores anteriores
-      - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
-        run: |
-          docker compose -f docker-compose.staging.yml down || true
+      # 1. Apagar contenedores anteriores (REMOVIDO PARA EVITAR DOWNTIME Y FALLOS DEL TÚNEL)
+      # - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
+      #   run: |
+      #     docker compose -f docker-compose.staging.yml down || true
 
       # 2. Restaurar permisos (No borra nada, pero previene errores de checkout)
       - name: Restaurar permisos de la carpeta usando Docker
