@@ -95,6 +95,15 @@ jobs:
             sleep 10
           done
 
+      - name: Verificar si GitHub está pasando el SONAR_TOKEN
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "::error::El secreto SONAR_TOKEN está vacío en GitHub Actions. No se ha inyectado el token."
+            exit 1
+          else
+            echo "El token SÍ está llegando a GitHub Actions (oculto por seguridad)."
+          fi
+
       - name: Ejecutar Análisis de SonarQube
         run: |
           docker run --rm \
