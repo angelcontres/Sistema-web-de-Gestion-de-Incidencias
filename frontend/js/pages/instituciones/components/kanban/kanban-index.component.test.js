@@ -115,8 +115,8 @@ describe('KanbanIndexComponent', () => {
     const colProceso = component.querySelector('#col-en-proceso');
     const colResuelto = component.querySelector('#col-resuelto');
 
-    expect(colProceso.children.length).toHaveLength(1);
-    expect(colResuelto.children.length).toHaveLength(1);
+    expect(colProceso.children).toHaveLength(1);
+    expect(colResuelto.children).toHaveLength(1);
 
     const countProceso = component.querySelector('#count-proceso');
     expect(countProceso.textContent).toBe('1');
@@ -262,17 +262,17 @@ describe('KanbanIndexComponent', () => {
 
     await component.processFiles([mockFile]);
 
-    expect(component.recursosFiles.length).toHaveLength(1);
+    expect(component.recursosFiles).toHaveLength(1);
     expect(component.recursosFiles[0].name).toBe('test.webp');
 
     const container = component.querySelector('#thumbnailsContainerKanban');
-    expect(container.children.length).toHaveLength(1);
+    expect(container.children).toHaveLength(1);
 
     // Delete file
     const btnDelete = container.querySelector('.btn-delete-file');
     btnDelete.click();
-    expect(component.recursosFiles.length).toHaveLength(0);
-    expect(container.children.length).toHaveLength(0);
+    expect(component.recursosFiles).toHaveLength(0);
+    expect(container.children).toHaveLength(0);
   });
 
   it('should fallback to FileReader if compression fails', async () => {
@@ -298,7 +298,7 @@ describe('KanbanIndexComponent', () => {
     await new Promise(process.nextTick);
     await new Promise(process.nextTick);
 
-    expect(component.recursosFiles.length).toHaveLength(1);
+    expect(component.recursosFiles).toHaveLength(1);
     expect(component.recursosFiles[0].compressed).toBe(false);
   });
 });

@@ -59,6 +59,8 @@ describe('CategoriasIndexComponent', () => {
         checkValidity: () => true,
         querySelector: () => createFakeElement(),
         querySelectorAll: () => [createFakeElement()],
+        configure: jest.fn(),
+        items: [],
       };
     };
 
@@ -82,39 +84,69 @@ describe('CategoriasIndexComponent', () => {
     restoreMocks();
   });
 
-  it('onInit() - debería inicializar el modal y cargar categorías', async () => {
+  it('onInit() - debería inicializar el modal, y cargar categorías (T8 - R10)', async () => {
     const { component } = createMockComponent();
 
-    let loadCalled = false;
-    component.cargarCategorias = async () => {
-      loadCalled = true;
-    };
+    // Espiamos cargarCategorias para saber si onInit() lo mandó a llamar
+    const cargarCategoriasSpy = jest
+      .spyOn(component, 'cargarCategorias')
+      .mockImplementation(async () => {});
 
     await component.onInit();
 
+    // Validamos que se instancie lo necesario
     expect(component.categoriaModalObj).toBeDefined();
-    expect(loadCalled).toBeTruthy();
+
+    // Validamos la lógica principal: onInit debe disparar la carga de datos
+    expect(cargarCategoriasSpy).toHaveBeenCalled();
   });
 
-  it('cargarCategorias() - debería renderizar mensaje vacío si no hay categorías', async () => {
-    const { component, fakeElements } = createMockComponent();
+  it('cargarCategorias() - debería mostrar el estado vacío si no hay categorías (T8 - R10)', async () => {
+    const { component } = createMockComponent();
+
+    // 1. Espiamos el método que controla los estados visuales
+    const setLoadingSpy = jest.spyOn(component, '_setLoadingState');
+
+    // 2. Simulamos que el servicio no devuelve datos
     CategoriaIncidenciaService.getAll = jest.fn(async () => []);
 
+    // 3. Ejecutamos el método
     await component.cargarCategorias();
 
-    const tbody = fakeElements['#tbody-categorias'];
-    expect(tbody.innerHTML.includes('No se encontraron')).toBeTruthy();
+    // 4. Verificamos el comportamiento (esto evita lidiar con classList en DOMs simulados)
+    expect(setLoadingSpy).toHaveBeenCalledWith('loading');
+    expect(setLoadingSpy).toHaveBeenCalledWith('empty');
+    expect(component.categoriasList).toEqual([]);
   });
 
-  it('cargarCategorias() - debería llenar this.categoriasList con los datos', async () => {
-    const mockData = [{ id: 1, nombre: 'Test Cat', parent_id: null, activo: true }];
+  it('cargarCategorias() - debería llenar this.categoriasList y llamar a renderizar (T8 - R10)', async () => {
+    const { component } = createMockComponent();
+
+    const mockData = [
+      { id: 1, nombre: 'Padre', parent_id: null, activo: true },
+      { id: 2, nombre: 'Hijo', parent_id: 1, activo: true },
+    ];
+
     CategoriaIncidenciaService.getAll = jest.fn(async () => mockData);
 
-    const { component } = createMockComponent();
+    // 1. Espiamos los métodos clave de la clase
+    const setLoadingSpy = jest.spyOn(component, '_setLoadingState');
+    const renderSpy = jest.spyOn(component, '_renderAccordion').mockImplementation(() => {});
+
+    // 2. Mockeamos llenarParentSelect para aislar la prueba y evitar errores de DOM
+    component.llenarParentSelect = jest.fn();
+
+    // 3. Ejecutamos el método
     await component.cargarCategorias();
 
-    expect(component.categoriasList.length).toHaveLength(1);
-    expect(component.categoriasList[0].nombre).toBe('Test Cat');
+    // 4. Verificamos que los datos se asignaron
+    expect(component.categoriasList).toHaveLength(2);
+
+    // 5. Verificamos el flujo de ejecución correcto
+    expect(setLoadingSpy).toHaveBeenCalledWith('loading');
+    expect(setLoadingSpy).toHaveBeenCalledWith('ready');
+    expect(renderSpy).toHaveBeenCalled();
+    expect(component.llenarParentSelect).toHaveBeenCalled();
   });
 
   it('abrirModalCategoria() - debería preparar el formulario para "Nueva Categoría" si no se pasa categoría', () => {

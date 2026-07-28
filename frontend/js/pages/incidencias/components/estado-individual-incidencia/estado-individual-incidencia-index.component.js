@@ -483,6 +483,24 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     }
   }
 
+  parseComentario(comentarioRaw) {
+    let comentario = comentarioRaw || 'Cambio de estado';
+    if (comentario.startsWith('[VINCULADO] ')) {
+      comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(12);
+    } else if (comentario.startsWith('Reporte ciudadano coincidente adjuntado: ')) {
+      comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(41);
+    }
+
+    let isStateChange = (comentario === 'Cambio de estado' || comentario === 'Resolución confirmada por el solicitante/operador.');
+    
+    if (comentario.startsWith('[RESOLUCIÓN] ')) {
+      isStateChange = true;
+      comentario = comentario.substring(13);
+    }
+
+    return { comentario, isStateChange };
+  }
+
   crearBurbujaChat(item) {
     const isMine = this.currentUser && item.usuario_id === this.currentUser.id;
     const div = document.createElement('div');
@@ -492,26 +510,15 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     const timeClass = 'text-muted';
 
     const autorNombre = item.usuario ? (item.usuario.name || item.usuario.username || 'Usuario Anónimo') : 'Sistema';
-    let comentario = item.comentario || 'Cambio de estado';
+    const parsed = this.parseComentario(item.comentario);
+    let comentario = parsed.comentario;
+    let isStateChange = parsed.isStateChange;
     const fecha = new Date(item.created_at).toLocaleString();
-
-    if (comentario.startsWith('[VINCULADO] ')) {
-      comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(12);
-    } else if (comentario.startsWith('Reporte ciudadano coincidente adjuntado: ')) {
-      comentario = 'Alguien más se vinculó a tu incidencia: ' + comentario.substring(41);
-    }
 
     // UI logic for "(Editado)" - Assuming created_at and updated_at differ
     let editadoHtml = '';
     if (item.updated_at && item.created_at !== item.updated_at) {
       editadoHtml = '<span class="ms-2 fst-italic" style="font-size: 0.7em;">(Editado)</span>';
-    }
-
-    let isStateChange = (comentario === 'Cambio de estado' || comentario === 'Resolución confirmada por el solicitante/operador.');
-    
-    if (comentario.startsWith('[RESOLUCIÓN] ')) {
-      isStateChange = true;
-      comentario = comentario.substring(13);
     }
 
     // Badge for state change if applicable

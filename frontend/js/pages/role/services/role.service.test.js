@@ -65,11 +65,11 @@ describe('RoleService', () => {
     );
   });
 
-  it('assignPermissions - hace POST a /roles/id/permisos', async () => {
+  it('assignPermissions - hace POST a /roles/id/permissions', async () => {
     const payload = { permisos: [1, 2] };
     await RoleService.assignPermissions(5, payload);
     expect(window.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/roles/5/permisos'),
+      expect.stringContaining('/roles/5/permissions'),
       expect.objectContaining({ method: 'POST', body: JSON.stringify(payload) })
     );
   });

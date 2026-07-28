@@ -516,12 +516,26 @@ table.table-hover tbody tr:hover {
   gap: 0.5rem;
 }
 
+.chat-panel-card {
+  min-height: 300px;
+  max-height: 600px;
+}
+
+@media (max-width: 991.98px) {
+  .chat-panel-card {
+    min-height: 250px !important;
+    max-height: 450px !important;
+  }
+}
+
 /* Premium Modals */
-.premium-modal-content {
-  border: none !important;
-  border-radius: var(--radius-xl) !important;
+.premium-modal-content,
+.modal-content {
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-xl, 20px) !important;
   box-shadow: var(--shadow-lg) !important;
-  overflow: hidden;
+  overflow: hidden !important;
+  background-color: var(--card-bg);
 }
 
 .premium-modal-header {
@@ -640,4 +654,22 @@ table.table-hover tbody tr:hover {
 /* Remove top border from first row in tbody */
 .table tbody tr:first-child > td {
   border-top: none;
+}
+
+/* Prevención de desbordamiento horizontal en tablas y tarjetas para móviles (R1, R2, R3) */
+.table-responsive {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767.98px) {
+  .premium-card, .sys-dashboard-card {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .premium-table th, .premium-table td {
+    white-space: nowrap;
+  }
 }

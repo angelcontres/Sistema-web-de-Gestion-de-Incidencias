@@ -16,31 +16,60 @@
     </button>
   </div>
 
-  <!-- Tabla de Categorías Colapsable (Tree Table) -->
-  <div class="premium-table-wrapper d-none" id="categoriasTableContainer">
-    <div class="premium-card-header bg-white border-0 py-3">
-      <h5 class="premium-card-title mb-0">Listado de Categorías</h5>
+  <!-- Tabla Acordeón de Categorías -->
+  <div class="premium-card">
+    <div
+      class="premium-card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between"
+    >
+      <h5 class="premium-card-title mb-0">
+        <i class="bi bi-diagram-3 text-primary me-2"></i>Listado de Categorías
+      </h5>
+      <span
+        id="cat-total-badge"
+        class="badge bg-primary-soft text-primary d-none fw-semibold"
+      ></span>
     </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table premium-table align-middle mb-0" id="tbl-categorias">
-          <thead class="table-light">
-            <tr>
-              <th class="ps-4" style="width: 35%">Nombre</th>
-              <th style="width: 45%">Descripción / Ejemplos</th>
-              <th style="width: 10%">Estado</th>
-              <th class="text-end pe-4" style="width: 10%">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-categorias">
-            <!-- Se inyectan las filas dinámicamente -->
-          </tbody>
-        </table>
-      </div>
+
+    <!-- Loading -->
+    <div id="cat-loading" class="text-center py-5">
+      <output class="spinner-border text-primary" style="width: 2rem; height: 2rem">
+        <span class="visually-hidden">Cargando...</span>
+      </output>
+      <p class="text-muted small mt-3 mb-0">Cargando categorías...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="cat-empty" class="text-center py-5 d-none">
+      <i class="bi bi-inbox text-muted" style="font-size: 2.5rem"></i>
+      <p class="text-muted mt-3 mb-0">No se encontraron categorías de incidencias registradas.</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="cat-error" class="alert alert-danger mx-4 my-3 d-none" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <span id="cat-error-msg">Error al cargar las categorías.</span>
+    </div>
+
+    <!-- Tabla -->
+    <div id="cat-table-container" class="d-none">
+      <table class="table mb-0" id="cat-table">
+        <thead class="table-light" style="font-size: 0.78rem; letter-spacing: 0.04em">
+          <tr>
+            <th class="ps-4" style="width: 40%">Nombre</th>
+            <th>Descripción</th>
+            <th style="width: 10%">Estado</th>
+            <th class="text-end pe-4" style="width: 8%">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cat-tbody">
+          <!-- Filas generadas dinámicamente -->
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
+<!-- Modal Crear / Editar Categoría -->
 <div
   class="modal fade"
   id="categoriaModal"
@@ -49,7 +78,7 @@
   aria-hidden="true"
 >
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content premium-modal-content border-0 shadow-lg">
+    <div class="modal-content premium-modal-content shadow-lg">
       <div class="modal-header border-bottom-0 pt-4 px-4 pb-2">
         <h5 class="modal-title fw-bold text-dark" id="categoriaModalLabel">Nueva Categoría</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -94,10 +123,36 @@
             >
             <select id="categoriaParentSelect" class="form-select">
               <option value="">-- Ninguna (Categoría Raíz) --</option>
-              <!-- Se inyecta dinámicamente -->
             </select>
             <div class="form-text text-muted small">
               Asigna un padre si esta es una subcategoría.
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-sm-6">
+              <label for="categoriaPrioridadSelect" class="form-label fw-semibold text-dark">
+                <i class="bi bi-flag-fill text-warning me-1" style="font-size: 0.8rem"></i>Prioridad
+                por Defecto
+              </label>
+              <select id="categoriaPrioridadSelect" class="form-select">
+                <option value="">Cargando...</option>
+              </select>
+              <div class="form-text text-muted small">
+                Se aplicará automáticamente al registrar una incidencia de esta categoría.
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label for="categoriaInstitucionSelect" class="form-label fw-semibold text-dark">
+                <i class="bi bi-building text-secondary me-1" style="font-size: 0.8rem"></i
+                >Institución Responsable
+              </label>
+              <select id="categoriaInstitucionSelect" class="form-select">
+                <option value="">Cargando...</option>
+              </select>
+              <div class="form-text text-muted small">
+                Institución que gestiona esta categoría por defecto.
+              </div>
             </div>
           </div>
 

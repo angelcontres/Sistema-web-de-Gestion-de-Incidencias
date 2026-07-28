@@ -211,4 +211,30 @@ describe('EstadoIndividualIncidenciaComponent', () => {
     expect(bubble.innerHTML).toContain('Resuelto');
   });
 
+  it('parseComentario - correctly parses different comments (R1)', async () => {
+    const component = await getComponent();
+    
+    let result = component.parseComentario('[VINCULADO] 123');
+    expect(result.comentario).toContain('Alguien más se vinculó');
+    expect(result.isStateChange).toBe(false);
+    
+    result = component.parseComentario('[RESOLUCIÓN] res');
+    expect(result.comentario).toBe('res');
+    expect(result.isStateChange).toBe(true);
+  });
+
+  it('estructura responsiva en la plantilla de chat (T4 - R1, R4)', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const { fileURLToPath } = await import('url');
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const htmlPath = path.join(__dirname, 'estado-individual-incidencia-index.component.html');
+    const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+
+    expect(htmlContent).toContain('chat-panel-card');
+    expect(htmlContent).not.toContain('col-lg-8 d-flex flex-column h-100');
+    expect(htmlContent).not.toMatch(/max-height:\s*80vh/);
+    expect(htmlContent).not.toMatch(/min-height:\s*50vh/);
+  });
 });
