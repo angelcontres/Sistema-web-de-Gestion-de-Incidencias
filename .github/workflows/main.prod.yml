@@ -105,12 +105,14 @@ jobs:
           fi
 
       - name: Ejecutar Análisis de SonarQube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           docker run --rm \
             --network="host" \
             -v "$(pwd):/usr/src" \
-            sonarsource/sonar-scanner-cli \
-            -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
+            -e SONAR_TOKEN \
+            sonarsource/sonar-scanner-cli -X
 
       # 8. Mantenimiento del servidor
       - name: Limpiar imágenes de Docker huérfanas
