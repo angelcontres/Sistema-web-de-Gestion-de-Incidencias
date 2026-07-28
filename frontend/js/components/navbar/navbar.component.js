@@ -72,9 +72,10 @@ export class NavbarComponent extends BaseComponent {
       logoutBtn.dataset.hasListener = 'true';
       logoutBtn.addEventListener('click', async () => {
         try {
-          // Disable button during requests
           logoutBtn.disabled = true;
           await AuthService.logout();
+        } catch {
+          // logout error handled by AuthService
         } finally {
           logoutBtn.disabled = false;
         }
