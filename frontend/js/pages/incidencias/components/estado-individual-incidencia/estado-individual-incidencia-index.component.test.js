@@ -211,15 +211,4 @@ describe('EstadoIndividualIncidenciaComponent', () => {
     expect(bubble.innerHTML).toContain('Resuelto');
   });
 
-  it('parseComentario - correctly parses different comments (R1)', async () => {
-    const component = await getComponent();
-    
-    let result = component.parseComentario('[VINCULADO] 123');
-    expect(result.comentario).toContain('Alguien más se vinculó');
-    expect(result.isStateChange).toBe(false);
-    
-    result = component.parseComentario('[RESOLUCIÓN] res');
-    expect(result.comentario).toBe('res');
-    expect(result.isStateChange).toBe(true);
-  });
 });

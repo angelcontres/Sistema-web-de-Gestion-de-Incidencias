@@ -11,6 +11,10 @@ class HistorialIncidencia extends Model
 {
     use HasLocalTimezone;
 
+    protected $dispatchesEvents = [
+        'created' => \App\Events\HistorialIncidenciaCreated::class,
+    ];
+
     protected $fillable = [
         'incidencia_id',
         'estado_id',

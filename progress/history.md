@@ -25,3 +25,17 @@
 - Esto soluciona el bug en `LoginComponent` y `SignupComponent`, garantizando que en caso de error de autenticación el flujo de ejecución pase al bloque `catch` para mostrar un Toast de error en lugar de uno de éxito.
 - Se actualizaron y mockearon las llamadas a `ToastService` en `login.component.test.js` para corregir errores preexistentes con Custom Elements y asegurar que pasen en verde.
 - Se verificó la suite de pruebas del componente de login (`login.component.test.js`) con éxito al 100%.
+
+## Sesión - Refactor incidencia-form.component.js
+**Nombre:** Refactor incidencia-form.component.js
+**ID en feature_list.json:** N/A (Solicitud directa)
+**Status final:** done
+
+### Resumen de Trabajo Realizado
+- Se realizó un análisis exhaustivo del archivo `incidencia-form.component.js` (originalmente con 1403 líneas).
+- Se identificó la violación del SRP (Single Responsibility Principle) y se propuso y ejecutó la extracción lógica a 4 clases de apoyo (`helpers`).
+- Se crearon los helpers `MediaUploader`, `MapController`, `CategoryManager` y `LocationManager` dentro de la carpeta `frontend/js/pages/incidencias/components/lobby/form/helpers`.
+- Se reescribió `incidencia-form.component.js` para instanciar y usar los helpers reduciendo drásticamente su complejidad y líneas de código (a ~400 líneas).
+- Se canceló el script global `./init.sh` debido a un cuelgue prolongado en el backend, centrándose exclusivamente en validar el frontend.
+- Se actualizaron las aserciones en el archivo de test `incidencia-form.component.test.js` para referenciar las nuevas dependencias (p. ej., `component.mapController.actualizarMarcador`).
+- Se instalaron módulos de node en `frontend` y se comprobó que toda la suite de pruebas del formulario pasa con éxito al 100% (`npm test`).

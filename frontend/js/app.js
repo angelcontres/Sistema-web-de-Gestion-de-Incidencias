@@ -40,6 +40,7 @@ import './pages/instituciones/components/kanban/kanban-index.component.js';
 import './shared/components/app-data-table/app-data-table.component.js';
 import './shared/components/modal/modal.component.js';
 import './shared/components/toast/toast.component.js';
+import './pages/playground/mockup-mobile/mockup-mobile.component.js';
 // Import and Initialize Router
 import { initRouter } from './router.js';
 import { ToastService } from './shared/services/toast.service.js';

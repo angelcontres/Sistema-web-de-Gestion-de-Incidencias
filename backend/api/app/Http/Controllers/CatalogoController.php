@@ -7,6 +7,8 @@ use App\Models\Direccion;
 use App\Models\Institucion;
 use App\Models\Pais;
 use App\Models\Territorio;
+use App\Models\EstadoIncidencia;
+use App\Models\Prioridad;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -119,5 +121,29 @@ class CatalogoController extends Controller
         });
 
         return response()->json($instituciones);
+    }
+
+    /**
+     * Obtener listado de estados de incidencia.
+     */
+    public function estadosIncidencia(): JsonResponse
+    {
+        $estados = Cache::remember('catalogo_estados_incidencia', now()->addHours(24), function () {
+            return EstadoIncidencia::orderBy('id')->get()->toArray();
+        });
+
+        return response()->json($estados);
+    }
+
+    /**
+     * Obtener listado de prioridades.
+     */
+    public function prioridades(): JsonResponse
+    {
+        $prioridades = Cache::remember('catalogo_prioridades', now()->addHours(24), function () {
+            return Prioridad::orderBy('id')->get()->toArray();
+        });
+
+        return response()->json($prioridades);
     }
 }

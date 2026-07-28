@@ -27,6 +27,7 @@ const routes = {
   '#/tramites': 'app-menu-lobby',
   '#/tramites/historial': 'app-historial-index',
   '#/tramites/estado-individual': 'app-estado-individual-incidencia',
+  '#/playground/mockup-mobile': 'app-mockup-mobile',
 };
 
 const PUBLIC_ROUTES = new Set(['#/login', '#/signup']);

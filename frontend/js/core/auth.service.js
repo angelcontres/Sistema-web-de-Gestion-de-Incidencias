@@ -134,6 +134,12 @@ export const AuthService = {
     return user ? !!user.is_admin : false;
   },
 
+  canManageIncidencias() {
+    return this.isAdmin() || 
+           this.hasPermission('UPDATE', 'incidencias') || 
+           this.hasPermission('UPDATE', 'despacho_incidencias');
+  },
+
   getPaisId() {
     const user = this.getCurrentUser();
     return user ? user.pais_id : null;

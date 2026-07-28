@@ -1,0 +1,104 @@
+<div class="d-flex flex-column bg-light h-100" style="max-width: 500px; margin: 0 auto; position: relative;">
+  
+  <!-- Header -->
+  <div class="bg-white px-3 py-2 d-flex align-items-center justify-content-between border-bottom sticky-top shadow-sm z-3">
+    <button class="btn btn-link text-dark p-0 text-decoration-none">
+      <i class="bi bi-x fs-3"></i>
+    </button>
+    <div class="text-center">
+      <div class="small fw-semibold text-muted">Paso 1 de 5</div>
+      <div class="fw-bold">Reporte de Incidencias</div>
+    </div>
+    <div class="position-relative d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+      <svg width="40" height="40" viewBox="0 0 36 36" class="position-absolute">
+        <path class="text-light" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <path class="text-primary" stroke-width="3" stroke-dasharray="20, 100" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+      </svg>
+      <span class="small fw-bold" style="font-size: 0.75rem;">20%</span>
+    </div>
+  </div>
+
+  <!-- Content Scrollable -->
+  <div class="flex-grow-1 overflow-auto pb-5">
+    
+    <!-- Chat Bubble -->
+    <div class="p-3 d-flex gap-2 align-items-start mt-2">
+      <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center flex-shrink-0" style="width: 40px; height: 40px; overflow: hidden;">
+        <!-- Avatar Placeholder -->
+        <span class="fs-4">👩🏽‍💼</span>
+      </div>
+      <div class="bg-white border rounded-3 p-3 shadow-sm position-relative" style="border-top-left-radius: 0 !important;">
+        ¡Hola! Por favor selecciona la categoría y detalla el problema.
+      </div>
+    </div>
+
+    <!-- Categorías -->
+    <div class="px-3">
+      <div class="d-flex flex-wrap gap-2 mb-3" id="categoriesContainer">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Descripción</label>
+        <textarea class="form-control rounded-3" rows="4" placeholder="Descripción del Problema..."></textarea>
+      </div>
+
+      <!-- Evidencia -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Evidencia</label>
+        <div id="dropzoneContainer" class="p-3 border rounded-3 bg-light text-center cursor-pointer mb-2" style="border-style: dashed !important; border-width: 2px !important;">
+          <i class="bi bi-camera fs-3 text-muted"></i>
+          <div class="small text-muted mt-1">Toca aquí para adjuntar fotos</div>
+        </div>
+        <input type="file" id="fileInput" class="d-none" multiple accept="image/*">
+        <!-- Contenedor scrollable horizontal para miniaturas -->
+        <div class="overflow-hidden">
+           <div id="thumbnailsContainer" class="d-flex flex-nowrap gap-2 overflow-x-auto pb-2 px-1" style="white-space: nowrap;"></div>
+        </div>
+      </div>
+
+      <!-- Ubicación Mapa -->
+      <div class="mb-4">
+        <div class="d-flex gap-2 mb-2">
+          <button id="btnObtenerUbicacion" class="btn btn-outline-primary btn-sm flex-fill d-flex align-items-center justify-content-center fw-medium">
+            <i class="bi bi-geo-alt-fill me-1" id="btnObtenerUbicacionIcon"></i>
+            <span class="spinner-border spinner-border-sm d-none me-1" id="btnObtenerUbicacionSpinner"></span>
+            <span id="btnObtenerUbicacionText">Mi Ubicación GPS</span>
+          </button>
+          <button id="btnSeleccionarMapa" class="btn btn-outline-secondary btn-sm flex-fill fw-medium">
+            <i class="bi bi-map"></i> Ubicar en Mapa
+          </button>
+        </div>
+        <div class="rounded" id="incidenciaMapa" style="height: 180px; background: #e9ecef; z-index: 1;"></div>
+        <input type="hidden" id="dirLat">
+        <input type="hidden" id="dirLng">
+        <input type="hidden" id="dirPrecisionGps">
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="p-3 bg-white border-top sticky-bottom z-3">
+    <button id="btnSubmitIncidencia" class="btn btn-primary w-100 py-2 rounded-3 shadow-sm fw-bold">
+      Siguiente / Continuar
+    </button>
+  </div>
+
+  <!-- Bottom Sheet (Offcanvas) para Subcategorías -->
+  <div class="offcanvas offcanvas-bottom rounded-top-4" tabindex="-1" id="offcanvasSubcategory" style="height: auto; max-height: 50vh;">
+    <div class="offcanvas-header border-bottom">
+      <h5 class="offcanvas-title fw-bold">Selecciona el problema</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+      <div class="list-group list-group-flush" id="subcategoriesContainer">
+        <!-- Subcategorías dinámicas irán aquí -->
+        <div class="p-3 text-center text-muted">Selecciona una categoría primero.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
