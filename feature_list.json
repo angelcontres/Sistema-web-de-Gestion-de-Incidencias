@@ -263,7 +263,7 @@
         "Implementa tests unitarios para funciones específicas, para evitar lineas rezagadas que puedan no cubrir el objetivo"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "pending"
     },
     {
       "id": 17,
