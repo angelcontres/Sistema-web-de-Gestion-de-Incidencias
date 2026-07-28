@@ -40,17 +40,21 @@ class CategoriaIncidenciaController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string|max:1000',
-            'parent_id' => 'nullable|exists:categorias_incidencia,id',
-            'activo' => 'boolean',
+            'nombre'         => 'required|string|max:255',
+            'descripcion'    => 'nullable|string|max:1000',
+            'parent_id'      => 'nullable|exists:categorias_incidencia,id',
+            'prioridad_id'   => 'nullable|exists:prioridades,id',
+            'institucion_id' => 'nullable|exists:instituciones,id',
+            'activo'         => 'boolean',
         ]);
 
         $categoria = CategoriaIncidencia::create([
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'parent_id' => $request->parent_id,
-            'activo' => $request->input('activo', true),
+            'nombre'         => $request->nombre,
+            'descripcion'    => $request->descripcion,
+            'parent_id'      => $request->parent_id,
+            'prioridad_id'   => $request->prioridad_id,
+            'institucion_id' => $request->institucion_id,
+            'activo'         => $request->input('activo', true),
         ]);
 
         Cache::forget('catalogo_categorias_incidencia_all_0');
@@ -86,10 +90,12 @@ class CategoriaIncidenciaController extends Controller
         $categoria = CategoriaIncidencia::findOrFail($id);
 
         $request->validate([
-            'nombre' => 'sometimes|required|string|max:255',
-            'descripcion' => 'nullable|string|max:1000',
-            'parent_id' => 'nullable|exists:categorias_incidencia,id|different:id',
-            'activo' => 'boolean',
+            'nombre'         => 'sometimes|required|string|max:255',
+            'descripcion'    => 'nullable|string|max:1000',
+            'parent_id'      => 'nullable|exists:categorias_incidencia,id|different:id',
+            'prioridad_id'   => 'nullable|exists:prioridades,id',
+            'institucion_id' => 'nullable|exists:instituciones,id',
+            'activo'         => 'boolean',
         ]);
 
         // Prevent circular dependency (cannot set a child as parent)
@@ -103,10 +109,12 @@ class CategoriaIncidenciaController extends Controller
         }
 
         $categoria->update([
-            'nombre' => $request->nombre ?? $categoria->nombre,
-            'descripcion' => $request->has('descripcion') ? $request->descripcion : $categoria->descripcion,
-            'parent_id' => $request->has('parent_id') ? $request->parent_id : $categoria->parent_id,
-            'activo' => $request->has('activo') ? $request->activo : $categoria->activo,
+            'nombre'         => $request->nombre         ?? $categoria->nombre,
+            'descripcion'    => $request->has('descripcion')    ? $request->descripcion    : $categoria->descripcion,
+            'parent_id'      => $request->has('parent_id')      ? $request->parent_id      : $categoria->parent_id,
+            'prioridad_id'   => $request->has('prioridad_id')   ? $request->prioridad_id   : $categoria->prioridad_id,
+            'institucion_id' => $request->has('institucion_id') ? $request->institucion_id : $categoria->institucion_id,
+            'activo'         => $request->has('activo')         ? $request->activo         : $categoria->activo,
         ]);
 
         Cache::forget('catalogo_categorias_incidencia_all_0');

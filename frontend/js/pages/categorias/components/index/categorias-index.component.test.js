@@ -59,6 +59,8 @@ describe('CategoriasIndexComponent', () => {
         checkValidity: () => true,
         querySelector: () => createFakeElement(),
         querySelectorAll: () => [createFakeElement()],
+        configure: jest.fn(),
+        items: [],
       };
     };
 
@@ -82,8 +84,8 @@ describe('CategoriasIndexComponent', () => {
     restoreMocks();
   });
 
-  it('onInit() - debería inicializar el modal y cargar categorías', async () => {
-    const { component } = createMockComponent();
+  it('onInit() - debería inicializar el modal, configurar <app-data-table> y cargar categorías (T8 - R10)', async () => {
+    const { component, fakeElements } = createMockComponent();
 
     let loadCalled = false;
     component.cargarCategorias = async () => {
@@ -94,27 +96,43 @@ describe('CategoriasIndexComponent', () => {
 
     expect(component.categoriaModalObj).toBeDefined();
     expect(loadCalled).toBeTruthy();
+    const tblDatos = fakeElements['#tbl-categorias-data'];
+    expect(tblDatos.configure).toHaveBeenCalled();
+    const configArg = tblDatos.configure.mock.calls[0][0];
+    expect(configArg.columns).toBeDefined();
+    const headers = configArg.columns.map((col) => col.header);
+    expect(headers).toContain('ID');
+    expect(headers).toContain('Nombre');
+    expect(headers).toContain('Descripción');
+    expect(headers).toContain('Estado');
+    expect(headers).toContain('Acciones');
   });
 
-  it('cargarCategorias() - debería renderizar mensaje vacío si no hay categorías', async () => {
+  it('cargarCategorias() - debería setear items vacíos en <app-data-table> si no hay categorías (T8 - R10)', async () => {
     const { component, fakeElements } = createMockComponent();
     CategoriaIncidenciaService.getAll = jest.fn(async () => []);
 
     await component.cargarCategorias();
 
-    const tbody = fakeElements['#tbody-categorias'];
-    expect(tbody.innerHTML.includes('No se encontraron')).toBeTruthy();
+    const tblDatos = fakeElements['#tbl-categorias-data'];
+    expect(tblDatos.items).toEqual([]);
   });
 
-  it('cargarCategorias() - debería llenar this.categoriasList con los datos', async () => {
-    const mockData = [{ id: 1, nombre: 'Test Cat', parent_id: null, activo: true }];
+  it('cargarCategorias() - debería llenar this.categoriasList y pasar los items ordenados a <app-data-table> (T8 - R10)', async () => {
+    const mockData = [
+      { id: 1, nombre: 'Padre', parent_id: null, activo: true },
+      { id: 2, nombre: 'Hijo', parent_id: 1, activo: true },
+    ];
     CategoriaIncidenciaService.getAll = jest.fn(async () => mockData);
 
-    const { component } = createMockComponent();
+    const { component, fakeElements } = createMockComponent();
     await component.cargarCategorias();
 
-    expect(component.categoriasList.length).toHaveLength(1);
-    expect(component.categoriasList[0].nombre).toBe('Test Cat');
+    expect(component.categoriasList.length).toBe(2);
+    const tblDatos = fakeElements['#tbl-categorias-data'];
+    expect(tblDatos.items.length).toBe(2);
+    expect(tblDatos.items[0].nombre).toBe('Padre');
+    expect(tblDatos.items[1].nombre).toBe('Hijo');
   });
 
   it('abrirModalCategoria() - debería preparar el formulario para "Nueva Categoría" si no se pasa categoría', () => {
