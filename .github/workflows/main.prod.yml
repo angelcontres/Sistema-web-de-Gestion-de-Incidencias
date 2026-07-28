@@ -110,7 +110,6 @@ jobs:
             -Dsonar.php.coverage.reportPaths=backend/api/build/logs/clover.xml \
             -Dsonar.php.tests.reportPath=backend/api/build/logs/junit.xml \
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
-            -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
             -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
 
       # 8. Mantenimiento del servidor
