@@ -298,4 +298,77 @@ describe('RoleIndexComponent', () => {
     const accordionMenus = component.querySelector('#accordionMenus');
     expect(accordionMenus.innerHTML).toContain('No hay permisos registrados');
   });
+
+  it('should populate padre_id select with role options', async () => {
+    const component = await createComponent();
+    const roles = [
+      { id: 1, nombre: 'Admin' },
+      { id: 2, nombre: 'User' }
+    ];
+    component.llenarSelectPadre(roles);
+
+    const selectPadre = component.querySelector('#padre_id');
+    const options = selectPadre.querySelectorAll('option');
+    expect(options.length).toBe(3);
+    expect(options[1].value).toBe('1');
+    expect(options[1].textContent).toBe('Admin');
+    expect(options[2].value).toBe('2');
+    expect(options[2].textContent).toBe('User');
+  });
+
+  it('should exclude a role from padre_id select when excluirId provided', async () => {
+    const component = await createComponent();
+    component.llenarSelectPadre([
+      { id: 1, nombre: 'Admin' },
+      { id: 2, nombre: 'User' }
+    ], 1);
+
+    const options = component.querySelectorAll('#padre_id option');
+    expect(options.length).toBe(2);
+    expect(options[1].value).toBe('2');
+  });
+
+  it('should set selected value on padre_id select', async () => {
+    const component = await createComponent();
+    component.llenarSelectPadre([
+      { id: 1, nombre: 'Admin' },
+      { id: 2, nombre: 'User' }
+    ], null, '2');
+
+    const selectPadre = component.querySelector('#padre_id');
+    expect(selectPadre.value).toBe('2');
+  });
+
+  it('should do nothing if padre_id select does not exist', async () => {
+    const component = await createComponent();
+    component.querySelector('#padre_id').remove();
+    expect(() => component.llenarSelectPadre([{ id: 1, nombre: 'Admin' }])).not.toThrow();
+  });
+
+  it('should call abrirModalEditar on formComponent', async () => {
+    const roles = [{ id: 1, nombre: 'Admin' }];
+    RoleService.getAll.mockResolvedValue(roles);
+    const component = await createComponent();
+    const formComponent = component.querySelector('#app-role-form');
+    formComponent.abrirModalEditar = jest.fn();
+
+    component.abrirModalEditar(roles[0], roles);
+    expect(formComponent.abrirModalEditar).toHaveBeenCalledWith(roles[0], roles);
+  });
+
+  it('should hide modal error alert on limpiarErroresModal', async () => {
+    const component = await createComponent();
+    const modalErrorAlert = document.createElement('div');
+    modalErrorAlert.id = 'modalErrorAlert';
+    component.appendChild(modalErrorAlert);
+
+    expect(modalErrorAlert.classList.contains('d-none')).toBe(false);
+    component.limpiarErroresModal();
+    expect(modalErrorAlert.classList.contains('d-none')).toBe(true);
+  });
+
+  it('should do nothing on limpiarErroresModal if modalErrorAlert does not exist', async () => {
+    const component = await createComponent();
+    expect(() => component.limpiarErroresModal()).not.toThrow();
+  });
 });
