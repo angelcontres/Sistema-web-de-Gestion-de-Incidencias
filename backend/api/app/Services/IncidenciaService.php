@@ -82,12 +82,26 @@ class IncidenciaService
 
             $fileName = 'incidencias/'.Str::uuid().'.'.$extension;
 
-            Storage::disk($disk)->put($fileName, $imageDecoded);
+            try {
+                $diskInstance = Storage::disk($disk);
+                if (!$diskInstance->exists('incidencias')) {
+                    $diskInstance->makeDirectory('incidencias');
+                }
+                
+                $success = $diskInstance->put($fileName, $imageDecoded);
+                
+                if (!$success) {
+                    \Illuminate\Support\Facades\Log::error("Failed to save image {$fileName} to disk {$disk}");
+                    continue; // Skip creating DB record if file wasn't saved
+                }
 
-            $incidencia->recursos()->create([
-                'url' => $fileName,
-                'tipo' => 'imagen',
-            ]);
+                $incidencia->recursos()->create([
+                    'url' => $fileName,
+                    'tipo' => 'imagen',
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Exception saving image: " . $e->getMessage());
+            }
         }
     }
 
