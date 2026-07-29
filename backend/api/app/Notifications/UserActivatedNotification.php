@@ -33,7 +33,10 @@ class UserActivatedNotification extends Notification implements ShouldQueue
             ->subject('Cuenta Activada Exitosamente')
             ->greeting('¡Bienvenido '.$this->user->name.'!')
             ->line('Tu cuenta en GeoIncidencias ha sido activada con éxito.')
-            ->line('Ahora puedes iniciar sesión en la plataforma con tu correo electrónico y la contraseña que has definido.')
+            ->line(
+                'Ahora puedes iniciar sesión en la plataforma con tu correo ' .
+                'electrónico y la contraseña que has definido.'
+            )
             ->action('Ir a GeoIncidencias', $url)
             ->line('¡Gracias por unirte a nosotros!');
     }

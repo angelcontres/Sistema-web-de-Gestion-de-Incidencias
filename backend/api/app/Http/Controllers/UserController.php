@@ -73,10 +73,12 @@ class UserController extends Controller
                 ->notify(new UserInvitationNotification($invitation));
         }
 
+        $message = empty($datosValidados['password'])
+            ? 'Usuario creado y se ha enviado la invitación exitosamente'
+            : 'Usuario creado con éxito';
+
         return response()->json([
-            'message' => empty($datosValidados['password']) 
-                ? 'Usuario creado y se ha enviado la invitación exitosamente' 
-                : 'Usuario creado con éxito',
+            'message' => $message,
             'data' => $user->load('roles'),
         ], 201);
     }
@@ -105,8 +107,8 @@ class UserController extends Controller
             'username' => $datosValidados['username'] ?? $user->username,
             'email' => $datosValidados['email'] ?? $user->email,
             'activo' => $datosValidados['activo'] ?? $user->activo,
-            'institucion_id' => array_key_exists('institucion_id', $datosValidados) 
-                ? $datosValidados['institucion_id'] 
+            'institucion_id' => array_key_exists('institucion_id', $datosValidados)
+                ? $datosValidados['institucion_id']
                 : $user->institucion_id,
         ];
 

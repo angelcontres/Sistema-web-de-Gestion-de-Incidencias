@@ -52,58 +52,63 @@ class IncidenciaService
         $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
 
         foreach ($recursos as $base64Image) {
-            // Extraer la data codificada
-            if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-                $base64Data = substr($base64Image, strpos($base64Image, ',') + 1);
-            } else {
-                $base64Data = $base64Image;
+            $this->processSingleResource($incidencia, $base64Image, $disk);
+        }
+    }
+
+    private function processSingleResource(Incidencia $incidencia, string $base64Image, string $disk): void
+    {
+        // Extraer la data codificada
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+            $base64Data = substr($base64Image, strpos($base64Image, ',') + 1);
+        } else {
+            $base64Data = $base64Image;
+        }
+
+        $imageDecoded = base64_decode($base64Data, true);
+        if ($imageDecoded === false) {
+            return; // No es un base64 válido
+        }
+
+        // Validar MIME Type real por seguridad
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_buffer($finfo, $imageDecoded);
+        finfo_close($finfo);
+
+        // Permitir solo formatos de imagen seguros
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (! in_array($mimeType, $allowedMimeTypes)) {
+            return; // Archivo no permitido o código malicioso inyectado
+        }
+
+        // Mapear mime type a extensión segura
+        $extension = str_replace('image/', '', $mimeType);
+        if ($extension === 'jpeg') {
+            $extension = 'jpg';
+        }
+
+        $fileName = 'incidencias/'.Str::uuid().'.'.$extension;
+
+        try {
+            $diskInstance = Storage::disk($disk);
+            if (! $diskInstance->exists('incidencias')) {
+                $diskInstance->makeDirectory('incidencias');
             }
 
-            $imageDecoded = base64_decode($base64Data, true);
-            if ($imageDecoded === false) {
-                continue; // No es un base64 válido
+            $success = $diskInstance->put($fileName, $imageDecoded);
+
+            if (! $success) {
+                Log::error("Failed to save image {$fileName} to disk {$disk}");
+
+                return; // Skip creating DB record if file wasn't saved
             }
 
-            // Validar MIME Type real por seguridad
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_buffer($finfo, $imageDecoded);
-            finfo_close($finfo);
-
-            // Permitir solo formatos de imagen seguros
-            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-            if (! in_array($mimeType, $allowedMimeTypes)) {
-                continue; // Archivo no permitido o código malicioso inyectado
-            }
-
-            // Mapear mime type a extensión segura
-            $extension = str_replace('image/', '', $mimeType);
-            if ($extension === 'jpeg') {
-                $extension = 'jpg';
-            }
-
-            $fileName = 'incidencias/'.Str::uuid().'.'.$extension;
-
-            try {
-                $diskInstance = Storage::disk($disk);
-                if (! $diskInstance->exists('incidencias')) {
-                    $diskInstance->makeDirectory('incidencias');
-                }
-
-                $success = $diskInstance->put($fileName, $imageDecoded);
-
-                if (! $success) {
-                    Log::error("Failed to save image {$fileName} to disk {$disk}");
-
-                    continue; // Skip creating DB record if file wasn't saved
-                }
-
-                $incidencia->recursos()->create([
-                    'url' => $fileName,
-                    'tipo' => 'imagen',
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Exception saving image: '.$e->getMessage());
-            }
+            $incidencia->recursos()->create([
+                'url' => $fileName,
+                'tipo' => 'imagen',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception saving image: '.$e->getMessage());
         }
     }
 

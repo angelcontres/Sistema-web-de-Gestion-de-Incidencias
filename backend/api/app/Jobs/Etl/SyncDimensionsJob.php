@@ -98,33 +98,64 @@ class SyncDimensionsJob implements ShouldQueue
         }
     }
 
-    private function processEcuadorJsonData(array $ecuadorData, $dbTerritoriosByCodigo, array &$records, array &$processedIds): void
-    {
+    private function processEcuadorJsonData(
+        array $ecuadorData,
+        $dbTerritoriosByCodigo,
+        array &$records,
+        array &$processedIds
+    ): void {
         foreach ($ecuadorData as $provId => $provData) {
             if (! isset($provData['provincia'])) {
                 continue;
             }
             
             $provName = mb_convert_case($provData['provincia'], MB_CASE_TITLE, 'UTF-8');
-            $this->addTerritoryRecord($dbTerritoriosByCodigo, (string)$provId, $provName, 'N/A', 'N/A', $records, $processedIds);
+            $this->addTerritoryRecord(
+                $dbTerritoriosByCodigo,
+                (string)$provId,
+                $provName,
+                'N/A',
+                'N/A',
+                $records,
+                $processedIds
+            );
 
             if (! isset($provData['cantones']) || ! is_array($provData['cantones'])) {
                 continue;
             }
 
-            $this->processEcuadorCantones($provData['cantones'], $provName, $dbTerritoriosByCodigo, $records, $processedIds);
+            $this->processEcuadorCantones(
+                $provData['cantones'],
+                $provName,
+                $dbTerritoriosByCodigo,
+                $records,
+                $processedIds
+            );
         }
     }
 
-    private function processEcuadorCantones(array $cantones, string $provName, $dbTerritoriosByCodigo, array &$records, array &$processedIds): void
-    {
+    private function processEcuadorCantones(
+        array $cantones,
+        string $provName,
+        $dbTerritoriosByCodigo,
+        array &$records,
+        array &$processedIds
+    ): void {
         foreach ($cantones as $cantId => $cantData) {
             if (! isset($cantData['canton'])) {
                 continue;
             }
 
             $cantName = mb_convert_case($cantData['canton'], MB_CASE_TITLE, 'UTF-8');
-            $this->addTerritoryRecord($dbTerritoriosByCodigo, (string)$cantId, $provName, $cantName, 'N/A', $records, $processedIds);
+            $this->addTerritoryRecord(
+                $dbTerritoriosByCodigo,
+                (string)$cantId,
+                $provName,
+                $cantName,
+                'N/A',
+                $records,
+                $processedIds
+            );
 
             if (! isset($cantData['parroquias']) || ! is_array($cantData['parroquias'])) {
                 continue;
@@ -132,13 +163,28 @@ class SyncDimensionsJob implements ShouldQueue
 
             foreach ($cantData['parroquias'] as $parrId => $parrNameRaw) {
                 $parrName = mb_convert_case($parrNameRaw, MB_CASE_TITLE, 'UTF-8');
-                $this->addTerritoryRecord($dbTerritoriosByCodigo, (string)$parrId, $provName, $cantName, $parrName, $records, $processedIds);
+                $this->addTerritoryRecord(
+                    $dbTerritoriosByCodigo,
+                    (string)$parrId,
+                    $provName,
+                    $cantName,
+                    $parrName,
+                    $records,
+                    $processedIds
+                );
             }
         }
     }
 
-    private function addTerritoryRecord($dbTerritoriosByCodigo, string $codigo, string $provincia, string $canton, string $parroquia, array &$records, array &$processedIds): void
-    {
+    private function addTerritoryRecord(
+        $dbTerritoriosByCodigo,
+        string $codigo,
+        string $provincia,
+        string $canton,
+        string $parroquia,
+        array &$records,
+        array &$processedIds
+    ): void {
         $dbNode = $dbTerritoriosByCodigo->get($codigo);
         if ($dbNode) {
             $records[] = [
@@ -155,8 +201,13 @@ class SyncDimensionsJob implements ShouldQueue
         }
     }
 
-    private function processOtherTerritories($dbTerritorios, $dbTerritoriosById, $paises, array $processedIds, array &$records): void
-    {
+    private function processOtherTerritories(
+        $dbTerritorios,
+        $dbTerritoriosById,
+        $paises,
+        array $processedIds,
+        array &$records
+    ): void {
         foreach ($dbTerritorios as $t) {
             if (isset($processedIds[$t->id])) {
                 continue;

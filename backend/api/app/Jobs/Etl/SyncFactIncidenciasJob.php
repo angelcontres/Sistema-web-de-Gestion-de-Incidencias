@@ -69,13 +69,17 @@ class SyncFactIncidenciasJob implements ShouldQueue
                 // Primer cambio a En Proceso
                 $enProcesoLog = $historialDeIncidencia->firstWhere('estado_id', $enProcesoId);
                 if ($enProcesoLog) {
-                    $tiempoRespuesta = (int) $createdTime->diffInMinutes(TimezoneService::toLocal($enProcesoLog->created_at));
+                    $tiempoRespuesta = (int) $createdTime->diffInMinutes(
+                        TimezoneService::toLocal($enProcesoLog->created_at)
+                    );
                 }
 
                 // Primer cambio a Resuelto
                 $resueltoLog = $historialDeIncidencia->firstWhere('estado_id', $resueltoId);
                 if ($resueltoLog) {
-                    $tiempoResolucion = (int) $createdTime->diffInMinutes(TimezoneService::toLocal($resueltoLog->created_at));
+                    $tiempoResolucion = (int) $createdTime->diffInMinutes(
+                        TimezoneService::toLocal($resueltoLog->created_at)
+                    );
                 }
             }
 
