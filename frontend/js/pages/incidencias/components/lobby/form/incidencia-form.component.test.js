@@ -159,7 +159,7 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
     });
 
     test('disableFormFields() - debe deshabilitar controles de formulario', () => {
-      component.disableFormFields();
+      component.stateManager.disableFormFields();
       expect(component.categoryManager.tipoSelect.disabled).toBe(true);
       expect(component.descripcionInput.disabled).toBe(true);
       expect(component.categoryManager.cantidadAfectadosInput.disabled).toBe(true);
@@ -241,7 +241,7 @@ describe('IncidenciaFormComponent - Vista de Ciudadano', () => {
       component.locationManager.cargarDropdownNivel1 = jest.fn();
       component.actualizarEtiquetasNiveles = jest.fn();
 
-      component.prepararCreacion();
+      component.stateManager.prepararCreacion();
 
       expect(component.formTitle.textContent).toBe('Registrar Incidencia');
       expect(component.btnText.textContent).toBe('Guardar Incidencia');

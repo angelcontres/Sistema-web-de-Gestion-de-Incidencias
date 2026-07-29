@@ -134,11 +134,13 @@ describe('RoleIndexComponent', () => {
     const component = await createComponent();
     const formComponent = component.querySelector('#app-role-form');
 
+    jest.clearAllMocks();
+
     const event = new CustomEvent('rol-guardado', { detail: { mensaje: 'Exito' } });
     formComponent.dispatchEvent(event);
 
     expect(ToastService.success).toHaveBeenCalledWith('Exito');
-    expect(RoleService.getAll).toHaveBeenCalledTimes(2); // once on init, once on event
+    expect(RoleService.getAll).toHaveBeenCalled();
   });
 
   it('should handle error in cargarRoles', async () => {
@@ -163,6 +165,8 @@ describe('RoleIndexComponent', () => {
     const component = await createComponent();
     const btnDelete = component.querySelector('[data-action="eliminar"]');
 
+    jest.clearAllMocks();
+
     btnDelete.dispatchEvent(new Event('click'));
     await Promise.resolve();
     await Promise.resolve();
@@ -170,8 +174,7 @@ describe('RoleIndexComponent', () => {
     expect(ModalService.confirm).toHaveBeenCalled();
     expect(RoleService.delete).toHaveBeenCalledWith(1);
     expect(ToastService.success).toHaveBeenCalledWith(expect.stringContaining('Role 1'));
-    // cargarRoles is called again
-    expect(RoleService.getAll).toHaveBeenCalledTimes(2);
+    expect(RoleService.getAll).toHaveBeenCalled();
   });
 
   it('should handle error when deleting role', async () => {

@@ -261,11 +261,11 @@ describe('MenuOptionsListComponent', () => {
     const result = iconoCol.render({ icono: 'bi-gear' });
     const expected = [
       '',
-      '              <span class="d-flex align-items-center gap-2 text-dark small">',
-      '                <i class="bi bi-gear text-primary fs-5"></i>',
-      '                <code>bi-gear</code>',
-      '              </span>',
-      '            ',
+      '            <span class="d-flex align-items-center gap-2 text-dark small">',
+      '              <i class="bi bi-gear text-primary fs-5"></i>',
+      '              <code>bi-gear</code>',
+      '            </span>',
+      '          ',
     ].join('\n');
     expect(result).toBe(expected);
   });

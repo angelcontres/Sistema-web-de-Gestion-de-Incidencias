@@ -427,6 +427,10 @@ class SyncDimensionsJob implements ShouldQueue
             ]);
         }
 
-        DB::table('metrics.dim_metric')->upsert($records, ['id'], ['nombre', 'codigo', 'tipo', 'descripcion', 'updated_at']);
+        DB::table('metrics.dim_metric')->upsert(
+            $records,
+            ['id'],
+            ['nombre', 'codigo', 'tipo', 'descripcion', 'updated_at']
+        );
     }
 }

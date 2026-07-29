@@ -39,30 +39,31 @@ export class InstitucionFormComponent extends BaseComponent {
 
   _setupEventListeners() {
     if (this.form) {
-      this.form.addEventListener('submit', (e) => {
-        if (e?.preventDefault) e.preventDefault();
-        this.guardarInstitucion(e);
-      });
+      this.form.addEventListener('submit', (e) => this._handleFormSubmit(e));
     }
 
     if (this.btnGuardarInstitucion) {
-      this.btnGuardarInstitucion.addEventListener('click', (e) => {
-        if (e?.preventDefault) e.preventDefault();
-        this.guardarInstitucion(e);
-      });
+      this.btnGuardarInstitucion.addEventListener('click', (e) => this._handleFormSubmit(e));
     }
 
     if (this.modalElement) {
-      this.modalElement.addEventListener('hidden.bs.modal', () => {
-        if (this.form) {
-          this.form.reset();
-          this.form.classList.remove('was-validated');
-        }
-        this.institucionId = null;
-        if (this.formAlertContainer) this.formAlertContainer.classList.add('d-none');
-        if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.disabled = false;
-      });
+      this.modalElement.addEventListener('hidden.bs.modal', () => this._handleModalHidden());
     }
+  }
+
+  _handleFormSubmit(e) {
+    if (e?.preventDefault) e.preventDefault();
+    this.guardarInstitucion(e);
+  }
+
+  _handleModalHidden() {
+    if (this.form) {
+      this.form.reset();
+      this.form.classList.remove('was-validated');
+    }
+    this.institucionId = null;
+    if (this.formAlertContainer) this.formAlertContainer.classList.add('d-none');
+    if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.disabled = false;
   }
 
   async openModal(id = null) {
