@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\CategoriaIncidencia;
 use App\Models\Direccion;
+use App\Models\EstadoIncidencia;
 use App\Models\Institucion;
 use App\Models\Pais;
-use App\Models\Territorio;
-use App\Models\EstadoIncidencia;
 use App\Models\Prioridad;
+use App\Models\Territorio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
