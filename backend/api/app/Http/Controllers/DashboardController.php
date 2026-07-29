@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function stats(Request $request)
+    public function stats()
     {
         $kpis = $this->calculateKpis();
         $topServices = $this->getTopServices(30);

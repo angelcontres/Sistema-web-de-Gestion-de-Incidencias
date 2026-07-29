@@ -29,28 +29,24 @@ class CheckResourcePermission
             default => null,
         };
 
-        if (! $accion) {
-            return response()->json(['message' => 'Método HTTP no soportado'], 405);
-        }
-
         $routeName = $request->route()?->getName();
+        $errorResponse = null;
 
-        if (! $routeName || str_starts_with($routeName, 'generated::')) {
-            return $next($request);
+        if (! $accion) {
+            $errorResponse = response()->json(['message' => 'Método HTTP no soportado'], 405);
+        } elseif ($routeName && ! str_starts_with($routeName, 'generated::')) {
+            $recurso = explode('.', $routeName)[0];
+            $user->loadMissing('roles.permisos');
+            
+            $hasPermission = $user->roles->flatMap->permisos
+                ->contains(fn ($permiso) => $permiso->accion === $accion && $permiso->recurso === $recurso);
+                
+            if (! $hasPermission) {
+                $errorResponse = $this->buildErrorResponse($accion, $recurso);
+            }
         }
 
-        $recurso = explode('.', $routeName)[0];
-
-        $user->loadMissing('roles.permisos');
-
-        $hasPermission = $user->roles->flatMap->permisos
-            ->contains(fn ($permiso) => $permiso->accion === $accion && $permiso->recurso === $recurso);
-
-        if (! $hasPermission) {
-            return $this->buildErrorResponse($accion, $recurso);
-        }
-
-        return $next($request);
+        return $errorResponse ?: $next($request);
     }
 
     private function buildErrorResponse(string $accion, string $recurso): Response

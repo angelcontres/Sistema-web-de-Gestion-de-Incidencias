@@ -59,22 +59,21 @@ class MetricsController extends Controller
 
         $path = "{$directory}/{$prefix}-{$date}.json";
 
-        if (! File::exists($path)) {
-            if (File::exists($directory)) {
-                $files = File::files($directory);
-                foreach ($files as $file) {
-                    if ($file->getExtension() === 'json' && str_starts_with($file->getFilename(), "{$prefix}-{$date}")) {
-                        $path = $file->getRealPath();
-                        break;
-                    }
+        if (! File::exists($path) && File::exists($directory)) {
+            $files = File::files($directory);
+            foreach ($files as $file) {
+                if (
+                    $file->getExtension() === 'json' &&
+                    str_starts_with($file->getFilename(), "{$prefix}-{$date}")
+                ) {
+                    $path = $file->getRealPath();
+                    break;
                 }
             }
         }
 
-        if (! File::exists($path)) {
-            return response()->json(['error' => 'Métrica no encontrada para la fecha: '.$date], 404);
-        }
-
-        return response()->json(json_decode(File::get($path), true));
+        return ! File::exists($path)
+            ? response()->json(['error' => 'Métrica no encontrada para la fecha: '.$date], 404)
+            : response()->json(json_decode(File::get($path), true));
     }
 }

@@ -77,7 +77,11 @@ class PermisoController extends Controller
         $permiso = Permiso::findOrFail($id);
 
         $recurso = $request->recurso ?? $permiso->recurso;
-        if (empty($request->recurso) && $request->has('opcion_menu_id') && $request->opcion_menu_id != $permiso->opcion_menu_id) {
+        if (
+            empty($request->recurso) &&
+            $request->has('opcion_menu_id') &&
+            $request->opcion_menu_id != $permiso->opcion_menu_id
+        ) {
             $opcionMenu = OpcionMenu::find($request->opcion_menu_id);
             if ($opcionMenu) {
                 $recursoStr = str_replace(['#/', '/'], '', $opcionMenu->ruta);

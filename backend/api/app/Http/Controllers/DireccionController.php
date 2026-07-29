@@ -43,7 +43,9 @@ class DireccionController extends Controller
     public function store(DireccionesRequest $request)
     {
         if (! $this->checkTerritoryPermission(auth()->user(), $request->territorio_id)) {
-            return response()->json(['message' => 'El territorio seleccionado debe pertenecer a su país asignado.'], 403);
+            return response()->json([
+                'message' => 'El territorio seleccionado debe pertenecer a su país asignado.'
+            ], 403);
         }
 
         $direccion = Direccion::create([
@@ -74,7 +76,12 @@ class DireccionController extends Controller
 
         /** @var User|null $user */
         $user = auth()->user();
-        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio?->pais_id != $user->pais_id) {
+        if (
+            $user &&
+            ! $user->roles()->where('nombre', 'Admin')->exists() &&
+            $user->pais_id &&
+            $direccion->territorio?->pais_id != $user->pais_id
+        ) {
             return response()->json(['message' => 'No autorizado para ver esta dirección.'], 403);
         }
 
@@ -95,7 +102,9 @@ class DireccionController extends Controller
                 return response()->json(['message' => 'No autorizado para modificar esta dirección.'], 403);
             }
             if ($request->has('territorio_id') && ! $this->checkTerritoryPermission($user, $request->territorio_id)) {
-                return response()->json(['message' => 'El nuevo territorio seleccionado debe pertenecer a su país asignado.'], 403);
+                return response()->json([
+                    'message' => 'El nuevo territorio seleccionado debe pertenecer a su país asignado.'
+                ], 403);
             }
         }
 
@@ -131,7 +140,12 @@ class DireccionController extends Controller
 
         /** @var User|null $user */
         $user = auth()->user();
-        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $direccion->territorio?->pais_id != $user->pais_id) {
+        if (
+            $user &&
+            ! $user->roles()->where('nombre', 'Admin')->exists() &&
+            $user->pais_id &&
+            $direccion->territorio?->pais_id != $user->pais_id
+        ) {
             return response()->json(['message' => 'No autorizado para eliminar esta dirección.'], 403);
         }
 

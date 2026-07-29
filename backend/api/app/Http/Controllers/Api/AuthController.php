@@ -90,12 +90,11 @@ class AuthController extends Controller
 
         $invitation = UserInvitation::where('token', $validated['token'])->first();
 
-        if (! $invitation) {
-            return response()->json(['message' => 'El enlace de activación es inválido o ya fue usado.'], 422);
-        }
-
-        if (now()->greaterThan($invitation->expires_at)) {
-            return response()->json(['message' => 'El enlace de activación ha expirado.'], 422);
+        if (! $invitation || now()->greaterThan($invitation->expires_at)) {
+            $message = ! $invitation 
+                ? 'El enlace de activación es inválido o ya fue usado.' 
+                : 'El enlace de activación ha expirado.';
+            return response()->json(['message' => $message], 422);
         }
 
         $user = User::where('email', $invitation->email)->first();

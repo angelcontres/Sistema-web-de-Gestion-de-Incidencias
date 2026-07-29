@@ -79,7 +79,12 @@ class TerritorioController extends Controller
         $territorio = Territorio::with(['pais', 'parent', 'hijos'])->findOrFail($id);
 
         $user = auth()->user();
-        if ($user && ! $user->roles()->where('nombre', 'Admin')->exists() && $user->pais_id && $territorio->pais_id != $user->pais_id) {
+        if (
+            $user &&
+            ! $user->roles()->where('nombre', 'Admin')->exists() &&
+            $user->pais_id &&
+            $territorio->pais_id != $user->pais_id
+        ) {
             return response()->json(['message' => 'No autorizado para ver este territorio.'], 403);
         }
 

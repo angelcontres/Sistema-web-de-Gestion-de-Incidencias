@@ -237,7 +237,10 @@ class IncidenciaController extends Controller
         }
 
         $perPage = request()->input('per_page', 15);
-        $historial = $incidencia->historial()->with(['usuario', 'estado'])->orderBy('created_at', 'desc')->paginate($perPage);
+        $historial = $incidencia->historial()
+            ->with(['usuario', 'estado'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
 
         return response()->json($historial, 200);
     }
@@ -281,7 +284,13 @@ class IncidenciaController extends Controller
         return $roles->contains('Admin')
             || $incidencia->cliente_id === $user->id
             || ($roles->contains('Supervisor') && $this->checkSupervisorAccess($user, $incidencia))
-            || ($roles->contains('Institucion') && ($incidencia->institucion_id == $user->institucion_id || $incidencia->institucionesApoyo->contains('id', $user->institucion_id)))
+            || (
+                $roles->contains('Institucion') &&
+                (
+                    $incidencia->institucion_id == $user->institucion_id ||
+                    $incidencia->institucionesApoyo->contains('id', $user->institucion_id)
+                )
+            )
             || $incidencia->reportantes()->where('usuario_incidencia.user_id', $user->id)->exists();
     }
 
@@ -339,7 +348,8 @@ class IncidenciaController extends Controller
                 try {
                     $operador->notify(new IssueAssignedNotification([
                         'title' => "Nueva Incidencia Asignada (#{$incidencia->id})",
-                        'message' => 'Se te ha despachado para atender: '.($incidencia->direccion->calle ?? 'Ubicación registrada'),
+                        'message' => 'Se te ha despachado para atender: ' .
+                                     ($incidencia->direccion->calle ?? 'Ubicación registrada'),
                         'url' => '/instituciones/kanban',
                         'type' => 'danger',
                         'incidencia_id' => $incidencia->id,
@@ -361,7 +371,8 @@ class IncidenciaController extends Controller
                 try {
                     $admin->notify(new IssueStatusChangedNotification([
                         'title' => "Nueva Incidencia Creada (#{$incidencia->id})",
-                        'message' => 'Un usuario ha reportado una nueva incidencia en: '.($incidencia->direccion->detalle ?? 'Ubicación registrada'),
+                        'message' => 'Un usuario ha reportado una nueva incidencia en: ' .
+                                     ($incidencia->direccion->detalle ?? 'Ubicación registrada'),
                         'url' => "/tramites/estado-individual?id={$incidencia->id}",
                         'type' => 'warning',
                         'incidencia_id' => $incidencia->id,

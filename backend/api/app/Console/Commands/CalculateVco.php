@@ -240,7 +240,8 @@ class CalculateVco extends Command
                 'regex' => '/\binnerHTML\s*=/i',
                 'type' => 'Cross-Site Scripting (XSS)',
                 'severity' => 'high',
-                'description' => 'Uso de innerHTML detectado. Riesgo de XSS. Se recomienda usar textContent o createElement.',
+                'description' => 'Uso de innerHTML detectado. Riesgo de XSS. ' .
+                                 'Se recomienda usar textContent o createElement.',
             ],
             [
                 'regex' => '/document\.write\s*\(/i',
@@ -261,7 +262,8 @@ class CalculateVco extends Command
                 'description' => 'Uso de new Function() detectado. Similar a eval, puede ejecutar código inseguro.',
             ],
             [
-                'regex' => '/(api_key|apikey|password|secret|token)\s*[:=]\s*[\'"][a-zA-Z0-9\-\_]{16,}[\'"]/i',
+                'regex' => '/(api_key|apikey|password|secret|token)\s*[:=]\s*' .
+                           '[\'"][a-zA-Z0-9\-\_]{16,}[\'"]/i',
                 'type' => 'Exposición de Credenciales',
                 'severity' => 'high',
                 'description' => 'Posible credencial o secreto quemado en el código fuente (Hardcoded secret).',
@@ -282,7 +284,10 @@ class CalculateVco extends Command
             }
 
             // Ignorar librerías comunes si estuvieran sueltas
-            if (strpos($file->getRelativePathname(), 'node_modules') !== false || strpos($file->getFilename(), '.min.js') !== false) {
+            if (
+                strpos($file->getRelativePathname(), 'node_modules') !== false ||
+                strpos($file->getFilename(), '.min.js') !== false
+            ) {
                 continue;
             }
 

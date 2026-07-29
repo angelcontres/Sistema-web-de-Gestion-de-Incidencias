@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 #[Signature('sqa:tep {--file=tests/results.xml}')]
-#[Description('Calcula la Tasa de Éxito de Pruebas (TEP) a partir del XML de PHPUnit y genera un archivo JSON para Grafana')]
+#[Description(
+    'Calcula la Tasa de Éxito de Pruebas (TEP) a partir del XML de PHPUnit ' .
+    'y genera un archivo JSON para Grafana'
+)]
 class CalculateTep extends Command
 {
     /**
@@ -20,7 +23,10 @@ class CalculateTep extends Command
         $filePath = base_path($this->option('file'));
 
         if (! File::exists($filePath)) {
-            $this->error("No se encontró el reporte XML en: {$filePath}. Ejecuta primero: php artisan test --log-junit tests/results.xml");
+            $this->error(
+                "No se encontró el reporte XML en: {$filePath}. " .
+                "Ejecuta primero: php artisan test --log-junit tests/results.xml"
+            );
 
             return 1;
         }
@@ -88,7 +94,10 @@ class CalculateTep extends Command
             'updated_at' => now(),
         ]);
 
-        $this->info("\nMétrica de Tasa de Éxito de Pruebas (TEP) guardada exitosamente en el esquema OLAP (fact_testing).");
+        $this->info(
+            "\nMétrica de Tasa de Éxito de Pruebas (TEP) guardada exitosamente " .
+            "en el esquema OLAP (fact_testing)."
+        );
 
         return 0;
     }

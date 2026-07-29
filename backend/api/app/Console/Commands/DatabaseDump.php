@@ -60,7 +60,10 @@ class DatabaseDump extends Command
 
                 if (! $process->isSuccessful()) {
                     @unlink($filePath);
-                    throw new \Exception('Error al ejecutar pg_dump en el contenedor: '.$process->getErrorOutput());
+                    throw new \RuntimeException(
+                        'Error al ejecutar pg_dump en el contenedor: ' .
+                        $process->getErrorOutput()
+                    );
                 }
             } else {
                 // T4: Fallback a pg_dump local
@@ -87,7 +90,10 @@ class DatabaseDump extends Command
 
                 if (! $process->isSuccessful()) {
                     @unlink($filePath);
-                    throw new \Exception('Error al ejecutar pg_dump localmente: '.$process->getErrorOutput());
+                    throw new \RuntimeException(
+                        'Error al ejecutar pg_dump localmente: ' .
+                        $process->getErrorOutput()
+                    );
                 }
             }
 
@@ -95,7 +101,7 @@ class DatabaseDump extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // T5: Manejo de errores global
             $this->error('Fallo el proceso de volcado: '.$e->getMessage());
 
