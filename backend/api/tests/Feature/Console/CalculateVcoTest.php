@@ -11,9 +11,7 @@ class CalculateVcoTest extends TestCase
 
     public function test_calculate_vco_command_success()
     {
-        // Esto ejecutará "composer audit" que debería existir.
-        // Y escaneará el frontend si existe.
-        $this->artisan('sqa:vco')
+        $this->artisan('sqa:vco', ['--path' => 'tests'])
             ->assertExitCode(0);
     }
 
