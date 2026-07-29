@@ -46,6 +46,56 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
         formContainer.style.display = 'none';
       }
     }
+
+    this.subscribeToRealtimeUpdates();
+    this.startPolling();
+  }
+
+  startPolling() {
+    if (this.pollingInterval) clearInterval(this.pollingInterval);
+    this.pollingInterval = setInterval(async () => {
+      if (this.isLoadingHistory) return;
+      try {
+        const response = await IncidenciaService.getHistorial(this.incidenciaId, 1);
+        if (!response || !response.data) return;
+        const items = response.data;
+        const listContainer = this.querySelector('#comments-list');
+        if (!listContainer) return;
+        
+        let hasNew = false;
+        [...items].reverse().forEach(item => {
+           if (!this.querySelector(`#bubble-${item.id}`)) {
+              listContainer.appendChild(this.crearBurbujaChat(item));
+              hasNew = true;
+           }
+        });
+        
+        if (hasNew) {
+           this.scrollToBottom();
+        }
+      } catch(e) {
+         // Silently ignore background polling errors
+      }
+    }, 1000); // Check for new messages every 1 second
+  }
+
+  subscribeToRealtimeUpdates() {
+    if (window.Echo) {
+      window.Echo.private(`incidencia.${this.incidenciaId}`)
+        .listen('.historial.created', (e) => {
+          this.handleRealtimeComment(e.historial);
+        });
+    }
+  }
+
+  handleRealtimeComment(item) {
+    const listContainer = this.querySelector('#comments-list');
+    if (!listContainer) return;
+    // Prevenir duplicados (por ejemplo, del mismo usuario)
+    if (this.querySelector(`#bubble-${item.id}`)) return;
+    
+    listContainer.appendChild(this.crearBurbujaChat(item));
+    this.scrollToBottom();
   }
 
   setupEventListeners() {
@@ -531,6 +581,7 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       estadoBadge = `<div class="mt-1"><span class="text-dark small fw-bold">${item.estado.nombre}</span>${evidenciaHtml}</div>`;
     }
 
+    div.id = `bubble-${item.id}`;
     div.className = `d-flex flex-column ${alignClass} mb-2`;
     div.style.maxWidth = '75%';
 
@@ -588,6 +639,15 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
       setTimeout(() => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
       }, 50);
+    }
+  }
+
+  disconnectedCallback() {
+    if (window.Echo) {
+      window.Echo.leave(`incidencia.${this.incidenciaId}`);
+    }
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
     }
   }
 }

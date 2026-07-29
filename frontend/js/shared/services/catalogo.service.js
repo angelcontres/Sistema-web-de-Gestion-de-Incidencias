@@ -128,4 +128,18 @@ export const CatalogoService = {
   async getInstituciones() {
     return withCache('catalogo_instituciones', 1440, () => apiRequest('/catalogs/institutions'));
   },
+
+  /**
+   * Obtiene la lista de estados de incidencia activos.
+   */
+  async getEstados() {
+    return withCache('catalogo_estados', 1440, () => apiRequest('/catalogs/incident-states'));
+  },
+
+  /**
+   * Obtiene la lista de prioridades activas.
+   */
+  async getPrioridades() {
+    return withCache('catalogo_prioridades', 1440, () => apiRequest('/catalogs/priorities'));
+  },
 };

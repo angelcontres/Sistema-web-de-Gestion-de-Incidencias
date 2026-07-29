@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\HistorialIncidenciaCreated;
 use App\Traits\HasLocalTimezone;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 class HistorialIncidencia extends Model
 {
     use HasLocalTimezone;
+
+    protected $dispatchesEvents = [
+        'created' => HistorialIncidenciaCreated::class,
+    ];
 
     protected $fillable = [
         'incidencia_id',

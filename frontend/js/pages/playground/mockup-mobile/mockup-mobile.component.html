@@ -1,0 +1,292 @@
+<style>
+  .wa-bg { background-color: var(--bg-app, #E6DDCC); }
+  .wa-header { background-color: var(--primary-color, #0E3659); color: white; }
+  
+  .card-step {
+    background-color: var(--card-bg, #F4EFE3);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border: 1px solid transparent;
+  }
+  .card-step.active {
+    border-color: var(--highlight-color, #D98A2F);
+    box-shadow: 0 4px 16px rgba(217, 138, 47, 0.15);
+  }
+  .card-step.completed .step-title {
+    color: var(--secondary-color, #4E7D7F);
+  }
+  
+  .step-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-main, #1e293b);
+  }
+  .step-body {
+    padding: 0 16px 16px 16px;
+    display: none;
+  }
+  .card-step.active .step-body {
+    display: block;
+    animation: fadeInDown 0.3s ease;
+  }
+  
+  .chip {
+    background-color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-weight: 500;
+    color: var(--text-muted, #64748b);
+    transition: all 0.2s;
+  }
+  .chip.active {
+    background-color: var(--primary-soft, rgba(14, 54, 89, 0.1));
+    color: var(--primary-color, #0E3659);
+    border-color: var(--primary-color, #0E3659);
+  }
+
+  /* Sticky Compose Bar */
+  .compose-bar {
+    background: linear-gradient(to top, var(--bg-app, #E6DDCC) 80%, transparent);
+    padding: 10px 16px 16px 16px;
+  }
+  .wa-input-container {
+    background-color: var(--card-bg, #F4EFE3);
+    border-radius: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: flex-end;
+    padding: 6px 8px;
+  }
+  .wa-textarea {
+    border: none;
+    background: transparent;
+    padding: 8px 12px;
+    resize: none;
+    max-height: 100px;
+    color: var(--text-main);
+    width: 100%;
+  }
+  .wa-textarea:focus { outline: none; }
+  .wa-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--secondary-color, #4E7D7F);
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .wa-icon-btn:hover { background-color: rgba(0,0,0,0.05); }
+  
+  .wa-send-btn {
+    background-color: var(--highlight-color, #D98A2F);
+    color: white;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 4px 10px rgba(217, 138, 47, 0.3);
+    transition: transform 0.2s;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .wa-send-btn.ready {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .wa-send-btn:active { transform: scale(0.95); }
+
+  /* Attachment Preview */
+  .attachment-preview {
+    background-color: var(--card-bg, #F4EFE3);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<div class="d-flex flex-column h-100 wa-bg" style="max-width: 500px; margin: 0 auto; position: relative;">
+  
+  <!-- Header -->
+  <div class="wa-header px-3 py-3 d-flex align-items-center gap-3 sticky-top z-3 shadow-sm">
+    <button class="btn btn-link p-0 text-decoration-none text-white">
+      <i class="bi bi-arrow-left fs-4"></i>
+    </button>
+    <div class="d-flex align-items-center gap-2 flex-grow-1">
+      <div>
+        <div class="fw-bold fs-5 lh-1 text-white">Reporte de Incidencia</div>
+        <div class="small text-white-50 lh-1 mt-1">Formulario Único de Registro</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-grow-1 overflow-auto p-3 pb-5" id="formAccordion">
+    
+    <!-- PASO 1: CATEGORÍA -->
+    <div class="card-step active" id="step1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-title"><i class="bi bi-list-task me-2"></i>1. Categoría</span>
+        <i class="bi bi-check-circle-fill text-success d-none" id="check1"></i>
+      </div>
+      <div class="step-body">
+        <p class="small text-muted mb-2">Selecciona qué sucedió:</p>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button class="chip" onclick="selectCat(this)">🚨 Emergencia</button>
+          <button class="chip" onclick="selectCat(this)">🚰 Agua Potable</button>
+          <button class="chip" onclick="selectCat(this)">💡 Eléctrico</button>
+          <button class="chip" onclick="selectCat(this)">🛣️ Vías</button>
+        </div>
+        
+        <div id="subCategoryBlock" class="d-none">
+          <p class="small text-muted mb-2 border-top pt-2">Detalle:</p>
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            <button class="chip" onclick="selectSubCat(this)">Fuga de agua</button>
+            <button class="chip" onclick="selectSubCat(this)">Sin servicio</button>
+            <button class="chip" onclick="selectSubCat(this)">Alcantarillado</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 2: UBICACIÓN -->
+    <div class="card-step" id="step2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-title"><i class="bi bi-geo-alt-fill me-2"></i>2. Ubicación</span>
+        <i class="bi bi-check-circle-fill text-success d-none" id="check2"></i>
+      </div>
+      <div class="step-body">
+        <div class="d-flex gap-2 mb-2">
+          <button class="btn flex-fill d-flex align-items-center justify-content-center gap-1 shadow-sm" style="background-color: var(--secondary-color); color: white; border: none; font-size: 0.9rem;" onclick="completeStep2()">
+            <i class="bi bi-crosshair"></i> Detectar GPS
+          </button>
+        </div>
+        <!-- Mapa Simulado -->
+        <div class="rounded-3 overflow-hidden position-relative mb-2" style="height: 150px; background-color: #ddd;">
+           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Google_Maps_Logo_2020.svg/227px-Google_Maps_Logo_2020.svg.png" style="width: 50%; position:absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.2; pointer-events: none;" />
+           <i class="bi bi-geo-fill text-danger position-absolute top-50 start-50 translate-middle fs-2 d-none" id="fakePin"></i>
+        </div>
+        <input type="text" class="form-control bg-white border-0 shadow-sm" placeholder="Añadir una referencia (Opcional)...">
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Sticky Footer Compose Bar -->
+  <div class="sticky-bottom compose-bar z-3">
+    
+    <!-- Preview de fotos adjuntas (Oculto inicialmente) -->
+    <div class="attachment-preview d-none" id="photoPreview">
+      <div class="position-relative" style="width: 60px; height: 60px; border-radius: 8px; overflow: hidden;">
+        <img src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=80" style="width:100%; height:100%; object-fit:cover;" />
+        <div class="position-absolute top-0 end-0 m-1 bg-dark bg-opacity-75 rounded-circle d-flex justify-content-center align-items-center cursor-pointer" style="width: 20px; height: 20px;" onclick="removePhoto()">
+          <i class="bi bi-x text-white" style="font-size: 0.8rem;"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-end gap-2">
+      <div class="wa-input-container flex-grow-1">
+        <textarea class="wa-textarea" rows="1" placeholder="Escribe la descripción del problema..." oninput="checkAllReady()"></textarea>
+        <!-- Botón de Cámara / Clip dentro del input -->
+        <button class="wa-icon-btn" onclick="addPhoto()">
+          <i class="bi bi-camera-fill fs-5"></i>
+        </button>
+      </div>
+      <!-- Botón de Enviar (Avioncito) -->
+      <button id="btnSubmitIncidencia" class="wa-send-btn flex-shrink-0">
+        <i class="bi bi-send-fill fs-5 ms-1"></i>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let completedSteps = { 1: false, 2: false };
+  let hasPhoto = false;
+
+  function toggleStep(stepNum) {
+    document.querySelectorAll('.card-step').forEach((el, index) => {
+      if (index + 1 === stepNum) {
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+      }
+    });
+  }
+
+  function selectCat(btn) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('subCategoryBlock').classList.remove('d-none');
+  }
+
+  function selectSubCat(btn) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Marcar paso 1 completado y abrir paso 2
+    document.getElementById('check1').classList.remove('d-none');
+    document.getElementById('step1').classList.add('completed');
+    completedSteps[1] = true;
+    setTimeout(() => toggleStep(2), 300);
+    checkAllReady();
+  }
+
+  function completeStep2() {
+    document.getElementById('fakePin').classList.remove('d-none');
+    document.getElementById('check2').classList.remove('d-none');
+    document.getElementById('step2').classList.add('completed');
+    completedSteps[2] = true;
+    checkAllReady();
+  }
+
+  function addPhoto() {
+    hasPhoto = true;
+    document.getElementById('photoPreview').classList.remove('d-none');
+    checkAllReady();
+  }
+
+  function removePhoto() {
+    hasPhoto = false;
+    document.getElementById('photoPreview').classList.add('d-none');
+    checkAllReady();
+  }
+
+  function checkAllReady() {
+    const textarea = document.querySelector('.wa-textarea');
+    const hasText = textarea.value.trim().length > 0;
+    const btn = document.getElementById('btnSubmitIncidencia');
+    
+    // Solo se activa si la Categoría y Ubicación están listas, y hay texto o foto.
+    if(completedSteps[1] && completedSteps[2] && (hasText || hasPhoto)) {
+      btn.classList.add('ready');
+    } else {
+      btn.classList.remove('ready');
+    }
+  }
+</script>

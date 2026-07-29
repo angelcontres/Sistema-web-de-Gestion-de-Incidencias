@@ -32,6 +32,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v1/catalogs/addresses', [CatalogoController::class, 'direcciones']);
     Route::get('/v1/catalogs/incident-categories', [CatalogoController::class, 'categoriasIncidencia']);
     Route::get('/v1/catalogs/institutions', [CatalogoController::class, 'instituciones']);
+    Route::get('/v1/catalogs/incident-states', [CatalogoController::class, 'estadosIncidencia']);
+    Route::get('/v1/catalogs/priorities', [CatalogoController::class, 'prioridades']);
     Route::get('/v1/geocoding/reverse', [DireccionController::class, 'reverseGeocode']);
     Route::get('/v1/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/v1/dashboard/metrics', [DashboardController::class, 'metrics']);
