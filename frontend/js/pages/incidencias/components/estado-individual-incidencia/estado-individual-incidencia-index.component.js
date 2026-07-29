@@ -330,56 +330,39 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     }
 
     reportantesContainer.classList.remove('d-none');
-    let html;
-    if (reportantes.length <= 3) {
-      html =
-        `<ul class="list-unstyled mb-0">` +
-        reportantes
-          .map((r) => {
-            const displayName = r.name || r.username || 'Usuario Anónimo';
-            const creadorText =
-              r.id === inc.cliente_id
-                ? ' <span class="text-muted small fst-italic">(creador)</span>'
-                : '';
-            return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${displayName}${creadorText}</li>`;
-          })
-          .join('') +
-        `</ul>`;
-    } else {
-      const visible = reportantes.slice(0, 3);
-      const others = reportantes.slice(3);
+    
+    const visible = reportantes.slice(0, 3);
+    const others = reportantes.slice(3);
+
+    const visibleHtml = visible
+      .map(r => this._createReportanteItemHtml(r, r.id === inc.cliente_id))
+      .join('');
+
+    let html = `<ul class="list-unstyled mb-0">${visibleHtml}</ul>`;
+
+    if (others.length > 0) {
       const othersNames = others
-        .map((r) => {
+        .map(r => {
           const displayName = r.name || r.username || 'Usuario Anónimo';
           return r.id === inc.cliente_id ? `${displayName} (creador)` : displayName;
         })
         .join(', ');
-
-      html =
-        `<ul class="list-unstyled mb-0">` +
-        visible
-          .map((r) => {
-            const displayName = r.name || r.username || 'Usuario Anónimo';
-            const creadorText =
-              r.id === inc.cliente_id
-                ? ' <span class="text-muted small fst-italic">(creador)</span>'
-                : '';
-            return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${displayName}${creadorText}</li>`;
-          })
-          .join('') +
-        `</ul>` +
-        `<div class="small text-muted mt-2" title="${othersNames}">+ ${others.length} reportante(s) adicional(es)</div>`;
+        
+      html += `<div class="small text-muted mt-2" title="${othersNames}">+ ${others.length} reportante(s) adicional(es)</div>`;
     }
+
     reportantesList.innerHTML = html;
 
     setTimeout(() => {
-      const tooltipTriggerList = [].slice.call(
-        this.querySelectorAll('[data-bs-toggle="tooltip"]')
-      );
-      tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-      });
+      const tooltipTriggerList = [].slice.call(this.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
     }, 100);
+  }
+
+  _createReportanteItemHtml(r, isCreador) {
+    const displayName = r.name || r.username || 'Usuario Anónimo';
+    const creadorText = isCreador ? ' <span class="text-muted small fst-italic">(creador)</span>' : '';
+    return `<li class="text-dark"><i class="bi bi-person-fill text-muted me-1"></i>${displayName}${creadorText}</li>`;
   }
 
   _renderAdjuntos(inc) {

@@ -231,7 +231,20 @@ class IncidenciaService
 
         return [
             'message' => 'Incidencia creada con éxito',
-            'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
+            'data' => $incidencia->load([
+                'direccion.territorio.pais',
+                'direccion.territorio.parent',
+                'cliente',
+                'estado',
+                'institucion',
+                'institucionesApoyo',
+                'tipo',
+                'subTipo',
+                'prioridad',
+                'operadores',
+                'reportantes',
+                'recursos'
+            ]),
         ];
     }
 
@@ -279,7 +292,20 @@ class IncidenciaService
 
             return [
                 'message' => 'Incidencia actualizada con éxito',
-                'data' => $incidencia->load(['direccion.territorio.pais', 'direccion.territorio.parent', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes', 'recursos']),
+                'data' => $incidencia->load([
+                    'direccion.territorio.pais',
+                    'direccion.territorio.parent',
+                    'cliente',
+                    'estado',
+                    'institucion',
+                    'institucionesApoyo',
+                    'tipo',
+                    'subTipo',
+                    'prioridad',
+                    'operadores',
+                    'reportantes',
+                    'recursos'
+                ]),
             ];
         });
     }
