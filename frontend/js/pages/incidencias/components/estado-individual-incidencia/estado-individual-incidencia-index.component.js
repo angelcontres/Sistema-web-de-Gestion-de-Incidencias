@@ -48,6 +48,35 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
     }
 
     this.subscribeToRealtimeUpdates();
+    this.startPolling();
+  }
+
+  startPolling() {
+    if (this.pollingInterval) clearInterval(this.pollingInterval);
+    this.pollingInterval = setInterval(async () => {
+      if (this.isLoadingHistory) return;
+      try {
+        const response = await IncidenciaService.getHistorial(this.incidenciaId, 1);
+        if (!response || !response.data) return;
+        const items = response.data;
+        const listContainer = this.querySelector('#comments-list');
+        if (!listContainer) return;
+        
+        let hasNew = false;
+        [...items].reverse().forEach(item => {
+           if (!this.querySelector(`#bubble-${item.id}`)) {
+              listContainer.appendChild(this.crearBurbujaChat(item));
+              hasNew = true;
+           }
+        });
+        
+        if (hasNew) {
+           this.scrollToBottom();
+        }
+      } catch(e) {
+         // Silently ignore background polling errors
+      }
+    }, 1000); // Check for new messages every 1 second
   }
 
   subscribeToRealtimeUpdates() {
@@ -616,6 +645,9 @@ export class EstadoIndividualIncidenciaComponent extends BaseComponent {
   disconnectedCallback() {
     if (window.Echo) {
       window.Echo.leave(`incidencia.${this.incidenciaId}`);
+    }
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
     }
   }
 }
