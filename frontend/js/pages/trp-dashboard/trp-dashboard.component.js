@@ -89,7 +89,10 @@ export class TrpDashboardComponent extends BaseComponent {
     );
     const data = timeline.map((t) => t.avg_trp);
 
-    new Chart(ctx, {
+    if (this.trpChart) {
+      this.trpChart.destroy();
+    }
+    this.trpChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
