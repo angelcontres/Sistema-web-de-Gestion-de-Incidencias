@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\File;
 #[Description('Calcula las Vulnerabilidades Críticas (OWASP) (VCO)')]
 class CalculateVco extends Command
 {
+    private const UNKNOWN_VULNERABILITY = 'Vulnerabilidad Desconocida';
+
     /**
      * Execute the console command.
      */
@@ -28,28 +30,29 @@ class CalculateVco extends Command
 
         $this->info('Iniciando escaneo de vulnerabilidades...');
 
-        // 1. Auditoría de dependencias del Backend (Composer)
         $this->info("\n[1/2] Auditando dependencias del Backend (composer audit)...");
         $backendIssues = $this->auditBackend();
 
-        // 2. Escaneo SAST (código fuente) del Frontend
         $this->info("\n[2/2] Escaneando código fuente del Frontend (SAST)...");
         $frontendPath = $targetPath.DIRECTORY_SEPARATOR.'frontend';
         $frontendIssues = $this->auditFrontend($frontendPath);
 
-        // 3. Consolidación de Resultados
         $this->info("\nConsolidando resultados...");
+        $this->printSummary($backendIssues, $frontendIssues);
 
+        $this->saveToOlap($backendIssues, $frontendIssues);
+
+        $this->info("\nMétricas de seguridad (VCO) guardadas exitosamente en el esquema OLAP (fact_security).");
+
+        return 0;
+    }
+
+    private function printSummary(array $backendIssues, array $frontendIssues): void
+    {
         $totalCriticalHigh = 0;
 
-        foreach ($backendIssues as $issue) {
-            if (in_array(strtolower($issue['severity']), ['critical', 'high'])) {
-                $totalCriticalHigh++;
-            }
-        }
-
-        foreach ($frontendIssues as $issue) {
-            if (in_array(strtolower($issue['severity']), ['critical', 'high'])) {
+        foreach (array_merge($backendIssues, $frontendIssues) as $issue) {
+            if (in_array(strtolower($issue['severity'] ?? ''), ['critical', 'high'])) {
                 $totalCriticalHigh++;
             }
         }
@@ -59,40 +62,27 @@ class CalculateVco extends Command
         $this->comment('==========================================');
         $this->info('Vulnerabilidades Backend: '.count($backendIssues));
         $this->info('Vulnerabilidades Frontend: '.count($frontendIssues));
+        
         if ($totalCriticalHigh > 0) {
             $this->error("Total CRÍTICAS/ALTAS: {$totalCriticalHigh}");
         } else {
             $this->info("Total CRÍTICAS/ALTAS: {$totalCriticalHigh}");
         }
         $this->comment('==========================================');
+    }
 
-        // Contar severidades y orígenes
-        $severitiesSummary = [
-            'critical' => 0,
-            'high' => 0,
-            'medium' => 0,
-            'low' => 0,
-        ];
-
-        foreach ($backendIssues as $issue) {
-            $sev = strtolower($issue['severity'] ?? 'unknown');
-            if (isset($severitiesSummary[$sev])) {
-                $severitiesSummary[$sev]++;
-            }
-        }
-
-        foreach ($frontendIssues as $issue) {
-            $sev = strtolower($issue['severity'] ?? 'unknown');
-            if (isset($severitiesSummary[$sev])) {
-                $severitiesSummary[$sev]++;
-            }
-        }
-
-        // 4. Guardar en esquema analítico OLAP
+    private function saveToOlap(array $backendIssues, array $frontendIssues): void
+    {
         $now = now()->timezone('America/Guayaquil');
         $tiempoId = (int) $now->format('YmdH');
 
-        // Asegurar que la dimensión tiempo exista
+        $this->ensureOlapDimensions($now, $tiempoId);
+        $this->processIssuesToOlap($backendIssues, 1, $tiempoId); // 1 = Backend
+        $this->processIssuesToOlap($frontendIssues, 2, $tiempoId); // 2 = Frontend
+    }
+
+    private function ensureOlapDimensions($now, int $tiempoId): void
+    {
         DB::table('metrics.dim_tiempo')->updateOrInsert(
             ['id' => $tiempoId],
             [
@@ -108,7 +98,6 @@ class CalculateVco extends Command
             ]
         );
 
-        // Asegurar que las capas existan
         DB::table('metrics.dim_capa')->updateOrInsert(
             ['id' => 1],
             ['nombre' => 'Backend', 'created_at' => now(), 'updated_at' => now()]
@@ -117,14 +106,15 @@ class CalculateVco extends Command
             ['id' => 2],
             ['nombre' => 'Frontend', 'created_at' => now(), 'updated_at' => now()]
         );
+    }
 
-        // Procesar vulnerabilidades del Backend
-        foreach ($backendIssues as $issue) {
-            $titulo = $issue['title'] ?? 'Vulnerabilidad Desconocida';
+    private function processIssuesToOlap(array $issues, int $capaId, int $tiempoId): void
+    {
+        foreach ($issues as $issue) {
+            $titulo = $issue['title'] ?? $issue['type'] ?? self::UNKNOWN_VULNERABILITY;
             $severidad = strtolower($issue['severity'] ?? 'unknown');
             $hash = hash('sha256', $titulo.'_'.$severidad);
 
-            // Asegurar vulnerabilidad en dim_vulnerabilidad
             DB::table('metrics.dim_vulnerabilidad')->updateOrInsert(
                 ['hash_identificador' => $hash],
                 [
@@ -139,56 +129,21 @@ class CalculateVco extends Command
                 ->where('hash_identificador', $hash)
                 ->value('id');
 
-            // Insertar en la tabla de hechos
+            $componente = $capaId === 1 ? ($issue['package'] ?? 'Desconocido') : ($issue['file'] ?? 'Desconocido');
+            $linea = $capaId === 1 ? 0 : ($issue['line'] ?? 0);
+            $codigo = $capaId === 1 ? 'N/A' : ($issue['match'] ?? 'N/A');
+
             DB::table('metrics.fact_security')->insert([
                 'tiempo_id' => $tiempoId,
-                'capa_id' => 1, // Backend
+                'capa_id' => $capaId,
                 'vulnerabilidad_id' => $vulnId,
-                'componente_afectado' => $issue['package'] ?? 'Desconocido',
-                'linea_afectada' => 0, // 0 a nivel de paquete
-                'codigo_sospechoso' => 'N/A',
+                'componente_afectado' => $componente,
+                'linea_afectada' => $linea,
+                'codigo_sospechoso' => $codigo,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
-
-        // Procesar vulnerabilidades del Frontend
-        foreach ($frontendIssues as $issue) {
-            $titulo = $issue['type'] ?? 'Vulnerabilidad Desconocida';
-            $severidad = strtolower($issue['severity'] ?? 'unknown');
-            $hash = hash('sha256', $titulo.'_'.$severidad);
-
-            // Asegurar vulnerabilidad en dim_vulnerabilidad
-            DB::table('metrics.dim_vulnerabilidad')->updateOrInsert(
-                ['hash_identificador' => $hash],
-                [
-                    'titulo' => $titulo,
-                    'severidad' => $severidad,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
-
-            $vulnId = DB::table('metrics.dim_vulnerabilidad')
-                ->where('hash_identificador', $hash)
-                ->value('id');
-
-            // Insertar en la tabla de hechos
-            DB::table('metrics.fact_security')->insert([
-                'tiempo_id' => $tiempoId,
-                'capa_id' => 2, // Frontend
-                'vulnerabilidad_id' => $vulnId,
-                'componente_afectado' => $issue['file'] ?? 'Desconocido',
-                'linea_afectada' => $issue['line'] ?? 0,
-                'codigo_sospechoso' => $issue['match'] ?? 'N/A',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->info("\nMétricas de seguridad (VCO) guardadas exitosamente en el esquema OLAP (fact_security).");
-
-        return 0;
     }
 
     private function auditBackend()
@@ -211,7 +166,7 @@ class CalculateVco extends Command
                     foreach ($packageAdvisories as $advisory) {
                         $issues[] = [
                             'package' => $package,
-                            'title' => $advisory['title'] ?? 'Vulnerabilidad Desconocida',
+                            'title' => $advisory['title'] ?? self::UNKNOWN_VULNERABILITY,
                             'severity' => strtolower($advisory['severity'] ?? 'unknown'),
                             'link' => $advisory['link'] ?? '',
                         ];
@@ -234,8 +189,18 @@ class CalculateVco extends Command
         }
 
         $files = File::allFiles($frontendPath);
+        $rules = $this->getFrontendRules();
 
-        $rules = [
+        foreach ($files as $file) {
+            $issues = array_merge($issues, $this->auditFrontendFile($file, $rules));
+        }
+
+        return $issues;
+    }
+
+    private function getFrontendRules(): array
+    {
+        return [
             [
                 'regex' => '/\binnerHTML\s*=/i',
                 'type' => 'Cross-Site Scripting (XSS)',
@@ -275,37 +240,37 @@ class CalculateVco extends Command
                 'description' => 'Llamada HTTP en texto plano. Se recomienda utilizar HTTPS.',
             ],
         ];
+    }
 
-        foreach ($files as $file) {
-            // Analizar solo js y html
-            $extension = strtolower($file->getExtension());
-            if (! in_array($extension, ['js', 'html'])) {
-                continue;
-            }
+    private function auditFrontendFile($file, array $rules): array
+    {
+        $issues = [];
+        $extension = strtolower($file->getExtension());
+        if (! in_array($extension, ['js', 'html'])) {
+            return $issues;
+        }
 
-            // Ignorar librerías comunes si estuvieran sueltas
-            if (
-                strpos($file->getRelativePathname(), 'node_modules') !== false ||
-                strpos($file->getFilename(), '.min.js') !== false
-            ) {
-                continue;
-            }
+        if (
+            strpos($file->getRelativePathname(), 'node_modules') !== false ||
+            strpos($file->getFilename(), '.min.js') !== false
+        ) {
+            return $issues;
+        }
 
-            $content = file_get_contents($file->getRealPath());
-            $lines = explode("\n", $content);
+        $content = file_get_contents($file->getRealPath());
+        $lines = explode("\n", $content);
 
-            foreach ($lines as $lineNumber => $line) {
-                foreach ($rules as $rule) {
-                    if (preg_match($rule['regex'], $line)) {
-                        $issues[] = [
-                            'file' => 'frontend/'.str_replace('\\', '/', $file->getRelativePathname()),
-                            'line' => $lineNumber + 1,
-                            'type' => $rule['type'],
-                            'severity' => $rule['severity'],
-                            'description' => $rule['description'],
-                            'match' => trim($line),
-                        ];
-                    }
+        foreach ($lines as $lineNumber => $line) {
+            foreach ($rules as $rule) {
+                if (preg_match($rule['regex'], $line)) {
+                    $issues[] = [
+                        'file' => 'frontend/'.str_replace('\\', '/', $file->getRelativePathname()),
+                        'line' => $lineNumber + 1,
+                        'type' => $rule['type'],
+                        'severity' => $rule['severity'],
+                        'description' => $rule['description'],
+                        'match' => trim($line),
+                    ];
                 }
             }
         }
