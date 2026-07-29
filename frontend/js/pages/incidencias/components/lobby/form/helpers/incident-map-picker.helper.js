@@ -148,6 +148,7 @@ export class IncidentMapPickerHelper {
 
     toggleLoading(true);
 
+    // NOSONAR: La geolocalización es necesaria para reportar la incidencia y solo se activa por interacción explícita del usuario.
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude, accuracy } = position.coords;
