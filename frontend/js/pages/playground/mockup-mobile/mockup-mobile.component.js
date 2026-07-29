@@ -97,45 +97,47 @@ export class MockupMobileComponent extends BaseComponent {
       return;
     }
 
-    container.innerHTML = this.categories.map(cat => {
-      const isSelected = this.selectedParentId === cat.id;
-      const btnClass = isSelected ? 'btn-primary shadow-sm' : 'btn-outline-secondary bg-white text-dark';
-      return `
-        <button class="btn ${btnClass} rounded-pill px-3 py-1 d-flex align-items-center gap-1 cat-btn" data-id="${cat.id}">
-          ${cat.nombre} ${isSelected ? '<i class="bi bi-chevron-down ms-1" style="font-size: 0.8rem;"></i>' : ''}
-        </button>
-      `;
-    }).join('');
+    container.innerHTML = this.categories.map(cat => this._buildCategoryHtml(cat)).join('');
+    this._attachCategoryEvents(container);
+  }
 
-    // Attach events
+  _buildCategoryHtml(cat) {
+    const isSelected = this.selectedParentId === cat.id;
+    const btnClass = isSelected ? 'btn-primary shadow-sm' : 'btn-outline-secondary bg-white text-dark';
+    return `
+      <button class="btn ${btnClass} rounded-pill px-3 py-1 d-flex align-items-center gap-1 cat-btn" data-id="${cat.id}">
+        ${cat.nombre} ${isSelected ? '<i class="bi bi-chevron-down ms-1" style="font-size: 0.8rem;"></i>' : ''}
+      </button>
+    `;
+  }
+
+  _attachCategoryEvents(container) {
     container.querySelectorAll('.cat-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const id = parseInt(e.currentTarget.getAttribute('data-id'), 10);
-        if (this.selectedParentId === id) {
-          // Ya está seleccionada, solo abrir subcategorías
-          const offcanvasEl = this.querySelector('#offcanvasSubcategory');
-          if (offcanvasEl) {
-             let bsOffcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasEl) || new window.bootstrap.Offcanvas(offcanvasEl);
-             bsOffcanvas.show();
-          }
-          return;
-        }
-
-        this.selectedParentId = id;
-        this.selectedSubcategoryId = null; // reset subcat
-        this.renderCategories(); // update UI (primary color)
-        
-        // Load subcategories
-        await this.loadSubcategories(id);
-
-        // Open offcanvas
-        const offcanvasEl = this.querySelector('#offcanvasSubcategory');
-        if (offcanvasEl) {
-           let bsOffcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasEl) || new window.bootstrap.Offcanvas(offcanvasEl);
-           bsOffcanvas.show();
-        }
-      });
+      btn.addEventListener('click', async (e) => this._handleCategoryClick(e));
     });
+  }
+
+  async _handleCategoryClick(e) {
+    const id = parseInt(e.currentTarget.getAttribute('data-id'), 10);
+    if (this.selectedParentId === id) {
+      this._openSubcategoryOffcanvas();
+      return;
+    }
+
+    this.selectedParentId = id;
+    this.selectedSubcategoryId = null;
+    this.renderCategories();
+    
+    await this.loadSubcategories(id);
+    this._openSubcategoryOffcanvas();
+  }
+
+  _openSubcategoryOffcanvas() {
+    const offcanvasEl = this.querySelector('#offcanvasSubcategory');
+    if (offcanvasEl) {
+      let bsOffcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasEl) || new window.bootstrap.Offcanvas(offcanvasEl);
+      bsOffcanvas.show();
+    }
   }
 
   async loadSubcategories(parentId) {

@@ -378,7 +378,11 @@ class SyncDimensionsJob implements ShouldQueue
         }
 
         if (! empty($records)) {
-            DB::table('metrics.dim_usuario')->upsert($records, ['id'], ['username', 'name', 'email', 'rol_principal', 'updated_at']);
+            DB::table('metrics.dim_usuario')->upsert(
+                $records,
+                ['id'],
+                ['username', 'name', 'email', 'rol_principal', 'updated_at']
+            );
         }
     }
 

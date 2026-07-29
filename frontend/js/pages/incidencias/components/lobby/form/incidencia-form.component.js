@@ -198,15 +198,9 @@ export class IncidenciaFormComponent extends BaseComponent {
   async guardarIncidencia(e) {
     e.preventDefault();
 
-    if (!this.form.checkValidity()) {
-      this.form.classList.add('was-validated');
-      ToastService.error('Por favor complete los campos obligatorios del formulario.');
-      return;
-    }
+    if (!this._validateForm()) return;
 
-    const id = this.incidenciaIdInput.value;
     const coords = this.mapController.getCoords();
-
     if (!coords) {
       ToastService.error('Debe marcar la ubicación en el mapa.');
       return;
@@ -216,53 +210,82 @@ export class IncidenciaFormComponent extends BaseComponent {
     let direccionId = locData.selectedDireccionId;
 
     if (!direccionId) {
-      if (!locData.finalTerritorioId) {
-        ToastService.error(
-          'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
-        );
-        return;
-      }
-
-      this.limpiarErrores();
-      this.btnSubmit.disabled = true;
-      this.querySelector('#loadingSpinner').classList.remove('d-none');
-
-      try {
-        const dirPayload = {
-          territorio_id: parseInt(locData.finalTerritorioId),
-          detalle: locData.detalle,
-          referencia: '',
-          codigo_postal: locData.codigoPostal || null,
-          latitud: coords.lat,
-          longitud: coords.lng,
-          precision_gps: this.dirPrecisionGpsInput?.value ? parseFloat(this.dirPrecisionGpsInput.value) : null,
-          activo: true,
-        };
-
-        const incData = id ? await IncidenciaService.getById(id) : null;
-        if (incData && incData.direccion_id) {
-          direccionId = incData.direccion_id;
-          await UbicacionesService.updateDireccion(direccionId, dirPayload);
-        } else {
-          const dirRes = await UbicacionesService.createDireccion(dirPayload);
-          direccionId = (dirRes.data || dirRes).id;
-        }
-
-        CatalogoService.clearDireccionesCache();
-      } catch (err) {
-        console.error(err);
-        ToastService.error('Error al guardar la dirección.');
-        this.btnSubmit.disabled = false;
-        this.querySelector('#loadingSpinner').classList.add('d-none');
-        return;
-      }
+      direccionId = await this._resolveDireccion(locData, coords);
+      if (!direccionId) return; // Error handled inside
     } else {
-      this.limpiarErrores();
-      this.btnSubmit.disabled = true;
-      this.querySelector('#loadingSpinner').classList.remove('d-none');
+      this._setLoadingState();
     }
 
+    await this._submitIncidencia(direccionId);
+  }
+
+  _validateForm() {
+    if (!this.form.checkValidity()) {
+      this.form.classList.add('was-validated');
+      ToastService.error('Por favor complete los campos obligatorios del formulario.');
+      return false;
+    }
+    return true;
+  }
+
+  _setLoadingState() {
+    this.limpiarErrores();
+    this.btnSubmit.disabled = true;
+    this.querySelector('#loadingSpinner').classList.remove('d-none');
+  }
+
+  _clearLoadingState() {
+    this.btnSubmit.disabled = false;
+    this.querySelector('#loadingSpinner').classList.add('d-none');
+  }
+
+  async _resolveDireccion(locData, coords) {
+    if (!locData.finalTerritorioId) {
+      ToastService.error(
+        'Debe seleccionar el territorio geográfico correspondiente (Provincia/Cantón/Parroquia).'
+      );
+      return null;
+    }
+
+    this._setLoadingState();
+
     try {
+      const dirPayload = {
+        territorio_id: parseInt(locData.finalTerritorioId),
+        detalle: locData.detalle,
+        referencia: '',
+        codigo_postal: locData.codigoPostal || null,
+        latitud: coords.lat,
+        longitud: coords.lng,
+        precision_gps: this.dirPrecisionGpsInput?.value ? parseFloat(this.dirPrecisionGpsInput.value) : null,
+        activo: true,
+      };
+
+      const id = this.incidenciaIdInput.value;
+      const incData = id ? await IncidenciaService.getById(id) : null;
+      let resolvedId;
+
+      if (incData && incData.direccion_id) {
+        resolvedId = incData.direccion_id;
+        await UbicacionesService.updateDireccion(resolvedId, dirPayload);
+      } else {
+        const dirRes = await UbicacionesService.createDireccion(dirPayload);
+        resolvedId = (dirRes.data || dirRes).id;
+      }
+
+      CatalogoService.clearDireccionesCache();
+      return resolvedId;
+    } catch (err) {
+      console.error(err);
+      ToastService.error('Error al guardar la dirección.');
+      this._clearLoadingState();
+      return null;
+    }
+  }
+
+  async _submitIncidencia(direccionId) {
+    try {
+      const id = this.incidenciaIdInput.value;
       const catData = this.categoryManager.getDatos();
       const incPayload = {
         incidencia_descripcion: this.descripcionInput.value,
@@ -297,8 +320,7 @@ export class IncidenciaFormComponent extends BaseComponent {
     } catch (err) {
       console.error(err);
       ToastService.error(err.message || 'Error al procesar la incidencia.');
-      this.btnSubmit.disabled = false;
-      this.querySelector('#loadingSpinner').classList.add('d-none');
+      this._clearLoadingState();
     }
   }
 }

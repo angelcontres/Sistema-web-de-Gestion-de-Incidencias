@@ -43,147 +43,145 @@ export class MenuOptionsFormComponent extends BaseComponent {
     if (formTitleEl) formTitleEl.textContent = 'Editar Opción de Menú';
   }
 
-  onInit() {
+  async onInit() {
+    this._getOptionId();
+    this._cacheElements();
+    this._setupIconPreview();
+    this._setupFormSubmit();
+
+    await this._cargarOpcionesPadre();
+    await this._cargarDatosEdicion();
+  }
+
+  _getOptionId() {
     const hashParts = window.location.hash.split('?');
     const queryString = hashParts.length > 1 ? hashParts[1] : '';
     const urlParams = new URLSearchParams(queryString);
-    const optionId = urlParams.get('id');
+    this.optionId = urlParams.get('id');
+  }
 
-    const formTitle = this.querySelector('#formTitle');
-    const form = this.querySelector('#opcionMenuForm');
-    const selectPadre = this.querySelector('#padre_id');
-    const inputIcono = this.querySelector('#icono');
-    const iconoPreview = this.querySelector('#icono-preview');
-    const alertMessage = this.querySelector('#alertMessage');
-    const btnGuardar = this.querySelector('#btnGuardar');
-    const loadingSpinner = this.querySelector('#loadingSpinner');
+  _cacheElements() {
+    this.formTitle = this.querySelector('#formTitle');
+    this.form = this.querySelector('#opcionMenuForm');
+    this.selectPadre = this.querySelector('#padre_id');
+    this.inputIcono = this.querySelector('#icono');
+    this.iconoPreview = this.querySelector('#icono-preview');
+    this.alertMessage = this.querySelector('#alertMessage');
+    this.btnGuardar = this.querySelector('#btnGuardar');
+    this.loadingSpinner = this.querySelector('#loadingSpinner');
+  }
 
-    // Actualizar vista previa del icono en tiempo real
-    if (inputIcono && iconoPreview) {
-      inputIcono.addEventListener('input', (e) => {
-        this.actualizarVistaPreviaIcono(e.target.value, iconoPreview);
+  _setupIconPreview() {
+    if (this.inputIcono && this.iconoPreview) {
+      this.inputIcono.addEventListener('input', (e) => {
+        this.actualizarVistaPreviaIcono(e.target.value, this.iconoPreview);
       });
     }
+  }
 
-    // Mostrar alertas
-    const showAlert = (message, type = 'success') => {
-      if (!alertMessage) return;
-      alertMessage.textContent = message;
-      alertMessage.style.whiteSpace = 'pre-line';
-      alertMessage.className = `alert alert-${type} mt-3`;
-      alertMessage.classList.remove('d-none');
-      alertMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    };
+  showAlert(message, type = 'success') {
+    if (!this.alertMessage) return;
+    this.alertMessage.textContent = message;
+    this.alertMessage.style.whiteSpace = 'pre-line';
+    this.alertMessage.className = `alert alert-${type} mt-3`;
+    this.alertMessage.classList.remove('d-none');
+    this.alertMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 
-    // Cargar opciones padre
-    const cargarOpcionesPadre = async () => {
-      if (!selectPadre) return;
-      try {
-        const response = await MenuOptionService.getAll(1, 15, null, { all: true });
-        const opciones = Array.isArray(response) ? response : response.data || [];
+  async _cargarOpcionesPadre() {
+    if (!this.selectPadre) return;
+    try {
+      const response = await MenuOptionService.getAll(1, 15, null, { all: true });
+      const opciones = Array.isArray(response) ? response : response.data || [];
 
-        opciones.forEach((opcion) => {
-          // Evitar que una opción sea su propio padre
-          if (optionId && opcion.id == optionId) return;
+      opciones.forEach((opcion) => {
+        if (this.optionId && opcion.id == this.optionId) return;
 
-          const opt = document.createElement('option');
-          opt.value = opcion.id;
-          opt.textContent = `${opcion.nombre} (${opcion.ruta})`;
-          selectPadre.appendChild(opt);
-        });
-      } catch (error) {
-        console.error(error);
-        showAlert('Error al conectar con el servidor para cargar las opciones del menú.', 'danger');
-      }
-    };
-
-    // Cargar datos del registro si estamos editando
-    const cargarDatosEdicion = async () => {
-      if (!optionId) return;
-
-      this.configurarEncabezadoEdicion(formTitle);
-
-      try {
-        const response = await MenuOptionService.getById(optionId);
-        const opcion = response.data;
-
-        if (opcion) {
-          this.poblarCamposFormulario(opcion, selectPadre, iconoPreview);
-        }
-      } catch (error) {
-        console.error(error);
-        showAlert('No se pudieron cargar los datos del registro a editar.', 'danger');
-        if (btnGuardar) btnGuardar.disabled = true;
-      }
-    };
-
-    // Manejar el submit del formulario
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        // Validar con Bootstrap
-        if (!form.checkValidity()) {
-          e.stopPropagation();
-          form.classList.add('was-validated');
-          return;
-        }
-
-        // Mostrar spinner de carga
-        if (btnGuardar) btnGuardar.disabled = true;
-        if (loadingSpinner) loadingSpinner.classList.remove('d-none');
-        if (alertMessage) alertMessage.classList.add('d-none');
-
-        const inputNombreVal = this.querySelector('#nombre')
-          ? this.querySelector('#nombre').value.trim()
-          : '';
-        const inputRutaVal = this.querySelector('#ruta')
-          ? this.querySelector('#ruta').value.trim()
-          : '';
-
-        const payload = {
-          nombre: inputNombreVal,
-          icono: inputIcono?.value.trim() || null,
-          ruta: inputRutaVal,
-          padre_id: selectPadre?.value ? Number.parseInt(selectPadre.value, 10) : null,
-        };
-
-        try {
-          const response = optionId
-            ? await MenuOptionService.update(optionId, payload)
-            : await MenuOptionService.create(payload);
-
-          showAlert(
-            response.message ||
-              (optionId
-                ? 'Opción de menú actualizada con éxito.'
-                : 'Opción de menú creada con éxito.'),
-            'success'
-          );
-
-          // Redireccionar después de 1.5 segundos a la lista SPA
-          setTimeout(() => {
-            window.location.hash = '#/opciones-menu';
-          }, 1500);
-        } catch (error) {
-          console.error(error);
-          showAlert(
-            error.message || 'Hubo un error inesperado al procesar la solicitud.',
-            'danger'
-          );
-          if (btnGuardar) btnGuardar.disabled = false;
-          if (loadingSpinner) loadingSpinner.classList.add('d-none');
-        }
+        const opt = document.createElement('option');
+        opt.value = opcion.id;
+        opt.textContent = `${opcion.nombre} (${opcion.ruta})`;
+        this.selectPadre.appendChild(opt);
       });
+    } catch (error) {
+      console.error(error);
+      this.showAlert('Error al conectar con el servidor para cargar las opciones del menú.', 'danger');
     }
+  }
 
-    // Inicializar
-    const init = async () => {
-      await cargarOpcionesPadre();
-      await cargarDatosEdicion();
-    };
+  async _cargarDatosEdicion() {
+    if (!this.optionId) return;
 
-    init();
+    this.configurarEncabezadoEdicion(this.formTitle);
+
+    try {
+      const response = await MenuOptionService.getById(this.optionId);
+      const opcion = response.data;
+
+      if (opcion) {
+        this.poblarCamposFormulario(opcion, this.selectPadre, this.iconoPreview);
+      }
+    } catch (error) {
+      console.error(error);
+      this.showAlert('No se pudieron cargar los datos del registro a editar.', 'danger');
+      if (this.btnGuardar) this.btnGuardar.disabled = true;
+    }
+  }
+
+  _setupFormSubmit() {
+    if (!this.form) return;
+
+    this.form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!this.form.checkValidity()) {
+        e.stopPropagation();
+        this.form.classList.add('was-validated');
+        return;
+      }
+
+      this._setLoadingState(true);
+
+      const inputNombreVal = this.querySelector('#nombre') ? this.querySelector('#nombre').value.trim() : '';
+      const inputRutaVal = this.querySelector('#ruta') ? this.querySelector('#ruta').value.trim() : '';
+
+      const payload = {
+        nombre: inputNombreVal,
+        icono: this.inputIcono?.value.trim() || null,
+        ruta: inputRutaVal,
+        padre_id: this.selectPadre?.value ? Number.parseInt(this.selectPadre.value, 10) : null,
+      };
+
+      try {
+        const response = this.optionId
+          ? await MenuOptionService.update(this.optionId, payload)
+          : await MenuOptionService.create(payload);
+
+        this.showAlert(
+          response.message || (this.optionId ? 'Opción de menú actualizada con éxito.' : 'Opción de menú creada con éxito.'),
+          'success'
+        );
+
+        setTimeout(() => {
+          window.location.hash = '#/opciones-menu';
+        }, 1500);
+      } catch (error) {
+        console.error(error);
+        this.showAlert(
+          error.message || 'Hubo un error inesperado al procesar la solicitud.',
+          'danger'
+        );
+        this._setLoadingState(false);
+      }
+    });
+  }
+
+  _setLoadingState(isLoading) {
+    if (this.btnGuardar) this.btnGuardar.disabled = isLoading;
+    if (this.loadingSpinner) {
+      if (isLoading) this.loadingSpinner.classList.remove('d-none');
+      else this.loadingSpinner.classList.add('d-none');
+    }
+    if (isLoading && this.alertMessage) this.alertMessage.classList.add('d-none');
   }
 }
 

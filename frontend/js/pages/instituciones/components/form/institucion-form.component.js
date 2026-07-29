@@ -7,17 +7,25 @@ export class InstitucionFormComponent extends BaseComponent {
   }
 
   async onInit() {
+    this._setupModalDOM();
+    this._cacheElements();
+    this._setupEventListeners();
+  }
+
+  _setupModalDOM() {
     this.modalElement = this.querySelector('#institucionModal');
+    if (!this.modalElement) return;
 
     // Mover el modal al body para evitar problemas de z-index (sombra por encima)
     // Limpiar cualquier modal previo u órfano en el body con el mismo ID para evitar conflictos y recargas
-    if (this.modalElement) {
-      document.body.querySelectorAll('#institucionModal').forEach((el) => {
-        if (el !== this.modalElement) el.remove();
-      });
-      document.body.appendChild(this.modalElement);
-    }
+    document.body.querySelectorAll('#institucionModal').forEach((el) => {
+      if (el !== this.modalElement) el.remove();
+    });
+    document.body.appendChild(this.modalElement);
+  }
 
+  _cacheElements() {
+    if (!this.modalElement) return;
     this.form = this.modalElement.querySelector('#institucionForm');
     this.nombreInput = this.modalElement.querySelector('#institucionNombre');
     this.siglasInput = this.modalElement.querySelector('#siglas');
@@ -26,9 +34,10 @@ export class InstitucionFormComponent extends BaseComponent {
     this.btnGuardarInstitucion = this.modalElement.querySelector('#btnGuardarInstitucion');
     this.formAlertContainer = this.modalElement.querySelector('#institucionModalErrorAlert');
     this.errorMessage = this.modalElement.querySelector('#institucionModalErrorMessage');
-
     this.institucionId = null;
+  }
 
+  _setupEventListeners() {
     if (this.form) {
       this.form.addEventListener('submit', (e) => {
         if (e?.preventDefault) e.preventDefault();
@@ -43,14 +52,17 @@ export class InstitucionFormComponent extends BaseComponent {
       });
     }
 
-    // Reset form when modal is hidden
-    this.modalElement.addEventListener('hidden.bs.modal', () => {
-      this.form.reset();
-      this.form.classList.remove('was-validated');
-      this.institucionId = null;
-      if (this.formAlertContainer) this.formAlertContainer.classList.add('d-none');
-      if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.disabled = false;
-    });
+    if (this.modalElement) {
+      this.modalElement.addEventListener('hidden.bs.modal', () => {
+        if (this.form) {
+          this.form.reset();
+          this.form.classList.remove('was-validated');
+        }
+        this.institucionId = null;
+        if (this.formAlertContainer) this.formAlertContainer.classList.add('d-none');
+        if (this.btnGuardarInstitucion) this.btnGuardarInstitucion.disabled = false;
+      });
+    }
   }
 
   async openModal(id = null) {

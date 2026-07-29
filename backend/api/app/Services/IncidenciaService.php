@@ -166,7 +166,18 @@ class IncidenciaService
 
         return [
             'message' => 'Se ha agrupado a una nueva incidencia.',
-            'data' => $similar->load(['direccion.territorio.pais', 'cliente', 'estado', 'institucion', 'institucionesApoyo', 'tipo', 'subTipo', 'prioridad', 'operadores', 'reportantes']),
+            'data' => $similar->load([
+                'direccion.territorio.pais',
+                'cliente',
+                'estado',
+                'institucion',
+                'institucionesApoyo',
+                'tipo',
+                'subTipo',
+                'prioridad',
+                'operadores',
+                'reportantes'
+            ]),
         ];
     }
 
