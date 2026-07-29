@@ -17,6 +17,7 @@ export class CircuitBreaker {
         console.error(
           `Demasiados intentos fallidos. Por favor, espere ${remaining} segundos antes de reintentar.`
         );
+        return;
       }
     }
 

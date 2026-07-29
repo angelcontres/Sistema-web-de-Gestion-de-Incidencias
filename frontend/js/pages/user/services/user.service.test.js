@@ -78,4 +78,12 @@ describe('UserService', () => {
       })
     );
   });
+
+  it('getAll debería usar cursor cuando se proporciona uno', async () => {
+    await UserService.getAll(1, 15, 'cursor123');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('cursor=cursor123'),
+      expect.any(Object)
+    );
+  });
 });

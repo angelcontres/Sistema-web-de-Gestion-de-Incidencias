@@ -31,14 +31,14 @@ export class InstitucionFormComponent extends BaseComponent {
 
     if (this.form) {
       this.form.addEventListener('submit', (e) => {
-        if (e && e.preventDefault) e.preventDefault();
+        if (e?.preventDefault) e.preventDefault();
         this.guardarInstitucion(e);
       });
     }
 
     if (this.btnGuardarInstitucion) {
       this.btnGuardarInstitucion.addEventListener('click', (e) => {
-        if (e && e.preventDefault) e.preventDefault();
+        if (e?.preventDefault) e.preventDefault();
         this.guardarInstitucion(e);
       });
     }
@@ -94,7 +94,7 @@ export class InstitucionFormComponent extends BaseComponent {
   }
 
   async guardarInstitucion(e) {
-    if (e && e.preventDefault) e.preventDefault();
+    if (e?.preventDefault) e.preventDefault();
 
     if (!this.validarFormulario()) return;
 

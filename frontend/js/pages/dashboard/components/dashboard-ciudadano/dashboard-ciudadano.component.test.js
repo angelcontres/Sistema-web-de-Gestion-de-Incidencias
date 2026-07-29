@@ -84,4 +84,20 @@ describe('DashboardCiudadanoComponent', () => {
     
     expect(window.echarts.init).toHaveBeenCalledTimes(3); // chartEstado, chartPrioridad, chartTendencia
   });
+
+  it('should resize charts on window resize event', () => {
+    const { component } = createMockComponent();
+    component.dashboardData = { kpis: {} };
+
+    component.renderData();
+    jest.runAllTimers();
+
+    window.dispatchEvent(new Event('resize'));
+
+    const charts = window.echarts.init.mock.results;
+    expect(charts).toHaveLength(3);
+    charts.forEach(({ value: chart }) => {
+      expect(chart.resize).toHaveBeenCalled();
+    });
+  });
 });

@@ -51,7 +51,7 @@ class AuthController extends Controller
         $username = $validated['username'] ?? null;
 
         if ($email && ! $username) {
-            $username = strtolower(explode('@', $email)[0]).'_'.rand(100, 999);
+            $username = strtolower(explode('@', $email)[0]).'_'.random_int(100, 999);
         } elseif ($username && ! $email) {
             $email = $username.'@ciudadano.local';
         }

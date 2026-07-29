@@ -22,9 +22,24 @@ describe('PermissionService', () => {
     window.fetch = originalFetch;
   });
 
-  it('getAll - debería hacer request a /permissions', async () => {
+  it('getAll - debería hacer request a /permissions with page', async () => {
     await PermissionService.getAll(1);
     expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions?page=1'), expect.any(Object));
+  });
+
+  it('getAll - sin argumentos debería ir a /permissions sin query', async () => {
+    await PermissionService.getAll();
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions'), expect.any(Object));
+  });
+
+  it('getAll - debería incluir filters sin page', async () => {
+    await PermissionService.getAll(null, 'name=test');
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('?name=test'), expect.any(Object));
+  });
+
+  it('getAll - debería concatenar page y filters', async () => {
+    await PermissionService.getAll(2, 'status=active');
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('?page=2&status=active'), expect.any(Object));
   });
 
   it('getById - debería hacer request a /permissions/id', async () => {
@@ -45,5 +60,10 @@ describe('PermissionService', () => {
   it('delete - debería enviar DELETE', async () => {
     await PermissionService.delete(7);
     expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions/7'), expect.objectContaining({ method: 'DELETE' }));
+  });
+
+  it('getAllList - debería hacer request a /permissions?all=true', async () => {
+    await PermissionService.getAllList();
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/permissions?all=true'), expect.any(Object));
   });
 });
