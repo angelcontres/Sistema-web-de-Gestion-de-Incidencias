@@ -79,7 +79,11 @@ describe('PermissionFormComponent', () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () => Promise.resolve([{ id: 1, nombre: 'Menu1' }, { id: 2, nombre: 'Menu2' }]),
+          json: () =>
+            Promise.resolve([
+              { id: 1, nombre: 'Menu1' },
+              { id: 2, nombre: 'Menu2' },
+            ]),
         });
       }
       return Promise.resolve({
@@ -183,7 +187,7 @@ describe('PermissionFormComponent', () => {
     await component.llenarSelectOpcionesMenu(1);
 
     const options = component.opcionMenuSelect.querySelectorAll('option');
-    expect(options.length).toBe(3);
+    expect(options).toHaveLength(3);
     expect(options[0].value).toBe('');
     expect(options[1].value).toBe('1');
     expect(options[1].textContent).toBe('Menu1');
@@ -199,7 +203,10 @@ describe('PermissionFormComponent', () => {
     window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error')));
     await component.llenarSelectOpcionesMenu();
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Error cargando opciones de men\u00fa:', expect.any(Error));
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error cargando opciones de men\u00fa:',
+      expect.any(Error)
+    );
     expect(ToastService.error).toHaveBeenCalledWith('Error al cargar opciones de men\u00fa.');
   });
 
@@ -225,7 +232,13 @@ describe('PermissionFormComponent', () => {
     const component = createComponent();
     await component.onInit();
 
-    const permisoData = { id: 9, nombre: 'Edit', recurso: 'res', accion: 'CREATE', opcion_menu_id: 2 };
+    const permisoData = {
+      id: 9,
+      nombre: 'Edit',
+      recurso: 'res',
+      accion: 'CREATE',
+      opcion_menu_id: 2,
+    };
 
     await component.abrirModalEditar(permisoData);
 

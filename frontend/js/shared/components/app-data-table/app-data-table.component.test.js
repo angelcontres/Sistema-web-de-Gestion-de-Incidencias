@@ -110,7 +110,7 @@ describe('AppDataTableComponent', () => {
     });
 
     const headers = el.querySelector('#table-header').querySelectorAll('th');
-    expect(headers.length).toBe(2);
+    expect(headers).toHaveLength(2);
     expect(headers[0].textContent).toBe('Nombre');
     expect(headers[1].textContent).toBe('Edad');
     document.body.removeChild(el);
@@ -137,7 +137,7 @@ describe('AppDataTableComponent', () => {
     expect(serviceFn).toHaveBeenCalledWith(1, 15, null);
 
     const rows = el.querySelector('#tbl-data').querySelectorAll('tr');
-    expect(rows.length).toBe(2);
+    expect(rows).toHaveLength(2);
     expect(rows[0].textContent).toContain('Ana');
     expect(rows[1].textContent).toContain('Bob');
     document.body.removeChild(el);
@@ -245,7 +245,7 @@ describe('AppDataTableComponent', () => {
     el.items = [{ val: 'X' }, { val: 'Y' }];
 
     const rows = el.querySelector('#tbl-data').querySelectorAll('tr');
-    expect(rows.length).toBe(2);
+    expect(rows).toHaveLength(2);
     document.body.removeChild(el);
   });
 
@@ -254,10 +254,7 @@ describe('AppDataTableComponent', () => {
     const el = createElement();
     await waitLoad();
 
-    el.updatePaginationMetadata(
-      { next_cursor: 'abc', prev_cursor: null },
-      [{ id: 1 }]
-    );
+    el.updatePaginationMetadata({ next_cursor: 'abc', prev_cursor: null }, [{ id: 1 }]);
 
     expect(el.isCursorPagination).toBe(true);
     expect(el.nextCursor).toBe('abc');
@@ -272,10 +269,7 @@ describe('AppDataTableComponent', () => {
     const el = createElement();
     await waitLoad();
 
-    el.updatePaginationMetadata(
-      { current_page: 2, last_page: 5, data: [{}] },
-      [{}]
-    );
+    el.updatePaginationMetadata({ current_page: 2, last_page: 5, data: [{}] }, [{}]);
 
     expect(el.isCursorPagination).toBe(false);
     expect(el.currentPage).toBe(2);
@@ -363,7 +357,7 @@ describe('AppDataTableComponent', () => {
     document.body.appendChild(el);
     await waitLoad();
 
-    expect(el.columns.length).toBe(2);
+    expect(el.columns).toHaveLength(2);
     expect(el.columns[0].header).toBe('Nombre');
     expect(el.columns[0].key).toBe('name');
     expect(el.columns[0].class).toBe('text-start');
@@ -559,7 +553,7 @@ describe('AppDataTableComponent', () => {
     await waitLoad();
 
     const rows = el.querySelector('#tbl-data').querySelectorAll('tr');
-    expect(rows.length).toBe(1);
+    expect(rows).toHaveLength(1);
     expect(rows[0].textContent).toContain('pre');
     document.body.removeChild(el);
   });
@@ -573,7 +567,7 @@ describe('AppDataTableComponent', () => {
     el.configure({ columns: [{ header: 'Val', key: 'val' }] });
 
     const rows = el.querySelector('#tbl-data').querySelectorAll('tr');
-    expect(rows.length).toBe(1);
+    expect(rows).toHaveLength(1);
     expect(rows[0].textContent).toContain('X');
     document.body.removeChild(el);
   });
@@ -724,7 +718,9 @@ describe('AppDataTableComponent', () => {
       columns: [
         {
           header: 'Error',
-          render: () => { throw new Error('Render fail'); },
+          render: () => {
+            throw new Error('Render fail');
+          },
         },
       ],
     });
@@ -769,7 +765,9 @@ describe('AppDataTableComponent', () => {
         {
           header: 'Error',
           key: 'val',
-          format: () => { throw new Error('Format error'); },
+          format: () => {
+            throw new Error('Format error');
+          },
         },
       ],
     });

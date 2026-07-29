@@ -5,7 +5,8 @@ jest.unstable_mockModule('../../core/api.js', () => ({
   API_BASE_URL: 'http://localhost/api',
 }));
 
-const TRP_TEMPLATE = '<div class="page-fade-in">' +
+const TRP_TEMPLATE =
+  '<div class="page-fade-in">' +
   '<div class="row mb-4">' +
   '<div class="col-12">' +
   '<div class="premium-card">' +
@@ -102,7 +103,7 @@ describe('TrpDashboardComponent', () => {
     expect(apiRequest).toHaveBeenCalledWith('/trp/performance-stats');
     expect(window.Chart).toHaveBeenCalledTimes(1);
     const rows = el.querySelectorAll('#slowestEndpointsTable tr');
-    expect(rows.length).toBe(2);
+    expect(rows).toHaveLength(2);
     expect(rows[0].innerHTML).toContain('/api/test');
   });
 
@@ -148,7 +149,9 @@ describe('TrpDashboardComponent', () => {
     const el = new TrpDashboardComponent();
     el.innerHTML = '<table><tbody id="slowestEndpointsTable"></tbody></table>';
     el.renderTable([]);
-    expect(el.querySelector('#slowestEndpointsTable').innerHTML).toContain('No hay datos suficientes');
+    expect(el.querySelector('#slowestEndpointsTable').innerHTML).toContain(
+      'No hay datos suficientes'
+    );
   });
 
   it('renderTable renderiza filas para cada item', () => {
@@ -156,7 +159,7 @@ describe('TrpDashboardComponent', () => {
     el.innerHTML = '<table><tbody id="slowestEndpointsTable"></tbody></table>';
     el.renderTable(MOCK_SLOWEST);
     const rows = el.querySelectorAll('#slowestEndpointsTable tr');
-    expect(rows.length).toBe(2);
+    expect(rows).toHaveLength(2);
     expect(rows[0].innerHTML).toContain('/api/test');
     expect(rows[0].innerHTML).toContain('bg-success');
     expect(rows[1].innerHTML).toContain('/api/data');
@@ -243,7 +246,9 @@ describe('TrpDashboardComponent', () => {
       const el = new TrpDashboardComponent();
       await el.downloadLogs('txt');
       expect(console.error).toHaveBeenCalledWith('Error al exportar logs:', expect.any(Error));
-      expect(window.alert).toHaveBeenCalledWith('Ocurrió un error al intentar exportar los registros.');
+      expect(window.alert).toHaveBeenCalledWith(
+        'Ocurrió un error al intentar exportar los registros.'
+      );
       jest.restoreAllMocks();
     });
   });

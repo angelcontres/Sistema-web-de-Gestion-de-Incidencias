@@ -115,7 +115,7 @@ export const CatalogoService = {
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('catalogo_categorias_')) {
+      if (key?.startsWith('catalogo_categorias_')) {
         keysToRemove.push(key);
       }
     }

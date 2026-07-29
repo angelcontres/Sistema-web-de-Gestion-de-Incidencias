@@ -48,25 +48,27 @@ describe('MenuOptionsFormComponent', () => {
   });
 
   describe('actualizarVistaPreviaIcono', () => {
-    it('2. empty value sets fallback class', () => {
-      const component = new MenuOptionsFormComponent();
-      const el = document.createElement('span');
-      component.actualizarVistaPreviaIcono('', el);
-      expect(el.className).toBe('bi bi-tag');
-    });
+    describe('actualizarVistaPreviaIcono', () => {
+      it.each([
+        { valor: '', claseEsperada: 'bi bi-tag', descripcion: 'empty value sets fallback class' },
+        {
+          valor: 'bi-gear',
+          claseEsperada: 'bi bi-gear',
+          descripcion: 'value starting with "bi-" sets correct class',
+        },
+        {
+          valor: 'gear',
+          claseEsperada: 'bi bi-gear',
+          descripcion: 'value without "bi-" prefix prepends "bi bi-"',
+        },
+      ])('$descripcion', ({ valor, claseEsperada }) => {
+        const component = new MenuOptionsFormComponent();
+        const el = document.createElement('span');
 
-    it('3. value starting with "bi-" sets correct class', () => {
-      const component = new MenuOptionsFormComponent();
-      const el = document.createElement('span');
-      component.actualizarVistaPreviaIcono('bi-gear', el);
-      expect(el.className).toBe('bi bi-gear');
-    });
+        component.actualizarVistaPreviaIcono(valor, el);
 
-    it('4. value without "bi-" prefix prepends "bi bi-"', () => {
-      const component = new MenuOptionsFormComponent();
-      const el = document.createElement('span');
-      component.actualizarVistaPreviaIcono('gear', el);
-      expect(el.className).toBe('bi bi-gear');
+        expect(el.className).toBe(claseEsperada);
+      });
     });
 
     it('5. iconoPreviewEl missing does nothing', () => {
@@ -169,7 +171,9 @@ describe('MenuOptionsFormComponent', () => {
 
     it('12. form submit creates new option on success', async () => {
       mockMenuOptionService.getAll.mockResolvedValue({ data: [] });
-      mockMenuOptionService.create.mockResolvedValue({ message: 'Opción de menú creada con éxito.' });
+      mockMenuOptionService.create.mockResolvedValue({
+        message: 'Opción de menú creada con éxito.',
+      });
 
       const component = new MenuOptionsFormComponent();
       component.innerHTML = TEMPLATE_HTML;
@@ -206,7 +210,9 @@ describe('MenuOptionsFormComponent', () => {
       mockMenuOptionService.getById.mockResolvedValue({
         data: { id: 5, nombre: 'Old', ruta: '/old', icono: 'bi-old', padre_id: 3 },
       });
-      mockMenuOptionService.update.mockResolvedValue({ message: 'Opción de menú actualizada con éxito.' });
+      mockMenuOptionService.update.mockResolvedValue({
+        message: 'Opción de menú actualizada con éxito.',
+      });
 
       const component = new MenuOptionsFormComponent();
       component.innerHTML = TEMPLATE_HTML;
@@ -307,7 +313,9 @@ describe('MenuOptionsFormComponent', () => {
 
       const alertMessage = component.querySelector('#alertMessage');
       expect(alertMessage.classList.contains('alert-danger')).toBe(true);
-      expect(alertMessage.textContent).toBe('Error al conectar con el servidor para cargar las opciones del menú.');
+      expect(alertMessage.textContent).toBe(
+        'Error al conectar con el servidor para cargar las opciones del menú.'
+      );
 
       consoleSpy.mockRestore();
     });
@@ -325,7 +333,9 @@ describe('MenuOptionsFormComponent', () => {
       for (let i = 0; i < 5; i++) await new Promise(process.nextTick);
 
       const alertMessage = component.querySelector('#alertMessage');
-      expect(alertMessage.textContent).toBe('No se pudieron cargar los datos del registro a editar.');
+      expect(alertMessage.textContent).toBe(
+        'No se pudieron cargar los datos del registro a editar.'
+      );
       expect(alertMessage.classList.contains('alert-danger')).toBe(true);
       expect(component.querySelector('#btnGuardar').disabled).toBe(true);
 

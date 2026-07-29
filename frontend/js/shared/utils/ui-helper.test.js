@@ -26,7 +26,7 @@ describe('UIHelper.mostrarAlerta', () => {
     component.appendChild(existing);
     UIHelper.mostrarAlerta(component, 'success', 'test');
     const containers = component.querySelectorAll('.alert-container');
-    expect(containers.length).toBe(1);
+    expect(containers).toHaveLength(1);
   });
 
   it('inserta el alert-container al inicio del componente', () => {
@@ -58,7 +58,7 @@ describe('UIHelper.mostrarAlerta', () => {
     UIHelper.mostrarAlerta(component, 'success', 'Mensaje 1');
     UIHelper.mostrarAlerta(component, 'error', 'Mensaje 2');
     const alerts = component.querySelectorAll('.alert');
-    expect(alerts.length).toBe(1);
+    expect(alerts).toHaveLength(1);
     expect(alerts[0].innerHTML).toContain('Mensaje 2');
   });
 

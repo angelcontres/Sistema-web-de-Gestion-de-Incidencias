@@ -45,7 +45,7 @@ describe('ToastService', () => {
       const container = document.getElementById('toast-container');
       expect(container).not.toBeNull();
       const toasts = container.querySelectorAll('app-toast');
-      expect(toasts.length).toBe(1);
+      expect(toasts).toHaveLength(1);
     });
 
     it('should call show on the app-toast element with type, message, title', () => {
@@ -67,12 +67,12 @@ describe('ToastService', () => {
       ToastService.show('success', 'Toast 2');
       ToastService.show('success', 'Toast 3');
       const container = document.getElementById('toast-container');
-      expect(container.querySelectorAll('app-toast').length).toBe(3);
+      expect(container.querySelectorAll('app-toast')).toHaveLength(3);
       const toastsBefore = container.querySelectorAll('app-toast');
       jest.spyOn(toastsBefore[2], 'remove');
       ToastService.show('warning', 'Toast 4');
       expect(toastsBefore[2].remove).toHaveBeenCalled();
-      expect(container.querySelectorAll('app-toast').length).toBe(3);
+      expect(container.querySelectorAll('app-toast')).toHaveLength(3);
     });
 
     it('should not remove toasts when fewer than 3', () => {
@@ -85,7 +85,7 @@ describe('ToastService', () => {
       ToastService.show('info', 'Toast 3');
       expect(toastsBefore[0].remove).not.toHaveBeenCalled();
       expect(toastsBefore[1].remove).not.toHaveBeenCalled();
-      expect(container.querySelectorAll('app-toast').length).toBe(3);
+      expect(container.querySelectorAll('app-toast')).toHaveLength(3);
     });
   });
 

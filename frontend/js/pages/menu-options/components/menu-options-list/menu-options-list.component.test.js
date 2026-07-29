@@ -74,10 +74,9 @@ describe('MenuOptionsListComponent', () => {
     const { component, fakeElements } = createMockComponent();
     await component.onInit();
 
-    const configArg =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0];
+    const configArg = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0];
     expect(configArg.columns).toBeDefined();
-    expect(configArg.columns.length).toBe(6);
+    expect(configArg.columns).toHaveLength(6);
     expect(configArg.columns[0].header).toBe('Nombre');
     expect(configArg.columns[1].header).toBe('Icono');
     expect(configArg.columns[2].header).toBe('Ruta');
@@ -129,16 +128,16 @@ describe('MenuOptionsListComponent', () => {
       expect.any(String),
       'Eliminar',
       'Cancelar',
-      'btn-danger',
+      'btn-danger'
     );
     expect(mockMenuOptionService.delete).toHaveBeenCalledWith(5);
     expect(mockToastService.success).toHaveBeenCalledWith(
-      'La opción "Test" se eliminó correctamente.',
+      'La opción "Test" se eliminó correctamente.'
     );
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(CustomEvent));
-    expect(
-      fakeElements['#tbl-datos-opciones-menu'].load,
-    ).toHaveBeenCalledWith(mockMenuOptionService.getAll);
+    expect(fakeElements['#tbl-datos-opciones-menu'].load).toHaveBeenCalledWith(
+      mockMenuOptionService.getAll
+    );
   });
 
   it('6. onInit row-action eliminar not confirmed, no delete', async () => {
@@ -184,9 +183,7 @@ describe('MenuOptionsListComponent', () => {
       detail: { action: 'eliminar', item: { id: 5, nombre: 'Test' } },
     });
 
-    expect(mockToastService.error).toHaveBeenCalledWith(
-      'Error al eliminar: Network failure',
-    );
+    expect(mockToastService.error).toHaveBeenCalledWith('Error al eliminar: Network failure');
     consoleSpy.mockRestore();
   });
 
@@ -198,11 +195,10 @@ describe('MenuOptionsListComponent', () => {
 
     let { component, fakeElements } = createMockComponent();
     await component.onInit();
-    let columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    let columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
     let actionsCol = columns[5];
     expect(actionsCol.header).toBe('Acciones');
-    expect(actionsCol.actions.length).toBe(2);
+    expect(actionsCol.actions).toHaveLength(2);
     expect(actionsCol.actions[0].name).toBe('editar');
     expect(actionsCol.actions[1].name).toBe('eliminar');
 
@@ -213,10 +209,9 @@ describe('MenuOptionsListComponent', () => {
     });
     ({ component, fakeElements } = createMockComponent());
     await component.onInit();
-    columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
     actionsCol = columns[5];
-    expect(actionsCol.actions.length).toBe(1);
+    expect(actionsCol.actions).toHaveLength(1);
     expect(actionsCol.actions[0].name).toBe('editar');
 
     jest.clearAllMocks();
@@ -226,10 +221,9 @@ describe('MenuOptionsListComponent', () => {
     });
     ({ component, fakeElements } = createMockComponent());
     await component.onInit();
-    columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
     actionsCol = columns[5];
-    expect(actionsCol.actions.length).toBe(1);
+    expect(actionsCol.actions).toHaveLength(1);
     expect(actionsCol.actions[0].name).toBe('eliminar');
   });
 
@@ -239,9 +233,8 @@ describe('MenuOptionsListComponent', () => {
     const { component, fakeElements } = createMockComponent();
     await component.onInit();
 
-    const columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
-    expect(columns.length).toBe(5);
+    const columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    expect(columns).toHaveLength(5);
     const headers = columns.map((c) => c.header);
     expect(headers).not.toContain('Acciones');
   });
@@ -250,27 +243,19 @@ describe('MenuOptionsListComponent', () => {
     const { component, fakeElements } = createMockComponent();
     await component.onInit();
 
-    const columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    const columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
     const iconoCol = columns[1];
 
-    expect(iconoCol.render({ icono: '' })).toBe(
-      '<span class="text-muted small">-</span>',
-    );
-    expect(iconoCol.render({ icono: '   ' })).toBe(
-      '<span class="text-muted small">-</span>',
-    );
-    expect(iconoCol.render({})).toBe(
-      '<span class="text-muted small">-</span>',
-    );
+    expect(iconoCol.render({ icono: '' })).toBe('<span class="text-muted small">-</span>');
+    expect(iconoCol.render({ icono: '   ' })).toBe('<span class="text-muted small">-</span>');
+    expect(iconoCol.render({})).toBe('<span class="text-muted small">-</span>');
   });
 
   it('11. onInit icono render valid bi icon class', async () => {
     const { component, fakeElements } = createMockComponent();
     await component.onInit();
 
-    const columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    const columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
     const iconoCol = columns[1];
 
     const result = iconoCol.render({ icono: 'bi-gear' });
@@ -289,8 +274,7 @@ describe('MenuOptionsListComponent', () => {
     const { component, fakeElements } = createMockComponent();
     await component.onInit();
 
-    const columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    const columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
     const padreCol = columns[3];
 
     const result = padreCol.render({ padre: { nombre: 'Configuración' } });
@@ -303,24 +287,18 @@ describe('MenuOptionsListComponent', () => {
     const { component, fakeElements } = createMockComponent();
     await component.onInit();
 
-    const columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    const columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
     const padreCol = columns[3];
 
-    expect(padreCol.render({})).toBe(
-      '<span class="text-muted small">-</span>',
-    );
-    expect(padreCol.render({ padre: null })).toBe(
-      '<span class="text-muted small">-</span>',
-    );
+    expect(padreCol.render({})).toBe('<span class="text-muted small">-</span>');
+    expect(padreCol.render({ padre: null })).toBe('<span class="text-muted small">-</span>');
   });
 
   it('14. onInit created_at render formats date or shows dash', async () => {
     const { component, fakeElements } = createMockComponent();
     await component.onInit();
 
-    const columns =
-      fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
+    const columns = fakeElements['#tbl-datos-opciones-menu'].configure.mock.calls[0][0].columns;
     const dateCol = columns[4];
 
     const dateResult = dateCol.render({
@@ -409,9 +387,8 @@ describe('MenuOptionsListComponent', () => {
     });
     for (let i = 0; i < 5; i++) await new Promise(process.nextTick);
 
-    const loadCalls =
-      fakeElements['#tbl-datos-opciones-menu'].load.mock.calls;
-    expect(loadCalls.length).toBe(2);
+    const loadCalls = fakeElements['#tbl-datos-opciones-menu'].load.mock.calls;
+    expect(loadCalls).toHaveLength(2);
     expect(loadCalls[1][0]).toBe(mockMenuOptionService.getAll);
   });
 });

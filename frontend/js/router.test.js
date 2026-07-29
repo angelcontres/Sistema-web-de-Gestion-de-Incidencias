@@ -34,32 +34,18 @@ describe('router', () => {
   });
 
   describe('isPublicRoute', () => {
-    it('returns true for #/login allowing unauthenticated access', async () => {
+    it.each([
+      { hash: '#/login', componente: 'app-login' },
+      { hash: '#/signup', componente: 'app-signup' },
+      { hash: '#/activate', componente: 'app-activate-account' },
+      { hash: '#/activate?token=abc123', componente: 'app-activate-account' },
+    ])('returns true for $hash allowing unauthenticated access', async ({ hash, componente }) => {
       mockIsAuthenticated.mockReturnValue(false);
-      window.location.hash = '#/login';
-      await initRouter();
-      expect(document.getElementById('app').innerHTML).toContain('app-login');
-    });
+      window.location.hash = hash;
 
-    it('returns true for #/signup allowing unauthenticated access', async () => {
-      mockIsAuthenticated.mockReturnValue(false);
-      window.location.hash = '#/signup';
       await initRouter();
-      expect(document.getElementById('app').innerHTML).toContain('app-signup');
-    });
 
-    it('returns true for #/activate allowing unauthenticated access', async () => {
-      mockIsAuthenticated.mockReturnValue(false);
-      window.location.hash = '#/activate';
-      await initRouter();
-      expect(document.getElementById('app').innerHTML).toContain('app-activate-account');
-    });
-
-    it('returns true for #/activate?token=abc allowing unauthenticated access', async () => {
-      mockIsAuthenticated.mockReturnValue(false);
-      window.location.hash = '#/activate?token=abc123';
-      await initRouter();
-      expect(document.getElementById('app').innerHTML).toContain('app-activate-account');
+      expect(document.getElementById('app').innerHTML).toContain(componente);
     });
 
     it('returns false for private route #/dashboard, redirects to login', async () => {
@@ -137,28 +123,30 @@ describe('router', () => {
   });
 
   describe('resolveComponent', () => {
-    it('returns component name for exact route match', async () => {
+    it.each([
+      {
+        hash: '#/permisos',
+        componente: 'app-permission-index',
+        descripcion: 'returns component name for exact route match',
+      },
+      {
+        hash: '#/usuarios?page=1&limit=10',
+        componente: 'app-user-index',
+        descripcion: 'strips query string from hash to resolve route',
+      },
+      {
+        hash: '#/non-existent-route',
+        componente: 'app-dashboard',
+        descripcion: 'falls back to app-dashboard for unknown route hash',
+      },
+    ])('$descripcion', async ({ hash, componente }) => {
       mockIsAuthenticated.mockReturnValue(true);
       mockCanAccessRoute.mockReturnValue(true);
-      window.location.hash = '#/permisos';
-      await initRouter();
-      expect(document.getElementById('app').innerHTML).toContain('app-permission-index');
-    });
+      window.location.hash = hash;
 
-    it('strips query string from hash to resolve route', async () => {
-      mockIsAuthenticated.mockReturnValue(true);
-      mockCanAccessRoute.mockReturnValue(true);
-      window.location.hash = '#/usuarios?page=1&limit=10';
       await initRouter();
-      expect(document.getElementById('app').innerHTML).toContain('app-user-index');
-    });
 
-    it('falls back to app-dashboard for unknown route hash', async () => {
-      mockIsAuthenticated.mockReturnValue(true);
-      mockCanAccessRoute.mockReturnValue(true);
-      window.location.hash = '#/non-existent-route';
-      await initRouter();
-      expect(document.getElementById('app').innerHTML).toContain('app-dashboard');
+      expect(document.getElementById('app').innerHTML).toContain(componente);
     });
   });
 
