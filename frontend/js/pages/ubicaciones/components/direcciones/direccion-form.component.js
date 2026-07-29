@@ -876,7 +876,7 @@ export class DireccionFormComponent extends BaseComponent {
     if (el?.classList.contains('d-none')) {
       el.classList.remove('d-none');
       // Force reflow
-      el.offsetHeight;
+      el.getBoundingClientRect();
       el.style.opacity = '1';
       el.style.transform = 'translateY(0)';
     }
