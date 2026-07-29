@@ -50,26 +50,29 @@ class SyncDimensionsJob implements ShouldQueue
             ];
 
             if (count($records) >= 500) {
-                DB::table('metrics.dim_tiempo')->upsert($records, ['id'], ['fecha', 'anio', 'mes', 'dia', 'hora', 'trimestre', 'dia_semana', 'updated_at']);
+                DB::table('metrics.dim_tiempo')->upsert(
+                    $records,
+                    ['id'],
+                    ['fecha', 'anio', 'mes', 'dia', 'hora', 'trimestre', 'dia_semana', 'updated_at']
+                );
                 $records = [];
             }
         }
 
         if (! empty($records)) {
-            DB::table('metrics.dim_tiempo')->upsert($records, ['id'], ['fecha', 'anio', 'mes', 'dia', 'hora', 'trimestre', 'dia_semana', 'updated_at']);
+            DB::table('metrics.dim_tiempo')->upsert(
+                $records,
+                ['id'],
+                ['fecha', 'anio', 'mes', 'dia', 'hora', 'trimestre', 'dia_semana', 'updated_at']
+            );
         }
     }
 
     private function syncDimTerritorio(): void
     {
-        // 1. Cargar datos de Ecuador desde ecuador.json
         $jsonPath = database_path('seeders/data/ecuador.json');
-        $ecuadorData = [];
-        if (File::exists($jsonPath)) {
-            $ecuadorData = json_decode(File::get($jsonPath), true);
-        }
+        $ecuadorData = File::exists($jsonPath) ? json_decode(File::get($jsonPath), true) : [];
 
-        // 2. Traer todos los territorios de la base de datos indexados por código para cruzar IDs
         $dbTerritorios = DB::table('territorios')->get();
         $dbTerritoriosByCodigo = $dbTerritorios->whereNotNull('codigo')->keyBy('codigo');
         $dbTerritoriosById = $dbTerritorios->keyBy('id');
@@ -78,117 +81,94 @@ class SyncDimensionsJob implements ShouldQueue
         $processedIds = [];
         $records = [];
 
-        // 3. Procesar datos del JSON de Ecuador
         if (! empty($ecuadorData)) {
-            foreach ($ecuadorData as $provId => $provData) {
-                if (! isset($provData['provincia'])) {
-                    continue;
-                }
-                $provName = mb_convert_case($provData['provincia'], MB_CASE_TITLE, 'UTF-8');
-
-                // Resolver ID de la provincia en la DB
-                $dbProv = $dbTerritoriosByCodigo->get((string) $provId);
-                if ($dbProv) {
-                    $records[] = [
-                        'id' => $dbProv->id,
-                        'pais' => 'Ecuador',
-                        'provincia' => $provName,
-                        'canton' => 'N/A',
-                        'parroquia' => 'N/A',
-                        'codigo' => (string) $provId,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                    $processedIds[$dbProv->id] = true;
-                }
-
-                if (! isset($provData['cantones']) || ! is_array($provData['cantones'])) {
-                    continue;
-                }
-
-                foreach ($provData['cantones'] as $cantId => $cantData) {
-                    if (! isset($cantData['canton'])) {
-                        continue;
-                    }
-                    $cantName = mb_convert_case($cantData['canton'], MB_CASE_TITLE, 'UTF-8');
-
-                    // Resolver ID del cantón en la DB
-                    $dbCant = $dbTerritoriosByCodigo->get((string) $cantId);
-                    if ($dbCant) {
-                        $records[] = [
-                            'id' => $dbCant->id,
-                            'pais' => 'Ecuador',
-                            'provincia' => $provName,
-                            'canton' => $cantName,
-                            'parroquia' => 'N/A',
-                            'codigo' => (string) $cantId,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                        $processedIds[$dbCant->id] = true;
-                    }
-
-                    if (! isset($cantData['parroquias']) || ! is_array($cantData['parroquias'])) {
-                        continue;
-                    }
-
-                    foreach ($cantData['parroquias'] as $parrId => $parrNameRaw) {
-                        $parrName = mb_convert_case($parrNameRaw, MB_CASE_TITLE, 'UTF-8');
-
-                        // Resolver ID de la parroquia en la DB
-                        $dbParr = $dbTerritoriosByCodigo->get((string) $parrId);
-                        if ($dbParr) {
-                            $records[] = [
-                                'id' => $dbParr->id,
-                                'pais' => 'Ecuador',
-                                'provincia' => $provName,
-                                'canton' => $cantName,
-                                'parroquia' => $parrName,
-                                'codigo' => (string) $parrId,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
-                            $processedIds[$dbParr->id] = true;
-                        }
-                    }
-                }
-            }
+            $this->processEcuadorJsonData($ecuadorData, $dbTerritoriosByCodigo, $records, $processedIds);
         }
 
-        // 4. Procesar otros territorios de la DB que no estaban en el JSON (o de otros países como Perú/México)
+        $this->processOtherTerritories($dbTerritorios, $dbTerritoriosById, $paises, $processedIds, $records);
+
+        if (! empty($records)) {
+            foreach (array_chunk($records, 500) as $chunk) {
+                DB::table('metrics.dim_territorio')->upsert(
+                    $chunk,
+                    ['id'],
+                    ['pais', 'provincia', 'canton', 'parroquia', 'codigo', 'updated_at']
+                );
+            }
+        }
+    }
+
+    private function processEcuadorJsonData(array $ecuadorData, $dbTerritoriosByCodigo, array &$records, array &$processedIds): void
+    {
+        foreach ($ecuadorData as $provId => $provData) {
+            if (! isset($provData['provincia'])) {
+                continue;
+            }
+            
+            $provName = mb_convert_case($provData['provincia'], MB_CASE_TITLE, 'UTF-8');
+            $this->addTerritoryRecord($dbTerritoriosByCodigo, (string)$provId, $provName, 'N/A', 'N/A', $records, $processedIds);
+
+            if (! isset($provData['cantones']) || ! is_array($provData['cantones'])) {
+                continue;
+            }
+
+            $this->processEcuadorCantones($provData['cantones'], $provName, $dbTerritoriosByCodigo, $records, $processedIds);
+        }
+    }
+
+    private function processEcuadorCantones(array $cantones, string $provName, $dbTerritoriosByCodigo, array &$records, array &$processedIds): void
+    {
+        foreach ($cantones as $cantId => $cantData) {
+            if (! isset($cantData['canton'])) {
+                continue;
+            }
+
+            $cantName = mb_convert_case($cantData['canton'], MB_CASE_TITLE, 'UTF-8');
+            $this->addTerritoryRecord($dbTerritoriosByCodigo, (string)$cantId, $provName, $cantName, 'N/A', $records, $processedIds);
+
+            if (! isset($cantData['parroquias']) || ! is_array($cantData['parroquias'])) {
+                continue;
+            }
+
+            foreach ($cantData['parroquias'] as $parrId => $parrNameRaw) {
+                $parrName = mb_convert_case($parrNameRaw, MB_CASE_TITLE, 'UTF-8');
+                $this->addTerritoryRecord($dbTerritoriosByCodigo, (string)$parrId, $provName, $cantName, $parrName, $records, $processedIds);
+            }
+        }
+    }
+
+    private function addTerritoryRecord($dbTerritoriosByCodigo, string $codigo, string $provincia, string $canton, string $parroquia, array &$records, array &$processedIds): void
+    {
+        $dbNode = $dbTerritoriosByCodigo->get($codigo);
+        if ($dbNode) {
+            $records[] = [
+                'id' => $dbNode->id,
+                'pais' => 'Ecuador',
+                'provincia' => $provincia,
+                'canton' => $canton,
+                'parroquia' => $parroquia,
+                'codigo' => $codigo,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+            $processedIds[$dbNode->id] = true;
+        }
+    }
+
+    private function processOtherTerritories($dbTerritorios, $dbTerritoriosById, $paises, array $processedIds, array &$records): void
+    {
         foreach ($dbTerritorios as $t) {
             if (isset($processedIds[$t->id])) {
                 continue;
             }
 
-            $paisName = isset($paises[$t->pais_id]) ? $paises[$t->pais_id]->nombre : null;
-            $provincia = null;
-            $canton = null;
-            $parroquia = null;
-
-            $curr = $t;
-            while ($curr !== null) {
-                $tipoLower = strtolower($curr->tipo ?? '');
-                if (in_array($tipoLower, ['provincia', 'estado', 'departamento'])) {
-                    $provincia = $curr->nombre;
-                } elseif (in_array($tipoLower, ['canton', 'municipio', 'provincia_hijo', 'alcaldia'])) {
-                    $canton = $curr->nombre;
-                } elseif (in_array($tipoLower, ['parroquia', 'distrito', 'leaf'])) {
-                    $parroquia = $curr->nombre;
-                }
-
-                $curr = $curr->parent_id && isset($dbTerritoriosById[$curr->parent_id])
-                    ? $dbTerritoriosById[$curr->parent_id]
-                    : null;
-            }
-
-            if (empty($parroquia) && strtolower($t->tipo ?? '') === 'parroquia') {
-                $parroquia = $t->nombre;
-            }
+            $paisName = isset($paises[$t->pais_id]) ? $paises[$t->pais_id]->nombre : 'N/A';
+            
+            ['provincia' => $provincia, 'canton' => $canton, 'parroquia' => $parroquia] = $this->resolveHierarchy($t, $dbTerritoriosById);
 
             $records[] = [
                 'id' => $t->id,
-                'pais' => $paisName ?: 'N/A',
+                'pais' => $paisName,
                 'provincia' => ($provincia ?: $t->nombre) ?: 'N/A',
                 'canton' => $canton ?: 'N/A',
                 'parroquia' => $parroquia ?: 'N/A',
@@ -197,13 +177,35 @@ class SyncDimensionsJob implements ShouldQueue
                 'updated_at' => now(),
             ];
         }
+    }
 
-        // 5. Cargar en la BD metrics.dim_territorio
-        if (! empty($records)) {
-            foreach (array_chunk($records, 500) as $chunk) {
-                DB::table('metrics.dim_territorio')->upsert($chunk, ['id'], ['pais', 'provincia', 'canton', 'parroquia', 'codigo', 'updated_at']);
+    private function resolveHierarchy($t, $dbTerritoriosById): array
+    {
+        $provincia = null;
+        $canton = null;
+        $parroquia = null;
+        
+        $curr = $t;
+        while ($curr !== null) {
+            $tipoLower = strtolower($curr->tipo ?? '');
+            if (in_array($tipoLower, ['provincia', 'estado', 'departamento'])) {
+                $provincia = $curr->nombre;
+            } elseif (in_array($tipoLower, ['canton', 'municipio', 'provincia_hijo', 'alcaldia'])) {
+                $canton = $curr->nombre;
+            } elseif (in_array($tipoLower, ['parroquia', 'distrito', 'leaf'])) {
+                $parroquia = $curr->nombre;
             }
+
+            $curr = $curr->parent_id && isset($dbTerritoriosById[$curr->parent_id])
+                ? $dbTerritoriosById[$curr->parent_id]
+                : null;
         }
+
+        if (empty($parroquia) && strtolower($t->tipo ?? '') === 'parroquia') {
+            $parroquia = $t->nombre;
+        }
+
+        return ['provincia' => $provincia, 'canton' => $canton, 'parroquia' => $parroquia];
     }
 
     private function syncDimCategoria(): void
@@ -299,7 +301,11 @@ class SyncDimensionsJob implements ShouldQueue
                 ->select('roles.nombre')
                 ->first();
 
-            $rolPrincipal = $roleUser ? $roleUser->nombre : ($u->created_by === null ? 'Administrador' : 'Usuario');
+            if ($roleUser) {
+                $rolPrincipal = $roleUser->nombre;
+            } else {
+                $rolPrincipal = $u->created_by === null ? 'Administrador' : 'Usuario';
+            }
 
             $records[] = [
                 'id' => $u->id,

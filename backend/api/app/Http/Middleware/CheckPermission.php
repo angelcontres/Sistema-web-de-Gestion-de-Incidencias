@@ -28,9 +28,11 @@ class CheckPermission
             $hasPerm = true;
         } else {
             $enum = PermissionsEnum::tryFrom($permission);
-            $hasPerm = $enum 
-                ? app(PermissionServiceInterface::class)->userHasPermission($user, $enum) 
-                : ($user ? $user->hasPermission($permission) : false);
+            if ($enum) {
+                $hasPerm = app(PermissionServiceInterface::class)->userHasPermission($user, $enum);
+            } else {
+                $hasPerm = $user ? $user->hasPermission($permission) : false;
+            }
         }
 
         if (! $hasPerm) {

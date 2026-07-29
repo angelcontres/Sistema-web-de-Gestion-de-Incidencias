@@ -246,12 +246,15 @@ class DireccionController extends Controller
                         'postcode' => $bdc['postcode'] ?? null,
                         'road' => $bdc['locality'] ?? null,
                     ],
-                    'display_name' => implode(', ', array_filter([
-                        $bdc['locality'] ?? null,
-                        $bdc['city'] ?? null,
-                        $bdc['principalSubdivision'] ?? null,
-                        $bdc['countryName'] ?? null,
-                    ])),
+                    'display_name' => implode(
+                        ', ',
+                        array_filter([
+                            $bdc['locality'] ?? null,
+                            $bdc['city'] ?? null,
+                            $bdc['principalSubdivision'] ?? null,
+                            $bdc['countryName'] ?? null,
+                        ])
+                    ),
                 ];
             }
         } catch (\Exception $e) {

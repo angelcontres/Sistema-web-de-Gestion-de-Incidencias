@@ -28,57 +28,8 @@ class UserMenuController extends Controller
         $isAdmin = $user->roles()->where('nombre', 'Admin')->exists();
 
         if (! $isAdmin) {
-            // Get all menu IDs from user's permissions
-            $user->load('roles.permisos');
-            $menuIds = collect();
-            foreach ($user->roles as $role) {
-                foreach ($role->permisos as $permiso) {
-                    if ($permiso->opcion_menu_id) {
-                        $menuIds->push($permiso->opcion_menu_id);
-                    }
-                }
-            }
-            $menuIds = $menuIds->unique();
-
-            // Recursively get all parent menu IDs
-            $allowedIds = collect($menuIds);
-            $currentIdsToSearch = $menuIds;
-
-            while ($currentIdsToSearch->isNotEmpty()) {
-                $parentIds = OpcionMenu::whereIn('id', $currentIdsToSearch)
-                    ->whereNotNull('padre_id')
-                    ->pluck('padre_id')
-                    ->unique();
-
-                // Filter out parents we already have to avoid infinite loops
-                $newParents = $parentIds->diff($allowedIds);
-
-                if ($newParents->isEmpty()) {
-                    break;
-                }
-
-                $allowedIds = $allowedIds->merge($newParents);
-                $currentIdsToSearch = $newParents;
-            }
-
-            // Asegurar que el Dashboard siempre esté visible para todos los roles
-            $dashboardId = OpcionMenu::where('nombre', 'Dashboard')->value('id');
-            if ($dashboardId) {
-                $allowedIds->push($dashboardId);
-            }
-
-            // Excepción: El rol Institución necesita permisos de incidencias por el API,
-            // pero no debe ver el menú general de "Incidencias"
-            if ($user->roles()->where('nombre', 'Institucion')->exists()) {
-                $incidenciasMenuId = OpcionMenu::where('nombre', 'Incidencias')->value('id');
-                if ($incidenciasMenuId) {
-                    $allowedIds = $allowedIds->reject(function ($id) use ($incidenciasMenuId) {
-                        return $id == $incidenciasMenuId;
-                    });
-                }
-            }
-
-            $query->whereIn('id', $allowedIds->values());
+            $allowedIds = $this->getAllowedMenuIdsForUser($user);
+            $query->whereIn('id', $allowedIds);
         }
 
         $opciones = $query->with('padre')->get();
@@ -87,5 +38,75 @@ class UserMenuController extends Controller
             'status' => 'success',
             'data' => $opciones,
         ]);
+    }
+
+    private function getAllowedMenuIdsForUser(User $user)
+    {
+        $menuIds = $this->getMenuIdsFromPermissions($user);
+        $allowedIds = $this->includeParentMenuIds($menuIds);
+        $allowedIds = $this->ensureDashboardIsVisible($allowedIds);
+        $allowedIds = $this->applyInstitucionExceptions($user, $allowedIds);
+
+        return $allowedIds->values();
+    }
+
+    private function getMenuIdsFromPermissions(User $user)
+    {
+        $user->load('roles.permisos');
+        $menuIds = collect();
+        foreach ($user->roles as $role) {
+            foreach ($role->permisos as $permiso) {
+                if ($permiso->opcion_menu_id) {
+                    $menuIds->push($permiso->opcion_menu_id);
+                }
+            }
+        }
+        return $menuIds->unique();
+    }
+
+    private function includeParentMenuIds($menuIds)
+    {
+        $allowedIds = collect($menuIds);
+        $currentIdsToSearch = $menuIds;
+
+        while ($currentIdsToSearch->isNotEmpty()) {
+            $parentIds = OpcionMenu::whereIn('id', $currentIdsToSearch)
+                ->whereNotNull('padre_id')
+                ->pluck('padre_id')
+                ->unique();
+
+            $newParents = $parentIds->diff($allowedIds);
+
+            if ($newParents->isEmpty()) {
+                break;
+            }
+
+            $allowedIds = $allowedIds->merge($newParents);
+            $currentIdsToSearch = $newParents;
+        }
+
+        return $allowedIds;
+    }
+
+    private function ensureDashboardIsVisible($allowedIds)
+    {
+        $dashboardId = OpcionMenu::where('nombre', 'Dashboard')->value('id');
+        if ($dashboardId) {
+            $allowedIds->push($dashboardId);
+        }
+        return $allowedIds;
+    }
+
+    private function applyInstitucionExceptions(User $user, $allowedIds)
+    {
+        if ($user->roles()->where('nombre', 'Institucion')->exists()) {
+            $incidenciasMenuId = OpcionMenu::where('nombre', 'Incidencias')->value('id');
+            if ($incidenciasMenuId) {
+                return $allowedIds->reject(function ($id) use ($incidenciasMenuId) {
+                    return $id == $incidenciasMenuId;
+                });
+            }
+        }
+        return $allowedIds;
     }
 }

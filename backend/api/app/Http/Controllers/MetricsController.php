@@ -34,46 +34,52 @@ class MetricsController extends Controller
     private function processMetricDirectory($directory, $prefix, $date = null)
     {
         if ($date === null) {
-            if (! File::exists($directory)) {
-                return response()->json([]);
-            }
-
-            $files = File::files($directory);
-            $metrics = [];
-
-            foreach ($files as $file) {
-                if ($file->getExtension() === 'json' && str_starts_with($file->getFilename(), "{$prefix}-")) {
-                    $content = json_decode(File::get($file->getRealPath()), true);
-                    if ($content) {
-                        $metrics[] = $content;
-                    }
-                }
-            }
-
-            usort($metrics, function ($a, $b) {
-                return strcmp($a['fecha_procesamiento'] ?? '', $b['fecha_procesamiento'] ?? '');
-            });
-
-            return response()->json($metrics);
+            return $this->getAllMetrics($directory, $prefix);
         }
 
+        return $this->getMetricByDate($directory, $prefix, $date);
+    }
+
+    private function getAllMetrics($directory, $prefix)
+    {
+        if (! File::exists($directory)) {
+            return response()->json([]);
+        }
+
+        $metrics = [];
+        foreach (File::files($directory) as $file) {
+            if ($file->getExtension() === 'json' && str_starts_with($file->getFilename(), "{$prefix}-")) {
+                $content = json_decode(File::get($file->getRealPath()), true);
+                if ($content) {
+                    $metrics[] = $content;
+                }
+            }
+        }
+
+        usort($metrics, function ($a, $b) {
+            return strcmp($a['fecha_procesamiento'] ?? '', $b['fecha_procesamiento'] ?? '');
+        });
+
+        return response()->json($metrics);
+    }
+
+    private function getMetricByDate($directory, $prefix, $date)
+    {
         $path = "{$directory}/{$prefix}-{$date}.json";
 
         if (! File::exists($path) && File::exists($directory)) {
-            $files = File::files($directory);
-            foreach ($files as $file) {
-                if (
-                    $file->getExtension() === 'json' &&
-                    str_starts_with($file->getFilename(), "{$prefix}-{$date}")
-                ) {
+            foreach (File::files($directory) as $file) {
+                if ($file->getExtension() === 'json' && str_starts_with($file->getFilename(), "{$prefix}-{$date}")) {
                     $path = $file->getRealPath();
                     break;
                 }
             }
         }
 
-        return ! File::exists($path)
-            ? response()->json(['error' => 'Métrica no encontrada para la fecha: '.$date], 404)
-            : response()->json(json_decode(File::get($path), true));
+        if (! File::exists($path)) {
+            return response()->json(['error' => 'Métrica no encontrada para la fecha: '.$date], 404);
+        }
+
+        return response()->json(json_decode(File::get($path), true));
     }
 }

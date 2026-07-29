@@ -309,77 +309,96 @@ class IncidenciaController extends Controller
     /**
      * Evalúa qué cambió en la incidencia y dispara alertas vía Reverb y BD.
      */
-    private function despacharNotificaciones(Incidencia $incidencia, $oldEstadoId = null, array $oldOperadoresIds = []): void
-    {
+    private function despacharNotificaciones(
+        Incidencia $incidencia,
+        $oldEstadoId = null,
+        array $oldOperadoresIds = []
+    ): void {
         // Cargamos relaciones necesarias para construir mensajes ricos
         $incidencia->load(['estado', 'operadores', 'cliente', 'reportantes', 'direccion']);
 
-        // 1. ¿CAMBIÓ EL ESTADO? -> Notificamos a cliente, reportantes y operadores
-        if ($oldEstadoId && $oldEstadoId !== $incidencia->estado_id) {
-            $destinatarios = collect([$incidencia->cliente])
-                ->merge($incidencia->reportantes)
-                ->merge($incidencia->operadores)
-                ->filter() // Elimina nulos
-                ->unique('id');
+        $this->notifyStatusChange($incidencia, $oldEstadoId);
+        $this->notifyNewOperators($incidencia, $oldOperadoresIds);
+        $this->notifyNewIncident($incidencia, $oldEstadoId);
+    }
 
-            foreach ($destinatarios as $destinatario) {
-                try {
-                    $destinatario->notify(new IssueStatusChangedNotification([
-                        'title' => "Incidencia #{$incidencia->id}: Cambio de Estado",
-                        'message' => 'El reporte ha cambiado a: '.($incidencia->estado->nombre ?? 'Actualizado'),
-                        'url' => "/tramites/estado-individual?id={$incidencia->id}",
-                        'type' => 'info',
-                        'incidencia_id' => $incidencia->id,
-                    ]));
-                } catch (\Exception $e) {
-                    Log::error('Error enviando notificación de cambio de estado: '.$e->getMessage());
-                }
-            }
+    private function notifyStatusChange(Incidencia $incidencia, $oldEstadoId): void
+    {
+        if (! $oldEstadoId || $oldEstadoId === $incidencia->estado_id) {
+            return;
         }
 
-        // 2. ¿SE ASIGNARON NUEVOS OPERADORES? -> Alerta directa de asignación
+        $destinatarios = collect([$incidencia->cliente])
+            ->merge($incidencia->reportantes)
+            ->merge($incidencia->operadores)
+            ->filter() // Elimina nulos
+            ->unique('id');
+
+        foreach ($destinatarios as $destinatario) {
+            try {
+                $destinatario->notify(new IssueStatusChangedNotification([
+                    'title' => "Incidencia #{$incidencia->id}: Cambio de Estado",
+                    'message' => 'El reporte ha cambiado a: '.($incidencia->estado->nombre ?? 'Actualizado'),
+                    'url' => "/tramites/estado-individual?id={$incidencia->id}",
+                    'type' => 'info',
+                    'incidencia_id' => $incidencia->id,
+                ]));
+            } catch (\Exception $e) {
+                Log::error('Error enviando notificación de cambio de estado: '.$e->getMessage());
+            }
+        }
+    }
+
+    private function notifyNewOperators(Incidencia $incidencia, array $oldOperadoresIds): void
+    {
         $newOperadoresIds = $incidencia->operadores->pluck('id')->toArray();
         $nuevosAsignadosIds = array_diff($newOperadoresIds, $oldOperadoresIds);
 
-        if (! empty($nuevosAsignadosIds)) {
-            $nuevosOperadores = User::whereIn('id', $nuevosAsignadosIds)->get();
-
-            foreach ($nuevosOperadores as $operador) {
-                try {
-                    $operador->notify(new IssueAssignedNotification([
-                        'title' => "Nueva Incidencia Asignada (#{$incidencia->id})",
-                        'message' => 'Se te ha despachado para atender: ' .
-                                     ($incidencia->direccion->calle ?? 'Ubicación registrada'),
-                        'url' => '/instituciones/kanban',
-                        'type' => 'danger',
-                        'incidencia_id' => $incidencia->id,
-                        'color_hex' => '#dc3545',
-                    ]));
-                } catch (\Exception $e) {
-                    Log::error('Error enviando notificación de asignación: '.$e->getMessage());
-                }
-            }
+        if (empty($nuevosAsignadosIds)) {
+            return;
         }
 
-        // 3. ¿ES UNA INCIDENCIA NUEVA? -> Notificamos a Supervisores y Administradores
-        if ($oldEstadoId === null) {
-            $supervisoresYAdmins = User::whereHas('roles', function ($q) {
-                $q->whereIn('nombre', ['Admin', 'Supervisor']);
-            })->get();
+        $nuevosOperadores = User::whereIn('id', $nuevosAsignadosIds)->get();
 
-            foreach ($supervisoresYAdmins as $admin) {
-                try {
-                    $admin->notify(new IssueStatusChangedNotification([
-                        'title' => "Nueva Incidencia Creada (#{$incidencia->id})",
-                        'message' => 'Un usuario ha reportado una nueva incidencia en: ' .
-                                     ($incidencia->direccion->detalle ?? 'Ubicación registrada'),
-                        'url' => "/tramites/estado-individual?id={$incidencia->id}",
-                        'type' => 'warning',
-                        'incidencia_id' => $incidencia->id,
-                    ]));
-                } catch (\Exception $e) {
-                    Log::error('Error enviando notificación de nueva incidencia: '.$e->getMessage());
-                }
+        foreach ($nuevosOperadores as $operador) {
+            try {
+                $operador->notify(new IssueAssignedNotification([
+                    'title' => "Nueva Incidencia Asignada (#{$incidencia->id})",
+                    'message' => 'Se te ha despachado para atender: ' .
+                                 ($incidencia->direccion->calle ?? 'Ubicación registrada'),
+                    'url' => '/instituciones/kanban',
+                    'type' => 'danger',
+                    'incidencia_id' => $incidencia->id,
+                    'color_hex' => '#dc3545',
+                ]));
+            } catch (\Exception $e) {
+                Log::error('Error enviando notificación de asignación: '.$e->getMessage());
+            }
+        }
+    }
+
+    private function notifyNewIncident(Incidencia $incidencia, $oldEstadoId): void
+    {
+        if ($oldEstadoId !== null) {
+            return;
+        }
+
+        $supervisoresYAdmins = User::whereHas('roles', function ($q) {
+            $q->whereIn('nombre', ['Admin', 'Supervisor']);
+        })->get();
+
+        foreach ($supervisoresYAdmins as $admin) {
+            try {
+                $admin->notify(new IssueStatusChangedNotification([
+                    'title' => "Nueva Incidencia Creada (#{$incidencia->id})",
+                    'message' => 'Un usuario ha reportado una nueva incidencia en: ' .
+                                 ($incidencia->direccion->detalle ?? 'Ubicación registrada'),
+                    'url' => "/tramites/estado-individual?id={$incidencia->id}",
+                    'type' => 'warning',
+                    'incidencia_id' => $incidencia->id,
+                ]));
+            } catch (\Exception $e) {
+                Log::error('Error enviando notificación de nueva incidencia: '.$e->getMessage());
             }
         }
     }

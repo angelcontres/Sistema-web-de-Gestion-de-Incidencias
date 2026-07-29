@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use App\Exceptions\DatabaseDumpException;
 use Symfony\Component\Process\Process;
 
 #[Signature('db:dump')]
@@ -60,7 +61,7 @@ class DatabaseDump extends Command
 
                 if (! $process->isSuccessful()) {
                     @unlink($filePath);
-                    throw new \RuntimeException(
+                    throw new DatabaseDumpException(
                         'Error al ejecutar pg_dump en el contenedor: ' .
                         $process->getErrorOutput()
                     );
@@ -90,7 +91,7 @@ class DatabaseDump extends Command
 
                 if (! $process->isSuccessful()) {
                     @unlink($filePath);
-                    throw new \RuntimeException(
+                    throw new DatabaseDumpException(
                         'Error al ejecutar pg_dump localmente: ' .
                         $process->getErrorOutput()
                     );
