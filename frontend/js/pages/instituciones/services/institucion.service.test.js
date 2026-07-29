@@ -1,79 +1,77 @@
-import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { InstitucionService } from './institucion.service.js';
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
+
+jest.unstable_mockModule('../../../core/api.js', () => ({ apiRequest: jest.fn() }));
+
+const { apiRequest } = await import('../../../core/api.js');
+const { InstitucionService } = await import('./institucion.service.js');
 
 describe('InstitucionService', () => {
-  let originalFetch;
-
   beforeEach(() => {
-    originalFetch = window.fetch;
-    window.fetch = jest.fn(() => 
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ data: 'mockData' })
-      })
-    );
-    if (!window.localStorage) {
-      window.localStorage = { getItem: jest.fn(() => 'fake-token'), setItem: jest.fn(), removeItem: jest.fn() };
-    }
-  });
-
-  afterEach(() => {
-    window.fetch = originalFetch;
+    apiRequest.mockReset();
   });
 
   describe('getAll', () => {
-    it('debería hacer petición a /instituciones sin parámetros', async () => {
-      await InstitucionService.getAll();
-      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/institutions'), expect.any(Object));
+    it('should call apiRequest with default pagination', () => {
+      InstitucionService.getAll();
+      expect(apiRequest).toHaveBeenCalledWith('/institutions?per_page=15&page=1');
     });
 
-    it('debería convertir el parámetro numérico a un objeto con {page}', async () => {
-      await InstitucionService.getAll(2);
-      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/institutions?per_page=15&page=2'), expect.any(Object));
+    it('should include search param when provided', () => {
+      InstitucionService.getAll(1, 15, null, { search: 'test' });
+      expect(apiRequest).toHaveBeenCalledWith('/institutions?search=test&per_page=15&page=1');
     });
 
-    it('debería serializar un objeto de parámetros correctamente', async () => {
-      await InstitucionService.getAll(1, 15, null, { search: 'test' });
-      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/institutions?search=test&per_page=15&page=1'), expect.any(Object));
+    it('should use cursor and exclude page when cursor provided', () => {
+      InstitucionService.getAll(1, 15, 'abc123');
+      expect(apiRequest).toHaveBeenCalledWith('/institutions?per_page=15&cursor=abc123');
+    });
+
+    it('should include all flag when params.all is true', () => {
+      InstitucionService.getAll(1, 15, null, { all: true });
+      expect(apiRequest).toHaveBeenCalledWith('/institutions?all=true&per_page=15&page=1');
+    });
+
+    it('should use custom page and perPage', () => {
+      InstitucionService.getAll(3, 50);
+      expect(apiRequest).toHaveBeenCalledWith('/institutions?per_page=50&page=3');
     });
   });
 
   describe('getById', () => {
-    it('debería hacer petición a /instituciones/:id', async () => {
-      await InstitucionService.getById(5);
-      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/institutions/5'), expect.any(Object));
+    it('should call apiRequest with the institution id', () => {
+      InstitucionService.getById(5);
+      expect(apiRequest).toHaveBeenCalledWith('/institutions/5');
     });
   });
 
   describe('create', () => {
-    it('debería enviar POST con el payload', async () => {
-      const payload = { nombre: 'Nueva Institucion' };
-      await InstitucionService.create(payload);
-      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/institutions'), expect.objectContaining({ 
+    it('should call apiRequest with POST method and JSON body', () => {
+      const payload = { name: 'New Institution' };
+      InstitucionService.create(payload);
+      expect(apiRequest).toHaveBeenCalledWith('/institutions', {
         method: 'POST',
-        body: JSON.stringify(payload) 
-      }));
+        body: JSON.stringify(payload),
+      });
     });
   });
 
   describe('update', () => {
-    it('debería enviar PUT con el payload y el id', async () => {
-      const payload = { nombre: 'Institucion Editada' };
-      await InstitucionService.update(10, payload);
-      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/institutions/10'), expect.objectContaining({ 
+    it('should call apiRequest with PUT method and JSON body', () => {
+      const payload = { name: 'Updated Institution' };
+      InstitucionService.update(5, payload);
+      expect(apiRequest).toHaveBeenCalledWith('/institutions/5', {
         method: 'PUT',
-        body: JSON.stringify(payload)
-      }));
+        body: JSON.stringify(payload),
+      });
     });
   });
 
   describe('delete', () => {
-    it('debería enviar DELETE al id correcto', async () => {
-      await InstitucionService.delete(7);
-      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/institutions/7'), expect.objectContaining({ 
-        method: 'DELETE'
-      }));
+    it('should call apiRequest with DELETE method', () => {
+      InstitucionService.delete(5);
+      expect(apiRequest).toHaveBeenCalledWith('/institutions/5', {
+        method: 'DELETE',
+      });
     });
   });
 });

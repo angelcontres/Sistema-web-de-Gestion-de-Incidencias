@@ -41,4 +41,19 @@ describe('MenuOptionService', () => {
     await MenuOptionService.delete(7);
     expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/menu-options/7'), expect.objectContaining({ method: 'DELETE' }));
   });
+
+  it('getById - debería hacer request a /menu-options/id', async () => {
+    await MenuOptionService.getById(5);
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/menu-options/5'), expect.any(Object));
+  });
+
+  it('getAll - debería incluir all=true cuando params.all es true', async () => {
+    await MenuOptionService.getAll(1, 15, null, { all: true });
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('all=true'), expect.any(Object));
+  });
+
+  it('getAll - debería usar cursor cuando se proporciona uno', async () => {
+    await MenuOptionService.getAll(1, 15, 'cursorXYZ');
+    expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('cursor=cursorXYZ'), expect.any(Object));
+  });
 });

@@ -34,6 +34,7 @@ describe('LoginComponent', () => {
     jest.spyOn(AuthService, 'login').mockResolvedValue();
     jest.spyOn(ToastService, 'success').mockImplementation(() => {});
     jest.spyOn(ToastService, 'error').mockImplementation(() => {});
+    jest.spyOn(ToastService, 'warning').mockImplementation(() => {});
     window.dispatchEvent = jest.fn();
     window.location.hash = '';
   });
@@ -99,5 +100,50 @@ describe('LoginComponent', () => {
     expect(AuthService.login).toHaveBeenCalled();
     expect(ToastService.error).toHaveBeenCalledWith('Credenciales inválidas', 'Error de Autenticación');
     expect(fakeElements['#loginSubmitBtn'].disabled).toBe(false); // Should re-enable
+  });
+
+  it('submitForm - muestra warning si el formulario es inválido', async () => {
+    const { component, fakeElements } = createMockComponent();
+
+    let submitCallback;
+    fakeElements['#loginForm'] = {
+      addEventListener: jest.fn((event, cb) => {
+        if (event === 'submit') submitCallback = cb;
+      }),
+      classList: { add: jest.fn() },
+      checkValidity: jest.fn(() => false)
+    };
+    fakeElements['#emailInput'] = { value: '' };
+    fakeElements['#passwordInput'] = { value: '' };
+
+    component.onInit();
+
+    const e = { preventDefault: jest.fn() };
+    await submitCallback(e);
+
+    expect(ToastService.warning).toHaveBeenCalledWith('Por favor completa todos los campos requeridos.', 'Faltan datos');
+  });
+
+  it('initPrivacyMode - activa modo privado en focus/blur', () => {
+    const { component, fakeElements } = createMockComponent();
+
+    let focusCallback, blurCallback;
+    fakeElements['#passwordInput'] = {
+      addEventListener: jest.fn((event, cb) => {
+        if (event === 'focus') focusCallback = cb;
+        if (event === 'blur') blurCallback = cb;
+      }),
+    };
+    fakeElements['app-mascot'] = {
+      setPrivacyMode: jest.fn(),
+    };
+
+    component.initPrivacyMode();
+
+    focusCallback();
+    expect(fakeElements['app-mascot'].setPrivacyMode).toHaveBeenCalledWith(true);
+
+    blurCallback();
+    expect(fakeElements['app-mascot'].setPrivacyMode).toHaveBeenCalledWith(false);
   });
 });
