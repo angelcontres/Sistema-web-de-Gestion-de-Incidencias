@@ -12,32 +12,36 @@ export class IncidentSupportInstitutionsHelper {
 
   initEvents() {
     if (this.btnEditApoyoForm) {
-      this.btnEditApoyoForm.addEventListener('click', () => {
-        if (!this.containerModalApoyoForm) return;
-        const modalEl = this.component.querySelector('#modalApoyoForm');
-        if (modalEl) {
-          const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
-          modal.show();
-        }
-      });
+      this.btnEditApoyoForm.addEventListener('click', () => this._handleEditClick());
     }
 
     if (this.btnSaveApoyoForm) {
-      this.btnSaveApoyoForm.addEventListener('click', () => {
-        if (!this.containerModalApoyoForm || !this.institucionesApoyoSelect) return;
-        const selectedIds = Array.from(this.containerModalApoyoForm.querySelectorAll('.chk-apoyo:checked')).map(chk => chk.value);
-        Array.from(this.institucionesApoyoSelect.options).forEach(opt => {
-          opt.selected = selectedIds.includes(opt.value);
-        });
-        
-        this.actualizarBadgesApoyoForm();
-        
-        const modalEl = this.component.querySelector('#modalApoyoForm');
-        if (modalEl) {
-          const modal = window.bootstrap.Modal.getInstance(modalEl);
-          if (modal) modal.hide();
-        }
-      });
+      this.btnSaveApoyoForm.addEventListener('click', () => this._handleSaveClick());
+    }
+  }
+
+  _handleEditClick() {
+    if (!this.containerModalApoyoForm) return;
+    const modalEl = this.component.querySelector('#modalApoyoForm');
+    if (modalEl) {
+      const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    }
+  }
+
+  _handleSaveClick() {
+    if (!this.containerModalApoyoForm || !this.institucionesApoyoSelect) return;
+    const selectedIds = Array.from(this.containerModalApoyoForm.querySelectorAll('.chk-apoyo:checked')).map(chk => chk.value);
+    Array.from(this.institucionesApoyoSelect.options).forEach(opt => {
+      opt.selected = selectedIds.includes(opt.value);
+    });
+    
+    this.actualizarBadgesApoyoForm();
+    
+    const modalEl = this.component.querySelector('#modalApoyoForm');
+    if (modalEl) {
+      const modal = window.bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
     }
   }
 

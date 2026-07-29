@@ -215,7 +215,11 @@ class SyncDimensionsJob implements ShouldQueue
 
             $paisName = isset($paises[$t->pais_id]) ? $paises[$t->pais_id]->nombre : 'N/A';
             
-            ['provincia' => $provincia, 'canton' => $canton, 'parroquia' => $parroquia] = $this->resolveHierarchy($t, $dbTerritoriosById);
+            [
+                'provincia' => $provincia,
+                'canton' => $canton,
+                'parroquia' => $parroquia
+            ] = $this->resolveHierarchy($t, $dbTerritoriosById);
 
             $records[] = [
                 'id' => $t->id,

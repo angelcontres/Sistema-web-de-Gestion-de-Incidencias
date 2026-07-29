@@ -22,63 +22,71 @@ export class CategoriasIndexComponent extends BaseComponent {
   async onInit() {
     console.log('Módulo de Categorías de Incidencias inicializado.');
 
-    // Bootstrap Modal
+    this._initModal();
+    this._initPermissions();
+    this._initForm();
+    this._cargarCatalogos();
+    this._initTableEvents();
+
+    await this.cargarCategorias();
+  }
+
+  _initModal() {
     try {
       this.categoriaModalObj = new bootstrap.Modal(this.querySelector('#categoriaModal'));
     } catch (e) {
       console.warn('Error al inicializar el modal de categorías.', e);
     }
+  }
 
-    // Permissions
+  _initPermissions() {
     const btnNuevaCategoria = this.querySelector('#btnNuevaCategoria');
-    if (btnNuevaCategoria) {
-      if (!AuthService.hasPermission('CREATE', 'categorias')) {
-        btnNuevaCategoria.classList.add('d-none');
-      } else {
-        btnNuevaCategoria.addEventListener('click', () => this.abrirModalCategoria());
-      }
-    }
+    if (!btnNuevaCategoria) return;
 
+    if (!AuthService.hasPermission('CREATE', 'categorias')) {
+      btnNuevaCategoria.classList.add('d-none');
+    } else {
+      btnNuevaCategoria.addEventListener('click', () => this.abrirModalCategoria());
+    }
+  }
+
+  _initForm() {
     const categoriaForm = this.querySelector('#categoriaForm');
     if (categoriaForm) {
       categoriaForm.addEventListener('submit', (e) => this.guardarCategoria(e));
     }
+  }
 
-    // Pre-load catalogs in parallel (prioridades + instituciones)
-    this._cargarCatalogos();
-
-    // Delegated click handler for accordion toggles and row actions
+  _initTableEvents() {
     const tbody = this.querySelector('#cat-tbody');
-    if (tbody) {
-      tbody.addEventListener('click', (e) => {
-        const toggleBtn = e.target.closest('[data-toggle-group]');
-        if (toggleBtn) {
-          this._toggleGroup(toggleBtn.dataset.toggleGroup);
-          return;
-        }
+    if (!tbody) return;
 
-        const actionBtn = e.target.closest('[data-cat-action]');
-        if (actionBtn) {
-          const action = actionBtn.dataset.catAction;
-          const id = Number(actionBtn.dataset.catId);
-          const cat = this.categoriasList.find((c) => c.id === id);
-          if (!cat) return;
+    tbody.addEventListener('click', (e) => {
+      const toggleBtn = e.target.closest('[data-toggle-group]');
+      if (toggleBtn) {
+        this._toggleGroup(toggleBtn.dataset.toggleGroup);
+        return;
+      }
 
-          if (action === 'agregar-sub') {
-            this.abrirModalCategoria(
-              null,
-              cat.parent_id === null || cat.parent_id === undefined ? cat.id : cat.parent_id
-            );
-          } else if (action === 'editar') {
-            this.abrirModalCategoria(cat);
-          } else if (action === 'eliminar') {
-            this.eliminarCategoria(cat.id, cat.nombre);
-          }
-        }
-      });
+      const actionBtn = e.target.closest('[data-cat-action]');
+      if (actionBtn) {
+        const action = actionBtn.dataset.catAction;
+        const id = Number(actionBtn.dataset.catId);
+        const cat = this.categoriasList.find((c) => c.id === id);
+        if (cat) this._handleTableAction(action, cat);
+      }
+    });
+  }
+
+  _handleTableAction(action, cat) {
+    if (action === 'agregar-sub') {
+      const parentId = cat.parent_id === null || cat.parent_id === undefined ? cat.id : cat.parent_id;
+      this.abrirModalCategoria(null, parentId);
+    } else if (action === 'editar') {
+      this.abrirModalCategoria(cat);
+    } else if (action === 'eliminar') {
+      this.eliminarCategoria(cat.id, cat.nombre);
     }
-
-    await this.cargarCategorias();
   }
 
   // ─────────────────────────────────────────────────────────
@@ -174,6 +182,16 @@ export class CategoriasIndexComponent extends BaseComponent {
     const mainCategories = this.categoriasList.filter(
       (c) => c.parent_id === null || c.parent_id === undefined
     );
+    
+    const subMap = this._buildSubCategoriesMap();
+
+    let html = this._buildMainCategoriesHtml(mainCategories, subMap, canCreate, canEdit, canDelete);
+    html += this._buildOrphanCategoriesHtml(mainCategories, canEdit, canDelete);
+
+    tbody.innerHTML = html;
+  }
+
+  _buildSubCategoriesMap() {
     const subMap = {};
     this.categoriasList
       .filter((c) => c.parent_id !== null && c.parent_id !== undefined)
@@ -181,26 +199,17 @@ export class CategoriasIndexComponent extends BaseComponent {
         if (!subMap[sub.parent_id]) subMap[sub.parent_id] = [];
         subMap[sub.parent_id].push(sub);
       });
+    return subMap;
+  }
 
+  _buildMainCategoriesHtml(mainCategories, subMap, canCreate, canEdit, canDelete) {
     let html = '';
-
     mainCategories.forEach((parent) => {
       const subs = subMap[parent.id] || [];
       const hasSubs = subs.length > 0;
       const isExpanded = this.expandedGroups.has(String(parent.id));
-      const toogleExpand = isExpanded ? 'Colapsar' : 'Expandir';
-      const toogleIconDirection = isExpanded ? 'down' : 'right';
-
-      const toggleIcon = hasSubs
-        ? `<button
-            class="btn btn-sm p-0 border-0 bg-transparent me-2 text-primary cat-toggle-btn"
-            data-toggle-group="${parent.id}"
-            title="${toogleExpand} subcategorías"
-            style="line-height:1; transition: transform 0.2s;"
-          >
-            <i class="bi bi-chevron-${toogleIconDirection}" style="font-size:0.8rem;"></i>
-          </button>`
-        : `<span class="me-2" style="display:inline-block;width:1.4rem;"></span>`;
+      
+      const toggleIcon = this._buildToggleIcon(parent.id, hasSubs, isExpanded);
 
       html += this._parentRow(parent, subs.length, toggleIcon, canCreate, canEdit, canDelete);
 
@@ -210,26 +219,47 @@ export class CategoriasIndexComponent extends BaseComponent {
         });
       }
     });
+    return html;
+  }
 
-    // Orphan subcategories (parent not in list)
+  _buildToggleIcon(parentId, hasSubs, isExpanded) {
+    if (!hasSubs) {
+      return `<span class="me-2" style="display:inline-block;width:1.4rem;"></span>`;
+    }
+    const toogleExpand = isExpanded ? 'Colapsar' : 'Expandir';
+    const toogleIconDirection = isExpanded ? 'down' : 'right';
+
+    return `<button
+        class="btn btn-sm p-0 border-0 bg-transparent me-2 text-primary cat-toggle-btn"
+        data-toggle-group="${parentId}"
+        title="${toogleExpand} subcategorías"
+        style="line-height:1; transition: transform 0.2s;"
+      >
+        <i class="bi bi-chevron-${toogleIconDirection}" style="font-size:0.8rem;"></i>
+      </button>`;
+  }
+
+  _buildOrphanCategoriesHtml(mainCategories, canEdit, canDelete) {
     const orphans = this.categoriasList.filter(
       (c) =>
         c.parent_id !== null &&
         c.parent_id !== undefined &&
         !mainCategories.some((m) => m.id === c.parent_id)
     );
-    if (orphans.length > 0) {
-      html += `<tr class="table-light">
-        <td colspan="4" class="ps-4 py-2 text-muted small fst-italic">
-          <i class="bi bi-exclamation-circle me-1"></i>Subcategorías huérfanas
-        </td>
-      </tr>`;
-      orphans.forEach((sub) => {
-        html += this._childRow(sub, null, true, canEdit, canDelete);
-      });
-    }
 
-    tbody.innerHTML = html;
+    if (orphans.length === 0) return '';
+
+    let html = `<tr class="table-light">
+      <td colspan="4" class="ps-4 py-2 text-muted small fst-italic">
+        <i class="bi bi-exclamation-circle me-1"></i>Subcategorías huérfanas
+      </td>
+    </tr>`;
+    
+    orphans.forEach((sub) => {
+      html += this._childRow(sub, null, true, canEdit, canDelete);
+    });
+
+    return html;
   }
 
   _parentRow(cat, subCount, toggleIcon, canCreate, canEdit, canDelete) {

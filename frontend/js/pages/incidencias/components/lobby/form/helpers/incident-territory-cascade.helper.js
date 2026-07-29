@@ -1,6 +1,5 @@
 import { UbicacionesService } from '../../../../../ubicaciones/services/ubicaciones.service.js';
 import { CatalogoService } from '../../../../../../shared/services/catalogo.service.js';
-import { AuthService } from '../../../../../../core/auth.service.js';
 import { ToastService } from '../../../../../../shared/services/toast.service.js';
 import { COUNTRY_LEVELS } from '../../../../../../shared/constants.js';
 
@@ -172,153 +171,154 @@ export class IncidentTerritoryCascadeHelper {
     try {
       const data = await UbicacionesService.reverseGeocode(lat, lng);
       const address = data.address || {};
-
-      const road = address.road || address.pedestrian || '';
-      const suburb = address.suburb || address.neighbourhood || address.parish || '';
-      const county = address.county || address.city || '';
       
-      if (this.dirDetalleInput) {
-        this.dirDetalleInput.value = [road, suburb, county].filter(Boolean).join(', ') || data.display_name || '';
-      }
-
+      this._setDetalleInput(address, data.display_name);
       this.currentPostalCode = address.postcode || '';
 
-      const countryCode = (address.country_code || '').toUpperCase();
-      const matchedPais = this.paisesList.find(
-        (p) => p.codigo_iso && p.codigo_iso.toUpperCase() === countryCode
-      );
-
+      const matchedPais = this._findCountry(address.country_code);
       if (matchedPais) {
         if (this.dirPaisSelect) this.dirPaisSelect.value = matchedPais.id;
         this.actualizarEtiquetasNiveles(matchedPais.id);
         await this.autofillTerritoriosCascading(matchedPais.id, address, data.territorio_detectado);
       }
 
-      // Check DB proximity
-      let matchedDbDir = null;
-      try {
-        const dbDirs = (await CatalogoService.getDirecciones()) || [];
-        let minDistance = Infinity;
-
-        for (const d of dbDirs) {
-          if (!d.latitud || !d.longitud) continue;
-
-          const dist = this.mapController ? this.mapController.calcularDistancia(
-            parseFloat(lat),
-            parseFloat(lng),
-            parseFloat(d.latitud),
-            parseFloat(d.longitud)
-          ) : Infinity;
-
-          if (dist < minDistance && dist <= 0.05) {
-            minDistance = dist;
-            matchedDbDir = d;
-          }
-        }
-      } catch (err) {
-        console.warn('Error fetching existing addresses for matching:', err);
-      }
-
-      if (matchedDbDir) {
-        this.selectedDireccionId = matchedDbDir.id;
-        if (this.dirDetalleInput) this.dirDetalleInput.value = matchedDbDir.detalle;
-        if (this.dirPaisSelect) this.dirPaisSelect.value = matchedDbDir.territorio?.pais_id || '';
-        this.currentPostalCode = matchedDbDir.codigo_postal || '';
-
-        // Update map controller quietly
-        if (this.mapController) {
-          this.mapController.actualizarMarcador(matchedDbDir.latitud, matchedDbDir.longitud, false);
-        }
-
-        this.actualizarIndicadorMinimalista();
-        if (!this.component.isMobileLayout) {
-          ToastService.info(`Ubicación seleccionada: ${matchedDbDir.detalle}`);
-        }
-      } else {
-        this.selectedDireccionId = null;
-        this.actualizarIndicadorMinimalista();
-      }
+      await this._checkDbProximityAndSelect(lat, lng);
     } catch (e) {
       console.warn('Error autofilling from reverse geocoding:', e);
     }
   }
 
-  async autofillTerritoriosCascading(paisId, address, territorioDetectado) {
-    if (territorioDetectado) {
-      const td = territorioDetectado;
-      await this.cargarDropdownNivel1(paisId);
-      if (td.provincia_id && this.dirNivel1Select) {
-        this.dirNivel1Select.value = td.provincia_id;
+  _setDetalleInput(address, displayName) {
+    if (!this.dirDetalleInput) return;
+    const road = address.road || address.pedestrian || '';
+    const suburb = address.suburb || address.neighbourhood || address.parish || '';
+    const county = address.county || address.city || '';
+    this.dirDetalleInput.value = [road, suburb, county].filter(Boolean).join(', ') || displayName || '';
+  }
 
-        await this.cargarDropdownNivel2(paisId, td.provincia_id);
-        if (td.canton_id && this.dirNivel2Select) {
-          this.dirNivel2Select.value = td.canton_id;
+  _findCountry(countryCode) {
+    const code = (countryCode || '').toUpperCase();
+    return this.paisesList.find(
+      (p) => p.codigo_iso && p.codigo_iso.toUpperCase() === code
+    );
+  }
 
-          await this.cargarDropdownNivel3(paisId, td.canton_id);
-          if (td.parroquia_id && this.dirNivel3Select) {
-            this.dirNivel3Select.value = td.parroquia_id;
-          } else if (!td.parroquia_id && this.dirNivel3Select) {
-            const possibleNivel3Names = [
-              address.parish,
-              address.suburb,
-              address.neighbourhood,
-              address.quarter,
-            ].filter(Boolean);
-            const n3Name = possibleNivel3Names[0] || '';
-            if (n3Name) {
-              const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
-              if (opt3) this.dirNivel3Select.value = opt3.value;
-            }
-          }
+  async _checkDbProximityAndSelect(lat, lng) {
+    const matchedDbDir = await this._findClosestDbDirection(lat, lng);
+    if (matchedDbDir) {
+      this.selectedDireccionId = matchedDbDir.id;
+      if (this.dirDetalleInput) this.dirDetalleInput.value = matchedDbDir.detalle;
+      if (this.dirPaisSelect) this.dirPaisSelect.value = matchedDbDir.territorio?.pais_id || '';
+      this.currentPostalCode = matchedDbDir.codigo_postal || '';
+
+      if (this.mapController) {
+        this.mapController.actualizarMarcador(matchedDbDir.latitud, matchedDbDir.longitud, false);
+      }
+
+      this.actualizarIndicadorMinimalista();
+      if (!this.component.isMobileLayout) {
+        ToastService.info(`Ubicación seleccionada: ${matchedDbDir.detalle}`);
+      }
+    } else {
+      this.selectedDireccionId = null;
+      this.actualizarIndicadorMinimalista();
+    }
+  }
+
+  async _findClosestDbDirection(lat, lng) {
+    let matchedDbDir = null;
+    try {
+      const dbDirs = (await CatalogoService.getDirecciones()) || [];
+      let minDistance = Infinity;
+
+      for (const d of dbDirs) {
+        if (!d.latitud || !d.longitud) continue;
+
+        const dist = this.mapController ? this.mapController.calcularDistancia(
+          parseFloat(lat),
+          parseFloat(lng),
+          parseFloat(d.latitud),
+          parseFloat(d.longitud)
+        ) : Infinity;
+
+        if (dist < minDistance && dist <= 0.05) {
+          minDistance = dist;
+          matchedDbDir = d;
         }
       }
+    } catch (err) {
+      console.warn('Error fetching existing addresses for matching:', err);
+    }
+    return matchedDbDir;
+  }
+
+  async autofillTerritoriosCascading(paisId, address, territorioDetectado) {
+    if (territorioDetectado) {
+      await this._autofillTerritoriosDetectados(paisId, address, territorioDetectado);
       return;
     }
+    await this._autofillTerritoriosFromAddress(paisId, address);
+  }
 
+  async _autofillTerritoriosDetectados(paisId, address, td) {
+    await this.cargarDropdownNivel1(paisId);
+    if (!td.provincia_id || !this.dirNivel1Select) return;
+    
+    this.dirNivel1Select.value = td.provincia_id;
+    await this.cargarDropdownNivel2(paisId, td.provincia_id);
+    
+    if (!td.canton_id || !this.dirNivel2Select) return;
+    
+    this.dirNivel2Select.value = td.canton_id;
+    await this.cargarDropdownNivel3(paisId, td.canton_id);
+    
+    if (!this.dirNivel3Select) return;
+
+    if (td.parroquia_id) {
+      this.dirNivel3Select.value = td.parroquia_id;
+    } else {
+      this._attemptMatchNivel3(address);
+    }
+  }
+
+  _attemptMatchNivel3(address) {
+    const possibleNivel3Names = [
+      address.parish,
+      address.suburb,
+      address.neighbourhood,
+      address.quarter,
+    ].filter(Boolean);
+    const n3Name = possibleNivel3Names[0] || '';
+    if (n3Name) {
+      const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
+      if (opt3) this.dirNivel3Select.value = opt3.value;
+    }
+  }
+
+  async _autofillTerritoriosFromAddress(paisId, address) {
     await this.cargarDropdownNivel1(paisId);
 
     const possibleNivel1Names = [address.state, address.region, address.province].filter(Boolean);
     const n1Name = possibleNivel1Names[0] || '';
+    if (!n1Name) return;
 
-    if (n1Name) {
-      const opt1 = this.findOptionMatchingText(this.dirNivel1Select, n1Name);
-      if (opt1) {
-        this.dirNivel1Select.value = opt1.value;
+    const opt1 = this.findOptionMatchingText(this.dirNivel1Select, n1Name);
+    if (!opt1) return;
+    
+    this.dirNivel1Select.value = opt1.value;
+    await this.cargarDropdownNivel2(paisId, opt1.value);
 
-        await this.cargarDropdownNivel2(paisId, opt1.value);
+    const possibleNivel2Names = [address.county, address.city, address.town, address.municipality].filter(Boolean);
+    const n2Name = possibleNivel2Names[0] || '';
+    if (!n2Name) return;
 
-        const possibleNivel2Names = [
-          address.county,
-          address.city,
-          address.town,
-          address.municipality,
-        ].filter(Boolean);
-        const n2Name = possibleNivel2Names[0] || '';
-        if (n2Name) {
-          const opt2 = this.findOptionMatchingText(this.dirNivel2Select, n2Name);
-          if (opt2) {
-            this.dirNivel2Select.value = opt2.value;
+    const opt2 = this.findOptionMatchingText(this.dirNivel2Select, n2Name);
+    if (!opt2) return;
+    
+    this.dirNivel2Select.value = opt2.value;
+    await this.cargarDropdownNivel3(paisId, opt2.value);
 
-            await this.cargarDropdownNivel3(paisId, opt2.value);
-
-            const possibleNivel3Names = [
-              address.parish,
-              address.suburb,
-              address.neighbourhood,
-              address.quarter,
-            ].filter(Boolean);
-            const n3Name = possibleNivel3Names[0] || '';
-
-            if (n3Name) {
-              const opt3 = this.findOptionMatchingText(this.dirNivel3Select, n3Name);
-              if (opt3) {
-                this.dirNivel3Select.value = opt3.value;
-              }
-            }
-          }
-        }
-      }
-    }
+    this._attemptMatchNivel3(address);
   }
 
   actualizarIndicadorMinimalista() {

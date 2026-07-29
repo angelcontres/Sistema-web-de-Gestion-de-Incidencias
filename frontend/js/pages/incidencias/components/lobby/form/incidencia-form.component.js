@@ -2,10 +2,8 @@ import { BaseComponent } from '../../../../../core/base-component.js';
 import { IncidenciaService } from '../../../services/incidencia.service.js';
 import { UbicacionesService } from '../../../../ubicaciones/services/ubicaciones.service.js';
 import { CatalogoService } from '../../../../../shared/services/catalogo.service.js';
-import { ModalService } from '../../../../../shared/services/modal.service.js';
 import { ToastService } from '../../../../../shared/services/toast.service.js';
 import { AuthService } from '../../../../../core/auth.service.js';
-import { MAP_CONFIG } from '../../../../../shared/constants.js';
 
 import { IncidentMapPickerHelper } from './helpers/incident-map-picker.helper.js';
 import { IncidentMediaUploaderHelper } from './helpers/incident-media-uploader.helper.js';

@@ -4,6 +4,15 @@ export class IncidentMobileUIHelper {
   }
 
   initMobileUI() {
+    this._injectFeedbackElements();
+    this._initAccordionHeaders();
+    this._renderRootCategories();
+    this._initLocationLogic();
+    this._initComposeBar();
+    this._initFileInput();
+  }
+
+  _injectFeedbackElements() {
     // 0. Inyectar dinámicamente el feedback para saltarse problemas de caché HTML del navegador
     ['step1', 'step2'].forEach(stepId => {
       const fbId = `feedback-${stepId}`;
@@ -21,7 +30,9 @@ export class IncidentMobileUIHelper {
         }
       }
     });
+  }
 
+  _initAccordionHeaders() {
     // Accordion headers click to reopen
     const stepHeaders = this.component.querySelectorAll('.step-header');
     stepHeaders.forEach((header, index) => {
@@ -34,7 +45,9 @@ export class IncidentMobileUIHelper {
         this.checkMobileReadyState();
       });
     });
+  }
 
+  _renderRootCategories() {
     // 1. Render root categories as chips
     const rootCategories = this.component.categoryManager.categorias.filter((c) => c.parent_id === null && c.activo);
     const catContainer = this.component.querySelector('#mobile-categories-container');
@@ -57,7 +70,9 @@ export class IncidentMobileUIHelper {
         });
       });
     }
+  }
 
+  _initLocationLogic() {
     // 2. Location Logic (Card 2)
     setTimeout(() => {
       this.component.mapController.habilitarMapaInteractivo();
@@ -75,7 +90,9 @@ export class IncidentMobileUIHelper {
         });
       }
     }, 500);
+  }
 
+  _initComposeBar() {
     // 3. Compose Bar Logic & Reference Input
     const descInput = this.component.querySelector('#descripcion');
     if (descInput) {
@@ -85,7 +102,9 @@ export class IncidentMobileUIHelper {
     if (dirDetalle) {
       dirDetalle.addEventListener('input', () => this.checkMobileReadyState());
     }
+  }
 
+  _initFileInput() {
     // 4. File Input Link
     const fileInput = this.component.querySelector('#fileInput');
     if (fileInput) {
@@ -157,53 +176,77 @@ export class IncidentMobileUIHelper {
   }
 
   checkMobileReadyState() {
-    const step1Done = this.component.querySelector('.wa-subcat-radio:checked') !== null;
-    const step2Done = (this.component.querySelector('#dirDetalle')?.value || '').trim().length > 0 || this.component.querySelector('#step2').classList.contains('completed');
-    const hasDesc = (this.component.querySelector('#descripcion').value || '').trim().length > 0;
-    const hasPhoto = this.component.querySelector('#fileInput')?.files?.length > 0 || (this.component.mediaUploader && this.component.mediaUploader.files && this.component.mediaUploader.files.length > 0);
+    const state = this._getMobileFormState();
     
-    // Update Feedback UI for Step 1 inline inside the title!
+    this._updateStep1Feedback();
+    this._updateStep2Feedback();
+    this._updateSubmitButtonState(state);
+  }
+
+  _getMobileFormState() {
+    const step1Done = this.component.querySelector('.wa-subcat-radio:checked') !== null;
+    const dirDetalle = this.component.querySelector('#dirDetalle')?.value || '';
+    const step2Done = dirDetalle.trim().length > 0 || this.component.querySelector('#step2').classList.contains('completed');
+    
+    const descInput = this.component.querySelector('#descripcion');
+    const desc = descInput ? descInput.value || '' : '';
+    const hasDesc = desc.trim().length > 0;
+    
+    const fileInput = this.component.querySelector('#fileInput');
+    const hasFileInput = fileInput?.files?.length > 0;
+    const mediaUploader = this.component.mediaUploader;
+    const hasMedia = mediaUploader?.files?.length > 0;
+    const hasPhoto = hasFileInput || hasMedia;
+
+    return { step1Done, step2Done, hasDesc, hasPhoto };
+  }
+
+  _updateStep1Feedback() {
     const title1 = this.component.querySelector('#step1 .step-title');
-    if (title1) {
-      const rootName = this.component.querySelector('.wa-chip.active')?.textContent;
-      const subRadio = this.component.querySelector('.wa-subcat-radio:checked');
-      
-      let oldFb = title1.querySelector('.fb-inline');
-      if (oldFb) oldFb.remove();
-      
-      if (rootName && subRadio) {
-        const fbSpan = document.createElement('span');
-        fbSpan.className = 'fb-inline ms-2 text-primary fw-normal fs-6 d-block mt-1';
-        fbSpan.innerHTML = `Categoría: ${rootName} &raquo; ${subRadio.nextElementSibling.textContent}`;
-        title1.appendChild(fbSpan);
-      }
-    }
+    if (!title1) return;
 
-    // Update Feedback UI for Step 2 inline inside the title!
+    const rootName = this.component.querySelector('.wa-chip.active')?.textContent;
+    const subRadio = this.component.querySelector('.wa-subcat-radio:checked');
+    
+    const oldFb = title1.querySelector('.fb-inline');
+    if (oldFb) oldFb.remove();
+    
+    if (rootName && subRadio) {
+      const fbSpan = document.createElement('span');
+      fbSpan.className = 'fb-inline ms-2 text-primary fw-normal fs-6 d-block mt-1';
+      fbSpan.innerHTML = `Categoría: ${rootName} &raquo; ${subRadio.nextElementSibling.textContent}`;
+      title1.appendChild(fbSpan);
+    }
+  }
+
+  _updateStep2Feedback() {
     const title2 = this.component.querySelector('#step2 .step-title');
-    if (title2) {
-      let locText = this.component.querySelector('#dirDetalle')?.value.trim();
-      let oldFb = title2.querySelector('.fb-inline');
-      if (oldFb) oldFb.remove();
-      
-      if (locText || (this.component.mapController && this.component.mapController.marker)) {
-        if (!locText) locText = "Fijada en el mapa";
-        const fbSpan = document.createElement('span');
-        fbSpan.className = 'fb-inline ms-2 text-primary fw-normal fs-6 d-block mt-1';
-        fbSpan.innerHTML = `Ubicación: ${locText}`;
-        title2.appendChild(fbSpan);
-      }
-    }
+    if (!title2) return;
 
+    let locText = (this.component.querySelector('#dirDetalle')?.value || '').trim();
+    const oldFb = title2.querySelector('.fb-inline');
+    if (oldFb) oldFb.remove();
+    
+    const hasMarker = this.component.mapController?.marker;
+    if (locText || hasMarker) {
+      if (!locText) locText = "Fijada en el mapa";
+      const fbSpan = document.createElement('span');
+      fbSpan.className = 'fb-inline ms-2 text-primary fw-normal fs-6 d-block mt-1';
+      fbSpan.innerHTML = `Ubicación: ${locText}`;
+      title2.appendChild(fbSpan);
+    }
+  }
+
+  _updateSubmitButtonState({ step1Done, step2Done, hasDesc, hasPhoto }) {
     const btnSubmit = this.component.querySelector('#btnSubmit');
-    if (btnSubmit) {
-      if (step1Done && step2Done && (hasDesc || hasPhoto)) {
-        btnSubmit.classList.add('ready');
-        btnSubmit.disabled = false;
-      } else {
-        btnSubmit.classList.remove('ready');
-        btnSubmit.disabled = true;
-      }
+    if (!btnSubmit) return;
+
+    if (step1Done && step2Done && (hasDesc || hasPhoto)) {
+      btnSubmit.classList.add('ready');
+      btnSubmit.disabled = false;
+    } else {
+      btnSubmit.classList.remove('ready');
+      btnSubmit.disabled = true;
     }
   }
 }

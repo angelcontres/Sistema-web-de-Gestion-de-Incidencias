@@ -150,7 +150,10 @@ class IncidenciaService
         }
 
         $similar->cantidad_afectados_incidencia += 1;
-        $similar->prioridad_id = $this->calculatePriority($similar->sub_tipo_incidencia_id, $similar->cantidad_afectados_incidencia);
+        $similar->prioridad_id = $this->calculatePriority(
+            $similar->sub_tipo_incidencia_id,
+            $similar->cantidad_afectados_incidencia
+        );
         $similar->save();
 
         if ($user) {

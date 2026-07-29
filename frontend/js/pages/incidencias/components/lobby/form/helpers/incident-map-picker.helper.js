@@ -131,53 +131,57 @@ export class IncidentMapPickerHelper {
       return;
     }
 
-    const toggleLoading = (isLoading) => {
-      if (this.btnObtenerUbicacion) this.btnObtenerUbicacion.disabled = isLoading;
-      if (isLoading) {
-        this.btnObtenerUbicacionIcon?.classList.add('d-none');
-        this.btnObtenerUbicacionSpinner?.classList.remove('d-none');
-        if (this.btnObtenerUbicacionText)
-          this.btnObtenerUbicacionText.textContent = 'Obteniendo ubicación...';
-      } else {
-        this.btnObtenerUbicacionIcon?.classList.remove('d-none');
-        this.btnObtenerUbicacionSpinner?.classList.add('d-none');
-        if (this.btnObtenerUbicacionText)
-          this.btnObtenerUbicacionText.textContent = 'Obtener mi ubicación';
-      }
-    };
-
-    toggleLoading(true);
+    this._toggleLocationLoading(true);
 
     // NOSONAR: La geolocalización es necesaria para reportar la incidencia y solo se activa por interacción explícita del usuario.
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        if (this.dirPrecisionGpsInput) {
-          this.dirPrecisionGpsInput.value = accuracy.toFixed(2);
-        }
-        this.actualizarMarcador(latitude, longitude, false);
-        if (this.onLocationSelectedCallback) {
-          this.onLocationSelectedCallback(latitude, longitude);
-        }
-        toggleLoading(false);
-        if (!this.component.isMobileLayout) {
-          ToastService.success(`Ubicación obtenida con éxito.`);
-        }
-      },
-      (error) => {
-        toggleLoading(false);
-        let msg = 'Error al obtener la geolocalización.';
-        if (error.code === error.PERMISSION_DENIED) {
-          msg = 'Permiso denegado. Active la Ubicación en su navegador.';
-        } else if (error.code === error.POSITION_UNAVAILABLE) {
-          msg = 'La ubicación no está disponible.';
-        } else if (error.code === error.TIMEOUT) {
-          msg = 'Tiempo de espera agotado al obtener la ubicación.';
-        }
-        ToastService.error(msg);
-      },
+      (position) => this._handleGeolocationSuccess(position),
+      (error) => this._handleGeolocationError(error),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
+  }
+
+  _toggleLocationLoading(isLoading) {
+    if (this.btnObtenerUbicacion) this.btnObtenerUbicacion.disabled = isLoading;
+    if (isLoading) {
+      this.btnObtenerUbicacionIcon?.classList.add('d-none');
+      this.btnObtenerUbicacionSpinner?.classList.remove('d-none');
+      if (this.btnObtenerUbicacionText)
+        this.btnObtenerUbicacionText.textContent = 'Obteniendo ubicación...';
+    } else {
+      this.btnObtenerUbicacionIcon?.classList.remove('d-none');
+      this.btnObtenerUbicacionSpinner?.classList.add('d-none');
+      if (this.btnObtenerUbicacionText)
+        this.btnObtenerUbicacionText.textContent = 'Obtener mi ubicación';
+    }
+  }
+
+  _handleGeolocationSuccess(position) {
+    const { latitude, longitude, accuracy } = position.coords;
+    if (this.dirPrecisionGpsInput) {
+      this.dirPrecisionGpsInput.value = accuracy.toFixed(2);
+    }
+    this.actualizarMarcador(latitude, longitude, false);
+    if (this.onLocationSelectedCallback) {
+      this.onLocationSelectedCallback(latitude, longitude);
+    }
+    this._toggleLocationLoading(false);
+    if (!this.component.isMobileLayout) {
+      ToastService.success(`Ubicación obtenida con éxito.`);
+    }
+  }
+
+  _handleGeolocationError(error) {
+    this._toggleLocationLoading(false);
+    let msg = 'Error al obtener la geolocalización.';
+    if (error.code === error.PERMISSION_DENIED) {
+      msg = 'Permiso denegado. Active la Ubicación en su navegador.';
+    } else if (error.code === error.POSITION_UNAVAILABLE) {
+      msg = 'La ubicación no está disponible.';
+    } else if (error.code === error.TIMEOUT) {
+      msg = 'Tiempo de espera agotado al obtener la ubicación.';
+    }
+    ToastService.error(msg);
   }
 
   calcularDistancia(lat1, lon1, lat2, lon2) {
