@@ -7,10 +7,10 @@ jobs:
     runs-on: [self-hosted, twintail-staging]
 
     steps:
-      # 1. Apagar los contenedores anteriores
-      - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
-        run: |
-          docker compose -f docker-compose.staging.yml down || true
+      # 1. Apagar contenedores anteriores (REMOVIDO PARA EVITAR DOWNTIME Y FALLOS DEL TÚNEL)
+      # - name: Apagar contenedores anteriores (Limpieza de Volúmenes)
+      #   run: |
+      #     docker compose -f docker-compose.staging.yml down || true
 
       # 2. Restaurar permisos (No borra nada, pero previene errores de checkout)
       - name: Restaurar permisos de la carpeta usando Docker
@@ -95,23 +95,23 @@ jobs:
             sleep 10
           done
 
+      - name: Verificar si GitHub está pasando el SONAR_TOKEN
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "::error::El secreto SONAR_TOKEN está vacío en GitHub Actions. No se ha inyectado el token."
+            exit 1
+          else
+            echo "El token SÍ está llegando a GitHub Actions (oculto por seguridad)."
+          fi
+
       - name: Ejecutar Análisis de SonarQube
         run: |
           docker run --rm \
             --network="host" \
             -v "$(pwd):/usr/src" \
             sonarsource/sonar-scanner-cli \
-            -Dsonar.projectKey=Sistema-web-gestion-incidencias \
-            -Dsonar.sources=backend/api/app,frontend/js,frontend/environment \
-            -Dsonar.tests=backend/api/tests,frontend/js \
-            -Dsonar.test.inclusions=backend/api/tests/**/*,**/*.test.js \
-            -Dsonar.exclusions="**/vendor/**,**/node_modules/**,**/public/build/**,**/storage/**,**/bootstrap/cache/**,**/dist/**" \
-            -Dsonar.host.url="http://localhost:9009" \
-            -Dsonar.php.coverage.reportPaths=backend/api/build/logs/clover.xml \
-            -Dsonar.php.tests.reportPath=backend/api/build/logs/junit.xml \
-            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
             -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
-            -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
+            -X
 
       # 8. Mantenimiento del servidor
       - name: Limpiar imágenes de Docker huérfanas

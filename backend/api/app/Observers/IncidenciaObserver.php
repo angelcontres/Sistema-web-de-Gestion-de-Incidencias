@@ -84,27 +84,5 @@ class IncidenciaObserver
         $historial->save();
     }
 
-    /**
-     * Handle the Incidencia "deleted" event.
-     */
-    public function deleted(Incidencia $incidencia): void
-    {
-        //
-    }
 
-    /**
-     * Handle the Incidencia "restored" event.
-     */
-    public function restored(Incidencia $incidencia): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Incidencia "force deleted" event.
-     */
-    public function forceDeleted(Incidencia $incidencia): void
-    {
-        //
-    }
 }

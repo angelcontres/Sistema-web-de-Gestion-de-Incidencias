@@ -53,7 +53,7 @@ class TrpController extends Controller
             'Cache-Control' => 'no-store, no-cache',
         ];
 
-        $response = new StreamedResponse(function () use ($format) {
+        return new StreamedResponse(function () use ($format) {
             $handle = fopen('php://output', 'w');
 
             $separator = $format === 'csv' ? ',' : "\t";
@@ -76,7 +76,5 @@ class TrpController extends Controller
 
             fclose($handle);
         }, 200, $headers);
-
-        return $response;
     }
 }

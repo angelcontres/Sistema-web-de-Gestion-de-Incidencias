@@ -27,85 +27,105 @@ export class DireccionFormComponent extends BaseComponent {
   }
 
   setupEventListeners(modalEl) {
-    const direccionForm = modalEl.querySelector('#direccionForm');
-    const dirPaisSelect = modalEl.querySelector('#dirPaisSelect');
-    const dirNivel1Select = modalEl.querySelector('#dirNivel1Select');
-    const dirNivel2Select = modalEl.querySelector('#dirNivel2Select');
-    const dirNivel3Select = modalEl.querySelector('#dirNivel3Select');
+    this._setupFormSubmitListener(modalEl);
+    this._setupResolveRadiosListener(modalEl);
+    this._setupNivel3Listener(modalEl);
+    this._setupCascadingDropdownsListeners(modalEl);
+  }
 
+  _setupFormSubmitListener(modalEl) {
+    const direccionForm = modalEl.querySelector('#direccionForm');
     if (direccionForm) {
       direccionForm.addEventListener('submit', (e) => this.guardarDireccion(e));
     }
+  }
 
+  _setupResolveRadiosListener(modalEl) {
     const resolveRadios = modalEl.querySelectorAll('input[name="territoryResolveOption"]');
     resolveRadios.forEach((radio) => {
-      radio.addEventListener('change', (e) => {
-        if (!this.pendingGeography) return;
-
-        const selectPais = document.querySelector('#dirPaisSelect');
-        const selectN1 = document.querySelector('#dirNivel1Select');
-        const selectN2 = document.querySelector('#dirNivel2Select');
-        const selectN3 = document.querySelector('#dirNivel3Select');
-
-        if (e.target.value === 'existing') {
-          [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
-            if (sel) {
-              sel.disabled = false;
-              const newOpt = sel.querySelector('option[value="__new__"]');
-              if (newOpt) newOpt.remove();
-            }
-          });
-        } else {
-          [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
-            if (sel) sel.disabled = true;
-          });
-        }
-
-        this.actualizarFeedbackResolver();
-      });
+      radio.addEventListener('change', (e) => this._handleResolveRadioChange(e));
     });
+  }
 
+  _handleResolveRadioChange(e) {
+    if (!this.pendingGeography) return;
+
+    const selectPais = document.querySelector('#dirPaisSelect');
+    const selectN1 = document.querySelector('#dirNivel1Select');
+    const selectN2 = document.querySelector('#dirNivel2Select');
+    const selectN3 = document.querySelector('#dirNivel3Select');
+
+    if (e.target.value === 'existing') {
+      [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
+        if (sel) {
+          sel.disabled = false;
+          const newOpt = sel.querySelector('option[value="__new__"]');
+          if (newOpt) newOpt.remove();
+        }
+      });
+    } else {
+      [selectPais, selectN1, selectN2, selectN3].forEach((sel) => {
+        if (sel) sel.disabled = true;
+      });
+    }
+
+    this.actualizarFeedbackResolver();
+  }
+
+  _setupNivel3Listener(modalEl) {
+    const dirNivel3Select = modalEl.querySelector('#dirNivel3Select');
     if (dirNivel3Select) {
       dirNivel3Select.addEventListener('change', () => {
         this.actualizarFeedbackResolver();
       });
     }
+  }
 
-    // Cascading dropdowns (Modal Form)
+  _setupCascadingDropdownsListeners(modalEl) {
+    const dirPaisSelect = modalEl.querySelector('#dirPaisSelect');
+    const dirNivel1Select = modalEl.querySelector('#dirNivel1Select');
+    const dirNivel2Select = modalEl.querySelector('#dirNivel2Select');
+
     if (dirPaisSelect) {
-      dirPaisSelect.addEventListener('change', (e) => {
-        this.actualizarEtiquetasNiveles(e.target.value);
-        this.cargarDireccionDropdownNivel1(e.target.value);
-
-        // Clear coordinates and marker when country changes to prevent geo-incoherence
-        const inputLat = document.querySelector('#direccionLatitud');
-        const inputLng = document.querySelector('#direccionLongitud');
-        if (inputLat) inputLat.value = '';
-        if (inputLng) inputLng.value = '';
-        this.tempCoords = null;
-        if (this.modalMarker && this.modalMap) {
-          this.modalMap.removeLayer(this.modalMarker);
-          this.modalMarker = null;
-        }
-      });
+      dirPaisSelect.addEventListener('change', (e) => this._handlePaisChange(e));
     }
 
     if (dirNivel1Select) {
-      dirNivel1Select.addEventListener('change', (e) => {
-        const parentId = e.target.value;
-        const paisId = document.querySelector('#dirPaisSelect').value;
-        this.cargarDireccionDropdownNivel2(paisId, parentId);
-        this.ocultarCampo('#colDirNivel3');
-      });
+      dirNivel1Select.addEventListener('change', (e) => this._handleNivel1Change(e));
     }
 
     if (dirNivel2Select) {
-      dirNivel2Select.addEventListener('change', (e) => {
-        const parentId = e.target.value;
-        const paisId = document.querySelector('#dirPaisSelect').value;
-        this.cargarDireccionDropdownNivel3(paisId, parentId);
-      });
+      dirNivel2Select.addEventListener('change', (e) => this._handleNivel2Change(e));
     }
+  }
+
+  _handlePaisChange(e) {
+    this.actualizarEtiquetasNiveles(e.target.value);
+    this.cargarDireccionDropdownNivel1(e.target.value);
+
+    // Clear coordinates and marker when country changes to prevent geo-incoherence
+    const inputLat = document.querySelector('#direccionLatitud');
+    const inputLng = document.querySelector('#direccionLongitud');
+    if (inputLat) inputLat.value = '';
+    if (inputLng) inputLng.value = '';
+    this.tempCoords = null;
+    if (this.modalMarker && this.modalMap) {
+      this.modalMap.removeLayer(this.modalMarker);
+      this.modalMarker = null;
+    }
+  }
+
+  _handleNivel1Change(e) {
+    const parentId = e.target.value;
+    const paisId = document.querySelector('#dirPaisSelect').value;
+    this.cargarDireccionDropdownNivel2(paisId, parentId);
+    this.ocultarCampo('#colDirNivel3');
+  }
+
+  _handleNivel2Change(e) {
+    const parentId = e.target.value;
+    const paisId = document.querySelector('#dirPaisSelect').value;
+    this.cargarDireccionDropdownNivel3(paisId, parentId);
   }
 
   disconnectedCallback() {
@@ -876,7 +896,7 @@ export class DireccionFormComponent extends BaseComponent {
     if (el?.classList.contains('d-none')) {
       el.classList.remove('d-none');
       // Force reflow
-      el.offsetHeight;
+      el.getBoundingClientRect();
       el.style.opacity = '1';
       el.style.transform = 'translateY(0)';
     }

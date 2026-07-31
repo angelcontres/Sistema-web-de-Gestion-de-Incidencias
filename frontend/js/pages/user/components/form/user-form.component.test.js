@@ -203,5 +203,181 @@ describe('UserFormComponent', () => {
     expect(component.mostrarError).toHaveBeenCalledWith('No se pudieron cargar los datos del usuario.');
     expect(component.btnSubmit.disabled).toBe(true);
   });
+
+  it('debería bloquear acceso si no tiene permiso CREATE', async () => {
+    AuthService.hasPermission.mockReturnValue(false);
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+    await component.onInit();
+
+    expect(alertSpy).toHaveBeenCalledWith('No tienes permiso para crear usuarios.');
+    expect(window.location.hash).toBe('#/usuarios');
+  });
+
+  it('guardarUsuario debería retornar si formulario no es válido', async () => {
+    await component.onInit();
+    const form = component.querySelector('#userForm');
+    form.checkValidity = jest.fn().mockReturnValue(false);
+
+    await component.guardarUsuario({ preventDefault: jest.fn() });
+
+    expect(form.classList.contains('was-validated')).toBe(true);
+    expect(UserService.create).not.toHaveBeenCalled();
+    expect(UserService.update).not.toHaveBeenCalled();
+  });
+
+  it('debería manejar error en cargarRolesCheckboxes', async () => {
+    await component.onInit();
+    RoleService.getAll.mockRejectedValue(new Error('Error de red'));
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await component.cargarRolesCheckboxes();
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error al cargar catálogo de roles:', expect.any(Error));
+    expect(component.rolesDisponiblesList.innerHTML).toContain('Error al cargar roles.');
+  });
+
+  it('debería manejar error en cargarInstituciones', async () => {
+    InstitucionService.getAll.mockRejectedValue(new Error('Error de red'));
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await component.onInit();
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error al cargar instituciones:', expect.any(Error));
+  });
+
+  it('debería manejar error en cargarTerritorios', async () => {
+    CatalogoService.getTerritorios.mockRejectedValue(new Error('Error de red'));
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await component.onInit();
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error al cargar territorios:', expect.any(Error));
+  });
+
+  it('guardarUsuario debería manejar error al guardar en modo creación', async () => {
+    window.location.hash = '#/usuarios/form';
+    await component.onInit();
+
+    component.errorAlert.scrollIntoView = jest.fn();
+
+    const form = component.querySelector('#userForm');
+    form.checkValidity = jest.fn().mockReturnValue(true);
+    component.querySelector('#username').value = 'newuser';
+    component.querySelector('#password').value = '123';
+    UserService.create.mockRejectedValue(new Error('Error del servidor'));
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await component.guardarUsuario({ preventDefault: jest.fn() });
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error al guardar usuario:', expect.any(Error));
+    expect(component.errorAlert.classList.contains('d-none')).toBe(false);
+    expect(component.loadingSpinner.classList.contains('d-none')).toBe(true);
+  });
+
+  it('debería manejar eventos dragstart y dragend en items de roles', async () => {
+    await component.onInit();
+    const item = component.rolesDisponiblesList.querySelector('.role-draggable-item');
+
+    const dragStartEvent = new Event('dragstart');
+    dragStartEvent.dataTransfer = { setData: jest.fn() };
+    item.dispatchEvent(dragStartEvent);
+    expect(item.style.opacity).toBe('0.5');
+
+    item.dispatchEvent(new Event('dragend'));
+    expect(item.style.opacity).toBe('1');
+  });
+
+  it('toggleLoading debería manejar ambos estados', async () => {
+    await component.onInit();
+    expect(component.loadingSpinner.classList.contains('d-none')).toBe(true);
+
+    component.toggleLoading(true);
+    expect(component.btnSubmit.disabled).toBe(true);
+    expect(component.loadingSpinner.classList.contains('d-none')).toBe(false);
+
+    component.toggleLoading(false);
+    expect(component.btnSubmit.disabled).toBe(false);
+    expect(component.loadingSpinner.classList.contains('d-none')).toBe(true);
+  });
+
+  it('mostrarError debería mostrar mensaje de error con scrollIntoView', async () => {
+    await component.onInit();
+    const scrollSpy = jest.fn();
+    component.errorAlert.scrollIntoView = scrollSpy;
+
+    component.mostrarError('Error de prueba');
+
+    expect(component.errorMessage.textContent).toBe('Error de prueba');
+    expect(component.errorAlert.classList.contains('d-none')).toBe(false);
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  it('limpiarErrores debería ocultar la alerta de error', async () => {
+    await component.onInit();
+    component.errorAlert.classList.remove('d-none');
+
+    component.limpiarErrores();
+
+    expect(component.errorAlert.classList.contains('d-none')).toBe(true);
+  });
+
+  it('updateEmptyStates debería remover empty indicators si hay items en las listas', async () => {
+    await component.onInit();
+
+    component.rolesDisponiblesList.innerHTML = '';
+    component.rolesAsignadosList.innerHTML = '';
+
+    const dispItem = document.createElement('div');
+    dispItem.dataset.roleId = '98';
+    component.rolesDisponiblesList.appendChild(dispItem);
+
+    const dispIndicator = document.createElement('span');
+    dispIndicator.className = 'empty-indicator';
+    component.rolesDisponiblesList.appendChild(dispIndicator);
+
+    const asigItem = document.createElement('div');
+    asigItem.dataset.roleId = '99';
+    component.rolesAsignadosList.appendChild(asigItem);
+
+    const asigIndicator = document.createElement('span');
+    asigIndicator.className = 'empty-indicator';
+    component.rolesAsignadosList.appendChild(asigIndicator);
+
+    component.updateEmptyStates();
+
+    expect(component.rolesDisponiblesList.querySelector('.empty-indicator')).toBeNull();
+    expect(component.rolesAsignadosList.querySelector('.empty-indicator')).toBeNull();
+  });
+
+  it('cargarRolesCheckboxes debería mostrar mensaje si no hay roles', async () => {
+    await component.onInit();
+    RoleService.getAll.mockResolvedValue([]);
+
+    await component.cargarRolesCheckboxes();
+
+    expect(component.rolesDisponiblesList.querySelector('.empty-indicator')).not.toBeNull();
+    expect(component.rolesAsignadosList.querySelector('.empty-indicator')).not.toBeNull();
+  });
+
+  it('guardarUsuario debería incluir territorios seleccionados en payload cuando contenedor visible', async () => {
+    window.location.hash = '#/usuarios/form';
+    await component.onInit();
+
+    component.territorioContainer.classList.remove('d-none');
+    if (component.territoriosSelect.options.length > 0) {
+      component.territoriosSelect.options[0].selected = true;
+    }
+
+    const form = component.querySelector('#userForm');
+    form.checkValidity = jest.fn().mockReturnValue(true);
+    component.querySelector('#username').value = 'newuser';
+
+    await component.guardarUsuario({ preventDefault: jest.fn() });
+
+    expect(UserService.create).toHaveBeenCalledWith(expect.objectContaining({
+      territorios: [1],
+    }));
+  });
 });
 

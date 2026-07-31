@@ -1,0 +1,284 @@
+<style>
+  .wa-bg { background-color: var(--bg-app, #E6DDCC); }
+  .wa-header { background-color: var(--primary-color, #0E3659); color: white; }
+  
+  .card-step {
+    background-color: var(--card-bg, #F4EFE3);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border: 1px solid transparent;
+  }
+  .card-step.active {
+    border-color: var(--highlight-color, #D98A2F);
+    box-shadow: 0 4px 16px rgba(217, 138, 47, 0.15);
+  }
+  .card-step.completed .step-title {
+    color: var(--secondary-color, #4E7D7F);
+  }
+  
+  .step-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-main, #1e293b);
+  }
+  .step-body {
+    padding: 0 16px 16px 16px;
+    display: none;
+  }
+  .card-step.active .step-body {
+    display: block;
+    animation: fadeInDown 0.3s ease;
+  }
+  
+  .wa-chip {
+    background-color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-weight: 500;
+    color: var(--text-muted, #64748b);
+    transition: all 0.2s;
+  }
+  .wa-chip.active {
+    background-color: var(--primary-soft, rgba(14, 54, 89, 0.1));
+    color: var(--primary-color, #0E3659);
+    border-color: var(--primary-color, #0E3659);
+  }
+
+  /* Sticky Compose Bar */
+  .compose-bar {
+    background: linear-gradient(to top, var(--bg-app, #E6DDCC) 80%, transparent);
+    padding: 10px 16px 16px 16px;
+  }
+  .wa-input-container {
+    background-color: var(--card-bg, #F4EFE3);
+    border-radius: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: flex-end;
+    padding: 6px 8px;
+  }
+  .wa-textarea {
+    border: none;
+    background: transparent;
+    padding: 8px 12px;
+    resize: none;
+    max-height: 100px;
+    color: var(--text-main);
+    width: 100%;
+  }
+  .wa-textarea:focus { outline: none; }
+  .wa-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--secondary-color, #4E7D7F);
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .wa-icon-btn:hover { background-color: rgba(0,0,0,0.05); }
+  
+  .wa-send-btn {
+    background-color: var(--highlight-color, #D98A2F);
+    color: white;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 4px 10px rgba(217, 138, 47, 0.3);
+    transition: transform 0.2s;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .wa-send-btn.ready {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .wa-send-btn:active { transform: scale(0.95); }
+
+  /* Attachment Preview */
+  .attachment-preview {
+    background-color: var(--card-bg, #F4EFE3);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<div class="d-flex flex-column h-100 wa-bg position-relative page-fade-in" style="margin: 0 auto;">
+  
+  <!-- Header -->
+  <div class="wa-header px-3 py-3 d-flex align-items-center gap-3 sticky-top z-3 shadow-sm">
+    <a href="#/incidencias" class="btn btn-link p-0 text-decoration-none text-white">
+      <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+    <div class="d-flex align-items-center gap-2 flex-grow-1">
+      <div>
+        <div class="fw-bold fs-5 lh-1 text-white" id="formTitle">Reporte de Incidencia</div>
+        <div class="small text-white-50 lh-1 mt-1">Formulario Único de Registro</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="formErrorAlert" class="alert alert-danger d-none m-3" role="alert">
+    <div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-triangle-fill"></i> <span id="formErrorMessage">Error al guardar</span></div>
+  </div>
+
+  <!-- Form content -->
+  <form id="incidenciaForm" novalidate class="d-flex flex-column flex-grow-1 overflow-hidden">
+    <!-- Campos Ocultos para compatibilidad con JS -->
+    <div class="d-none">
+      <input type="hidden" id="incidenciaId" value="" />
+      <input type="hidden" id="incidenciaVersion" value="1" />
+      <input type="hidden" id="cantidadAfectados" value="0" />
+      
+      <!-- Selects controlados por los Chips -->
+      <select id="tipoSelect"><option value="">-</option></select>
+      <select id="subTipoSelect" disabled><option value="">-</option></select>
+      
+      <!-- Estado e Institución (Defaults) -->
+      <select id="estadoSelect"><option value="1">Registrado</option></select>
+      <select id="institucionSelect"><option value="">-</option></select>
+      <select id="institucionesApoyoSelect" multiple></select>
+      <span id="prioridadDisplay">-</span>
+      <button type="button" id="btn-edit-apoyo-form"></button>
+
+      <!-- Botón de mapa oculto (se lanza desde el mobile layout) -->
+      <button type="button" id="btnSeleccionarMapa"></button>
+
+      <!-- Inputs de territorio (ahora visibles en el paso 2) -->
+      <input type="text" id="dirCodigoPostal" />
+      <input type="text" id="dirLat" />
+      <input type="text" id="dirLng" />
+      <input type="hidden" id="dirPrecisionGps" value="" />
+    </div>
+
+    <!-- Content Accordion -->
+    <div class="flex-grow-1 overflow-auto p-3 pb-5" id="formAccordion">
+      
+      <!-- PASO 1: CATEGORÍA -->
+      <div class="card-step active" id="step1">
+        <div class="step-header">
+          <div class="d-flex flex-column">
+            <span class="step-title"><i class="bi bi-list-task me-2"></i>1. Categoría</span>
+            <small class="text-muted fw-normal ms-4 mt-1 d-none" id="feedback-step1"></small>
+          </div>
+          <i class="bi bi-check-circle-fill text-success d-none" id="check1"></i>
+        </div>
+        <div class="step-body">
+          <p class="small text-muted mb-2">Selecciona qué sucedió:</p>
+          <div class="d-flex flex-wrap gap-2 mb-3" id="mobile-categories-container">
+            <span class="spinner-border spinner-border-sm text-primary"></span>
+          </div>
+          
+          <div id="subCategoryBlock" class="d-none">
+            <p class="small text-muted mb-2 border-top pt-2">Detalle:</p>
+            <div class="d-flex flex-wrap gap-2 mb-2" id="mobile-subcategories-container">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2: UBICACIÓN -->
+      <div class="card-step" id="step2">
+        <div class="step-header">
+          <div class="d-flex flex-column">
+            <span class="step-title"><i class="bi bi-geo-alt-fill me-2"></i>2. Ubicación</span>
+            <small class="text-muted fw-normal ms-4 mt-1 d-none" id="feedback-step2"></small>
+          </div>
+          <i class="bi bi-check-circle-fill text-success d-none" id="check2"></i>
+        </div>
+        <div class="step-body">
+          <div class="d-flex gap-2 mb-2">
+            <button type="button" id="btnObtenerUbicacion" class="btn flex-fill d-flex align-items-center justify-content-center gap-1 shadow-sm" style="background-color: var(--secondary-color); color: white; border: none; font-size: 0.9rem;">
+              <i class="bi bi-crosshair" id="btnObtenerUbicacionIcon"></i>
+              <span id="btnObtenerUbicacionSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+              <span id="btnObtenerUbicacionText">Detectar GPS</span>
+            </button>
+          </div>
+          <!-- Mapa Real Leaflet -->
+          <div class="rounded-3 overflow-hidden position-relative mb-2" style="height: 180px; background-color: #ddd;">
+             <div id="incidenciaMapa" class="w-100 h-100" style="z-index: 1;"></div>
+          </div>
+          <div class="p-2 mb-2 bg-light rounded d-none" id="infoUbicacionMinimalista">
+            <small class="text-muted"><i class="bi bi-info-circle me-1"></i> <span id="txtInfoUbicacion"></span></small>
+          </div>
+          <input type="text" id="dirDetalle" class="form-control bg-white border-0 shadow-sm mb-3" placeholder="Añadir una referencia (Ej: Frente al parque)..." required>
+          
+          <!-- Dropdowns Territoriales Cascading -->
+          <div class="d-none mb-2">
+            <select id="dirPais" class="form-select border-0 shadow-sm"><option value="">País</option></select>
+          </div>
+          <div id="colDirNivel1" class="d-none mb-2">
+            <small class="text-muted ms-1" id="lblDirNivel1">Provincia</small>
+            <select id="dirNivel1" class="form-select border-0 shadow-sm"><option value="">-</option></select>
+          </div>
+          <div id="colDirNivel2" class="d-none mb-2">
+            <small class="text-muted ms-1" id="lblDirNivel2">Cantón</small>
+            <select id="dirNivel2" class="form-select border-0 shadow-sm"><option value="">-</option></select>
+          </div>
+          <div id="colDirNivel3" class="d-none mb-2">
+            <small class="text-muted ms-1" id="lblDirNivel3">Parroquia</small>
+            <select id="dirNivel3" class="form-select border-0 shadow-sm"><option value="">-</option></select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sticky Footer Compose Bar -->
+    <div class="sticky-bottom compose-bar z-3">
+      
+      <!-- Zona real de Dropzone escondida o mimetizada -->
+      <div class="d-none">
+        <input type="number" id="cantMaximaArchivos" value="5">
+      </div>
+      
+      <!-- Thumbnails Preview -->
+      <div class="attachment-preview d-none" id="mobilePhotoPreview">
+         <div id="thumbnailsContainer" class="d-flex gap-2 w-100" style="overflow-x: auto;"></div>
+      </div>
+
+      <!-- Dropzone Trigger Oculto -->
+      <div id="dropzoneContainer" class="d-none">
+        <input type="file" id="fileInput" class="d-none" multiple accept="image/*" />
+      </div>
+
+      <div class="d-flex align-items-end gap-2">
+        <div class="wa-input-container flex-grow-1">
+          <textarea id="descripcion" class="wa-textarea" rows="1" placeholder="Escribe la descripción del problema..." required></textarea>
+          <!-- Botón de Cámara abre el input de file oculto -->
+          <button type="button" class="wa-icon-btn" onclick="document.getElementById('fileInput').click()">
+            <i class="bi bi-camera-fill fs-5"></i>
+          </button>
+        </div>
+        <!-- Botón de Enviar (Avioncito) -->
+        <button type="submit" id="btnSubmit" class="wa-send-btn flex-shrink-0">
+          <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none"></span>
+          <i class="bi bi-send-fill fs-5 ms-1" id="btnTextIcon"></i>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

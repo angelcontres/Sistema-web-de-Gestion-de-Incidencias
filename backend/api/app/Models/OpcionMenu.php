@@ -88,7 +88,7 @@ class OpcionMenu extends Model
             } else {
                 // Seeders/CLI deben setear created_by explícitamente (FK es NOT NULL)
                 if (! $model->created_by) {
-                    throw new \RuntimeException('created_by es requerido cuando no hay usuario autenticado.');
+                    throw new \InvalidArgumentException('created_by es requerido cuando no hay usuario autenticado.');
                 }
             }
         });

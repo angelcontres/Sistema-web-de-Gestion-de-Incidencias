@@ -10,89 +10,112 @@ export class PermissionIndexComponent extends BaseComponent {
   }
 
   async onInit() {
-    const tblDatos = this.querySelector('#tbl-datos-permisos');
-    const formComponent = this.querySelector('#app-permission-form');
+    this.tblDatos = this.querySelector('#tbl-datos-permisos');
+    this.formComponent = this.querySelector('#app-permission-form');
 
+    this._setupNewButton();
+    this._setupFormListener();
+    this._setupTable();
+  }
+
+  _setupNewButton() {
     const btnNuevoRegistro = this.querySelector('#btn-nuevo-registro');
-    if (btnNuevoRegistro) {
-      if (!AuthService.hasPermission('CREATE', 'permisos')) {
-        btnNuevoRegistro.classList.add('d-none');
-      } else if (formComponent) {
-        btnNuevoRegistro.addEventListener('click', () => formComponent.abrirModalCrear());
+    if (!btnNuevoRegistro) return;
+
+    if (!AuthService.hasPermission('CREATE', 'permisos')) {
+      btnNuevoRegistro.classList.add('d-none');
+    } else if (this.formComponent) {
+      btnNuevoRegistro.addEventListener('click', () => this.formComponent.abrirModalCrear());
+    }
+  }
+
+  _setupFormListener() {
+    if (!this.formComponent) return;
+    this.formComponent.addEventListener('permiso-guardado', (e) => {
+      this.mostrarAlertaExito(e.detail.mensaje);
+      if (this.tblDatos?.load) {
+        this.tblDatos.load('/permissions');
       }
-    }
+    });
+  }
 
-    if (formComponent) {
-      formComponent.addEventListener('permiso-guardado', (e) => {
-        this.mostrarAlertaExito(e.detail.mensaje);
-        if (tblDatos?.load) {
-          tblDatos.load('/permissions');
-        }
+  _setupTable() {
+    if (!this.tblDatos) return;
+
+    this.tblDatos.configure({
+      columns: this._getTableColumns(),
+    });
+
+    this.tblDatos.addEventListener('row-action', (e) => this._handleRowAction(e));
+
+    this.tblDatos.load('/permissions');
+  }
+
+  _getTableColumns() {
+    return [
+      {
+        header: 'ID',
+        key: 'id',
+        class: 'ps-4 text-secondary fw-semibold',
+        format: (id) => `#${id}`,
+      },
+      { header: 'Nombre', key: 'nombre', class: 'fw-bold text-dark' },
+      {
+        header: 'Acción',
+        render: (permiso) => `<span class="badge bg-secondary">${permiso.accion}</span>`,
+      },
+      { header: 'Recurso', key: 'recurso' },
+      {
+        header: 'Opción de Menú',
+        render: (permiso) => `${permiso.opcion_menu ? permiso.opcion_menu.nombre : '-'}`,
+      },
+      {
+        header: 'Creado el',
+        class: 'text-muted small',
+        render: (permiso) =>
+          permiso.created_at
+            ? new Date(permiso.created_at).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })
+            : '-',
+      },
+      {
+        header: 'Acciones',
+        class: 'text-center',
+        actions: this._getTableActions(),
+      },
+    ];
+  }
+
+  _getTableActions() {
+    const actions = [];
+    if (AuthService.hasPermission('UPDATE', 'permisos')) {
+      actions.push({
+        name: 'editar',
+        label: 'Editar',
+        icon: 'bi-pencil-square',
+        class: 'text-primary',
       });
     }
-    if (tblDatos) {
-      tblDatos.configure({
-        columns: [
-          {
-            header: 'ID',
-            key: 'id',
-            class: 'ps-4 text-secondary fw-semibold',
-            format: (id) => `#${id}`,
-          },
-          { header: 'Nombre', key: 'nombre', class: 'fw-bold text-dark' },
-          {
-            header: 'Acción',
-            render: (permiso) => `<span class="badge bg-secondary">${permiso.accion}</span>`,
-          },
-          { header: 'Recurso', key: 'recurso' },
-          {
-            header: 'Opción de Menú',
-            render: (permiso) => `${permiso.opcion_menu ? permiso.opcion_menu.nombre : '-'}`,
-          },
-          {
-            header: 'Creado el',
-            class: 'text-muted small',
-            render: (permiso) =>
-              permiso.created_at
-                ? new Date(permiso.created_at).toLocaleDateString('es-ES', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })
-                : '-',
-          },
-          {
-            header: 'Acciones',
-            class: 'text-center',
-            actions: [
-              ...(AuthService.hasPermission('UPDATE', 'permisos')
-                ? [
-                    {
-                      name: 'editar',
-                      label: 'Editar',
-                      icon: 'bi-pencil-square',
-                      class: 'text-primary',
-                    },
-                  ]
-                : []),
-              ...(AuthService.hasPermission('DELETE', 'permisos')
-                ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }]
-                : []),
-            ],
-          },
-        ],
+    if (AuthService.hasPermission('DELETE', 'permisos')) {
+      actions.push({
+        name: 'eliminar',
+        label: 'Eliminar',
+        icon: 'bi-trash',
+        class: 'text-danger',
       });
+    }
+    return actions;
+  }
 
-      tblDatos.addEventListener('row-action', (e) => {
-        const { action, item } = e.detail;
-        if (action === 'editar') {
-          if (formComponent) formComponent.abrirModalEditar(item);
-        } else if (action === 'eliminar') {
-          this.eliminarPermiso(item.id, item.nombre);
-        }
-      });
-
-      tblDatos.load('/permissions');
+  _handleRowAction(e) {
+    const { action, item } = e.detail;
+    if (action === 'editar') {
+      if (this.formComponent) this.formComponent.abrirModalEditar(item);
+    } else if (action === 'eliminar') {
+      this.eliminarPermiso(item.id, item.nombre);
     }
   }
 

@@ -61,7 +61,10 @@ class CalculateCf extends Command
     {
         $xmlPath = base_path($relativeXmlPath);
         if (! File::exists($xmlPath)) {
-            $this->error("No se encontró el reporte XML en: {$xmlPath}. Ejecuta: php artisan test --log-junit tests/results.xml");
+            $this->error(
+                "No se encontró el reporte XML en: {$xmlPath}. " .
+                "Ejecuta: php artisan test --log-junit tests/results.xml"
+            );
 
             return null;
         }
@@ -242,7 +245,10 @@ class CalculateCf extends Command
             ]);
         }
 
-        $this->info("\nMétrica de Cobertura Funcional (CF) guardada exitosamente en el esquema OLAP (fact_quality y fact_cobertura).");
+        $this->info(
+            "\nMétrica de Cobertura Funcional (CF) guardada exitosamente " .
+            "en el esquema OLAP (fact_quality y fact_cobertura)."
+        );
     }
 
     /**

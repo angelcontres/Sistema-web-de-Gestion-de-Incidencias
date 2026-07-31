@@ -23,7 +23,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Territorio|null $territorio
  */
 #[Table('direcciones')]
-#[Fillable(['territorio_id', 'detalle', 'referencia', 'codigo_postal', 'latitud', 'longitud', 'precision_gps', 'activo'])]
+#[Fillable([
+    'territorio_id', 'detalle', 'referencia', 'codigo_postal',
+    'latitud', 'longitud', 'precision_gps', 'activo'
+])]
 class Direccion extends Model
 {
     use HasFactory;

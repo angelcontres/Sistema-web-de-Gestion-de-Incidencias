@@ -211,4 +211,40 @@ class OpcionMenuTest extends TestCase
             'padre_id' => null,
         ]);
     }
+
+    public function test_can_list_menu_options_all()
+    {
+        OpcionMenu::create([
+            'nombre' => 'Test All',
+            'ruta' => '/test-all',
+            'created_by' => $this->user->id,
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson(self::ENDPOINT_MENU_OPTIONS.'?all=true');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'status',
+                'data' => [
+                    '*' => ['id', 'nombre']
+                ]
+            ]);
+    }
+
+    public function test_cannot_set_menu_option_as_descendant_parent()
+    {
+        $abuelo = OpcionMenu::create(['nombre' => 'Abuelo', 'ruta' => '/abuelo', 'created_by' => $this->user->id]);
+        $padre = OpcionMenu::create(['nombre' => 'Padre', 'ruta' => '/padre', 'padre_id' => $abuelo->id, 'created_by' => $this->user->id]);
+        $hijo = OpcionMenu::create(['nombre' => 'Hijo', 'ruta' => '/hijo', 'padre_id' => $padre->id, 'created_by' => $this->user->id]);
+
+        $payload = [
+            'padre_id' => $hijo->id, // Intentar poner al hijo como padre del abuelo
+        ];
+
+        $response = $this->actingAs($this->user)->putJson(self::ENDPOINT_MENU_OPTIONS."/{$abuelo->id}", $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('status', 'error')
+            ->assertJsonPath('message', 'No se puede asignar una opción descendiente como padre (referencia circular).');
+    }
 }

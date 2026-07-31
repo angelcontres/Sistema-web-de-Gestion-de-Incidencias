@@ -55,6 +55,26 @@ describe('UbicacionesService', () => {
       expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('pais_id=1&parent_id=2'), expect.any(Object));
     });
 
+    it('getTerritorios - debería usar cursor cuando se proporciona uno', async () => {
+      await UbicacionesService.getTerritorios(1, 15, 'cursorABC');
+      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('cursor=cursorABC'), expect.any(Object));
+    });
+
+    it('getTerritorios - debería incluir all=true cuando params.all es true', async () => {
+      await UbicacionesService.getTerritorios(1, 15, null, { all: true });
+      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('all=true'), expect.any(Object));
+    });
+
+    it('getTerritorios - debería manejar parent_id null', async () => {
+      await UbicacionesService.getTerritorios(1, 15, null, { parent_id: null });
+      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('parent_id=null'), expect.any(Object));
+    });
+
+    it('getTerritorios - debería usar valores por defecto sin argumentos', async () => {
+      await UbicacionesService.getTerritorios();
+      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('page=1'), expect.any(Object));
+    });
+
     it('getTerritorioById - debería hacer request a /territorios/id', async () => {
       await UbicacionesService.getTerritorioById(1);
       expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('/territories/1'), expect.any(Object));
@@ -80,6 +100,21 @@ describe('UbicacionesService', () => {
     it('getDirecciones - debería hacer request con query params', async () => {
       await UbicacionesService.getDirecciones(1, 15, null, { territorio_id: 1 });
       expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('territorio_id=1'), expect.any(Object));
+    });
+
+    it('getDirecciones - debería usar cursor cuando se proporciona uno', async () => {
+      await UbicacionesService.getDirecciones(1, 15, 'cursorXYZ');
+      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('cursor=cursorXYZ'), expect.any(Object));
+    });
+
+    it('getDirecciones - debería incluir all=true cuando params.all es true', async () => {
+      await UbicacionesService.getDirecciones(1, 15, null, { all: true });
+      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('all=true'), expect.any(Object));
+    });
+
+    it('getDirecciones - debería usar valores por defecto sin argumentos', async () => {
+      await UbicacionesService.getDirecciones();
+      expect(window.fetch).toHaveBeenCalledWith(expect.stringContaining('page=1'), expect.any(Object));
     });
 
     it('getDireccionById - debería hacer request a /direcciones/id', async () => {

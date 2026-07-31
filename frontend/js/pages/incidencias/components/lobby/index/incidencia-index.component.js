@@ -21,109 +21,122 @@ export class IncidenciaIndexComponent extends BaseComponent {
 
     if (tblDatos) {
       tblDatos.configure({
-        columns: [
-          {
-            header: 'ID',
-            key: 'id',
-            class: 'ps-4 text-secondary fw-semibold',
-            format: (id) => `#${id}`,
-          },
-          {
-            header: 'Clasificación',
-            render: (inc) => {
-              const tipo = inc.tipo ? inc.tipo.nombre : '-';
-              const sub_tipo = inc.sub_tipo ? inc.sub_tipo.nombre : '-';
-              const subTipo = inc.sub_tipo ? inc.sub_tipo.nombre : sub_tipo;
-              return `<div class="fw-semibold text-dark">${tipo}</div><div class="text-muted small">${subTipo}</div>`;
-            },
-          },
-          {
-            header: 'Descripción',
-            render: (inc) =>
-              `<div class="text-truncate" style="max-width: 250px;" title="${inc.incidencia_descripcion || ''}">${inc.incidencia_descripcion || 'Sin descripción.'}</div>`,
-          },
-          {
-            header: 'Ubicación / Dirección',
-            render: (inc) => {
-              const detalle = inc.direccion ? inc.direccion.detalle : 'Sin dirección.';
-              const pais = inc.direccion?.territorio?.pais
-                ? inc.direccion.territorio.pais.nombre
-                : '';
-              return `<div>${detalle}</div><div class="text-muted small">${pais}</div>`;
-            },
-          },
-          {
-            header: 'Afectados',
-            key: 'cantidad_afectados_incidencia',
-            class: 'text-center fw-bold',
-          },
-          {
-            header: 'Prioridad',
-            render: (inc) => {
-              if (inc.prioridad) {
-                const color = inc.prioridad.color_hex || '#6c757d';
-                return `<span class="badge rounded-pill px-2.5 py-1 small fw-semibold" style="background-color: ${color}20; color: ${color}; border: 1px solid ${color}40;">
-                  ${inc.prioridad.nombre}
-                </span>`;
-              }
-              return '-';
-            },
-          },
-          {
-            header: 'Estado',
-            render: (inc) => {
-              if (inc.estado) {
-                let badgeClass = 'secondary';
-                if (inc.estado.nombre === 'Aprobado') badgeClass = 'success';
-                else if (inc.estado.nombre === 'Rechazado') badgeClass = 'danger';
-                else if (inc.estado.nombre === 'En Revisión') badgeClass = 'warning';
-                return `<span class="badge bg-${badgeClass}-soft text-${badgeClass} rounded-pill px-2.5 py-1 small fw-semibold">
-                  ${inc.estado.nombre}
-                </span>`;
-              }
-              return '-';
-            },
-          },
-          {
-            header: 'Atendido por',
-            render: (inc) =>
-              inc.institucion
-                ? `<span class="fw-medium text-secondary">${inc.institucion.nombre}</span>`
-                : '<span class="text-muted small">No asignado</span>',
-          },
-          {
-            header: 'Acciones',
-            class: 'text-center pe-4',
-            actions: [
-              ...(AuthService.hasPermission('UPDATE', 'incidencias')
-                ? [
-                    {
-                      name: 'editar',
-                      label: 'Editar',
-                      icon: 'bi-pencil-square',
-                      class: 'text-primary',
-                    },
-                  ]
-                : []),
-              ...(AuthService.hasPermission('DELETE', 'incidencias')
-                ? [{ name: 'eliminar', label: 'Eliminar', icon: 'bi-trash', class: 'text-danger' }]
-                : []),
-            ],
-          },
-        ],
+        columns: this._getTableColumns(),
       });
 
-      tblDatos.addEventListener('row-action', (e) => {
-        const { action, item } = e.detail;
-        if (action === 'editar') {
-          window.location.hash = `#/incidencias/form?id=${item.id}`;
-        } else if (action === 'eliminar') {
-          this.eliminarIncidencia(item.id);
-        }
-      });
+      tblDatos.addEventListener('row-action', (e) => this._handleRowAction(e));
 
       tblDatos.load(IncidenciaService.getAll);
     }
+  }
+
+  _handleRowAction(e) {
+    const { action, item } = e.detail;
+    if (action === 'editar') {
+      window.location.hash = `#/incidencias/form?id=${item.id}`;
+    } else if (action === 'eliminar') {
+      this.eliminarIncidencia(item.id);
+    }
+  }
+
+  _getTableColumns() {
+    return [
+      {
+        header: 'ID',
+        key: 'id',
+        class: 'ps-4 text-secondary fw-semibold',
+        format: (id) => `#${id}`,
+      },
+      {
+        header: 'Clasificación',
+        render: (inc) => {
+          const tipo = inc.tipo ? inc.tipo.nombre : '-';
+          const sub_tipo = inc.sub_tipo ? inc.sub_tipo.nombre : '-';
+          const subTipo = inc.sub_tipo ? inc.sub_tipo.nombre : sub_tipo;
+          return `<div class="fw-semibold text-dark">${tipo}</div><div class="text-muted small">${subTipo}</div>`;
+        },
+      },
+      {
+        header: 'Descripción',
+        render: (inc) =>
+          `<div class="text-truncate" style="max-width: 250px;" title="${inc.incidencia_descripcion || ''}">${inc.incidencia_descripcion || 'Sin descripción.'}</div>`,
+      },
+      {
+        header: 'Ubicación / Dirección',
+        render: (inc) => {
+          const detalle = inc.direccion ? inc.direccion.detalle : 'Sin dirección.';
+          const pais = inc.direccion?.territorio?.pais
+            ? inc.direccion.territorio.pais.nombre
+            : '';
+          return `<div>${detalle}</div><div class="text-muted small">${pais}</div>`;
+        },
+      },
+      {
+        header: 'Afectados',
+        key: 'cantidad_afectados_incidencia',
+        class: 'text-center fw-bold',
+      },
+      {
+        header: 'Prioridad',
+        render: (inc) => {
+          if (inc.prioridad) {
+            const color = inc.prioridad.color_hex || '#6c757d';
+            return `<span class="badge rounded-pill px-2.5 py-1 small fw-semibold" style="background-color: ${color}20; color: ${color}; border: 1px solid ${color}40;">
+              ${inc.prioridad.nombre}
+            </span>`;
+          }
+          return '-';
+        },
+      },
+      {
+        header: 'Estado',
+        render: (inc) => {
+          if (inc.estado) {
+            let badgeClass = 'secondary';
+            if (inc.estado.nombre === 'Aprobado') badgeClass = 'success';
+            else if (inc.estado.nombre === 'Rechazado') badgeClass = 'danger';
+            else if (inc.estado.nombre === 'En Revisión') badgeClass = 'warning';
+            return `<span class="badge bg-${badgeClass}-soft text-${badgeClass} rounded-pill px-2.5 py-1 small fw-semibold">
+              ${inc.estado.nombre}
+            </span>`;
+          }
+          return '-';
+        },
+      },
+      {
+        header: 'Atendido por',
+        render: (inc) =>
+          inc.institucion
+            ? `<span class="fw-medium text-secondary">${inc.institucion.nombre}</span>`
+            : '<span class="text-muted small">No asignado</span>',
+      },
+      {
+        header: 'Acciones',
+        class: 'text-center pe-4',
+        actions: this._getTableActions(),
+      },
+    ];
+  }
+
+  _getTableActions() {
+    const actions = [];
+    if (AuthService.hasPermission('UPDATE', 'incidencias')) {
+      actions.push({
+        name: 'editar',
+        label: 'Editar',
+        icon: 'bi-pencil-square',
+        class: 'text-primary',
+      });
+    }
+    if (AuthService.hasPermission('DELETE', 'incidencias')) {
+      actions.push({
+        name: 'eliminar',
+        label: 'Eliminar',
+        icon: 'bi-trash',
+        class: 'text-danger',
+      });
+    }
+    return actions;
   }
 
   async eliminarIncidencia(id) {

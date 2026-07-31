@@ -1,6 +1,7 @@
 import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { DashboardComponent } from './dashboard.component.js';
 import { AuthService } from '../../../../core/auth.service.js';
+import { DashboardService } from '../../services/dashboard.service.js';
 
 describe('DashboardComponent', () => {
   const originalIsAdmin = AuthService.isAdmin;
@@ -45,12 +46,30 @@ describe('DashboardComponent', () => {
       return { ok: true, json: async () => ({ data: [] }) };
     });
 
-    if (!window.localStorage) {
-      window.localStorage = {
-        getItem: jest.fn(() => null),
-        setItem: jest.fn(),
+    const mockLocalStorage = {
+      getItem: jest.fn(() => null),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+      clear: jest.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', { value: mockLocalStorage, writable: true });
+
+    DashboardService.getMyMenus = jest.fn(async () => {
+      lastApiRequestUrl = '/me/menu';
+      return { data: [{ nombre: 'Inicio', icono: 'bi-house' }] };
+    });
+    DashboardService.getDashboardStats = jest.fn(async () => {
+      lastApiRequestUrl = '/dashboard/stats';
+      return {
+        servicios_mas_utilizados: [{ nombre: 'Test', porcentaje: 50, color: 'primary' }],
+        recientes: [],
+        mapa_reportes: [],
       };
-    }
+    });
+    DashboardService.getDashboardMetricsByRole = jest.fn(async (role) => {
+      lastApiRequestUrl = `/dashboard/metrics?role=${role}`;
+      return { data: { kpis: {} } };
+    });
 
     window.L = {
       map: () => ({ setView: () => {}, remove: () => {}, addLayer: () => {} }),
@@ -270,7 +289,7 @@ describe('DashboardComponent', () => {
     expect(lastApiRequestUrl).toBe('/me/menu');
   });
 
-  it('loadMenuData() - renders elements successfully', async () => {
+  it('loadMenuData() - renders elements successfully and assigns responsive classes (T6 - R5, R6)', async () => {
     window.localStorage.getItem = jest.fn(() =>
       JSON.stringify([{ nombre: 'Test', padre_id: null }])
     );
@@ -281,10 +300,13 @@ describe('DashboardComponent', () => {
 
     await component.loadMenuData();
     expect(container.innerHTML).toBeDefined();
+    expect(container.innerHTML).toContain('d-none d-sm-block');
+    expect(container.innerHTML).toContain('justify-content-center justify-content-sm-start');
+    expect(container.innerHTML).toContain('px-3 px-sm-4');
   });
 
   it('loadDashboardData() - error fetching data', async () => {
-    window.fetch = jest.fn(() => Promise.reject('Network Error'));
+    DashboardService.getDashboardStats.mockRejectedValue('Network Error');
     const { component } = createMockComponent();
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -336,7 +358,7 @@ describe('DashboardComponent', () => {
     const container = { innerHTML: '', appendChild: jest.fn() };
     fakeElements['#grafanaKpisContainer'] = container;
 
-    window.fetch = jest.fn(() => Promise.reject('Fail metrics'));
+    DashboardService.getDashboardMetricsByRole.mockRejectedValue('Fail metrics');
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     try {

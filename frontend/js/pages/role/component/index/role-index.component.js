@@ -60,106 +60,131 @@ export class RoleIndexComponent extends BaseComponent {
    * Carga los roles del backend y llena el grid de tarjetas
    */
   async cargarRoles() {
-    const rolesGrid = this.querySelector('#rolesGrid');
-    const loadingSpinner = this.querySelector('#loadingSpinner');
-    const emptyState = this.querySelector('#emptyState');
-    const totalRolesBadge = this.querySelector('#totalRolesBadge');
-
-    if (!rolesGrid) return;
-
-    loadingSpinner.classList.remove('d-none');
-    rolesGrid.classList.add('d-none');
-    if (emptyState) emptyState.classList.add('d-none');
+    this._setLoadingState(true);
 
     try {
       const response = await RoleService.getAll();
       const roles = Array.isArray(response) ? response : response.data || [];
 
-      if (totalRolesBadge) {
-        totalRolesBadge.textContent = `${roles.length} Registros`;
-      }
+      this._updateTotalRolesBadge(roles.length);
 
       if (roles.length === 0) {
-        if (emptyState) emptyState.classList.remove('d-none');
-        loadingSpinner.classList.add('d-none');
+        this._showEmptyState();
         return;
       }
 
       const canEdit = AuthService.hasPermission('UPDATE', 'roles');
       const canDelete = AuthService.hasPermission('DELETE', 'roles');
 
-      // Render cards using template literal
-      rolesGrid.innerHTML = roles
-        .map(
-          (rol) => `
-        <div class="col-md-4 col-sm-6">
-          <div class="card h-100 border shadow-sm role-card cursor-pointer" data-id="${rol.id}" style="transition: all 0.2s ease;">
-            <div class="card-body d-flex align-items-center gap-3 p-3">
-              <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center" style="width: 48px; height: 48px; flex-shrink: 0;">
-                <i class="bi bi-key fs-5"></i>
-              </div>
-              <div class="flex-grow-1 text-truncate">
-                <h6 class="fw-bold mb-0 text-dark text-truncate">${rol.nombre}</h6>
-                <span class="text-muted small">${rol.descripcion || ''}</span>
-              </div>
-              <div>
-                <i class="bi bi-chevron-right text-muted"></i>
-              </div>
-              <div class="dropdown ms-2" onclick="event.stopPropagation()">
-                <button class="btn btn-sm btn-light border-0 p-1 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-three-dots-vertical"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                  ${canEdit ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium" type="button" data-action="editar"><i class="bi bi-pencil-square"></i> Editar</button></li>` : ''}
-                  ${canDelete ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium" type="button" data-action="eliminar"><i class="bi bi-trash"></i> Eliminar</button></li>` : ''}
-                </ul>
-              </div>
+      this._renderRolesGrid(roles, canEdit, canDelete);
+      this._bindRoleEvents(roles);
+
+      this._setLoadingState(false, false);
+    } catch (error) {
+      console.error('Error cargando roles:', error);
+      this._setLoadingState(false, true);
+      if (ToastService?.error) ToastService.error(`Error al cargar roles: ${error.message}`);
+    }
+  }
+
+  _setLoadingState(isLoading, hideGrid = true) {
+    const rolesGrid = this.querySelector('#rolesGrid');
+    const loadingSpinner = this.querySelector('#loadingSpinner');
+    const emptyState = this.querySelector('#emptyState');
+
+    if (isLoading) {
+      if (loadingSpinner) loadingSpinner.classList.remove('d-none');
+      if (rolesGrid) rolesGrid.classList.add('d-none');
+      if (emptyState) emptyState.classList.add('d-none');
+    } else {
+      if (loadingSpinner) loadingSpinner.classList.add('d-none');
+      if (rolesGrid) {
+        if (hideGrid) rolesGrid.classList.add('d-none');
+        else rolesGrid.classList.remove('d-none');
+      }
+    }
+  }
+
+  _updateTotalRolesBadge(count) {
+    const totalRolesBadge = this.querySelector('#totalRolesBadge');
+    if (totalRolesBadge) {
+      totalRolesBadge.textContent = `${count} Registros`;
+    }
+  }
+
+  _showEmptyState() {
+    const emptyState = this.querySelector('#emptyState');
+    if (emptyState) emptyState.classList.remove('d-none');
+    this._setLoadingState(false, true);
+  }
+
+  _renderRolesGrid(roles, canEdit, canDelete) {
+    const rolesGrid = this.querySelector('#rolesGrid');
+    if (!rolesGrid) return;
+    rolesGrid.innerHTML = roles
+      .map((rol) => this._buildRoleCardHtml(rol, canEdit, canDelete))
+      .join('');
+  }
+
+  _buildRoleCardHtml(rol, canEdit, canDelete) {
+    return `
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 border shadow-sm role-card cursor-pointer" data-id="${rol.id}" style="transition: all 0.2s ease;">
+          <div class="card-body d-flex align-items-center gap-3 p-3">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center" style="width: 48px; height: 48px; flex-shrink: 0;">
+              <i class="bi bi-key fs-5"></i>
+            </div>
+            <div class="flex-grow-1 text-truncate">
+              <h6 class="fw-bold mb-0 text-dark text-truncate">${rol.nombre}</h6>
+              <span class="text-muted small">${rol.descripcion || ''}</span>
+            </div>
+            <div>
+              <i class="bi bi-chevron-right text-muted"></i>
+            </div>
+            <div class="dropdown ms-2" onclick="event.stopPropagation()">
+              <button class="btn btn-sm btn-light border-0 p-1 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                ${canEdit ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-primary small fw-medium" type="button" data-action="editar"><i class="bi bi-pencil-square"></i> Editar</button></li>` : ''}
+                ${canDelete ? `<li><button class="dropdown-item d-flex align-items-center gap-2 text-danger small fw-medium" type="button" data-action="eliminar"><i class="bi bi-trash"></i> Eliminar</button></li>` : ''}
+              </ul>
             </div>
           </div>
         </div>
-      `
-        )
-        .join('');
+      </div>
+    `;
+  }
 
-      // Bind events to rendered elements
-      roles.forEach((rol) => {
-        const cardEl = rolesGrid.querySelector(`.role-card[data-id="${rol.id}"]`);
-        if (cardEl) {
-          // Hover effects
-          cardEl.addEventListener('mouseover', () => cardEl.classList.add('shadow'));
-          cardEl.addEventListener('mouseout', () => cardEl.classList.remove('shadow'));
+  _bindRoleEvents(roles) {
+    const rolesGrid = this.querySelector('#rolesGrid');
+    if (!rolesGrid) return;
 
-          // Open permissions on click
-          cardEl.addEventListener('click', () => this.abrirPanelPermisos(rol));
+    roles.forEach((rol) => {
+      const cardEl = rolesGrid.querySelector(`.role-card[data-id="${rol.id}"]`);
+      if (cardEl) {
+        cardEl.addEventListener('mouseover', () => cardEl.classList.add('shadow'));
+        cardEl.addEventListener('mouseout', () => cardEl.classList.remove('shadow'));
+        cardEl.addEventListener('click', () => this.abrirPanelPermisos(rol));
 
-          // Action buttons
-          const btnEdit = cardEl.querySelector('[data-action="editar"]');
-          if (btnEdit) {
-            btnEdit.addEventListener('click', (e) => {
-              e.stopPropagation();
-              const formComponent = this.querySelector('#app-role-form');
-              if (formComponent) formComponent.abrirModalEditar(rol, roles);
-            });
-          }
-
-          const btnDelete = cardEl.querySelector('[data-action="eliminar"]');
-          if (btnDelete) {
-            btnDelete.addEventListener('click', (e) => {
-              e.stopPropagation();
-              this.eliminarRol(rol.id, rol.nombre);
-            });
-          }
+        const btnEdit = cardEl.querySelector('[data-action="editar"]');
+        if (btnEdit) {
+          btnEdit.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const formComponent = this.querySelector('#app-role-form');
+            if (formComponent) formComponent.abrirModalEditar(rol, roles);
+          });
         }
-      });
 
-      loadingSpinner.classList.add('d-none');
-      rolesGrid.classList.remove('d-none');
-    } catch (error) {
-      console.error('Error cargando roles:', error);
-      loadingSpinner.classList.add('d-none');
-      if (ToastService?.error) ToastService.error(`Error al cargar roles: ${error.message}`);
-      this.mostrarAlertaError(`Error al cargar roles: ${error.message}`);
-    }
+        const btnDelete = cardEl.querySelector('[data-action="eliminar"]');
+        if (btnDelete) {
+          btnDelete.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.eliminarRol(rol.id, rol.nombre);
+          });
+        }
+      }
+    });
   }
 
   /**

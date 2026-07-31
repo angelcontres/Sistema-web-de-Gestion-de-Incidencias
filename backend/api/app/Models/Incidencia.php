@@ -171,7 +171,11 @@ class Incidencia extends Model
      */
     public function institucionesApoyo(): BelongsToMany
     {
-        return $this->belongsToMany(Institucion::class, 'incidencia_institucion_apoyo', 'incidencia_id', 'institucion_id')
-            ->withTimestamps();
+        return $this->belongsToMany(
+            Institucion::class,
+            'incidencia_institucion_apoyo',
+            'incidencia_id',
+            'institucion_id'
+        )->withTimestamps();
     }
 }

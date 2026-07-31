@@ -103,8 +103,6 @@ services:
     volumes:
       - ./cloudflare:/etc/cloudflared
     command: tunnel run ${CLOUDFLARE_TUNNEL_TOKEN}
-    depends_on:
-      - nginx
     networks:
       - sistema_incidencias_net_prod
 

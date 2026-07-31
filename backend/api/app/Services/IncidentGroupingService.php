@@ -23,8 +23,14 @@ class IncidentGroupingService
             ->whereNull('reporte_incidencias.deleted_at');
 
         if (DB::getDriverName() === 'pgsql') {
-            $query->whereRaw('ST_DWithin(direcciones.ubicacion, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)', [$lng, $lat, $radiusKm * 1000])
-                ->selectRaw('ST_Distance(direcciones.ubicacion, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography) AS distance', [$lng, $lat])
+            $query->whereRaw(
+                'ST_DWithin(direcciones.ubicacion, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)',
+                [$lng, $lat, $radiusKm * 1000]
+            )
+                ->selectRaw(
+                    'ST_Distance(direcciones.ubicacion, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography) AS distance',
+                    [$lng, $lat]
+                )
                 ->orderBy('distance', 'asc');
         }
 

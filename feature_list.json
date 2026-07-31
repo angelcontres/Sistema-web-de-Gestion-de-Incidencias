@@ -251,19 +251,19 @@
       "id": 16,
       "name": "cover_frontend_test",
       "title": "Cobertura de pruebas en el frontend",
-      "description": "Completar los archivos de prueba del frontend que tengan cobertura menor al 80%.",
+      "description": "Completar los archivos de prueba del frontend de manera procedural, asegurandose de que en cada fase, los test pasen con la cobertura solicitada.",
       "acceptance": [
-        "Primero hay que listar todos los archivos de la ruta frontend/js, y localizar los que tengan cobertura menor al 80%",
-        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se completarán.",
-        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se ejecutarán.",
-        "Los archivos de prueba del frontend que tienen menos del 80% de cobertura se verificarán.",
-        "Debes asegurarte de que la cobertura llegue al menos al 95% para poder pasar al siguiente archivo",
+        "Primero hay que listar todos los archivos de la ruta frontend/js",
+        "FASE 1: los test deben cubrir al menos el 75% de cobertura.",
+        "FASE 2: los test deben cubrir al menos el 85% de cobertura.",
+        "FASE 3 FINAL: los test deben cubrir al menos el 95% de cobertura.",
+        "Asegurar que el codigo sea el definido en el .properties de sonarqube",
         "Debes evitar code smells, duplicaciones de código y funciones con muchos 'return' (evitar deuda tecnica).",
-        "Si hay funciones con demasiadas lineas, descomponlas, aplica divide y vencerás",
-        "Implementa tests unitarios para funciones específicas, para evitar lineas rezagadas que puedan no cubrir el objetivo"
+        "Si hay funciones con demasiadas lineas, descomponlas, aplica divide y vencerás, para una mejor implementación del test"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done",
+      "references": ["sonar-project.properties", "frontend/js/**.test.ts**"]
     },
     {
       "id": 17,
@@ -281,8 +281,31 @@
       ],
       "sdd": true,
       "status": "done",
+      "references": ["frontend/js/pages/incidencias/**"]
+    },
+    {
+      "id": 18,
+      "name": "implement_responsive_css",
+      "title": "Implementar estilos CSS responsivos",
+      "description": "Se implementará la responsividad para celulares y estilización correcta de modales llanos.",
+      "acceptance": [
+        "Revisar cada vista del frontend y verificar que se pueda ver correctamente en celulares.",
+        "Se debe usar media queries para ajustar los estilos CSS para celulares.",
+        "Se debe usar responsividad bootstrap si lo amerita",
+        "Revisar responsividad en modulo de estado individual de incidencias, ya que en pantallas pequeñas hay elementos que generan una expansión innecesaria hacia abajo.",
+        "Para los botones de acceso rapido en el dashboard, solo los iconos deben ser visibles para pantallas pequeñas y mantener su responsividad en pantallas grandes debe mostrar el texto y el icono (actualmente)",
+        "Comparar clases en modulos como el de Categorías, que usa un modal pero sin border-radius, buscar las los css centralizados y aplicarselo a los elementos modales que sufran lo mismo. ",
+        "Los modales deben tener un borde ligeramente visible que armonice con la paleta de colores actual y contraste con el fondo sombreado",
+        "revisar en modulos como el de categorias, la tabla no se está renderizando con app-data-table-component"
+      ],
+      "sdd": true,
+      "status": "done",
       "references": [
-        "frontend/js/pages/incidencias/**"
+        "frontend/js/pages/incidencias/components/estado-individual-incidencia/**",
+        "frontend/js/pages/dashboard/components/dashboard-index/**",
+        "frontend/js/pages/instituciones/components/kanban/**",
+        "frontend/js/pages/categorias/**",
+        "frontend/js/shared/components/app-data-table/**"
       ]
     }
   ]

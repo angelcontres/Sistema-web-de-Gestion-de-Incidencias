@@ -10,125 +10,137 @@ export class MenuOptionsListComponent extends BaseComponent {
   }
 
   async onInit() {
+    this._setupNewButton();
+    this._setupTable();
+  }
+
+  _setupNewButton() {
     const btnNuevo = this.querySelector('#btnNuevoRegistro');
     if (btnNuevo && !AuthService.hasPermission('CREATE', 'opciones')) {
       btnNuevo.classList.add('d-none');
     }
+  }
 
+  _setupTable() {
     const tblDatos = this.querySelector('#tbl-datos-opciones-menu');
-    if (tblDatos) {
-      // 1. Configurar las columnas de forma parametrizable de acuerdo a los permisos
-      const columns = [
-        {
-          header: 'Nombre',
-          render: (opcion) => `<div class="fw-bold text-dark">${opcion.nombre || ''}</div>`,
-        },
-        {
-          header: 'Icono',
-          render: (opcion) => {
-            if (!opcion.icono) return '<span class="text-muted small">-</span>';
-            const cleanIcono = opcion.icono.trim().replace(/[^a-zA-Z0-9\s-]/g, '');
-            if (!cleanIcono) return '<span class="text-muted small">-</span>';
-            const isBi = cleanIcono.startsWith('bi-') || cleanIcono.startsWith('bi ');
-            const iconClass = isBi ? `bi ${cleanIcono}` : `bi bi-${cleanIcono}`;
-            return `
-              <span class="d-flex align-items-center gap-2 text-dark small">
-                <i class="${iconClass} text-primary fs-5"></i>
-                <code>${cleanIcono}</code>
-              </span>
-            `;
-          },
-        },
-        {
-          header: 'Ruta',
-          render: (opcion) =>
-            `<code class="text-indigo small font-monospace">${opcion.ruta || ''}</code>`,
-        },
-        {
-          header: 'Padre',
-          render: (opcion) =>
-            opcion.padre?.nombre
-              ? `
-              <span class="badge bg-secondary-soft text-dark px-2.5 py-1 rounded small fw-medium">
-                <i class="bi bi-folder-fill me-1 small"></i>${opcion.padre.nombre}
-              </span>
-            `
-              : '<span class="text-muted small">-</span>',
-        },
-        {
-          header: 'Creado el',
-          render: (opcion) =>
-            opcion.created_at
-              ? new Date(opcion.created_at).toLocaleString('es-ES', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              : '-',
-        },
-      ];
+    if (!tblDatos) return;
 
-      const actions = [];
-      if (AuthService.hasPermission('UPDATE', 'opciones')) {
-        actions.push({
-          name: 'editar',
-          label: 'Editar',
-          icon: 'bi-pencil-square',
-          class: 'text-primary',
-        });
-      }
-      if (AuthService.hasPermission('DELETE', 'opciones')) {
-        actions.push({
-          name: 'eliminar',
-          label: 'Eliminar',
-          icon: 'bi-trash',
-          class: 'text-danger',
-        });
-      }
+    tblDatos.configure({
+      columns: this._getTableColumns(),
+    });
 
-      if (actions.length > 0) {
-        columns.push({
-          header: 'Acciones',
-          class: 'text-center',
-          actions: actions,
-        });
-      }
+    tblDatos.addEventListener('row-action', async (e) => this._handleRowAction(e, tblDatos));
+    tblDatos.load(MenuOptionService.getAll);
+  }
 
-      tblDatos.configure({
-        columns: columns,
+  _getTableColumns() {
+    const columns = [
+      {
+        header: 'Nombre',
+        render: (opcion) => `<div class="fw-bold text-dark">${opcion.nombre || ''}</div>`,
+      },
+      {
+        header: 'Icono',
+        render: (opcion) => {
+          if (!opcion.icono) return '<span class="text-muted small">-</span>';
+          const cleanIcono = opcion.icono.trim().replace(/[^a-zA-Z0-9\s-]/g, '');
+          if (!cleanIcono) return '<span class="text-muted small">-</span>';
+          const isBi = cleanIcono.startsWith('bi-') || cleanIcono.startsWith('bi ');
+          const iconClass = isBi ? `bi ${cleanIcono}` : `bi bi-${cleanIcono}`;
+          return `
+            <span class="d-flex align-items-center gap-2 text-dark small">
+              <i class="${iconClass} text-primary fs-5"></i>
+              <code>${cleanIcono}</code>
+            </span>
+          `;
+        },
+      },
+      {
+        header: 'Ruta',
+        render: (opcion) => `<code class="text-indigo small font-monospace">${opcion.ruta || ''}</code>`,
+      },
+      {
+        header: 'Padre',
+        render: (opcion) =>
+          opcion.padre?.nombre
+            ? `
+            <span class="badge bg-secondary-soft text-dark px-2.5 py-1 rounded small fw-medium">
+              <i class="bi bi-folder-fill me-1 small"></i>${opcion.padre.nombre}
+            </span>
+          `
+            : '<span class="text-muted small">-</span>',
+      },
+      {
+        header: 'Creado el',
+        render: (opcion) =>
+          opcion.created_at
+            ? new Date(opcion.created_at).toLocaleString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            : '-',
+      },
+    ];
+
+    const actions = this._getTableActions();
+    if (actions.length > 0) {
+      columns.push({
+        header: 'Acciones',
+        class: 'text-center',
+        actions: actions,
       });
+    }
 
-      // 2. Escuchar acciones de la tabla (editar / eliminar)
-      tblDatos.addEventListener('row-action', async (e) => {
-        const { action, item } = e.detail;
-        if (action === 'editar') {
-          window.location.hash = `#/opciones-menu/form?id=${item.id}`;
-        } else if (action === 'eliminar') {
-          const isConfirmed = await ModalService.confirm(
-            'Eliminar Opción',
-            `¿Estás seguro de que deseas eliminar la opción de menú "${item.nombre}"?<br>Esta acción es irreversible.`,
-            'Eliminar',
-            'Cancelar',
-            'btn-danger'
-          );
-          if (isConfirmed) {
-            try {
-              await MenuOptionService.delete(item.id);
-              ToastService.success(`La opción "${item.nombre}" se eliminó correctamente.`);
-              window.dispatchEvent(new CustomEvent('menu-change'));
-              await tblDatos.load(MenuOptionService.getAll);
-            } catch (error) {
-              console.error('Error al eliminar opción de menú:', error);
-              ToastService.error(`Error al eliminar: ${error.message}`);
-            }
-          }
+    return columns;
+  }
+
+  _getTableActions() {
+    const actions = [];
+    if (AuthService.hasPermission('UPDATE', 'opciones')) {
+      actions.push({
+        name: 'editar',
+        label: 'Editar',
+        icon: 'bi-pencil-square',
+        class: 'text-primary',
+      });
+    }
+    if (AuthService.hasPermission('DELETE', 'opciones')) {
+      actions.push({
+        name: 'eliminar',
+        label: 'Eliminar',
+        icon: 'bi-trash',
+        class: 'text-danger',
+      });
+    }
+    return actions;
+  }
+
+  async _handleRowAction(e, tblDatos) {
+    const { action, item } = e.detail;
+    if (action === 'editar') {
+      window.location.hash = `#/opciones-menu/form?id=${item.id}`;
+    } else if (action === 'eliminar') {
+      const isConfirmed = await ModalService.confirm(
+        'Eliminar Opción',
+        `¿Estás seguro de que deseas eliminar la opción de menú "${item.nombre}"?<br>Esta acción es irreversible.`,
+        'Eliminar',
+        'Cancelar',
+        'btn-danger'
+      );
+      if (isConfirmed) {
+        try {
+          await MenuOptionService.delete(item.id);
+          ToastService.success(`La opción "${item.nombre}" se eliminó correctamente.`);
+          window.dispatchEvent(new CustomEvent('menu-change'));
+          await tblDatos.load(MenuOptionService.getAll);
+        } catch (error) {
+          console.error('Error al eliminar opción de menú:', error);
+          ToastService.error(`Error al eliminar: ${error.message}`);
         }
-      });
-
-      // 3. Cargar las opciones inicialmente
-      tblDatos.load(MenuOptionService.getAll);
+      }
     }
   }
 

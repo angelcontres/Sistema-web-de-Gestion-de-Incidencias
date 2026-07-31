@@ -65,4 +65,14 @@ describe('CategoriaIncidenciaService', () => {
     expect(lastApiRequestArgs[0]).toBe('/incident-categories/25');
     expect(lastApiRequestArgs[1].method).toBe('DELETE');
   });
+
+  it('getAll() - debería incluir all=true cuando params.all es true', async () => {
+    await CategoriaIncidenciaService.getAll(1, 15, null, undefined, { all: true });
+    expect(lastApiRequestArgs[0]).toBe('/incident-categories?all=true&per_page=15&page=1');
+  });
+
+  it('getAll() - debería usar cursor cuando se proporciona uno', async () => {
+    await CategoriaIncidenciaService.getAll(1, 15, 'abc123');
+    expect(lastApiRequestArgs[0]).toBe('/incident-categories?per_page=15&cursor=abc123');
+  });
 });

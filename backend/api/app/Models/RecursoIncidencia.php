@@ -30,7 +30,8 @@ class RecursoIncidencia extends Model
         }
 
         /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk(env('FILESYSTEM_DISK', 'public'));
+        $diskName = config('filesystems.default') === 's3' ? 's3' : 'public';
+        $disk = Storage::disk($diskName);
 
         return $disk->url($value);
     }

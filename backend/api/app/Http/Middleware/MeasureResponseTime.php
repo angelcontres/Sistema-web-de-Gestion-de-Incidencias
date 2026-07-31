@@ -24,7 +24,7 @@ class MeasureResponseTime
     /**
      * Handle tasks after the response has been sent to the browser.
      */
-    public function terminate(Request $request, Response $response): void
+    public function terminate(Request $request): void
     {
         // Ignorar las peticiones de Preflight de CORS
         if ($request->method() === 'OPTIONS') {

@@ -22,7 +22,35 @@ export class MenuLobbyComponent extends BaseComponent {
 
   async renderLobby() {
     const currentHash = window.location.hash || '#/';
+    
+    const menuList = await this.getMenuList();
+    const titleEl = this.querySelector('#lobby-title');
+    const container = this.querySelector('#lobby-cards-container');
 
+    if (!menuList || !titleEl || !container) return;
+
+    const parentMenu = this.getParentMenu(menuList, currentHash);
+    if (!parentMenu) {
+      titleEl.textContent = 'Menú no encontrado';
+      container.innerHTML =
+        '<div class="col-12"><p class="text-muted">No se encontraron opciones para esta sección.</p></div>';
+      return;
+    }
+
+    titleEl.innerHTML = `<i class="${parentMenu.icono || ''} me-2 text-primary"></i> ${parentMenu.nombre}`;
+
+    const children = menuList.filter((m) => m.padre_id === parentMenu.id);
+    if (children.length === 0) {
+      container.innerHTML =
+        '<div class="col-12"><p class="text-muted">No hay submenús disponibles.</p></div>';
+      return;
+    }
+
+    this.renderChildrenCards(container, children);
+    this.addHoverEffects(container);
+  }
+
+  async getMenuList() {
     let menuList = null;
     try {
       const menuStr = localStorage.getItem('user_menu');
@@ -43,43 +71,21 @@ export class MenuLobbyComponent extends BaseComponent {
         console.error('Error fetching menu for lobby:', err);
       }
     }
+    return menuList;
+  }
 
-    const titleEl = this.querySelector('#lobby-title');
-    const container = this.querySelector('#lobby-cards-container');
-
-    if (!menuList || !titleEl || !container) return;
-
-    // Remove query params from hash for matching
+  getParentMenu(menuList, currentHash) {
     const basePath = currentHash.split('?')[0];
-
-    // Find the parent menu item that matches the current route
-    const parentMenu = menuList.find((m) => {
+    return menuList.find((m) => {
       const safeHref = m.ruta?.startsWith('#') ? m.ruta : '#/';
       return safeHref === basePath;
     });
+  }
 
-    if (!parentMenu) {
-      titleEl.textContent = 'Menú no encontrado';
-      container.innerHTML =
-        '<div class="col-12"><p class="text-muted">No se encontraron opciones para esta sección.</p></div>';
-      return;
-    }
-
-    titleEl.innerHTML = `<i class="${parentMenu.icono || ''} me-2 text-primary"></i> ${parentMenu.nombre}`;
-
-    // Find children
-    const children = menuList.filter((m) => m.padre_id === parentMenu.id);
-
-    if (children.length === 0) {
-      container.innerHTML =
-        '<div class="col-12"><p class="text-muted">No hay submenús disponibles.</p></div>';
-      return;
-    }
-
+  renderChildrenCards(container, children) {
     let cardsHtml = '';
     children.forEach((child) => {
       const safeHref = child.ruta?.startsWith('#') ? child.ruta : '#/';
-
       cardsHtml += `
         <div class="col-12 col-md-6 col-lg-4">
           <a href="${safeHref}" class="text-decoration-none">
@@ -98,10 +104,10 @@ export class MenuLobbyComponent extends BaseComponent {
         </div>
         `;
     });
-
     container.innerHTML = cardsHtml;
+  }
 
-    // Add hover effect via JS dynamically or expect CSS to do it
+  addHoverEffects(container) {
     const cards = container.querySelectorAll('.menu-lobby-card');
     cards.forEach((card) => {
       card.addEventListener('mouseenter', () => {

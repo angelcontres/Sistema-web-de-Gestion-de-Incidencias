@@ -108,9 +108,38 @@ export const CatalogoService = {
   },
 
   /**
+   * Limpia toda la caché de categorías de incidencia en localStorage.
+   * Debe llamarse tras crear, editar o eliminar una categoría.
+   */
+  clearCategoriasCache() {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('catalogo_categorias_')) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
+  },
+
+  /**
    * Obtiene la lista de instituciones activas.
    */
   async getInstituciones() {
     return withCache('catalogo_instituciones', 1440, () => apiRequest('/catalogs/institutions'));
+  },
+
+  /**
+   * Obtiene la lista de estados de incidencia activos.
+   */
+  async getEstados() {
+    return withCache('catalogo_estados', 1440, () => apiRequest('/catalogs/incident-states'));
+  },
+
+  /**
+   * Obtiene la lista de prioridades activas.
+   */
+  async getPrioridades() {
+    return withCache('catalogo_prioridades', 1440, () => apiRequest('/catalogs/priorities'));
   },
 };

@@ -1,15 +1,16 @@
-# Estado Actual (Sesión en curso)
+# Estado Actual (Sesion en curso)
 
 ## Feature en desarrollo
-**Nombre:** N/A
-**ID en feature_list.json:** N/A
-**Status actual:** N/A
+**Nombre:**
+**ID en feature_list.json:**
+**Status actual:**
 
-## Últimos cambios realizados
-- Ninguno
+## Exclusiones
 
-## Problemas actuales / Bloqueos
-- Ninguno
+## Lo completado en esta sesion
 
-## Próximos pasos
-- N/A
+## Resultado global
+
+## Lecciones aprendidas / patrones
+
+## Proximos pasos

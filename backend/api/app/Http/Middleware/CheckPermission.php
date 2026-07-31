@@ -18,19 +18,22 @@ class CheckPermission
     public function handle(Request $request, Closure $next, string $permission): Response
     {
         $user = $request->user();
+        $hasPerm = false;
 
         // Admin role has all permissions
         if ($user && $user->roles()->where('nombre', 'Admin')->exists()) {
-            return $next($request);
+            $hasPerm = true;
+        } elseif ($permission === 'Ver Opción de Menú' && $request->boolean('for_sidebar')) {
+            // Allow any authenticated user to view menu options specifically filtered for the sidebar
+            $hasPerm = true;
+        } else {
+            $enum = PermissionsEnum::tryFrom($permission);
+            if ($enum) {
+                $hasPerm = app(PermissionServiceInterface::class)->userHasPermission($user, $enum);
+            } else {
+                $hasPerm = $user ? $user->hasPermission($permission) : false;
+            }
         }
-
-        // Allow any authenticated user to view menu options specifically filtered for the sidebar
-        if ($permission === 'Ver Opción de Menú' && $request->boolean('for_sidebar')) {
-            return $next($request);
-        }
-
-        $enum = PermissionsEnum::tryFrom($permission);
-        $hasPerm = $enum ? app(PermissionServiceInterface::class)->userHasPermission($user, $enum) : $user->hasPermission($permission);
 
         if (! $hasPerm) {
             return response()->json([

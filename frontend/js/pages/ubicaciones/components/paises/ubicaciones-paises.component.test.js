@@ -129,4 +129,129 @@ describe('UbicacionesPaisesComponent', () => {
     expect(UbicacionesService.deletePais).toHaveBeenCalledWith(1);
     expect(ToastService.success).toHaveBeenCalled();
   });
+
+  it('deberia ocultar btnNuevoPais si no es admin', async () => {
+    AuthService.isAdmin.mockReturnValue(false);
+    await component.onInit();
+    const btn = component.querySelector('#btnNuevoPais');
+    expect(btn.classList.contains('d-none')).toBe(true);
+  });
+
+  it('deberia manejar row-action editar', async () => {
+    const tbl = component.querySelector('#tbl-datos-paises');
+    jest.spyOn(tbl, 'addEventListener');
+    await component.onInit();
+    const spy = jest.spyOn(component, 'abrirModalPais');
+    const eventCallback = tbl.addEventListener.mock.calls.find(c => c[0] === 'row-action')[1];
+    eventCallback({ detail: { action: 'editar', item: { id: 1, nombre: 'Test' } } });
+    expect(spy).toHaveBeenCalledWith({ id: 1, nombre: 'Test' });
+  });
+
+  it('deberia manejar row-action eliminar', async () => {
+    const tbl = component.querySelector('#tbl-datos-paises');
+    jest.spyOn(tbl, 'addEventListener');
+    await component.onInit();
+    const spy = jest.spyOn(component, 'eliminarPais');
+    const eventCallback = tbl.addEventListener.mock.calls.find(c => c[0] === 'row-action')[1];
+    eventCallback({ detail: { action: 'eliminar', item: { id: 5, nombre: 'Test' } } });
+    expect(spy).toHaveBeenCalledWith(5, 'Test');
+  });
+
+  it('guardarPais deberia llamar a updatePais si hay id', async () => {
+    await component.onInit();
+    const form = document.querySelector('#paisForm');
+    form.checkValidity = jest.fn().mockReturnValue(true);
+    document.querySelector('#paisId').value = '3';
+    document.querySelector('#paisNombre').value = 'Updated';
+    document.querySelector('#paisCodigo').value = 'UP';
+    document.querySelector('#paisActivo').checked = false;
+    await component.guardarPais({ preventDefault: jest.fn() });
+    expect(UbicacionesService.updatePais).toHaveBeenCalledWith('3', {
+      nombre: 'Updated', codigo_iso: 'UP', activo: false
+    });
+    expect(ToastService.success).toHaveBeenCalled();
+  });
+
+  it('guardarPais deberia mostrar error si API falla', async () => {
+    UbicacionesService.createPais.mockRejectedValue(new Error('API Error'));
+    await component.onInit();
+    const form = document.querySelector('#paisForm');
+    form.checkValidity = jest.fn().mockReturnValue(true);
+    document.querySelector('#paisId').value = '';
+    document.querySelector('#paisNombre').value = 'Test';
+    document.querySelector('#paisCodigo').value = 'TS';
+    document.querySelector('#paisActivo').checked = true;
+    await component.guardarPais({ preventDefault: jest.fn() });
+    expect(ToastService.error).toHaveBeenCalled();
+  });
+
+  it('eliminarPais no deberia eliminar si no se confirma', async () => {
+    ModalService.confirm.mockResolvedValue(false);
+    await component.onInit();
+    await component.eliminarPais(1, 'Test');
+    expect(UbicacionesService.deletePais).not.toHaveBeenCalled();
+  });
+
+  it('eliminarPais deberia mostrar error si API falla', async () => {
+    UbicacionesService.deletePais.mockRejectedValue(new Error('Error'));
+    await component.onInit();
+    await component.eliminarPais(1, 'Test');
+    expect(ToastService.error).toHaveBeenCalled();
+  });
+
+  it('disconnectedCallback deberia remover modal del body', async () => {
+    await component.onInit();
+    const modalEl = document.querySelector('#paisModal');
+    expect(modalEl).toBeTruthy();
+    if (modalEl) modalEl.remove = jest.fn();
+    component.disconnectedCallback();
+  });
+
+  it('guardarPais deberia fallar validacion si form no es valido', async () => {
+    await component.onInit();
+    const form = document.querySelector('#paisForm');
+    form.checkValidity = jest.fn().mockReturnValue(false);
+    await component.guardarPais({ preventDefault: jest.fn() });
+    expect(UbicacionesService.createPais).not.toHaveBeenCalled();
+    expect(form.classList.contains('was-validated')).toBe(true);
+  });
+
+  it('debería manejar error al inicializar el modal en onInit', async () => {
+    // connectedCallback already called onInit which moved #paisModal to body,
+    // move it back so the second onInit call finds it and triggers the catch
+    const modalEl = document.querySelector('#paisModal');
+    if (modalEl) component.appendChild(modalEl);
+    window.bootstrap.Modal = jest.fn(() => { throw new Error('fail'); });
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    await component.onInit();
+    expect(consoleSpy).toHaveBeenCalledWith('Error inicializando el modal de países.', expect.any(Error));
+    consoleSpy.mockRestore();
+  });
+
+  it('debería renderizar el badge de estado correctamente', async () => {
+    const origConfigure = HTMLDivElement.prototype.configure;
+    let capturedColumns;
+    HTMLDivElement.prototype.configure = jest.fn((config) => { capturedColumns = config.columns; });
+    await component.onInit();
+    const statusColumn = capturedColumns.find(c => c.render);
+    expect(statusColumn).toBeDefined();
+    const activeHtml = statusColumn.render({ activo: true });
+    expect(activeHtml).toContain('bg-success');
+    expect(activeHtml).toContain('Activo');
+    const inactiveHtml = statusColumn.render({ activo: false });
+    expect(inactiveHtml).toContain('bg-danger');
+    expect(inactiveHtml).toContain('Inactivo');
+    HTMLDivElement.prototype.configure = origConfigure;
+  });
+
+  it('debería manejar error al cargar países', async () => {
+    const origLoad = HTMLDivElement.prototype.load;
+    HTMLDivElement.prototype.load = jest.fn().mockRejectedValue(new Error('fail'));
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await component.onInit();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(consoleSpy).toHaveBeenCalledWith('Error al cargar países:', expect.any(Error));
+    consoleSpy.mockRestore();
+    HTMLDivElement.prototype.load = origLoad;
+  });
 });

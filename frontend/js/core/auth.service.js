@@ -103,6 +103,10 @@ export const AuthService = {
     return !!localStorage.getItem('access_token');
   },
 
+  getToken() {
+    return localStorage.getItem('access_token');
+  },
+
   getCurrentUser() {
     try {
       const userStr = localStorage.getItem('user');
@@ -113,10 +117,13 @@ export const AuthService = {
     }
   },
 
+  setUser(user) {
+    localStorage.setItem('user', JSON.stringify(user));
+  },
+
   hasPermission(action, resource = null) {
     const user = this.getCurrentUser();
     if (!user || !Array.isArray(user.permisos)) {
-      // console.warn('[AuthService] hasPermission failed: User or user.permisos is missing/invalid.', user);
       return false;
     }
 
@@ -125,13 +132,34 @@ export const AuthService = {
       return user.permisos.includes(key);
     }
 
-    // console.warn('[AuthService] hasPermission failed: No resource provided.');
+    if (typeof action === 'string' && arguments.length === 1) {
+      return user.permisos.includes(action);
+    }
+
     return false;
+  },
+
+  getPermissions() {
+    const user = this.getCurrentUser();
+    return user && Array.isArray(user.permisos) ? [...user.permisos] : [];
+  },
+
+  handleAuthError() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('user_menu');
+    window.dispatchEvent(new CustomEvent('auth-change'));
   },
 
   isAdmin() {
     const user = this.getCurrentUser();
     return user ? !!user.is_admin : false;
+  },
+
+  canManageIncidencias() {
+    return this.isAdmin() || 
+           this.hasPermission('UPDATE', 'incidencias') || 
+           this.hasPermission('UPDATE', 'despacho_incidencias');
   },
 
   getPaisId() {
@@ -142,6 +170,11 @@ export const AuthService = {
   getUserId() {
     const user = this.getCurrentUser();
     return user ? user.id : null;
+  },
+
+  getUserRole() {
+    const user = this.getCurrentUser();
+    return user ? user.rol : null;
   },
 
   canAccessRoute(hash) {
